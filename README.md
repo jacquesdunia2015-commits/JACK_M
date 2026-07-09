@@ -7,6 +7,8 @@ Cette version correspond au **MVP (phase 2 du planning du cahier des charges)** 
 import de textes, codage hiérarchique, récupération de segments, analyses et exports — avec plusieurs
 fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicales, visualisations, rapports).
 
+📖 **Nouveau sur QualiCode ?** Lisez le **[Guide d'utilisation](GUIDE_UTILISATION.md)** — pas à pas, en français simple.
+
 ## 🚀 Lancement
 
 Aucune installation, aucune dépendance. Il suffit de servir le dossier en statique :

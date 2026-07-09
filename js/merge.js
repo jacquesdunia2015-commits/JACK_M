@@ -163,7 +163,7 @@ export function interCoderAgreement(project, coderA, coderB) {
     sharedDocs: sharedDocs.length,
     units: units.length,
     perCode,
-    overall: { n: A + B + C + D, ...kappaOf(A, B, C, D) },
+    overall: { a: A, b: B, c: C, d: D, n: A + B + C + D, ...kappaOf(A, B, C, D) },
   };
 }
 
