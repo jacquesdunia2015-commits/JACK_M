@@ -14,6 +14,7 @@ import {
 } from "./analysis.js";
 import { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, openPrintableReport } from "./export.js";
 import { buildSampleProject } from "./sample.js";
+import { extractDocxText } from "./docx.js";
 
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -199,11 +200,22 @@ function bindRibbon() {
   $("#fileInput").addEventListener("change", async e => {
     const files = [...e.target.files];
     e.target.value = "";
+    let imported = 0, failed = [];
     for (const f of files) {
-      const text = await f.text();
-      addDocument(f.name.replace(/\.[^.]+$/, ""), text.replace(/\r\n/g, "\n"));
+      try {
+        const text = /\.docx$/i.test(f.name)
+          ? await extractDocxText(f)
+          : (await f.text()).replace(/\r\n/g, "\n");
+        addDocument(f.name.replace(/\.[^.]+$/, ""), text);
+        imported++;
+      } catch (err) {
+        console.error("Import failed:", f.name, err);
+        failed.push(f.name);
+      }
     }
-    if (files.length) { renderAll(); toast(files.length + " " + t("import_done")); }
+    if (imported) renderAll();
+    if (failed.length) toast(t("import_failed") + " : " + failed.join(", "));
+    else if (imported) toast(imported + " " + t("import_done"));
   });
   $("#btnImportCsv").onclick = () => $("#csvInput").click();
   $("#csvInput").addEventListener("change", async e => {

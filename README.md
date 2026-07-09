@@ -37,7 +37,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 | Domaine (réf. cahier des charges) | Fonctionnalités |
 |---|---|
 | **Gestion de projet (§2.1)** | Création, sauvegarde/ouverture dans un fichier conteneur unique `.projx` (JSON), sauvegarde automatique locale (localStorage), corbeille interne pour documents et codes |
-| **Importation (§2.2)** | Fichiers TXT/MD, collage de texte, enquêtes CSV (réponses courtes → variables, réponses longues → texte), texte structuré (balises `#DOC`) |
+| **Importation (§2.2)** | Fichiers **DOCX** (extraction native sans dépendance : lecture ZIP via `DecompressionStream` + analyse de `word/document.xml`), TXT/MD, collage de texte, enquêtes CSV (réponses courtes → variables, réponses longues → texte), texte structuré (balises `#DOC`) |
 | **Organisation (§2.3)** | Groupes de documents (glisser-déposer), variables de document, navigateur avec numérotation des paragraphes, recherche plein texte booléenne (ET / OU / "phrase") |
 | **Codage (§2.4)** | Codes et sous-codes en arborescence illimitée avec couleurs, codage par sélection de texte (menu contextuel), codage in vivo, raccourci clavier `Alt+C`, codage automatique par recherche lexicale (occurrence / phrase / paragraphe), pondération des segments, fusion visuelle des chevauchements, fréquences en temps réel, glisser-déposer des codes |
 | **Récupération (§2.4)** | Activation de documents et de codes (✅), modes **OU** et **ET** (intersection/chevauchement), saut au passage source |
@@ -48,7 +48,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 
 ## 🗺️ Feuille de route (fonctionnalités du cahier des charges non couvertes par ce MVP)
 
-- **Import DOCX / PDF / RTF / ODT** (§2.2) — nécessite des bibliothèques d'extraction dédiées.
+- **Import PDF / RTF / ODT** (§2.2) — nécessite des bibliothèques d'extraction dédiées (DOCX est déjà couvert).
 - **Médias audio / vidéo / images et transcriptions horodatées** (§2.2, §2.7) — lecture synchronisée FFmpeg côté desktop.
 - **Import réseaux sociaux et références bibliographiques** (§2.2).
 - **Export REFI-QDA, Word natif** (§2.8) — le format `.projx` (JSON documenté) prépare la conversion.
@@ -66,6 +66,7 @@ js/state.js         Modèle de données du projet + persistance (autosave)
 js/i18n.js          Internationalisation FR/EN (extensible)
 js/analysis.js      Recherche booléenne, lexicométrie, matrices
 js/export.js        Exports CSV, rapport imprimable, conteneur .projx
+js/docx.js          Import DOCX natif (lecture ZIP + WordprocessingML)
 js/sample.js        Projet exemple (étude sur le télétravail)
 ```
 
