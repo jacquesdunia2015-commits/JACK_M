@@ -15,6 +15,8 @@ import {
 import { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, openPrintableReport } from "./export.js";
 import { buildSampleProject } from "./sample.js";
 import { extractDocxText } from "./docx.js";
+import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from "./crypto.js";
+import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -25,6 +27,7 @@ let panel4Mode = "segments";       // segments | search
 let searchResults = [];
 let searchQuery = "";
 let pendingSelection = null;       // {start, end} sélection en attente de codage
+let projectPassword = null;        // mot de passe du projet, gardé en mémoire de session uniquement
 
 /* ================================================================
    Initialisation
@@ -161,24 +164,42 @@ function bindRibbon() {
       renderAll();
     });
   };
-  $("#btnSaveProject").onclick = () => { persistNow(); exportProject(); toast(t("project_saved_file")); };
+  $("#btnSaveProject").onclick = async () => {
+    persistNow();
+    if (state.project.protected) {
+      const pw = projectPassword || await askPassword();
+      if (!pw) return;
+      projectPassword = pw;
+      exportProject(await encryptProjectJson(JSON.stringify(state.project), pw));
+    } else {
+      exportProject();
+    }
+    toast(t("project_saved_file"));
+  };
   $("#btnOpenProject").onclick = () => $("#projInput").click();
   $("#projInput").addEventListener("change", async e => {
     const file = e.target.files[0];
     e.target.value = "";
     if (!file) return;
-    try {
-      const p = JSON.parse(await file.text());
-      if (p.format !== "qualicode-projx") throw new Error("format");
-      state.project = normalizeProject(p);
-      state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
-      state.ui.currentDocId = null; state.ui.selectedCodeId = null;
-      persistNow();
-      renderAll();
-      toast(t("project_loaded") + " : " + state.project.name);
-    } catch {
-      toast(t("invalid_project"));
-    }
+    const p = await readProjectFile(file);
+    if (!p) return;
+    state.project = p;
+    state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
+    state.ui.currentDocId = null; state.ui.selectedCodeId = null;
+    state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
+    childCodes(null).forEach(c => expandedCodes.add(c.id));
+    persistNow();
+    renderAll();
+    toast(t("project_loaded") + " : " + state.project.name);
+  });
+  $("#btnProtect").onclick = openProtectModal;
+  $("#btnMergeProject").onclick = () => $("#mergeInput").click();
+  $("#mergeInput").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    const incoming = await readProjectFile(file);
+    if (incoming) openMergeModal(incoming);
   });
   $("#btnSampleProject").onclick = () => {
     confirmModal(t("new_version_hint"), () => {
@@ -261,6 +282,7 @@ function bindRibbon() {
   $("#btnWordFreq").onclick = openWordFreq;
   $("#btnKwic").onclick = openKwic;
   $("#btnStats").onclick = openStats;
+  $("#btnKappa").onclick = openKappa;
 
   // --- Visualisation ---
   $("#btnPortrait").onclick = openPortrait;
@@ -797,6 +819,7 @@ function renderPanel4() {
         <span class="badge" style="background:${esc(hexToRgba(code?.color ?? "#888", 0.3))}">${esc(code?.name ?? "?")}</span>
         <span class="src" data-doc="${s.docId}" data-start="${s.start}">${esc(doc?.name ?? "?")}</span>
         ${s.weight !== 1 ? `<span class="weight-badge">${esc(t("weight"))}: ${s.weight}</span>` : ""}
+        ${s.coder ? `<span class="weight-badge">👤 ${esc(s.coder)}</span>` : ""}
         <span class="spacer"></span>
         <button class="mini-btn" data-act="edit" title="${esc(t("edit_segment"))}">✏️</button>
       </div>
@@ -1370,6 +1393,166 @@ function openBarChart() {
       <span class="bar-track"><span class="bar-fill" style="width:${(100 * c.n / max).toFixed(1)}%;background:${esc(c.color)}">${c.n}</span></span>
     </div>`).join("")}</div>`;
   openModal({ title: t("barchart_title"), wide: true, bodyHtml: html, footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }] });
+}
+
+/* ================================================================
+   Protection par mot de passe (§2.1, §3.4)
+================================================================ */
+// Demande un mot de passe ; résout avec la saisie ou null si annulé
+function askPassword(title = t("enter_password")) {
+  return new Promise(resolve => {
+    const m = openModal({
+      title: t("protect_title"),
+      bodyHtml: `<div class="form-row"><label>${esc(title)}</label><input type="password" id="pwInput" autocomplete="off"></div>`,
+      footer: [
+        { label: t("cancel"), onClick: (o, close) => { close(); resolve(null); } },
+        { label: t("ok"), primary: true, onClick: (o, close) => { const v = o.querySelector("#pwInput").value; if (v) { close(); resolve(v); } } },
+      ],
+    });
+    m.body.querySelector("#pwInput").addEventListener("keydown", e => {
+      if (e.key === "Enter" && e.target.value) { m.close(); resolve(e.target.value); }
+    });
+    m.overlay.addEventListener("mousedown", e => { if (e.target === m.overlay) resolve(null); });
+  });
+}
+
+// Lit un fichier .projx (en clair ou chiffré) ; retourne le projet normalisé ou null
+async function readProjectFile(file) {
+  let raw;
+  try {
+    raw = JSON.parse(await file.text());
+  } catch {
+    toast(t("invalid_project"));
+    return null;
+  }
+  if (isEncryptedEnvelope(raw)) {
+    // Boucle de saisie tant que le mot de passe est incorrect (annulation possible)
+    for (;;) {
+      const pw = await askPassword();
+      if (!pw) return null;
+      try {
+        const json = await decryptProjectEnvelope(raw, pw);
+        const p = JSON.parse(json);
+        if (p.format !== "qualicode-projx") throw new Error("format");
+        projectPassword = pw;
+        return normalizeProject(p);
+      } catch {
+        toast(t("wrong_password"));
+      }
+    }
+  }
+  if (raw.format !== "qualicode-projx") {
+    toast(t("invalid_project"));
+    return null;
+  }
+  return normalizeProject(raw);
+}
+
+function openProtectModal() {
+  const isProtected = !!state.project.protected;
+  openModal({
+    title: t("protect_title"),
+    bodyHtml: `
+      <p style="color:var(--text-soft);font-size:13px">${esc(t("protection_hint"))}</p>
+      ${isProtected ? `<p><strong>🔒 ${esc(t("protection_active"))}</strong></p>` : ""}
+      <div class="form-row"><label>${esc(t("password"))}</label><input type="password" id="ppPw" autocomplete="new-password"></div>
+      <div class="form-row"><label>${esc(t("password_confirm"))}</label><input type="password" id="ppPw2" autocomplete="new-password"></div>`,
+    footer: [
+      ...(isProtected ? [{
+        label: t("remove_protection"), danger: true, onClick: (o, close) => {
+          state.project.protected = false;
+          projectPassword = null;
+          scheduleSave(); close(); toast(t("protection_off"));
+        }
+      }] : []),
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          const pw = o.querySelector("#ppPw").value;
+          const pw2 = o.querySelector("#ppPw2").value;
+          if (!pw) return;
+          if (pw !== pw2) return toast(t("password_mismatch"));
+          state.project.protected = true;
+          projectPassword = pw;
+          scheduleSave(); close(); toast(t("protection_on"));
+        }
+      },
+    ],
+  });
+}
+
+/* ================================================================
+   Fusion de projets et accord inter-codeurs (§2.1, §2.9)
+================================================================ */
+function openMergeModal(incoming) {
+  openModal({
+    title: t("merge_title"),
+    bodyHtml: `
+      <p>🧬 <strong>${esc(incoming.name)}</strong> — ${incoming.documents?.length ?? 0} ${esc(t("docs"))},
+        ${incoming.codes?.length ?? 0} ${esc(t("codes_lbl"))}, ${incoming.segments?.length ?? 0} ${esc(t("segments_lbl"))}</p>
+      <div class="form-row"><label>${esc(t("coder_label_q"))}</label><input type="text" id="mgCoder" value="C2"></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          const label = o.querySelector("#mgCoder").value.trim() || "C2";
+          const stats = mergeProjects(state.project, incoming, label);
+          persistNow();
+          close(); renderAll();
+          const names = t("merge_stats").split("|");
+          const values = [stats.docsMatched, stats.docsAdded, stats.codesMatched, stats.codesAdded, stats.segmentsAdded, stats.segmentsSkipped];
+          toast(t("merge_done") + " — " + values.map((v, i) => `${v} ${names[i]}`).join(", "));
+        }
+      },
+    ],
+  });
+}
+
+function openKappa() {
+  const labels = coderLabels(state.project);
+  if (labels.length < 2) {
+    return openModal({
+      title: t("kappa_title"),
+      bodyHtml: `<div class="empty-hint">${esc(t("need_two_coders"))}</div>`,
+      footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+    });
+  }
+  const renderTable = body => {
+    const coderA = body.querySelector("#kpA").value;
+    const coderB = body.querySelector("#kpB").value;
+    const r = interCoderAgreement(state.project, coderA, coderB);
+    const fmtK = k => (Math.round(k * 100) / 100).toFixed(2);
+    const kColor = k => k > 0.8 ? "#59a14f" : k > 0.6 ? "#8cd17d" : k > 0.4 ? "#edc948" : k > 0.2 ? "#f28e2b" : "#e15759";
+    const row = (label, x, bold = false) => `
+      <tr ${bold ? 'style="font-weight:700;border-top:2px solid var(--border)"' : ""}>
+        <td>${label}</td>
+        <td class="num">${x.a}</td><td class="num">${x.b}</td><td class="num">${x.c}</td><td class="num">${x.d}</td>
+        <td class="num">${(100 * x.po).toFixed(1)} %</td>
+        <td class="num" style="color:${kColor(x.kappa)};font-weight:700">${fmtK(x.kappa)}</td>
+        <td>${esc(t(kappaInterpretation(x.kappa)))}</td>
+      </tr>`;
+    body.querySelector("#kpTable").innerHTML = `
+      <p style="color:var(--text-soft);font-size:12.5px">${r.sharedDocs} ${esc(t("kappa_basis"))} — ${r.units} ¶</p>
+      <div class="table-scroll"><table class="data-table">
+        <thead><tr><th>${esc(t("code"))}</th><th>A∩B</th><th>A seul</th><th>B seul</th><th>ni A ni B</th>
+          <th>${esc(t("agreement"))}</th><th>κ</th><th>${esc(t("interpretation"))}</th></tr></thead>
+        <tbody>
+          ${r.perCode.map(x => row(`<span class="code-dot" style="background:${esc(x.code.color)};display:inline-block;vertical-align:-2px"></span> ${esc(x.code.name)}`, x)).join("")}
+          ${row(esc(t("overall")), r.overall, true)}
+        </tbody></table></div>`;
+  };
+  const m = openModal({
+    title: t("kappa_title"), wide: true,
+    bodyHtml: `
+      <div class="panel-toolbar" style="gap:16px">
+        <label>${esc(t("coder_a"))} <select id="kpA">${labels.map(l => `<option>${esc(l)}</option>`).join("")}</select></label>
+        <label>${esc(t("coder_b"))} <select id="kpB">${labels.map((l, i) => `<option ${i === 1 ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
+      </div><div id="kpTable"></div>`,
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  m.body.querySelector("#kpA").onchange = () => renderTable(m.body);
+  m.body.querySelector("#kpB").onchange = () => renderTable(m.body);
+  renderTable(m.body);
 }
 
 /* ================================================================

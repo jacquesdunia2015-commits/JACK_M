@@ -26,8 +26,9 @@ function safeName(name) {
 }
 
 /* ---------- Projet (.projx) ---------- */
-export function exportProject() {
-  const json = JSON.stringify(state.project, null, 2);
+// `payload` : le projet en clair, ou l'enveloppe chiffrée (crypto.js)
+export function exportProject(payload = state.project) {
+  const json = JSON.stringify(payload, null, 2);
   const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

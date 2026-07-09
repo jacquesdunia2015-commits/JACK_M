@@ -45,6 +45,8 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 | **Analyse (§2.6)** | Matrice codes × documents (cliquable), matrice de co-occurrences, comparaison de groupes par variable, fréquences de mots (anti-dictionnaire FR/EN), KWIC (mots en contexte), statistiques descriptives des variables |
 | **Visualisation (§2.7)** | Portrait de document (séquence colorée des segments), nuage de mots, diagramme de fréquences des codes |
 | **Rapports & exports (§2.8)** | Export CSV des segments (compatible Excel), export du système de codes, export CSV de la matrice, rapport HTML imprimable (→ PDF via l'impression navigateur), export/import du projet `.projx` |
+| **Sécurité (§2.1, §3.4)** | Protection du projet par mot de passe : fichier `.projx` chiffré en **AES-256-GCM**, clé dérivée par PBKDF2 (310 000 itérations, SHA-256) via l'API Web Crypto native |
+| **Équipe (§2.1, §2.9)** | **Fusion de projets** (appariement des documents, codes et mémos ; segments étiquetés par codeur) et **accord inter-codeurs par kappa de Cohen** (unité : le paragraphe, par code + global, interprétation Landis & Koch) — critère d'acceptation n°4 du cahier des charges |
 
 ## 🗺️ Feuille de route (fonctionnalités du cahier des charges non couvertes par ce MVP)
 
@@ -52,8 +54,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 - **Médias audio / vidéo / images et transcriptions horodatées** (§2.2, §2.7) — lecture synchronisée FFmpeg côté desktop.
 - **Import réseaux sociaux et références bibliographiques** (§2.2).
 - **Export REFI-QDA, Word natif** (§2.8) — le format `.projx` (JSON documenté) prépare la conversion.
-- **Chiffrement AES-256 et protection par mot de passe** (§3.4).
-- **Phase 2 cloud** : collaboration temps réel, rôles, accord inter-codeurs (kappa de Cohen), journal des modifications.
+- **Phase 2 cloud** : collaboration temps réel, rôles, journal des modifications (la fusion asynchrone et le kappa de Cohen sont déjà couverts).
 - **Empaquetage desktop** Windows/macOS : la base web actuelle est directement intégrable dans **Tauri** ou **Electron** (options recommandées §4).
 
 ## 🏗️ Architecture
@@ -67,6 +68,8 @@ js/i18n.js          Internationalisation FR/EN (extensible)
 js/analysis.js      Recherche booléenne, lexicométrie, matrices
 js/export.js        Exports CSV, rapport imprimable, conteneur .projx
 js/docx.js          Import DOCX natif (lecture ZIP + WordprocessingML)
+js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
+js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)
 js/sample.js        Projet exemple (étude sur le télétravail)
 ```
 

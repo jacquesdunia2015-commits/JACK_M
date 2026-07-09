@@ -41,6 +41,12 @@
         <div class="rlabel" data-i18n="grp_project">Projet</div>
       </div>
       <div class="rgroup">
+        <button id="btnProtect" class="rbtn">🔒<span data-i18n="protect">Mot de passe</span></button>
+        <button id="btnMergeProject" class="rbtn">🧬<span data-i18n="merge_project">Fusionner (.projx)</span></button>
+        <div class="rlabel" data-i18n="grp_team">Équipe</div>
+        <input type="file" id="mergeInput" accept=".projx,.json" hidden>
+      </div>
+      <div class="rgroup">
         <input type="search" id="searchInput" data-i18n-ph="search_ph" placeholder="Recherche plein texte (ET, OU, &quot;phrase&quot;)…">
         <button id="btnSearch" class="rbtn small">🔎<span data-i18n="search">Rechercher</span></button>
         <div class="rlabel" data-i18n="grp_search">Recherche</div>
@@ -121,6 +127,10 @@
       <div class="rgroup">
         <button id="btnStats" class="rbtn">📈<span data-i18n="stats">Statistiques</span></button>
         <div class="rlabel" data-i18n="grp_stats">Descriptives</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnKappa" class="rbtn">🤝<span data-i18n="kappa">Accord inter-codeurs (κ)</span></button>
+        <div class="rlabel" data-i18n="grp_team">Équipe</div>
       </div>
     </div>
 
