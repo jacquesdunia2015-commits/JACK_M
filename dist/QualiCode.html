@@ -1,0 +1,3567 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QualiCode — Analyse qualitative de données</title>
+<style>
+/* ============ QualiCode — feuille de style ============ */
+:root {
+  --bg: #f4f6f9;
+  --bg-panel: #ffffff;
+  --bg-ribbon: #eef1f6;
+  --bg-hover: #e3e9f2;
+  --bg-active: #d3def0;
+  --border: #ccd4e0;
+  --text: #1d2733;
+  --text-soft: #5b6b7f;
+  --accent: #2660a4;
+  --accent-soft: #dbe7f5;
+  --danger: #b3372f;
+  --mark-multi: rgba(120, 120, 120, 0.25);
+  --shadow: 0 4px 18px rgba(20, 35, 60, 0.18);
+  --radius: 8px;
+  --font: system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --left-w: 320px;
+  --top-h: 55%;
+}
+
+body.dark {
+  --bg: #161b22;
+  --bg-panel: #1e242d;
+  --bg-ribbon: #10141a;
+  --bg-hover: #2a3341;
+  --bg-active: #34415a;
+  --border: #38414e;
+  --text: #dbe3ee;
+  --text-soft: #93a1b3;
+  --accent: #6aa5e8;
+  --accent-soft: #23354d;
+  --danger: #e5776f;
+  --mark-multi: rgba(200, 200, 200, 0.22);
+  --shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+button { font-family: inherit; color: inherit; }
+
+/* ============ Ruban ============ */
+#ribbon { background: var(--bg-ribbon); border-bottom: 1px solid var(--border); flex: none; }
+.ribbon-top { display: flex; align-items: center; gap: 12px; padding: 4px 10px 0; }
+.app-brand { font-size: 15px; white-space: nowrap; }
+.ribbon-tabs { display: flex; gap: 2px; flex: 1; overflow-x: auto; }
+.ribbon-tabs button {
+  border: none; background: transparent; padding: 7px 13px; cursor: pointer;
+  border-radius: 6px 6px 0 0; font-size: 13.5px; color: var(--text-soft); white-space: nowrap;
+}
+.ribbon-tabs button:hover { background: var(--bg-hover); color: var(--text); }
+.ribbon-tabs button.active { background: var(--bg-panel); color: var(--accent); font-weight: 600; }
+.ribbon-right { display: flex; align-items: center; gap: 6px; }
+.project-name { font-size: 12.5px; color: var(--text-soft); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.icon-btn { border: 1px solid var(--border); background: var(--bg-panel); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 13px; }
+.icon-btn:hover { background: var(--bg-hover); }
+
+.ribbon-content { background: var(--bg-panel); padding: 6px 10px; min-height: 74px; }
+.ribbon-pane { display: none; gap: 14px; }
+.ribbon-pane.active { display: flex; flex-wrap: wrap; }
+.rgroup {
+  display: flex; align-items: flex-start; gap: 6px; padding: 4px 10px 18px; position: relative;
+  border-right: 1px solid var(--border);
+}
+.rgroup:last-child { border-right: none; }
+.rlabel {
+  position: absolute; bottom: 1px; left: 0; right: 0; text-align: center;
+  font-size: 10.5px; color: var(--text-soft); letter-spacing: 0.03em;
+}
+.rbtn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  border: 1px solid transparent; background: transparent; border-radius: var(--radius);
+  padding: 5px 9px; cursor: pointer; font-size: 12px; max-width: 110px; line-height: 1.25;
+}
+.rbtn:hover { background: var(--bg-hover); border-color: var(--border); }
+.rbtn.small { flex-direction: row; }
+.rcheck { display: flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 8px 4px; }
+#searchInput {
+  width: 300px; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); color: var(--text); font-size: 13px;
+}
+
+/* ============ Espace de travail ============ */
+#workspace {
+  flex: 1; display: grid; min-height: 0;
+  grid-template-columns: var(--left-w) 6px 1fr;
+  grid-template-rows: var(--top-h) 6px 1fr;
+}
+#panel-docs      { grid-column: 1; grid-row: 1; }
+#splitH1         { grid-column: 1; grid-row: 2; }
+#panel-codes     { grid-column: 1; grid-row: 3; }
+#splitV          { grid-column: 2; grid-row: 1 / 4; }
+#panel-browser   { grid-column: 3; grid-row: 1; }
+#splitH2         { grid-column: 3; grid-row: 2; }
+#panel-retrieved { grid-column: 3; grid-row: 3; }
+
+.splitter { background: transparent; z-index: 5; }
+.splitter:hover { background: var(--accent-soft); }
+.splitter-v { cursor: col-resize; }
+.splitter-h { cursor: row-resize; }
+
+.panel { background: var(--bg-panel); display: flex; flex-direction: column; min-height: 0; min-width: 0; border: 1px solid var(--border); border-radius: 0; }
+.panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 10px; font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--border);
+  background: var(--bg-ribbon); flex: none;
+}
+.panel-actions { display: flex; gap: 4px; align-items: center; }
+.mini-btn {
+  border: 1px solid var(--border); background: var(--bg-panel); border-radius: 5px;
+  width: 24px; height: 24px; cursor: pointer; font-size: 12px; line-height: 1; padding: 0;
+}
+.mini-btn:hover { background: var(--bg-hover); }
+.panel-body { flex: 1; overflow: auto; padding: 6px; min-height: 0; }
+.retrieval-mode select {
+  font-size: 11.5px; border: 1px solid var(--border); background: var(--bg-panel);
+  color: var(--text); border-radius: 5px; padding: 2px 4px; max-width: 210px;
+}
+
+.empty-hint { color: var(--text-soft); padding: 24px; text-align: center; font-size: 13.5px; line-height: 1.6; }
+
+/* ============ Arbres (documents & codes) ============ */
+.tree-item {
+  display: flex; align-items: center; gap: 5px; padding: 3px 6px; border-radius: 6px;
+  cursor: pointer; user-select: none; font-size: 13px; min-height: 26px;
+}
+.tree-item:hover { background: var(--bg-hover); }
+.tree-item.selected { background: var(--bg-active); }
+.tree-item .caret { width: 14px; text-align: center; color: var(--text-soft); flex: none; font-size: 10px; }
+.tree-item .activ { flex: none; cursor: pointer; opacity: 0.35; font-size: 12px; }
+.tree-item .activ.on { opacity: 1; }
+.tree-item .label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-item .count { color: var(--text-soft); font-size: 11.5px; flex: none; }
+.tree-item .memo-flag { flex: none; font-size: 11px; }
+.tree-children { margin-left: 16px; }
+.code-dot { width: 12px; height: 12px; border-radius: 3px; flex: none; border: 1px solid rgba(0,0,0,0.2); }
+.group-row { font-weight: 600; color: var(--text-soft); }
+.tree-item .row-actions { display: none; gap: 2px; }
+.tree-item:hover .row-actions { display: flex; }
+.row-actions button { border: none; background: transparent; cursor: pointer; font-size: 11px; padding: 1px 3px; border-radius: 4px; }
+.row-actions button:hover { background: var(--bg-active); }
+
+/* ============ Navigateur de document ============ */
+#docBrowser { padding: 0; }
+.doc-content { padding: 14px 18px 40px; max-width: 900px; line-height: 1.75; font-size: 14.5px; }
+.para { display: flex; gap: 12px; margin: 0 0 2px; }
+.para-num { flex: none; width: 34px; text-align: right; color: var(--text-soft); font-size: 11px; padding-top: 4px; user-select: none; }
+.para-text { flex: 1; white-space: pre-wrap; word-break: break-word; }
+mark.seg { border-radius: 3px; padding: 1px 0; cursor: pointer; color: inherit; }
+mark.seg.multi { box-shadow: inset 0 -2px 0 0 var(--text-soft); }
+.speaker { font-weight: 700; color: var(--accent); }
+.doc-title-block { padding: 14px 18px 0 64px; }
+.doc-title-block h2 { margin: 0 0 4px; font-size: 18px; }
+.doc-title-block .doc-meta { color: var(--text-soft); font-size: 12px; }
+
+/* ============ Menu contextuel de codage ============ */
+.coding-popup {
+  position: fixed; z-index: 300; background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); min-width: 230px; max-width: 300px;
+  font-size: 13px; overflow: hidden;
+}
+.coding-popup-title { padding: 7px 10px; font-weight: 600; border-bottom: 1px solid var(--border); background: var(--bg-ribbon); }
+#codingPopupList { max-height: 260px; overflow: auto; padding: 4px; }
+#codingPopupList .popup-code { display: flex; align-items: center; gap: 7px; padding: 5px 8px; border-radius: 5px; cursor: pointer; }
+#codingPopupList .popup-code:hover { background: var(--bg-hover); }
+.coding-popup-footer { display: flex; border-top: 1px solid var(--border); }
+.coding-popup-footer button { flex: 1; border: none; background: transparent; padding: 7px; cursor: pointer; font-size: 12.5px; }
+.coding-popup-footer button:hover { background: var(--bg-hover); }
+
+/* ============ Segments récupérés ============ */
+.seg-card { border: 1px solid var(--border); border-radius: var(--radius); margin: 6px 4px; overflow: hidden; }
+.seg-card-head {
+  display: flex; align-items: center; gap: 8px; padding: 5px 10px; font-size: 12px;
+  background: var(--bg-ribbon); border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.seg-card-head .src { cursor: pointer; color: var(--accent); font-weight: 600; }
+.seg-card-head .src:hover { text-decoration: underline; }
+.seg-card-head .spacer { flex: 1; }
+.seg-card-body { padding: 8px 12px; font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; }
+.seg-card .seg-comment { padding: 0 12px 8px; color: var(--text-soft); font-size: 12px; font-style: italic; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 20px; font-size: 11px; border: 1px solid rgba(0,0,0,0.15); }
+.weight-badge { color: var(--text-soft); font-size: 11px; }
+.panel-toolbar { display: flex; gap: 6px; align-items: center; padding: 4px; flex-wrap: wrap; font-size: 12px; color: var(--text-soft); }
+
+/* ============ Barre d'état ============ */
+#statusbar {
+  display: flex; gap: 18px; padding: 4px 12px; font-size: 11.5px; color: var(--text-soft);
+  background: var(--bg-ribbon); border-top: 1px solid var(--border); flex: none;
+}
+#statusbar .right { margin-left: auto; }
+
+/* ============ Modales ============ */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10, 18, 30, 0.55); z-index: 200;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.modal {
+  background: var(--bg-panel); border-radius: 12px; box-shadow: var(--shadow);
+  max-width: min(960px, 94vw); max-height: 90vh; display: flex; flex-direction: column; min-width: 380px;
+}
+.modal.wide { width: min(1100px, 94vw); }
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center; padding: 12px 18px;
+  border-bottom: 1px solid var(--border); font-weight: 700; font-size: 15px;
+}
+.modal-close { border: none; background: transparent; font-size: 20px; cursor: pointer; color: var(--text-soft); }
+.modal-close:hover { color: var(--danger); }
+.modal-body { padding: 14px 18px; overflow: auto; flex: 1; }
+.modal-footer { padding: 10px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+.btn { border: 1px solid var(--border); background: var(--bg-panel); border-radius: var(--radius); padding: 7px 16px; cursor: pointer; font-size: 13px; }
+.btn:hover { background: var(--bg-hover); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { filter: brightness(1.1); }
+.btn.danger { color: var(--danger); border-color: var(--danger); }
+
+.form-row { margin-bottom: 12px; }
+.form-row label { display: block; font-size: 12.5px; color: var(--text-soft); margin-bottom: 4px; }
+.form-row input[type=text], .form-row input[type=search], .form-row select, .form-row textarea {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg); color: var(--text); font-size: 13.5px; font-family: inherit;
+}
+.form-row textarea { min-height: 130px; resize: vertical; }
+.color-swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.color-swatches .sw { width: 26px; height: 26px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
+.color-swatches .sw.sel { border-color: var(--text); }
+
+/* ============ Tableaux d'analyse ============ */
+.data-table { border-collapse: collapse; font-size: 12.5px; width: max-content; min-width: 100%; }
+.data-table th, .data-table td { border: 1px solid var(--border); padding: 5px 10px; text-align: left; }
+.data-table th { background: var(--bg-ribbon); position: sticky; top: 0; }
+.data-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table td.heat { text-align: center; font-weight: 600; cursor: pointer; }
+.data-table tr:hover td { background: var(--bg-hover); }
+.table-scroll { overflow: auto; max-height: 60vh; border: 1px solid var(--border); border-radius: var(--radius); }
+
+/* ============ Visualisations ============ */
+.word-cloud { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: baseline; justify-content: center; padding: 18px; line-height: 1.2; }
+.word-cloud span { cursor: default; }
+.portrait { display: flex; flex-wrap: wrap; gap: 2px; padding: 12px; }
+.portrait .cell { width: 18px; height: 18px; border-radius: 3px; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; padding: 8px 12px; font-size: 12px; }
+.legend .item { display: flex; align-items: center; gap: 5px; }
+.bar-chart { padding: 10px; }
+.bar-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 12.5px; }
+.bar-row .bar-label { width: 180px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: none; }
+.bar-row .bar-track { flex: 1; background: var(--bg); border-radius: 4px; }
+.bar-row .bar-fill { height: 20px; border-radius: 4px; min-width: 2px; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; color: #fff; font-size: 11px; }
+
+/* KWIC */
+.kwic-table td.kw { color: var(--accent); font-weight: 700; text-align: center; }
+.kwic-table td.left { text-align: right; color: var(--text-soft); }
+.kwic-table td.right { color: var(--text-soft); }
+
+/* Résultats de recherche */
+.search-hit { border-bottom: 1px solid var(--border); padding: 7px 8px; cursor: pointer; }
+.search-hit:hover { background: var(--bg-hover); }
+.search-hit .hit-src { font-size: 11.5px; color: var(--accent); font-weight: 600; }
+.search-hit .hit-text { font-size: 13px; margin-top: 2px; }
+.search-hit b { background: #ffe58a; color: #4d3800; border-radius: 2px; padding: 0 1px; }
+body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: 42px; left: 50%; transform: translateX(-50%); z-index: 400;
+  background: var(--text); color: var(--bg-panel); padding: 9px 20px; border-radius: 24px;
+  font-size: 13px; box-shadow: var(--shadow); max-width: 70vw;
+}
+
+@media (max-width: 900px) {
+  :root { --left-w: 240px; }
+  #searchInput { width: 170px; }
+}
+
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+</head>
+<body>
+
+<!-- ===================== RUBAN ===================== -->
+<header id="ribbon">
+  <div class="ribbon-top">
+    <div class="app-brand">🔍 <strong>QualiCode</strong></div>
+    <nav class="ribbon-tabs" id="ribbonTabs">
+      <button data-tab="home" class="active" data-i18n="tab_home">Accueil</button>
+      <button data-tab="import" data-i18n="tab_import">Importer</button>
+      <button data-tab="codes" data-i18n="tab_codes">Codes</button>
+      <button data-tab="memos" data-i18n="tab_memos">Mémos</button>
+      <button data-tab="variables" data-i18n="tab_variables">Variables</button>
+      <button data-tab="analysis" data-i18n="tab_analysis">Analyse</button>
+      <button data-tab="visual" data-i18n="tab_visual">Visualisation</button>
+      <button data-tab="reports" data-i18n="tab_reports">Rapports</button>
+    </nav>
+    <div class="ribbon-right">
+      <span id="projectName" class="project-name" title=""></span>
+      <button id="btnLang" class="icon-btn" title="Français / English">🌐 <span id="langLabel">FR</span></button>
+      <button id="btnTheme" class="icon-btn" title="Thème clair / sombre">🌓</button>
+    </div>
+  </div>
+
+  <div class="ribbon-content">
+    <!-- Accueil -->
+    <div class="ribbon-pane active" data-pane="home">
+      <div class="rgroup">
+        <button id="btnNewProject" class="rbtn">🗂️<span data-i18n="new_project">Nouveau projet</span></button>
+        <button id="btnOpenProject" class="rbtn">📂<span data-i18n="open_project">Ouvrir (.projx)</span></button>
+        <button id="btnSaveProject" class="rbtn">💾<span data-i18n="save_project">Enregistrer (.projx)</span></button>
+        <button id="btnSampleProject" class="rbtn">🎓<span data-i18n="sample_project">Projet exemple</span></button>
+        <div class="rlabel" data-i18n="grp_project">Projet</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnProtect" class="rbtn">🔒<span data-i18n="protect">Mot de passe</span></button>
+        <button id="btnMergeProject" class="rbtn">🧬<span data-i18n="merge_project">Fusionner (.projx)</span></button>
+        <div class="rlabel" data-i18n="grp_team">Équipe</div>
+        <input type="file" id="mergeInput" accept=".projx,.json" hidden>
+      </div>
+      <div class="rgroup">
+        <input type="search" id="searchInput" data-i18n-ph="search_ph" placeholder="Recherche plein texte (ET, OU, &quot;phrase&quot;)…">
+        <button id="btnSearch" class="rbtn small">🔎<span data-i18n="search">Rechercher</span></button>
+        <div class="rlabel" data-i18n="grp_search">Recherche</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnTrash" class="rbtn">🗑️<span data-i18n="trash">Corbeille</span></button>
+        <div class="rlabel" data-i18n="grp_tools">Outils</div>
+      </div>
+    </div>
+
+    <!-- Importer -->
+    <div class="ribbon-pane" data-pane="import">
+      <div class="rgroup">
+        <button id="btnImportFiles" class="rbtn">📄<span data-i18n="import_files">Fichiers (DOCX, TXT, MD)</span></button>
+        <button id="btnImportCsv" class="rbtn">📊<span data-i18n="import_csv">Enquête CSV</span></button>
+        <button id="btnPasteDoc" class="rbtn">📋<span data-i18n="paste_doc">Coller un texte</span></button>
+        <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
+        <div class="rlabel" data-i18n="grp_import">Importation</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnNewGroup" class="rbtn">📁<span data-i18n="new_group">Nouveau groupe</span></button>
+        <div class="rlabel" data-i18n="grp_organize">Organisation</div>
+      </div>
+      <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx" hidden>
+      <input type="file" id="csvInput" accept=".csv" hidden>
+      <input type="file" id="projInput" accept=".projx,.json" hidden>
+    </div>
+
+    <!-- Codes -->
+    <div class="ribbon-pane" data-pane="codes">
+      <div class="rgroup">
+        <button id="btnNewCode" class="rbtn">🏷️<span data-i18n="new_code">Nouveau code</span></button>
+        <button id="btnCodeSelection" class="rbtn">✏️<span data-i18n="code_selection">Coder la sélection</span></button>
+        <button id="btnInVivo" class="rbtn">💬<span data-i18n="in_vivo">Codage in vivo</span></button>
+        <div class="rlabel" data-i18n="grp_coding">Codage</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnAutoCode" class="rbtn">⚡<span data-i18n="autocode">Codage automatique</span></button>
+        <div class="rlabel" data-i18n="grp_autocode">Recherche lexicale</div>
+      </div>
+      <div class="rgroup">
+        <label class="rcheck"><input type="checkbox" id="chkHighlights" checked> <span data-i18n="show_highlights">Afficher les surlignages</span></label>
+        <div class="rlabel" data-i18n="grp_display">Affichage</div>
+      </div>
+    </div>
+
+    <!-- Mémos -->
+    <div class="ribbon-pane" data-pane="memos">
+      <div class="rgroup">
+        <button id="btnProjectMemo" class="rbtn">📝<span data-i18n="project_memo">Mémo du projet</span></button>
+        <button id="btnMemoManager" class="rbtn">🗒️<span data-i18n="memo_manager">Gestionnaire de mémos</span></button>
+        <div class="rlabel" data-i18n="grp_memos">Mémos</div>
+      </div>
+    </div>
+
+    <!-- Variables -->
+    <div class="ribbon-pane" data-pane="variables">
+      <div class="rgroup">
+        <button id="btnEditVariables" class="rbtn">🧮<span data-i18n="edit_variables">Liste des variables</span></button>
+        <button id="btnDataEditor" class="rbtn">📋<span data-i18n="data_editor">Éditeur de données</span></button>
+        <div class="rlabel" data-i18n="grp_docvars">Variables de document</div>
+      </div>
+    </div>
+
+    <!-- Analyse -->
+    <div class="ribbon-pane" data-pane="analysis">
+      <div class="rgroup">
+        <button id="btnCodeMatrix" class="rbtn">🧮<span data-i18n="code_matrix">Matrice des codes</span></button>
+        <button id="btnCooc" class="rbtn">🔗<span data-i18n="cooc_matrix">Co-occurrences</span></button>
+        <button id="btnGroupCompare" class="rbtn">⚖️<span data-i18n="group_compare">Comparaison de groupes</span></button>
+        <div class="rlabel" data-i18n="grp_matrices">Matrices</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnWordFreq" class="rbtn">🔤<span data-i18n="word_freq">Fréquences de mots</span></button>
+        <button id="btnKwic" class="rbtn">📖<span data-i18n="kwic">Mots en contexte (KWIC)</span></button>
+        <div class="rlabel" data-i18n="grp_lexical">Analyse lexicale</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnStats" class="rbtn">📈<span data-i18n="stats">Statistiques</span></button>
+        <div class="rlabel" data-i18n="grp_stats">Descriptives</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnKappa" class="rbtn">🤝<span data-i18n="kappa">Accord inter-codeurs (κ)</span></button>
+        <div class="rlabel" data-i18n="grp_team">Équipe</div>
+      </div>
+    </div>
+
+    <!-- Visualisation -->
+    <div class="ribbon-pane" data-pane="visual">
+      <div class="rgroup">
+        <button id="btnPortrait" class="rbtn">🎨<span data-i18n="doc_portrait">Portrait de document</span></button>
+        <button id="btnWordCloud" class="rbtn">☁️<span data-i18n="word_cloud">Nuage de mots</span></button>
+        <button id="btnBarChart" class="rbtn">📊<span data-i18n="bar_chart">Fréquences des codes</span></button>
+        <div class="rlabel" data-i18n="grp_visuals">Visualisations</div>
+      </div>
+    </div>
+
+    <!-- Rapports -->
+    <div class="ribbon-pane" data-pane="reports">
+      <div class="rgroup">
+        <button id="btnExportSegments" class="rbtn">📤<span data-i18n="export_segments">Segments (CSV)</span></button>
+        <button id="btnExportDocx" class="rbtn">📝<span data-i18n="export_docx">Rapport Word (.docx)</span></button>
+        <button id="btnExportReport" class="rbtn">🖨️<span data-i18n="export_report">Rapport imprimable</span></button>
+        <button id="btnExportCodes" class="rbtn">🌳<span data-i18n="export_codes">Système de codes</span></button>
+        <button id="btnExportMatrixCsv" class="rbtn">🧮<span data-i18n="export_matrix">Matrice (CSV)</span></button>
+        <div class="rlabel" data-i18n="grp_exports">Exports</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== ESPACE DE TRAVAIL : 4 VOLETS ===================== -->
+<main id="workspace">
+  <!-- Volet 1 : documents -->
+  <section class="panel" id="panel-docs">
+    <div class="panel-header">
+      <span data-i18n="panel_docs">📄 Système de documents</span>
+      <span class="panel-actions">
+        <button id="btnActivateAllDocs" class="mini-btn" data-i18n-title="activate_all" title="Tout activer / désactiver">✅</button>
+      </span>
+    </div>
+    <div class="panel-body" id="docTree"></div>
+  </section>
+
+  <div class="splitter splitter-h" id="splitH1"></div>
+
+  <!-- Volet 2 : codes -->
+  <section class="panel" id="panel-codes">
+    <div class="panel-header">
+      <span data-i18n="panel_codes">🏷️ Système de codes</span>
+      <span class="panel-actions">
+        <button id="btnActivateAllCodes" class="mini-btn" data-i18n-title="activate_all" title="Tout activer / désactiver">✅</button>
+        <button id="btnAddRootCode" class="mini-btn" data-i18n-title="new_code" title="Nouveau code">＋</button>
+      </span>
+    </div>
+    <div class="panel-body" id="codeTree"></div>
+  </section>
+
+  <div class="splitter splitter-v" id="splitV"></div>
+
+  <!-- Volet 3 : navigateur de document -->
+  <section class="panel" id="panel-browser">
+    <div class="panel-header">
+      <span id="browserTitle" data-i18n="panel_browser">📖 Navigateur de document</span>
+      <span class="panel-actions">
+        <button id="btnDocMemo" class="mini-btn" data-i18n-title="doc_memo" title="Mémo du document">📝</button>
+        <button id="btnDocProps" class="mini-btn" data-i18n-title="doc_props" title="Propriétés / variables">⚙️</button>
+      </span>
+    </div>
+    <div class="panel-body" id="docBrowser">
+      <div class="empty-hint" data-i18n="hint_no_doc">Sélectionnez un document dans le volet de gauche, ou importez des données via l'onglet « Importer ».</div>
+    </div>
+  </section>
+
+  <div class="splitter splitter-h" id="splitH2"></div>
+
+  <!-- Volet 4 : segments récupérés / recherche -->
+  <section class="panel" id="panel-retrieved">
+    <div class="panel-header">
+      <span data-i18n="panel_retrieved">🧲 Segments récupérés</span>
+      <span class="panel-actions">
+        <label class="retrieval-mode">
+          <select id="retrievalMode">
+            <option value="or" data-i18n="mode_or">OU (au moins un code activé)</option>
+            <option value="and" data-i18n="mode_and">ET (intersection de codes)</option>
+          </select>
+        </label>
+      </span>
+    </div>
+    <div class="panel-body" id="retrievedPanel"></div>
+  </section>
+</main>
+
+<footer id="statusbar">
+  <span id="statusDocs"></span>
+  <span id="statusCodes"></span>
+  <span id="statusSegments"></span>
+  <span id="statusSaved" class="right"></span>
+</footer>
+
+<!-- Menu contextuel de codage (apparaît lors d'une sélection de texte) -->
+<div id="codingPopup" class="coding-popup" hidden>
+  <div class="coding-popup-title" data-i18n="apply_code">Appliquer un code :</div>
+  <div id="codingPopupList"></div>
+  <div class="coding-popup-footer">
+    <button id="popupInVivo" data-i18n="in_vivo_short">In vivo</button>
+    <button id="popupNewCode" data-i18n="new_code_short">Nouveau code…</button>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toast" hidden></div>
+
+<script>
+var __QC = {};
+__QC["i18n"] = (function () {
+"use strict";
+// Internationalisation FR / EN — extensible (§3.1 du cahier des charges)
+const translations = {
+  fr: {
+    tab_home: "Accueil", tab_import: "Importer", tab_codes: "Codes", tab_memos: "Mémos",
+    tab_variables: "Variables", tab_analysis: "Analyse", tab_visual: "Visualisation", tab_reports: "Rapports",
+    new_project: "Nouveau projet", open_project: "Ouvrir (.projx)", save_project: "Enregistrer (.projx)",
+    sample_project: "Projet exemple", grp_project: "Projet",
+    search: "Rechercher", grp_search: "Recherche", search_ph: "Recherche plein texte (ET, OU, \"phrase\")…",
+    trash: "Corbeille", grp_tools: "Outils",
+    import_files: "Fichiers (DOCX, TXT, MD)", import_csv: "Enquête CSV", paste_doc: "Coller un texte",
+    structured_text: "Texte structuré", grp_import: "Importation", new_group: "Nouveau groupe", grp_organize: "Organisation",
+    new_code: "Nouveau code", code_selection: "Coder la sélection", in_vivo: "Codage in vivo",
+    grp_coding: "Codage", autocode: "Codage automatique", grp_autocode: "Recherche lexicale",
+    show_highlights: "Afficher les surlignages", grp_display: "Affichage",
+    project_memo: "Mémo du projet", memo_manager: "Gestionnaire de mémos", grp_memos: "Mémos",
+    edit_variables: "Liste des variables", data_editor: "Éditeur de données", grp_docvars: "Variables de document",
+    code_matrix: "Matrice des codes", cooc_matrix: "Co-occurrences", group_compare: "Comparaison de groupes",
+    grp_matrices: "Matrices", word_freq: "Fréquences de mots", kwic: "Mots en contexte (KWIC)",
+    grp_lexical: "Analyse lexicale", stats: "Statistiques", grp_stats: "Descriptives",
+    doc_portrait: "Portrait de document", word_cloud: "Nuage de mots", bar_chart: "Fréquences des codes", grp_visuals: "Visualisations",
+    export_segments: "Segments (CSV)", export_docx: "Rapport Word (.docx)", export_report: "Rapport imprimable", export_codes: "Système de codes",
+    export_matrix: "Matrice (CSV)", grp_exports: "Exports",
+    panel_docs: "📄 Système de documents", panel_codes: "🏷️ Système de codes",
+    panel_browser: "📖 Navigateur de document", panel_retrieved: "🧲 Segments récupérés",
+    mode_or: "OU (au moins un code activé)", mode_and: "ET (intersection de codes)",
+    hint_no_doc: "Sélectionnez un document dans le volet de gauche, ou importez des données via l'onglet « Importer ».",
+    activate_all: "Tout activer / désactiver", doc_memo: "Mémo du document", doc_props: "Propriétés / variables",
+    apply_code: "Appliquer un code :", in_vivo_short: "In vivo", new_code_short: "Nouveau code…",
+    // Dynamique
+    docs: "documents", codes_lbl: "codes", segments_lbl: "segments codés", saved: "Enregistré",
+    unsaved: "Modifications non enregistrées", autosaved: "Sauvegarde automatique effectuée",
+    confirm: "Confirmer", cancel: "Annuler", ok: "OK", delete: "Supprimer", rename: "Renommer",
+    name: "Nom", color: "Couleur", parent_code: "Code parent", none: "(aucun)",
+    project_name_q: "Nom du projet :", new_project_title: "Nouveau projet",
+    doc_title: "Titre du document", doc_text: "Texte du document", group: "Groupe",
+    add_doc: "Ajouter le document", new_group_name: "Nom du groupe :",
+    code_name_q: "Nom du code :", memo_title: "Mémo", memo_for: "Mémo — ",
+    comment: "Commentaire", weight: "Poids", edit_segment: "Segment codé",
+    uncode: "Retirer le code", goto_doc: "Ouvrir dans le document",
+    no_segments: "Aucun segment. Activez des documents (✅ dans le volet documents) et des codes (✅ dans le volet codes) pour récupérer les segments codés.",
+    no_selection: "Sélectionnez d'abord un passage de texte dans le navigateur de document.",
+    select_code_first: "Sélectionnez d'abord un code dans le système de codes.",
+    coded_with: "Codé avec", segment_deleted: "Segment supprimé", code_created: "Code créé : ",
+    autocode_title: "Codage automatique par recherche lexicale",
+    autocode_term: "Terme à rechercher", autocode_scope: "Étendue du segment", autocode_code: "Code à appliquer",
+    scope_match: "Occurrence seule", scope_sentence: "Phrase", scope_para: "Paragraphe",
+    autocode_done: "segments codés automatiquement",
+    search_results: "Résultats de recherche", search_none: "Aucun résultat.",
+    matrix_title: "Matrice des codes (codes × documents)", cooc_title: "Matrice de co-occurrences (chevauchement de segments)",
+    wordfreq_title: "Fréquences de mots", min_length: "Longueur min.", stopwords: "Ignorer les mots-outils",
+    kwic_title: "Mots en contexte (KWIC)", kwic_term: "Mot-clé", context: "Contexte",
+    stats_title: "Statistiques descriptives", variable: "Variable", value: "Valeur", count: "Effectif", percent: "%",
+    groupcomp_title: "Comparaison de groupes (codes × valeurs d'une variable)",
+    portrait_title: "Portrait de document", portrait_hint: "Chaque case représente un segment codé du document, dans l'ordre du texte.",
+    wordcloud_title: "Nuage de mots", barchart_title: "Fréquences des codes",
+    variables_title: "Variables de document", add_variable: "Ajouter une variable", var_name: "Nom de la variable",
+    data_editor_title: "Éditeur de données (documents × variables)", document: "Document",
+    memos_title: "Gestionnaire de mémos", memo_target: "Attaché à", memo_text: "Texte du mémo", no_memos: "Aucun mémo.",
+    project: "Projet", code: "Code", segment: "Segment",
+    trash_title: "Corbeille", restore: "Restaurer", trash_empty: "La corbeille est vide.", empty_trash: "Vider la corbeille",
+    import_csv_title: "Import d'enquête CSV", csv_row_doc: "Chaque ligne devient un document (la 1re colonne sert de titre).",
+    structured_title: "Import de texte structuré",
+    structured_hint: "Collez un texte contenant plusieurs documents séparés par des lignes commençant par « #DOC titre ».",
+    import_done: "documents importés", export_done: "Export généré",
+    import_failed: "Échec d'import",
+    // Protection par mot de passe (§2.1, §3.4)
+    protect: "Mot de passe", protect_title: "Protection du projet (chiffrement AES-256)",
+    password: "Mot de passe", password_confirm: "Confirmer le mot de passe",
+    password_mismatch: "Les mots de passe ne correspondent pas.",
+    protection_on: "Protection activée : le fichier .projx sera chiffré (AES-256-GCM).",
+    protection_off: "Protection désactivée.", remove_protection: "Supprimer la protection",
+    protection_hint: "Le fichier .projx exporté sera chiffré. Conservez bien ce mot de passe : sans lui, le fichier est illisible.",
+    protection_active: "Protection active — le fichier sera chiffré à l'enregistrement.",
+    enter_password: "Saisissez le mot de passe du projet", wrong_password: "Mot de passe incorrect.",
+    // Fusion et accord inter-codeurs (§2.1, §2.9)
+    grp_team: "Équipe", merge_project: "Fusionner (.projx)",
+    merge_title: "Fusion de projets (travail en équipe)",
+    coder_label_q: "Étiquette du codeur importé (pour l'accord inter-codeurs)",
+    merge_done: "Fusion terminée",
+    merge_stats: "documents appariés|documents ajoutés|codes appariés|codes ajoutés|segments importés|doublons ignorés",
+    kappa: "Accord inter-codeurs (κ)", kappa_title: "Accord inter-codeurs — kappa de Cohen",
+    coder_a: "Codeur A", coder_b: "Codeur B", coder: "Codeur",
+    need_two_coders: "Il faut au moins deux codeurs dans le projet. Fusionnez le projet .projx d'un autre codeur (Accueil → Fusionner) pour calculer l'accord.",
+    kappa_basis: "documents codés par les deux codeurs · unité d'analyse : le paragraphe",
+    agreement: "Accord observé", overall: "GLOBAL", interpretation: "Interprétation (Landis & Koch)",
+    kappa_poor: "Désaccord", kappa_slight: "Accord très faible", kappa_fair: "Accord faible",
+    kappa_moderate: "Accord modéré", kappa_substantial: "Accord fort", kappa_almost: "Accord quasi parfait",
+    report_title: "Rapport d'analyse", report_generated: "Rapport généré le",
+    doc_props_title: "Propriétés du document", speakers_detected: "Locuteurs détectés (transcription)",
+    delete_doc_q: "Envoyer ce document à la corbeille ?", delete_code_q: "Envoyer ce code (et ses sous-codes) à la corbeille ? Les segments associés seront retirés.",
+    project_loaded: "Projet chargé", project_saved_file: "Projet enregistré (.projx)",
+    invalid_project: "Fichier de projet invalide.",
+    freq: "Fréquence", word: "Mot", total: "Total",
+    sel_docs_hint: "Documents activés uniquement", all_docs: "Tous les documents",
+    new_version_hint: "Un projet existe déjà en mémoire locale. Créer un nouveau projet l'écrasera — pensez à l'enregistrer (.projx) d'abord.",
+    close: "Fermer",
+  },
+  en: {
+    tab_home: "Home", tab_import: "Import", tab_codes: "Codes", tab_memos: "Memos",
+    tab_variables: "Variables", tab_analysis: "Analysis", tab_visual: "Visualization", tab_reports: "Reports",
+    new_project: "New project", open_project: "Open (.projx)", save_project: "Save (.projx)",
+    sample_project: "Sample project", grp_project: "Project",
+    search: "Search", grp_search: "Search", search_ph: "Full-text search (AND, OR, \"phrase\")…",
+    trash: "Trash", grp_tools: "Tools",
+    import_files: "Files (DOCX, TXT, MD)", import_csv: "CSV survey", paste_doc: "Paste text",
+    structured_text: "Structured text", grp_import: "Import", new_group: "New group", grp_organize: "Organization",
+    new_code: "New code", code_selection: "Code selection", in_vivo: "In-vivo coding",
+    grp_coding: "Coding", autocode: "Auto-coding", grp_autocode: "Lexical search",
+    show_highlights: "Show highlights", grp_display: "Display",
+    project_memo: "Project memo", memo_manager: "Memo manager", grp_memos: "Memos",
+    edit_variables: "Variable list", data_editor: "Data editor", grp_docvars: "Document variables",
+    code_matrix: "Code matrix", cooc_matrix: "Co-occurrences", group_compare: "Group comparison",
+    grp_matrices: "Matrices", word_freq: "Word frequencies", kwic: "Keyword in context (KWIC)",
+    grp_lexical: "Lexical analysis", stats: "Statistics", grp_stats: "Descriptives",
+    doc_portrait: "Document portrait", word_cloud: "Word cloud", bar_chart: "Code frequencies", grp_visuals: "Visualizations",
+    export_segments: "Segments (CSV)", export_docx: "Word report (.docx)", export_report: "Printable report", export_codes: "Code system",
+    export_matrix: "Matrix (CSV)", grp_exports: "Exports",
+    panel_docs: "📄 Document system", panel_codes: "🏷️ Code system",
+    panel_browser: "📖 Document browser", panel_retrieved: "🧲 Retrieved segments",
+    mode_or: "OR (any activated code)", mode_and: "AND (code intersection)",
+    hint_no_doc: "Select a document in the left panel, or import data via the “Import” tab.",
+    activate_all: "Activate / deactivate all", doc_memo: "Document memo", doc_props: "Properties / variables",
+    apply_code: "Apply a code:", in_vivo_short: "In vivo", new_code_short: "New code…",
+    docs: "documents", codes_lbl: "codes", segments_lbl: "coded segments", saved: "Saved",
+    unsaved: "Unsaved changes", autosaved: "Autosaved",
+    confirm: "Confirm", cancel: "Cancel", ok: "OK", delete: "Delete", rename: "Rename",
+    name: "Name", color: "Color", parent_code: "Parent code", none: "(none)",
+    project_name_q: "Project name:", new_project_title: "New project",
+    doc_title: "Document title", doc_text: "Document text", group: "Group",
+    add_doc: "Add document", new_group_name: "Group name:",
+    code_name_q: "Code name:", memo_title: "Memo", memo_for: "Memo — ",
+    comment: "Comment", weight: "Weight", edit_segment: "Coded segment",
+    uncode: "Remove code", goto_doc: "Open in document",
+    no_segments: "No segments. Activate documents (✅ in the document panel) and codes (✅ in the code panel) to retrieve coded segments.",
+    no_selection: "First select a text passage in the document browser.",
+    select_code_first: "First select a code in the code system.",
+    coded_with: "Coded with", segment_deleted: "Segment deleted", code_created: "Code created: ",
+    autocode_title: "Automatic coding by lexical search",
+    autocode_term: "Search term", autocode_scope: "Segment scope", autocode_code: "Code to apply",
+    scope_match: "Match only", scope_sentence: "Sentence", scope_para: "Paragraph",
+    autocode_done: "segments auto-coded",
+    search_results: "Search results", search_none: "No results.",
+    matrix_title: "Code matrix (codes × documents)", cooc_title: "Co-occurrence matrix (overlapping segments)",
+    wordfreq_title: "Word frequencies", min_length: "Min. length", stopwords: "Ignore stopwords",
+    kwic_title: "Keyword in context (KWIC)", kwic_term: "Keyword", context: "Context",
+    stats_title: "Descriptive statistics", variable: "Variable", value: "Value", count: "Count", percent: "%",
+    groupcomp_title: "Group comparison (codes × values of a variable)",
+    portrait_title: "Document portrait", portrait_hint: "Each cell represents one coded segment of the document, in text order.",
+    wordcloud_title: "Word cloud", barchart_title: "Code frequencies",
+    variables_title: "Document variables", add_variable: "Add variable", var_name: "Variable name",
+    data_editor_title: "Data editor (documents × variables)", document: "Document",
+    memos_title: "Memo manager", memo_target: "Attached to", memo_text: "Memo text", no_memos: "No memos.",
+    project: "Project", code: "Code", segment: "Segment",
+    trash_title: "Trash", restore: "Restore", trash_empty: "Trash is empty.", empty_trash: "Empty trash",
+    import_csv_title: "CSV survey import", csv_row_doc: "Each row becomes a document (first column is the title).",
+    structured_title: "Structured text import",
+    structured_hint: "Paste a text containing several documents separated by lines starting with “#DOC title”.",
+    import_done: "documents imported", export_done: "Export generated",
+    import_failed: "Import failed",
+    protect: "Password", protect_title: "Project protection (AES-256 encryption)",
+    password: "Password", password_confirm: "Confirm password",
+    password_mismatch: "Passwords do not match.",
+    protection_on: "Protection enabled: the .projx file will be encrypted (AES-256-GCM).",
+    protection_off: "Protection disabled.", remove_protection: "Remove protection",
+    protection_hint: "The exported .projx file will be encrypted. Keep this password safe: without it the file cannot be read.",
+    protection_active: "Protection active — the file will be encrypted on save.",
+    enter_password: "Enter the project password", wrong_password: "Wrong password.",
+    grp_team: "Team", merge_project: "Merge (.projx)",
+    merge_title: "Project merge (teamwork)",
+    coder_label_q: "Label of the imported coder (for inter-coder agreement)",
+    merge_done: "Merge complete",
+    merge_stats: "documents matched|documents added|codes matched|codes added|segments imported|duplicates skipped",
+    kappa: "Inter-coder agreement (κ)", kappa_title: "Inter-coder agreement — Cohen's kappa",
+    coder_a: "Coder A", coder_b: "Coder B", coder: "Coder",
+    need_two_coders: "The project needs at least two coders. Merge another coder's .projx project (Home → Merge) to compute agreement.",
+    kappa_basis: "documents coded by both coders · unit of analysis: paragraph",
+    agreement: "Observed agreement", overall: "OVERALL", interpretation: "Interpretation (Landis & Koch)",
+    kappa_poor: "Poor", kappa_slight: "Slight agreement", kappa_fair: "Fair agreement",
+    kappa_moderate: "Moderate agreement", kappa_substantial: "Substantial agreement", kappa_almost: "Almost perfect agreement",
+    report_title: "Analysis report", report_generated: "Report generated on",
+    doc_props_title: "Document properties", speakers_detected: "Detected speakers (transcript)",
+    delete_doc_q: "Send this document to the trash?", delete_code_q: "Send this code (and its subcodes) to the trash? Associated segments will be removed.",
+    project_loaded: "Project loaded", project_saved_file: "Project saved (.projx)",
+    invalid_project: "Invalid project file.",
+    freq: "Frequency", word: "Word", total: "Total",
+    sel_docs_hint: "Activated documents only", all_docs: "All documents",
+    new_version_hint: "A project already exists in local memory. Creating a new one will overwrite it — save it (.projx) first.",
+    close: "Close",
+  }
+};
+
+let lang = "fr";
+
+function setLang(l) { lang = translations[l] ? l : "fr"; }
+function getLang() { return lang; }
+function t(key) {
+  return (translations[lang] && translations[lang][key]) ?? translations.fr[key] ?? key;
+}
+
+// Applique les traductions aux éléments statiques marqués data-i18n
+function applyStaticTranslations() {
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  document.querySelectorAll("[data-i18n-title]").forEach(el => { el.title = t(el.dataset.i18nTitle); });
+  document.documentElement.lang = lang;
+}
+
+return { setLang, getLang, t, applyStaticTranslations, translations };
+})();
+
+__QC["state"] = (function () {
+"use strict";
+// Modèle de données et persistance locale (sauvegarde automatique — §3.5)
+const CODE_COLORS = [
+  "#e15759", "#f28e2b", "#edc948", "#59a14f", "#4e79a7",
+  "#b07aa1", "#76b7b2", "#ff9da7", "#9c755f", "#bab0ac",
+  "#d37295", "#8cd17d", "#499894", "#f1ce63", "#86bcb6",
+];
+
+const STORAGE_KEY = "qualicode.project";
+const PREFS_KEY = "qualicode.prefs";
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+}
+
+function emptyProject(name) {
+  const now = new Date().toISOString();
+  return {
+    format: "qualicode-projx",
+    version: 1,
+    name: name || "Projet sans titre",
+    created: now,
+    modified: now,
+    memo: "",
+    documentGroups: [],   // {id, name}
+    documents: [],        // {id, name, groupId, text, variables:{}, created}
+    codes: [],            // {id, name, parentId, color, created}
+    segments: [],         // {id, docId, codeId, start, end, text, weight, comment, created}
+    memos: [],            // {id, targetType: project|document|code|segment, targetId, title, text, created}
+    variables: [],        // ["âge", "sexe", ...]
+    trash: { documents: [], codes: [] },
+  };
+}
+
+const state = {
+  project: emptyProject(),
+  ui: {
+    lang: "fr",
+    theme: "light",
+    currentDocId: null,
+    activatedDocs: new Set(),
+    activatedCodes: new Set(),
+    selectedCodeId: null,
+    retrievalMode: "or",
+    showHighlights: true,
+    dirty: false,
+  },
+};
+
+/* ---------- Persistance ---------- */
+let saveTimer = null;
+let onSavedCallback = null;
+function setOnSaved(cb) { onSavedCallback = cb; }
+
+function scheduleSave() {
+  state.ui.dirty = true;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(persistNow, 800);
+}
+
+function persistNow() {
+  state.project.modified = new Date().toISOString();
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.project));
+    state.ui.dirty = false;
+    if (onSavedCallback) onSavedCallback();
+  } catch (e) {
+    console.error("Autosave failed", e);
+  }
+}
+
+function loadPersisted() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      if (p && p.format === "qualicode-projx") { state.project = normalizeProject(p); return true; }
+    }
+  } catch (e) { console.error(e); }
+  return false;
+}
+
+function savePrefs() {
+  localStorage.setItem(PREFS_KEY, JSON.stringify({ lang: state.ui.lang, theme: state.ui.theme }));
+}
+function loadPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
+    if (p.lang) state.ui.lang = p.lang;
+    if (p.theme) state.ui.theme = p.theme;
+  } catch { /* défauts */ }
+}
+
+function normalizeProject(p) {
+  const base = emptyProject(p.name);
+  const proj = Object.assign(base, p);
+  proj.trash = proj.trash || { documents: [], codes: [] };
+  proj.memos = proj.memos || [];
+  proj.variables = proj.variables || [];
+  return proj;
+}
+
+/* ---------- Accesseurs ---------- */
+const getDoc = id => state.project.documents.find(d => d.id === id);
+const getCode = id => state.project.codes.find(c => c.id === id);
+const getGroup = id => state.project.documentGroups.find(g => g.id === id);
+const getSegment = id => state.project.segments.find(s => s.id === id);
+
+function childCodes(parentId) {
+  return state.project.codes.filter(c => (c.parentId || null) === (parentId || null));
+}
+
+// Un code et tous ses descendants
+function codeWithDescendants(codeId) {
+  const out = [codeId];
+  for (const child of childCodes(codeId)) out.push(...codeWithDescendants(child.id));
+  return out;
+}
+
+function segmentsOfCode(codeId, includeChildren = false) {
+  const ids = includeChildren ? new Set(codeWithDescendants(codeId)) : new Set([codeId]);
+  return state.project.segments.filter(s => ids.has(s.codeId));
+}
+
+function segmentsOfDoc(docId) {
+  return state.project.segments.filter(s => s.docId === docId);
+}
+
+/* ---------- Mutations ---------- */
+function addDocument(name, text, groupId = null) {
+  const doc = { id: uid(), name, groupId, text, variables: {}, created: new Date().toISOString() };
+  state.project.documents.push(doc);
+  scheduleSave();
+  return doc;
+}
+
+function addGroup(name) {
+  const g = { id: uid(), name };
+  state.project.documentGroups.push(g);
+  scheduleSave();
+  return g;
+}
+
+function addCode(name, parentId = null, color = null) {
+  const c = {
+    id: uid(), name, parentId,
+    color: color || CODE_COLORS[state.project.codes.length % CODE_COLORS.length],
+    created: new Date().toISOString(),
+  };
+  state.project.codes.push(c);
+  scheduleSave();
+  return c;
+}
+
+function addSegment(docId, codeId, start, end, text) {
+  // Évite les doublons exacts (même code, même plage)
+  const dup = state.project.segments.find(s => s.docId === docId && s.codeId === codeId && s.start === start && s.end === end);
+  if (dup) return dup;
+  const s = { id: uid(), docId, codeId, start, end, text, weight: 1, comment: "", created: new Date().toISOString() };
+  state.project.segments.push(s);
+  scheduleSave();
+  return s;
+}
+
+function deleteSegment(segId) {
+  state.project.segments = state.project.segments.filter(s => s.id !== segId);
+  scheduleSave();
+}
+
+function trashDocument(docId) {
+  const doc = getDoc(docId);
+  if (!doc) return;
+  const segs = segmentsOfDoc(docId);
+  state.project.trash.documents.push({ doc, segments: segs });
+  state.project.documents = state.project.documents.filter(d => d.id !== docId);
+  state.project.segments = state.project.segments.filter(s => s.docId !== docId);
+  state.ui.activatedDocs.delete(docId);
+  if (state.ui.currentDocId === docId) state.ui.currentDocId = null;
+  scheduleSave();
+}
+
+function trashCode(codeId) {
+  const ids = codeWithDescendants(codeId);
+  const codes = state.project.codes.filter(c => ids.includes(c.id));
+  const segs = state.project.segments.filter(s => ids.includes(s.codeId));
+  state.project.trash.codes.push({ codes, segments: segs });
+  state.project.codes = state.project.codes.filter(c => !ids.includes(c.id));
+  state.project.segments = state.project.segments.filter(s => !ids.includes(s.codeId));
+  ids.forEach(id => state.ui.activatedCodes.delete(id));
+  if (ids.includes(state.ui.selectedCodeId)) state.ui.selectedCodeId = null;
+  scheduleSave();
+}
+
+function restoreTrashedDoc(index) {
+  const item = state.project.trash.documents.splice(index, 1)[0];
+  if (!item) return;
+  state.project.documents.push(item.doc);
+  // Ne restaure que les segments dont le code existe encore
+  const codeIds = new Set(state.project.codes.map(c => c.id));
+  state.project.segments.push(...item.segments.filter(s => codeIds.has(s.codeId)));
+  scheduleSave();
+}
+
+function restoreTrashedCode(index) {
+  const item = state.project.trash.codes.splice(index, 1)[0];
+  if (!item) return;
+  state.project.codes.push(...item.codes);
+  const docIds = new Set(state.project.documents.map(d => d.id));
+  state.project.segments.push(...item.segments.filter(s => docIds.has(s.docId)));
+  scheduleSave();
+}
+
+function upsertMemo(targetType, targetId, text, title = "") {
+  let memo = state.project.memos.find(m => m.targetType === targetType && m.targetId === targetId);
+  if (memo) {
+    memo.text = text; memo.title = title || memo.title; memo.modified = new Date().toISOString();
+  } else {
+    memo = { id: uid(), targetType, targetId, title, text, created: new Date().toISOString() };
+    state.project.memos.push(memo);
+  }
+  scheduleSave();
+  return memo;
+}
+
+function getMemo(targetType, targetId) {
+  return state.project.memos.find(m => m.targetType === targetType && m.targetId === targetId);
+}
+
+return { uid, emptyProject, setOnSaved, scheduleSave, persistNow, loadPersisted, savePrefs, loadPrefs, normalizeProject, childCodes, codeWithDescendants, segmentsOfCode, segmentsOfDoc, addDocument, addGroup, addCode, addSegment, deleteSegment, trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode, upsertMemo, getMemo, CODE_COLORS, state, getDoc, getCode, getGroup, getSegment };
+})();
+
+__QC["analysis"] = (function () {
+"use strict";
+// Fonctions d'analyse : recherche, lexique, matrices (§2.6 du cahier des charges)
+const { state, childCodes } = __QC["state"];
+
+/* ---------- Recherche plein texte avec opérateurs booléens ----------
+   Syntaxe : les termes séparés par des espaces sont liés par ET ;
+   « OU » / « OR » sépare des alternatives ; "guillemets" = phrase exacte. */
+function parseQuery(q) {
+  const clauses = q.split(/\s+(?:OU|OR)\s+/i).map(clause => {
+    const terms = [];
+    const re = /"([^"]+)"|(\S+)/g;
+    let m;
+    while ((m = re.exec(clause)) !== null) {
+      const term = (m[1] || m[2]).trim();
+      if (term && !/^(ET|AND)$/i.test(term)) terms.push(term.toLowerCase());
+    }
+    return terms;
+  }).filter(ts => ts.length);
+  return clauses; // [[t1 ET t2] OU [t3]]
+}
+
+function searchDocuments(query) {
+  const clauses = parseQuery(query);
+  if (!clauses.length) return [];
+  const results = [];
+  for (const doc of state.project.documents) {
+    const lower = doc.text.toLowerCase();
+    const matched = clauses.some(terms => terms.every(t => lower.includes(t)));
+    if (!matched) continue;
+    // Localise les occurrences par paragraphe pour l'affichage
+    const allTerms = [...new Set(clauses.flat())];
+    const paras = doc.text.split("\n");
+    let offset = 0;
+    for (let i = 0; i < paras.length; i++) {
+      const pl = paras[i].toLowerCase();
+      const hitTerms = allTerms.filter(t => pl.includes(t));
+      if (hitTerms.length) {
+        results.push({ docId: doc.id, paraIndex: i, paraStart: offset, text: paras[i], terms: hitTerms });
+      }
+      offset += paras[i].length + 1;
+    }
+  }
+  return results;
+}
+
+/* ---------- Analyse lexicale ---------- */
+const STOPWORDS_FR = new Set(("au aux avec ce ces cet cette dans de des du elle elles en et eux il ils je j la le les leur leurs lui ma mais me même mes moi mon ne nos notre nous on ou où par pas pour qu que qui sa se ses son sur ta te tes toi ton tu un une vos votre vous y d l m n s t c qu est sont était été être avoir a ai as avons avez ont fait faire plus moins très bien tout tous toute toutes comme si alors donc or ni car aussi cela ça ceci celui celle ceux celles autre autres quand comment pourquoi parce entre vers chez sans sous après avant depuis pendant contre encore déjà toujours jamais souvent peu beaucoup trop assez").split(/\s+/));
+const STOPWORDS_EN = new Set(("a an and are as at be but by for if in into is it its of on or such that the their then there these they this to was will with i you he she we do does did not no yes have has had from than so what when where which who whom why how all any both each few more most other some can could should would may might must shall about over under again once here just own same too very s t don now").split(/\s+/));
+
+function tokenize(text) {
+  return (text.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || [])
+    .map(w => w.replace(/^[dljmnstc]['’]/, ""))
+    .filter(Boolean);
+}
+
+function wordFrequencies(docs, { minLength = 3, useStopwords = true } = {}) {
+  const freq = new Map();
+  for (const doc of docs) {
+    for (const w of tokenize(doc.text)) {
+      if (w.length < minLength) continue;
+      if (useStopwords && (STOPWORDS_FR.has(w) || STOPWORDS_EN.has(w))) continue;
+      freq.set(w, (freq.get(w) || 0) + 1);
+    }
+  }
+  return [...freq.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function kwic(docs, keyword, contextChars = 45) {
+  const out = [];
+  const kw = keyword.toLowerCase();
+  if (!kw) return out;
+  for (const doc of docs) {
+    const lower = doc.text.toLowerCase();
+    let idx = lower.indexOf(kw);
+    while (idx !== -1) {
+      out.push({
+        docId: doc.id,
+        docName: doc.name,
+        left: doc.text.slice(Math.max(0, idx - contextChars), idx),
+        match: doc.text.slice(idx, idx + keyword.length),
+        right: doc.text.slice(idx + keyword.length, idx + keyword.length + contextChars),
+        pos: idx,
+      });
+      idx = lower.indexOf(kw, idx + kw.length);
+    }
+  }
+  return out;
+}
+
+/* ---------- Matrices ---------- */
+// Matrice codes × documents (fréquences)
+function codeMatrix(docs, codes) {
+  const matrix = codes.map(code =>
+    docs.map(doc => state.project.segments.filter(s => s.docId === doc.id && s.codeId === code.id).length)
+  );
+  return { docs, codes, matrix };
+}
+
+// Co-occurrences : deux codes co-occurrent si leurs segments se chevauchent dans un même document
+function coocMatrix(codes) {
+  const n = codes.length;
+  const matrix = Array.from({ length: n }, () => Array(n).fill(0));
+  const byDoc = new Map();
+  for (const s of state.project.segments) {
+    if (!byDoc.has(s.docId)) byDoc.set(s.docId, []);
+    byDoc.get(s.docId).push(s);
+  }
+  const codeIndex = new Map(codes.map((c, i) => [c.id, i]));
+  for (const segs of byDoc.values()) {
+    for (let i = 0; i < segs.length; i++) {
+      for (let j = i + 1; j < segs.length; j++) {
+        const a = segs[i], b = segs[j];
+        if (a.codeId === b.codeId) continue;
+        if (a.start < b.end && b.start < a.end) { // chevauchement
+          const ia = codeIndex.get(a.codeId), ib = codeIndex.get(b.codeId);
+          if (ia != null && ib != null) { matrix[ia][ib]++; matrix[ib][ia]++; }
+        }
+      }
+    }
+  }
+  return { codes, matrix };
+}
+
+// Comparaison de groupes : codes × valeurs d'une variable de document
+function groupComparison(variable, codes) {
+  const values = [...new Set(state.project.documents.map(d => d.variables?.[variable]).filter(v => v != null && v !== ""))].sort();
+  const matrix = codes.map(code =>
+    values.map(val => {
+      const docIds = new Set(state.project.documents.filter(d => d.variables?.[variable] === val).map(d => d.id));
+      return state.project.segments.filter(s => s.codeId === code.id && docIds.has(s.docId)).length;
+    })
+  );
+  return { values, codes, matrix };
+}
+
+// Statistiques descriptives sur les variables de document
+function variableStats() {
+  const out = [];
+  for (const v of state.project.variables) {
+    const counts = new Map();
+    let n = 0;
+    for (const d of state.project.documents) {
+      const val = d.variables?.[v];
+      if (val == null || val === "") continue;
+      n++;
+      counts.set(String(val), (counts.get(String(val)) || 0) + 1);
+    }
+    out.push({ variable: v, n, values: [...counts.entries()].sort((a, b) => b[1] - a[1]) });
+  }
+  return out;
+}
+
+// Codes "aplatis" dans l'ordre hiérarchique, avec profondeur
+function flatCodes(parentId = null, depth = 0) {
+  const out = [];
+  for (const c of childCodes(parentId)) {
+    out.push({ ...c, depth });
+    out.push(...flatCodes(c.id, depth + 1));
+  }
+  return out;
+}
+
+return { parseQuery, searchDocuments, tokenize, wordFrequencies, kwic, codeMatrix, coocMatrix, groupComparison, variableStats, flatCodes, STOPWORDS_FR, STOPWORDS_EN };
+})();
+
+__QC["docx"] = (function () {
+"use strict";
+// Import DOCX sans dépendance externe (§2.2 du cahier des charges).
+// Un .docx est une archive ZIP ; le texte se trouve dans word/document.xml.
+// Décompression via l'API native DecompressionStream ("deflate-raw").
+
+const SIG_EOCD = 0x06054b50;   // End Of Central Directory
+const SIG_CENTRAL = 0x02014b50;
+const SIG_LOCAL = 0x04034b50;
+
+async function inflateRaw(bytes) {
+  const ds = new DecompressionStream("deflate-raw");
+  const stream = new Blob([bytes]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+// Extrait un fichier d'une archive ZIP (retourne un Uint8Array) ou null s'il est absent
+async function unzipEntry(buffer, entryName) {
+  const view = new DataView(buffer);
+  const bytes = new Uint8Array(buffer);
+
+  // Recherche de l'End Of Central Directory depuis la fin (commentaire ZIP possible)
+  let eocd = -1;
+  for (let i = buffer.byteLength - 22; i >= Math.max(0, buffer.byteLength - 22 - 65535); i--) {
+    if (view.getUint32(i, true) === SIG_EOCD) { eocd = i; break; }
+  }
+  if (eocd === -1) throw new Error("ZIP invalide");
+
+  const count = view.getUint16(eocd + 10, true);
+  let ptr = view.getUint32(eocd + 16, true); // offset du répertoire central
+  const decoder = new TextDecoder("utf-8");
+
+  for (let i = 0; i < count; i++) {
+    if (view.getUint32(ptr, true) !== SIG_CENTRAL) throw new Error("Répertoire central invalide");
+    const method = view.getUint16(ptr + 10, true);
+    const compSize = view.getUint32(ptr + 20, true);
+    const nameLen = view.getUint16(ptr + 28, true);
+    const extraLen = view.getUint16(ptr + 30, true);
+    const commentLen = view.getUint16(ptr + 32, true);
+    const localOffset = view.getUint32(ptr + 42, true);
+    const name = decoder.decode(bytes.subarray(ptr + 46, ptr + 46 + nameLen));
+
+    if (name === entryName) {
+      if (view.getUint32(localOffset, true) !== SIG_LOCAL) throw new Error("En-tête local invalide");
+      const lNameLen = view.getUint16(localOffset + 26, true);
+      const lExtraLen = view.getUint16(localOffset + 28, true);
+      const dataStart = localOffset + 30 + lNameLen + lExtraLen;
+      const data = bytes.subarray(dataStart, dataStart + compSize);
+      if (method === 0) return data.slice();
+      if (method === 8) return inflateRaw(data);
+      throw new Error("Méthode de compression non gérée : " + method);
+    }
+    ptr += 46 + nameLen + extraLen + commentLen;
+  }
+  return null;
+}
+
+// Convertit le XML WordprocessingML en texte brut, paragraphe par paragraphe
+function xmlToText(xml) {
+  const doc = new DOMParser().parseFromString(xml, "application/xml");
+  if (doc.querySelector("parsererror")) throw new Error("XML invalide");
+
+  const paras = [];
+  const walk = (node, out) => {
+    for (const child of node.children) {
+      switch (child.localName) {
+        case "t": out.push(child.textContent); break;
+        case "tab": out.push("\t"); break;
+        case "br": case "cr": out.push("\n"); break;
+        default: walk(child, out);
+      }
+    }
+  };
+
+  // Parcourt les paragraphes (w:p) dans l'ordre du document ; les cellules de
+  // tableau contiennent leurs propres w:p et sont donc couvertes naturellement.
+  const body = doc.getElementsByTagName("*");
+  for (const el of body) {
+    if (el.localName !== "p") continue;
+    // Ignore les w:p imbriqués dans un autre w:p (cadres de texte)
+    let parent = el.parentNode, nested = false;
+    while (parent) { if (parent.localName === "p") { nested = true; break; } parent = parent.parentNode; }
+    if (nested) continue;
+    const out = [];
+    walk(el, out);
+    paras.push(out.join(""));
+  }
+  // Supprime les lignes vides répétées en fin/début et limite les suites de vides
+  return paras.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/** Extrait le texte d'un fichier .docx (File ou Blob). */
+async function extractDocxText(file) {
+  const buffer = await file.arrayBuffer();
+  const entry = await unzipEntry(buffer, "word/document.xml");
+  if (!entry) throw new Error("word/document.xml introuvable — fichier DOCX invalide");
+  return xmlToText(new TextDecoder("utf-8").decode(entry));
+}
+
+return { extractDocxText };
+})();
+
+__QC["docxout"] = (function () {
+"use strict";
+// Export Word (.docx) natif, sans dépendance (§2.8, critère d'acceptation n°3).
+// Un .docx est une archive ZIP ; on l'écrit ici en méthode STORE (sans
+// compression) avec CRC-32, puis on y place le WordprocessingML minimal.
+
+const textEncoder = new TextEncoder();
+
+/* ---------- CRC-32 ---------- */
+const CRC_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+
+function crc32(bytes) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+/* ---------- Écriture ZIP (méthode STORE) ---------- */
+function dosDateTime(date = new Date()) {
+  const time = (date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >> 1);
+  const day = ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+  return { time, day };
+}
+
+/** entries : [{ name, text }] → Blob ZIP */
+function buildZip(entries) {
+  const { time, day } = dosDateTime();
+  const parts = [];
+  const central = [];
+  let offset = 0;
+
+  for (const entry of entries) {
+    const nameBytes = textEncoder.encode(entry.name);
+    const data = textEncoder.encode(entry.text);
+    const crc = crc32(data);
+
+    const local = new DataView(new ArrayBuffer(30));
+    local.setUint32(0, 0x04034b50, true);
+    local.setUint16(4, 20, true);          // version requise
+    local.setUint16(6, 0x0800, true);      // noms en UTF-8
+    local.setUint16(8, 0, true);           // méthode STORE
+    local.setUint16(10, time, true);
+    local.setUint16(12, day, true);
+    local.setUint32(14, crc, true);
+    local.setUint32(18, data.length, true);
+    local.setUint32(22, data.length, true);
+    local.setUint16(26, nameBytes.length, true);
+    local.setUint16(28, 0, true);
+    parts.push(local.buffer, nameBytes, data);
+
+    const cd = new DataView(new ArrayBuffer(46));
+    cd.setUint32(0, 0x02014b50, true);
+    cd.setUint16(4, 20, true);
+    cd.setUint16(6, 20, true);
+    cd.setUint16(8, 0x0800, true);
+    cd.setUint16(10, 0, true);
+    cd.setUint16(12, time, true);
+    cd.setUint16(14, day, true);
+    cd.setUint32(16, crc, true);
+    cd.setUint32(20, data.length, true);
+    cd.setUint32(24, data.length, true);
+    cd.setUint16(28, nameBytes.length, true);
+    cd.setUint32(42, offset, true);        // offset de l'en-tête local
+    central.push(cd.buffer, nameBytes);
+
+    offset += 30 + nameBytes.length + data.length;
+  }
+
+  let cdSize = 0;
+  for (const c of central) cdSize += c.byteLength ?? c.length;
+
+  const eocd = new DataView(new ArrayBuffer(22));
+  eocd.setUint32(0, 0x06054b50, true);
+  eocd.setUint16(8, entries.length, true);
+  eocd.setUint16(10, entries.length, true);
+  eocd.setUint32(12, cdSize, true);
+  eocd.setUint32(16, offset, true);
+
+  return new Blob([...parts, ...central, eocd.buffer], {
+    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  });
+}
+
+/* ---------- Construction du document Word ---------- */
+const xmlEsc = s => String(s ?? "")
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+
+// Un « run » de texte avec mise en forme optionnelle
+function run(text, { bold, italic, color, size } = {}) {
+  const props = [
+    bold ? "<w:b/>" : "",
+    italic ? "<w:i/>" : "",
+    color ? `<w:color w:val="${color}"/>` : "",
+    size ? `<w:sz w:val="${size}"/><w:szCs w:val="${size}"/>` : "",
+  ].join("");
+  // xml:space="preserve" garde les espaces ; les sauts de ligne deviennent des <w:br/>
+  const content = xmlEsc(text).split("\n").map(part =>
+    `<w:t xml:space="preserve">${part}</w:t>`).join("<w:br/>");
+  return `<w:r>${props ? `<w:rPr>${props}</w:rPr>` : ""}${content}</w:r>`;
+}
+
+// Un paragraphe : liste de runs + propriétés (retrait, bordure gauche colorée, espacement)
+function para(runs, { indent, leftBar, spaceBefore, spaceAfter } = {}) {
+  const props = [
+    leftBar ? `<w:pBdr><w:left w:val="single" w:sz="24" w:space="8" w:color="${leftBar}"/></w:pBdr>` : "",
+    indent ? `<w:ind w:left="${indent}"/>` : "",
+    (spaceBefore || spaceAfter) ? `<w:spacing w:before="${spaceBefore || 0}" w:after="${spaceAfter || 0}"/>` : "",
+  ].join("");
+  return `<w:p>${props ? `<w:pPr>${props}</w:pPr>` : ""}${runs.join("")}</w:p>`;
+}
+
+const CONTENT_TYPES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+const RELS = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+/**
+ * Génère un rapport Word : segments regroupés par code.
+ * @param {object} opts { projectName, memo, codes: [{code, segments:[{docName, text, weight, comment}]}], labels }
+ * @returns {Blob} le fichier .docx
+ */
+function buildReportDocx({ projectName, memo, codes, labels }) {
+  const body = [];
+  body.push(para([run(projectName, { bold: true, size: "40" })], { spaceAfter: 120 }));
+  body.push(para([run(labels.subtitle, { color: "666666", size: "20" })], { spaceAfter: 240 }));
+  if (memo) {
+    body.push(para([run(labels.projectMemo + " : ", { bold: true, size: "22" }), run(memo, { italic: true, size: "22" })], { spaceAfter: 240 }));
+  }
+  for (const group of codes) {
+    if (!group.segments.length) continue;
+    const color = (group.code.color || "#888888").replace("#", "");
+    body.push(para(
+      [run(`${group.code.name} (${group.segments.length})`, { bold: true, size: "28", color })],
+      { leftBar: color, spaceBefore: 300, spaceAfter: 120 }
+    ));
+    for (const s of group.segments) {
+      const src = s.weight !== 1 ? `${s.docName} · ${labels.weight} ${s.weight}` : s.docName;
+      body.push(para([run(src, { bold: true, color: "555555", size: "18" })], { spaceBefore: 120 }));
+      body.push(para([run(s.text, { size: "22" })], { indent: 400, leftBar: "CCCCCC", spaceAfter: 60 }));
+      if (s.comment) {
+        body.push(para([run("💬 " + s.comment, { italic: true, color: "777777", size: "18" })], { indent: 400, spaceAfter: 60 }));
+      }
+    }
+  }
+
+  const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>${body.join("")}
+<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr>
+</w:body></w:document>`;
+
+  return buildZip([
+    { name: "[Content_Types].xml", text: CONTENT_TYPES },
+    { name: "_rels/.rels", text: RELS },
+    { name: "word/document.xml", text: documentXml },
+  ]);
+}
+
+return { buildZip, buildReportDocx };
+})();
+
+__QC["crypto"] = (function () {
+"use strict";
+// Protection par mot de passe et chiffrement du fichier projet (§2.1, §3.4).
+// AES-256-GCM avec clé dérivée du mot de passe par PBKDF2 (Web Crypto natif).
+
+const PBKDF2_ITERATIONS = 310000;
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+
+function toBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(bin);
+}
+
+function fromBase64(s) {
+  return Uint8Array.from(atob(s), c => c.charCodeAt(0));
+}
+
+async function deriveKey(password, salt) {
+  const material = await crypto.subtle.importKey("raw", textEncoder.encode(password), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt, iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
+    material,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+function isEncryptedEnvelope(obj) {
+  return !!obj && obj.format === "qualicode-projx-encrypted";
+}
+
+/** Chiffre la sérialisation JSON d'un projet ; retourne l'enveloppe à écrire dans le .projx. */
+async function encryptProjectJson(json, password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(password, salt);
+  const data = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, textEncoder.encode(json));
+  return {
+    format: "qualicode-projx-encrypted",
+    version: 1,
+    kdf: { name: "PBKDF2", hash: "SHA-256", iterations: PBKDF2_ITERATIONS, salt: toBase64(salt) },
+    cipher: { name: "AES-256-GCM", iv: toBase64(iv) },
+    data: toBase64(data),
+  };
+}
+
+/** Déchiffre une enveloppe ; lève une erreur si le mot de passe est incorrect (échec d'authentification GCM). */
+async function decryptProjectEnvelope(envelope, password) {
+  const salt = fromBase64(envelope.kdf.salt);
+  const iv = fromBase64(envelope.cipher.iv);
+  const key = await deriveKey(password, salt);
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, fromBase64(envelope.data));
+  return textDecoder.decode(plain);
+}
+
+return { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope };
+})();
+
+__QC["merge"] = (function () {
+"use strict";
+// Fusion de projets (travail en équipe asynchrone, §2.1) et
+// accord inter-codeurs par kappa de Cohen (§2.9, critère d'acceptation n°4).
+const { uid } = __QC["state"];
+
+/**
+ * Fusionne `incoming` dans `target` (mutation de `target`).
+ * - Documents appariés par nom + texte identiques ; sinon ajoutés.
+ * - Codes appariés par chemin hiérarchique (mêmes noms au même niveau) ; sinon créés.
+ * - Segments importés étiquetés avec `coderLabel` (sauf s'ils portent déjà un codeur).
+ * Retourne des statistiques de fusion.
+ */
+function mergeProjects(target, incoming, coderLabel = "C2") {
+  const stats = {
+    docsMatched: 0, docsAdded: 0,
+    codesMatched: 0, codesAdded: 0,
+    segmentsAdded: 0, segmentsSkipped: 0,
+    memosAdded: 0,
+  };
+
+  // Groupes de documents (appariement par nom)
+  const groupMap = new Map();
+  for (const g of incoming.documentGroups || []) {
+    const existing = target.documentGroups.find(x => x.name === g.name);
+    if (existing) groupMap.set(g.id, existing.id);
+    else {
+      const ng = { id: uid(), name: g.name };
+      target.documentGroups.push(ng);
+      groupMap.set(g.id, ng.id);
+    }
+  }
+
+  // Documents
+  const docMap = new Map();
+  for (const d of incoming.documents || []) {
+    const match = target.documents.find(x => x.name === d.name && x.text === d.text);
+    if (match) {
+      docMap.set(d.id, match.id);
+      stats.docsMatched++;
+      match.variables = { ...(d.variables || {}), ...(match.variables || {}) }; // l'existant prime
+    } else {
+      let name = d.name;
+      if (target.documents.some(x => x.name === name)) name += " (fusion)";
+      const nd = { ...d, id: uid(), name, groupId: d.groupId ? (groupMap.get(d.groupId) ?? null) : null };
+      target.documents.push(nd);
+      docMap.set(d.id, nd.id);
+      stats.docsAdded++;
+    }
+  }
+
+  // Codes : appariement niveau par niveau sur le nom (chemin hiérarchique)
+  const codeMap = new Map();
+  const mergeLevel = (incomingParent, targetParent) => {
+    const children = (incoming.codes || []).filter(c => (c.parentId || null) === incomingParent);
+    for (const c of children) {
+      const match = target.codes.find(x => (x.parentId || null) === targetParent && x.name === c.name);
+      if (match) {
+        codeMap.set(c.id, match.id);
+        stats.codesMatched++;
+        mergeLevel(c.id, match.id);
+      } else {
+        const nc = { ...c, id: uid(), parentId: targetParent };
+        target.codes.push(nc);
+        codeMap.set(c.id, nc.id);
+        stats.codesAdded++;
+        mergeLevel(c.id, nc.id);
+      }
+    }
+  };
+  mergeLevel(null, null);
+
+  // Variables
+  for (const v of incoming.variables || []) {
+    if (!target.variables.includes(v)) target.variables.push(v);
+  }
+
+  // Segments (étiquetés par codeur)
+  for (const s of incoming.segments || []) {
+    const docId = docMap.get(s.docId);
+    const codeId = codeMap.get(s.codeId);
+    if (!docId || !codeId) { stats.segmentsSkipped++; continue; }
+    const coder = s.coder || coderLabel;
+    const dup = (target.segments || []).find(x =>
+      x.docId === docId && x.codeId === codeId && x.start === s.start && x.end === s.end &&
+      (x.coder || "C1") === coder);
+    if (dup) { stats.segmentsSkipped++; continue; }
+    target.segments.push({ ...s, id: uid(), docId, codeId, coder });
+    stats.segmentsAdded++;
+  }
+
+  // Mémos (hors mémos de segments, dont les cibles ne sont pas transposables)
+  for (const m of incoming.memos || []) {
+    if (m.targetType === "segment") continue;
+    let targetId = m.targetId;
+    if (m.targetType === "document") targetId = docMap.get(m.targetId);
+    else if (m.targetType === "code") targetId = codeMap.get(m.targetId);
+    if (m.targetType !== "project" && !targetId) continue;
+    const dup = target.memos.find(x => x.targetType === m.targetType && x.targetId === targetId && x.text === m.text);
+    if (!dup) {
+      target.memos.push({ ...m, id: uid(), targetId });
+      stats.memosAdded++;
+    }
+  }
+
+  return stats;
+}
+
+/** Étiquettes de codeurs présentes dans le projet ("C1" pour les segments non étiquetés). */
+function coderLabels(project) {
+  return [...new Set((project.segments || []).map(s => s.coder || "C1"))].sort();
+}
+
+/**
+ * Accord inter-codeurs (kappa de Cohen), unité d'analyse : le paragraphe.
+ * Pour chaque code et chaque paragraphe des documents codés par les deux codeurs,
+ * on compare « le codeur a appliqué ce code ici » (oui/non) entre A et B.
+ */
+function interCoderAgreement(project, coderA, coderB) {
+  const segsA = project.segments.filter(s => (s.coder || "C1") === coderA);
+  const segsB = project.segments.filter(s => (s.coder || "C1") === coderB);
+  const docsA = new Set(segsA.map(s => s.docId));
+  const docsB = new Set(segsB.map(s => s.docId));
+  const sharedDocs = project.documents.filter(d => docsA.has(d.id) && docsB.has(d.id));
+
+  // Unités : paragraphes non vides des documents partagés
+  const units = [];
+  for (const d of sharedDocs) {
+    let off = 0;
+    for (const para of d.text.split("\n")) {
+      if (para.trim()) units.push({ docId: d.id, start: off, end: off + para.length });
+      off += para.length + 1;
+    }
+  }
+
+  const overlaps = (s, u) => s.docId === u.docId && s.start < u.end && s.end > u.start;
+  const kappaOf = (a, b, c, d) => {
+    const n = a + b + c + d;
+    if (!n) return { po: 0, kappa: 0 };
+    const po = (a + d) / n;
+    const pe = ((a + b) * (a + c) + (c + d) * (b + d)) / (n * n);
+    return { po, kappa: pe === 1 ? 1 : (po - pe) / (1 - pe) };
+  };
+
+  const perCode = [];
+  let A = 0, B = 0, C = 0, D = 0; // agrégats pour le kappa global
+  for (const code of project.codes) {
+    const cA = segsA.filter(s => s.codeId === code.id);
+    const cB = segsB.filter(s => s.codeId === code.id);
+    if (!cA.length && !cB.length) continue;
+    let a = 0, b = 0, c = 0, d = 0;
+    for (const u of units) {
+      const inA = cA.some(s => overlaps(s, u));
+      const inB = cB.some(s => overlaps(s, u));
+      if (inA && inB) a++;
+      else if (inA) b++;
+      else if (inB) c++;
+      else d++;
+    }
+    perCode.push({ code, a, b, c, d, n: a + b + c + d, ...kappaOf(a, b, c, d) });
+    A += a; B += b; C += c; D += d;
+  }
+
+  return {
+    sharedDocs: sharedDocs.length,
+    units: units.length,
+    perCode,
+    overall: { a: A, b: B, c: C, d: D, n: A + B + C + D, ...kappaOf(A, B, C, D) },
+  };
+}
+
+/** Interprétation du kappa selon Landis & Koch (1977) — clé i18n. */
+function kappaInterpretation(k) {
+  if (k < 0) return "kappa_poor";
+  if (k <= 0.20) return "kappa_slight";
+  if (k <= 0.40) return "kappa_fair";
+  if (k <= 0.60) return "kappa_moderate";
+  if (k <= 0.80) return "kappa_substantial";
+  return "kappa_almost";
+}
+
+return { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation };
+})();
+
+__QC["sample"] = (function () {
+"use strict";
+// Projet exemple : entretiens fictifs sur le télétravail (pour la prise en main)
+const { emptyProject, uid, CODE_COLORS } = __QC["state"];
+
+function buildSampleProject() {
+  const p = emptyProject("Exemple — Étude sur le télétravail");
+  p.memo = "Projet de démonstration : trois entretiens semi-directifs et un focus group fictifs sur le vécu du télétravail. Utilisez-le pour tester le codage, la récupération de segments et les analyses.";
+  p.variables = ["âge", "sexe", "secteur", "ancienneté_télétravail"];
+
+  const gEntretiens = { id: uid(), name: "Entretiens individuels" };
+  const gFocus = { id: uid(), name: "Groupes de discussion" };
+  p.documentGroups.push(gEntretiens, gFocus);
+
+  const doc1 = {
+    id: uid(), name: "Entretien 01 — Aline", groupId: gEntretiens.id,
+    variables: { "âge": "34", "sexe": "F", "secteur": "Informatique", "ancienneté_télétravail": "4 ans" },
+    created: new Date().toISOString(),
+    text:
+`Enquêteur : Pouvez-vous me décrire une journée type en télétravail ?
+Aline : Je commence vers huit heures et demie, après avoir déposé les enfants à l'école. Le matin, je suis beaucoup plus concentrée qu'au bureau, il n'y a pas d'interruptions, pas de collègues qui passent à l'improviste. Je fais mes tâches de fond, celles qui demandent de la réflexion.
+Enquêteur : Et l'après-midi ?
+Aline : L'après-midi, c'est plutôt les réunions en visioconférence. Honnêtement, il y en a trop. On enchaîne parfois quatre ou cinq visios et à la fin de la journée je suis épuisée, plus fatiguée qu'après une journée au bureau.
+Enquêteur : Comment vivez-vous la séparation entre vie professionnelle et vie personnelle ?
+Aline : C'est le point noir. Mon bureau est dans le salon, donc le soir je vois l'ordinateur et j'ai du mal à décrocher. Il m'arrive de répondre à des courriels à vingt-deux heures. Mon conjoint me le reproche souvent.
+Enquêteur : Qu'est-ce qui vous manque le plus du bureau ?
+Aline : Les discussions informelles, clairement. La machine à café, les déjeuners d'équipe. C'est là que circulent les informations importantes et qu'on garde le lien. En télétravail, je me sens parfois isolée, même si on a des canaux de discussion en ligne.
+Enquêteur : Souhaiteriez-vous revenir au bureau à temps plein ?
+Aline : Non, certainement pas. L'idéal pour moi, c'est deux jours au bureau, trois jours à la maison. Je gagne trois heures de transport par jour, c'est du temps pour ma famille et pour le sport. Je ne suis pas prête à y renoncer.`
+  };
+
+  const doc2 = {
+    id: uid(), name: "Entretien 02 — Karim", groupId: gEntretiens.id,
+    variables: { "âge": "27", "sexe": "M", "secteur": "Banque", "ancienneté_télétravail": "1 an" },
+    created: new Date().toISOString(),
+    text:
+`Enquêteur : Depuis quand télétravaillez-vous ?
+Karim : Depuis un an environ, deux jours par semaine. C'est ma première expérience professionnelle, j'ai été embauché juste avant.
+Enquêteur : Comment cela se passe-t-il ?
+Karim : C'est mitigé. J'habite dans un petit studio, je travaille sur la table de la cuisine. Ce n'est pas confortable, j'ai mal au dos et je n'ai pas de deuxième écran. Le matériel, c'est un vrai problème que l'entreprise ne prend pas au sérieux.
+Enquêteur : Et sur le plan de l'apprentissage du métier ?
+Karim : C'est ma grande inquiétude. Au bureau, j'apprends en écoutant les collègues, en posant des questions à côté de moi. À distance, je n'ose pas déranger, j'attends la prochaine réunion. J'ai l'impression de progresser moins vite que si j'étais sur place tous les jours.
+Enquêteur : Qu'est-ce que le télétravail vous apporte malgré tout ?
+Karim : La flexibilité. Je peux aller à la salle de sport le midi, je fais des économies de transport et de repas. Et pour les tâches répétitives, franchement, je suis plus efficace chez moi, personne ne me sollicite.
+Enquêteur : Que faudrait-il améliorer selon vous ?
+Karim : Un vrai budget pour l'équipement à domicile, et des points réguliers avec mon manager. Parfois je me sens un peu abandonné, je ne sais pas si ce que je fais va dans la bonne direction.`
+  };
+
+  const doc3 = {
+    id: uid(), name: "Entretien 03 — Marguerite", groupId: gEntretiens.id,
+    variables: { "âge": "52", "sexe": "F", "secteur": "Administration", "ancienneté_télétravail": "3 ans" },
+    created: new Date().toISOString(),
+    text:
+`Enquêteur : Quel est votre rapport au télétravail ?
+Marguerite : Au début, j'étais très réticente. Je pensais que le travail, c'était un lieu, des horaires, des collègues. J'ai mis six mois à m'y faire. Maintenant, je ne pourrais plus m'en passer, au moins pour une partie de la semaine.
+Enquêteur : Qu'est-ce qui a changé ?
+Marguerite : J'ai aménagé une vraie pièce de travail dans l'ancienne chambre de ma fille. Une porte que je peux fermer, ça change tout. Le soir, je ferme la porte et le travail reste derrière. C'est ma frontière à moi.
+Enquêteur : Et avec vos collègues plus jeunes ?
+Marguerite : Je vois bien que les jeunes collègues sont plus à l'aise avec les outils, les visios, les messageries. Moi, j'ai dû me former sur le tas. L'entreprise n'a pas proposé assez de formation aux outils numériques, tout le monde s'est débrouillé.
+Enquêteur : Le management a-t-il évolué ?
+Marguerite : Mon chef est passé d'un contrôle des horaires à un suivi par objectifs. Pour moi, c'est mieux : on me juge sur ce que je produis, pas sur ma présence. Mais certains collègues le vivent mal, ils ont l'impression d'être surveillés autrement, par les outils de reporting.
+Enquêteur : Un dernier mot ?
+Marguerite : Le télétravail m'a réconciliée avec mon métier. Moins de bruit, moins de fatigue, plus de concentration. Mais il faut un cadre : des jours fixes, des règles claires, sinon chacun fait n'importe quoi et le collectif se délite.`
+  };
+
+  const doc4 = {
+    id: uid(), name: "Focus group — Service RH", groupId: gFocus.id,
+    variables: { "secteur": "Ressources humaines" },
+    created: new Date().toISOString(),
+    text:
+`Animatrice : Quels retours recevez-vous des équipes sur le télétravail ?
+Participant 1 : Le premier sujet, c'est l'équité. Les métiers qui ne peuvent pas télétravailler, l'accueil, la logistique, vivent mal le fait que d'autres soient chez eux. On a un vrai sujet de justice interne.
+Participante 2 : Nous, ce qu'on voit remonter, c'est la fatigue liée aux visioconférences et le sentiment d'isolement chez les nouveaux embauchés. L'intégration à distance ne fonctionne pas bien.
+Participant 3 : Et il y a la question du droit à la déconnexion. On a des salariés qui envoient des courriels le soir et le week-end. La charte existe, mais elle n'est pas appliquée.
+Animatrice : Quelles actions avez-vous mises en place ?
+Participante 2 : Un budget équipement de deux cents euros par salarié, et des jours de présence communs par équipe pour recréer du collectif.
+Participant 1 : On forme aussi les managers au management à distance : fixer des objectifs, faire des points réguliers, repérer les signaux d'isolement. C'est un changement de culture profond.
+Participant 3 : Il reste le chantier de la formation aux outils pour les salariés les plus éloignés du numérique. On l'a sous-estimé au départ.`
+  };
+
+  p.documents.push(doc1, doc2, doc3, doc4);
+
+  // Système de codes hiérarchique
+  const mk = (name, parentId, colorIdx) => ({ id: uid(), name, parentId, color: CODE_COLORS[colorIdx % CODE_COLORS.length], created: new Date().toISOString() });
+  const cAvantages = mk("Avantages perçus", null, 3);
+  const cConc = mk("Concentration / efficacité", cAvantages.id, 3);
+  const cFlex = mk("Flexibilité / temps gagné", cAvantages.id, 6);
+  const cDiff = mk("Difficultés", null, 0);
+  const cIso = mk("Isolement social", cDiff.id, 0);
+  const cFront = mk("Frontière vie pro / vie perso", cDiff.id, 1);
+  const cFatigue = mk("Fatigue numérique", cDiff.id, 7);
+  const cMateriel = mk("Matériel et espace de travail", cDiff.id, 8);
+  const cOrg = mk("Organisation et management", null, 4);
+  const cManag = mk("Management à distance", cOrg.id, 4);
+  const cForm = mk("Formation aux outils", cOrg.id, 5);
+  const cEquite = mk("Équité / justice interne", cOrg.id, 10);
+  p.codes.push(cAvantages, cConc, cFlex, cDiff, cIso, cFront, cFatigue, cMateriel, cOrg, cManag, cForm, cEquite);
+
+  // Segments pré-codés (localisés par recherche de sous-chaîne pour rester robustes)
+  const seg = (doc, code, needle) => {
+    const start = doc.text.indexOf(needle);
+    if (start === -1) return null;
+    return { id: uid(), docId: doc.id, codeId: code.id, start, end: start + needle.length, text: needle, weight: 1, comment: "", created: new Date().toISOString() };
+  };
+  const segments = [
+    seg(doc1, cConc, "Le matin, je suis beaucoup plus concentrée qu'au bureau, il n'y a pas d'interruptions, pas de collègues qui passent à l'improviste."),
+    seg(doc1, cFatigue, "On enchaîne parfois quatre ou cinq visios et à la fin de la journée je suis épuisée, plus fatiguée qu'après une journée au bureau."),
+    seg(doc1, cFront, "Mon bureau est dans le salon, donc le soir je vois l'ordinateur et j'ai du mal à décrocher. Il m'arrive de répondre à des courriels à vingt-deux heures."),
+    seg(doc1, cIso, "En télétravail, je me sens parfois isolée, même si on a des canaux de discussion en ligne."),
+    seg(doc1, cFlex, "Je gagne trois heures de transport par jour, c'est du temps pour ma famille et pour le sport."),
+    seg(doc2, cMateriel, "J'habite dans un petit studio, je travaille sur la table de la cuisine. Ce n'est pas confortable, j'ai mal au dos et je n'ai pas de deuxième écran."),
+    seg(doc2, cIso, "À distance, je n'ose pas déranger, j'attends la prochaine réunion."),
+    seg(doc2, cFlex, "Je peux aller à la salle de sport le midi, je fais des économies de transport et de repas."),
+    seg(doc2, cConc, "pour les tâches répétitives, franchement, je suis plus efficace chez moi, personne ne me sollicite."),
+    seg(doc2, cManag, "des points réguliers avec mon manager. Parfois je me sens un peu abandonné, je ne sais pas si ce que je fais va dans la bonne direction."),
+    seg(doc3, cFront, "Le soir, je ferme la porte et le travail reste derrière. C'est ma frontière à moi."),
+    seg(doc3, cForm, "L'entreprise n'a pas proposé assez de formation aux outils numériques, tout le monde s'est débrouillé."),
+    seg(doc3, cManag, "Mon chef est passé d'un contrôle des horaires à un suivi par objectifs."),
+    seg(doc3, cConc, "Moins de bruit, moins de fatigue, plus de concentration."),
+    seg(doc4, cEquite, "Les métiers qui ne peuvent pas télétravailler, l'accueil, la logistique, vivent mal le fait que d'autres soient chez eux. On a un vrai sujet de justice interne."),
+    seg(doc4, cFatigue, "la fatigue liée aux visioconférences"),
+    seg(doc4, cIso, "le sentiment d'isolement chez les nouveaux embauchés. L'intégration à distance ne fonctionne pas bien."),
+    seg(doc4, cFront, "On a des salariés qui envoient des courriels le soir et le week-end."),
+    seg(doc4, cManag, "On forme aussi les managers au management à distance : fixer des objectifs, faire des points réguliers, repérer les signaux d'isolement."),
+    seg(doc4, cForm, "Il reste le chantier de la formation aux outils pour les salariés les plus éloignés du numérique."),
+  ].filter(Boolean);
+  p.segments.push(...segments);
+
+  p.memos.push({
+    id: uid(), targetType: "code", targetId: cIso.id, title: "Définition",
+    text: "Coder ici tout passage exprimant un sentiment de solitude, de perte de lien avec le collectif, ou une difficulté d'intégration liée à la distance.",
+    created: new Date().toISOString(),
+  });
+  p.memos.push({
+    id: uid(), targetType: "document", targetId: doc2.id, title: "Impression générale",
+    text: "Profil junior : le télétravail interroge surtout l'apprentissage du métier et l'accompagnement managérial. À comparer avec les profils expérimentés.",
+    created: new Date().toISOString(),
+  });
+
+  return p;
+}
+
+return { buildSampleProject };
+})();
+
+__QC["export"] = (function () {
+"use strict";
+// Exports et rapports (§2.8 du cahier des charges)
+const { state, getDoc, getCode } = __QC["state"];
+const { flatCodes, codeMatrix } = __QC["analysis"];
+const { t } = __QC["i18n"];
+const { buildReportDocx } = __QC["docxout"];
+
+// Le lien doit être rattaché au DOM pour que le nom de fichier soit respecté
+function downloadBlob(filename, blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function download(filename, content, mime = "text/plain;charset=utf-8") {
+  downloadBlob(filename, new Blob(["﻿" + content], { type: mime })); // BOM pour Excel
+}
+
+function csvEscape(v) {
+  const s = String(v ?? "");
+  return /[";\n\r]/.test(s) ? '"' + s.replaceAll('"', '""') + '"' : s;
+}
+function toCsv(rows) {
+  return rows.map(r => r.map(csvEscape).join(";")).join("\r\n");
+}
+
+function safeName(name) {
+  return name.replace(/[^\p{L}\p{N} _-]/gu, "").trim().replace(/\s+/g, "_") || "projet";
+}
+
+/* ---------- Projet (.projx) ---------- */
+// `payload` : le projet en clair, ou l'enveloppe chiffrée (crypto.js)
+function exportProject(payload = state.project) {
+  const json = JSON.stringify(payload, null, 2);
+  downloadBlob(safeName(state.project.name) + ".projx", new Blob([json], { type: "application/json" }));
+}
+
+/* ---------- Segments codés → CSV ---------- */
+function exportSegmentsCsv(segments) {
+  const rows = [[t("document"), t("code"), t("segment"), t("weight"), t("comment"), "Début", "Fin"]];
+  for (const s of segments) {
+    rows.push([getDoc(s.docId)?.name ?? "?", getCode(s.codeId)?.name ?? "?", s.text, s.weight, s.comment, s.start, s.end]);
+  }
+  download(safeName(state.project.name) + "_segments.csv", toCsv(rows), "text/csv;charset=utf-8");
+}
+
+/* ---------- Système de codes → CSV ---------- */
+function exportCodeSystem() {
+  const rows = [[t("code"), "Niveau", t("color"), t("freq")]];
+  for (const c of flatCodes()) {
+    const n = state.project.segments.filter(s => s.codeId === c.id).length;
+    rows.push(["  ".repeat(c.depth) + c.name, c.depth + 1, c.color, n]);
+  }
+  download(safeName(state.project.name) + "_codes.csv", toCsv(rows), "text/csv;charset=utf-8");
+}
+
+/* ---------- Matrice codes × documents → CSV ---------- */
+function exportMatrixCsv() {
+  const codes = flatCodes();
+  const { docs, matrix } = codeMatrix(state.project.documents, codes);
+  const rows = [[t("code"), ...docs.map(d => d.name), t("total")]];
+  codes.forEach((c, i) => {
+    const line = matrix[i];
+    rows.push(["  ".repeat(c.depth) + c.name, ...line, line.reduce((a, b) => a + b, 0)]);
+  });
+  download(safeName(state.project.name) + "_matrice.csv", toCsv(rows), "text/csv;charset=utf-8");
+}
+
+/* ---------- Rapport Word (.docx) natif ---------- */
+function exportReportDocx(segments) {
+  const codes = flatCodes();
+  const groups = codes.map(c => ({
+    code: c,
+    segments: segments.filter(s => s.codeId === c.id).map(s => ({
+      docName: getDoc(s.docId)?.name ?? "?",
+      text: s.text, weight: s.weight, comment: s.comment,
+    })),
+  }));
+  const blob = buildReportDocx({
+    projectName: state.project.name,
+    memo: state.project.memo,
+    codes: groups,
+    labels: {
+      subtitle: `${t("report_title")} — ${new Date().toLocaleString()} · ${segments.length} ${t("segments_lbl")}`,
+      projectMemo: t("project_memo"),
+      weight: t("weight"),
+    },
+  });
+  downloadBlob(safeName(state.project.name) + "_rapport.docx", blob);
+}
+
+/* ---------- Rapport imprimable (HTML → impression/PDF) ---------- */
+function openPrintableReport(segments) {
+  const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const codes = flatCodes();
+  const byCode = new Map(codes.map(c => [c.id, []]));
+  for (const s of segments) if (byCode.has(s.codeId)) byCode.get(s.codeId).push(s);
+
+  let body = `<h1>${esc(state.project.name)} — ${esc(t("report_title"))}</h1>
+  <p class="meta">${esc(t("report_generated"))} ${new Date().toLocaleString()} · ${state.project.documents.length} ${esc(t("docs"))} · ${state.project.codes.length} ${esc(t("codes_lbl"))} · ${segments.length} ${esc(t("segments_lbl"))}</p>`;
+
+  if (state.project.memo) body += `<div class="memo"><strong>${esc(t("project_memo"))} :</strong> ${esc(state.project.memo)}</div>`;
+
+  for (const c of codes) {
+    const segs = byCode.get(c.id) || [];
+    if (!segs.length) continue;
+    body += `<h2 style="border-left:8px solid ${esc(c.color)};padding-left:8px">${esc(c.name)} <small>(${segs.length})</small></h2>`;
+    for (const s of segs) {
+      body += `<div class="seg">
+        <div class="src">${esc(getDoc(s.docId)?.name ?? "?")}${s.weight !== 1 ? ` · ${esc(t("weight"))} ${s.weight}` : ""}</div>
+        <blockquote>${esc(s.text)}</blockquote>
+        ${s.comment ? `<div class="com">💬 ${esc(s.comment)}</div>` : ""}
+      </div>`;
+    }
+  }
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(state.project.name)}</title>
+  <style>
+    body{font-family:Georgia,serif;max-width:820px;margin:32px auto;padding:0 20px;color:#222;line-height:1.55}
+    h1{font-size:24px} h2{font-size:17px;margin-top:26px} .meta{color:#666;font-size:13px}
+    .memo{background:#f5f2e8;border:1px solid #ddd;padding:10px 14px;border-radius:6px;font-size:14px}
+    .seg{margin:10px 0 16px} .src{font-size:12px;color:#555;font-weight:bold}
+    blockquote{margin:4px 0 4px 14px;border-left:3px solid #ccc;padding-left:12px;font-size:14px}
+    .com{font-size:12.5px;color:#777;font-style:italic;margin-left:14px}
+    @media print { body{margin:10mm} }
+  </style></head><body>${body}
+  <script>window.onload = () => setTimeout(() => window.print(), 300);<\/script></body></html>`;
+
+  const w = window.open("", "_blank");
+  if (w) { w.document.write(html); w.document.close(); }
+}
+
+return { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, exportReportDocx, openPrintableReport };
+})();
+
+__QC["app"] = (function () {
+"use strict";
+// QualiCode — application d'analyse qualitative de données (MVP du cahier des charges)
+const { t, setLang, getLang, applyStaticTranslations } = __QC["i18n"];
+const {
+  state, emptyProject, normalizeProject, uid, CODE_COLORS,
+  scheduleSave, persistNow, loadPersisted, setOnSaved, savePrefs, loadPrefs,
+  getDoc, getCode, getGroup, getSegment, childCodes, segmentsOfDoc,
+  addDocument, addGroup, addCode, addSegment, deleteSegment,
+  trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode,
+  upsertMemo, getMemo,
+} = __QC["state"];
+const {
+  searchDocuments, wordFrequencies, kwic, codeMatrix, coocMatrix,
+  groupComparison, variableStats, flatCodes,
+} = __QC["analysis"];
+const { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, exportReportDocx, openPrintableReport } = __QC["export"];
+const { buildSampleProject } = __QC["sample"];
+const { extractDocxText } = __QC["docx"];
+const { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } = __QC["crypto"];
+const { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } = __QC["merge"];
+
+const $ = sel => document.querySelector(sel);
+const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+const expandedCodes = new Set();   // codes dépliés dans l'arbre
+const expandedGroups = new Set();  // groupes dépliés
+let panel4Mode = "segments";       // segments | search
+let searchResults = [];
+let searchQuery = "";
+let pendingSelection = null;       // {start, end} sélection en attente de codage
+let projectPassword = null;        // mot de passe du projet, gardé en mémoire de session uniquement
+
+/* ================================================================
+   Initialisation
+================================================================ */
+function init() {
+  loadPrefs();
+  setLang(state.ui.lang);
+  document.body.classList.toggle("dark", state.ui.theme === "dark");
+  $("#langLabel").textContent = getLang().toUpperCase();
+
+  if (!loadPersisted()) {
+    state.project = buildSampleProject();
+    persistNow();
+  }
+  // Déplie les racines par défaut
+  state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
+  childCodes(null).forEach(c => expandedCodes.add(c.id));
+
+  setOnSaved(() => { $("#statusSaved").textContent = "✓ " + t("autosaved") + " · " + new Date().toLocaleTimeString(); });
+
+  bindRibbon();
+  bindPanels();
+  bindSplitters();
+  applyStaticTranslations();
+  renderAll();
+
+  // Filet de sécurité : sauvegarde immédiate si la page se ferme ou passe en
+  // arrière-plan avant l'expiration du délai de sauvegarde automatique
+  const flush = () => { if (state.ui.dirty) persistNow(); };
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
+}
+
+function renderAll() {
+  applyStaticTranslations();
+  renderDocTree();
+  renderCodeTree();
+  renderBrowser();
+  renderPanel4();
+  renderStatus();
+  $("#projectName").textContent = state.project.name;
+  $("#projectName").title = state.project.name;
+}
+
+function toast(msg) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.hidden = false;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { el.hidden = true; }, 2600);
+}
+
+/* ================================================================
+   Modales génériques
+================================================================ */
+function openModal({ title, bodyHtml, wide = false, footer = [] }) {
+  const root = $("#modalRoot");
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.innerHTML = `
+    <div class="modal ${wide ? "wide" : ""}">
+      <div class="modal-header"><span>${esc(title)}</span><button class="modal-close">×</button></div>
+      <div class="modal-body">${bodyHtml}</div>
+      <div class="modal-footer"></div>
+    </div>`;
+  const close = () => overlay.remove();
+  overlay.querySelector(".modal-close").onclick = close;
+  overlay.addEventListener("mousedown", e => { if (e.target === overlay) close(); });
+  const footerEl = overlay.querySelector(".modal-footer");
+  for (const b of footer) {
+    const btn = document.createElement("button");
+    btn.className = "btn" + (b.primary ? " primary" : "") + (b.danger ? " danger" : "");
+    btn.textContent = b.label;
+    btn.onclick = () => b.onClick(overlay, close);
+    footerEl.appendChild(btn);
+  }
+  if (!footer.length) footerEl.remove();
+  root.appendChild(overlay);
+  const firstInput = overlay.querySelector("input, textarea, select");
+  if (firstInput) firstInput.focus();
+  return { overlay, close, body: overlay.querySelector(".modal-body") };
+}
+
+function confirmModal(message, onYes) {
+  openModal({
+    title: t("confirm"),
+    bodyHtml: `<p>${esc(message)}</p>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => close() },
+      { label: t("ok"), primary: true, onClick: (o, close) => { close(); onYes(); } },
+    ],
+  });
+}
+
+function promptModal(title, label, initial, onSubmit) {
+  const m = openModal({
+    title,
+    bodyHtml: `<div class="form-row"><label>${esc(label)}</label><input type="text" id="pmInput" value="${esc(initial || "")}"></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => close() },
+      { label: t("ok"), primary: true, onClick: (o, close) => { const v = o.querySelector("#pmInput").value.trim(); if (v) { close(); onSubmit(v); } } },
+    ],
+  });
+  m.body.querySelector("#pmInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") { const v = e.target.value.trim(); if (v) { m.close(); onSubmit(v); } }
+  });
+}
+
+/* ================================================================
+   Ruban
+================================================================ */
+function bindRibbon() {
+  $("#ribbonTabs").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-tab]");
+    if (!btn) return;
+    document.querySelectorAll("#ribbonTabs button").forEach(b => b.classList.toggle("active", b === btn));
+    document.querySelectorAll(".ribbon-pane").forEach(p => p.classList.toggle("active", p.dataset.pane === btn.dataset.tab));
+  });
+
+  $("#btnLang").onclick = () => {
+    state.ui.lang = getLang() === "fr" ? "en" : "fr";
+    setLang(state.ui.lang);
+    $("#langLabel").textContent = getLang().toUpperCase();
+    savePrefs();
+    renderAll();
+  };
+  $("#btnTheme").onclick = () => {
+    state.ui.theme = state.ui.theme === "dark" ? "light" : "dark";
+    document.body.classList.toggle("dark", state.ui.theme === "dark");
+    savePrefs();
+  };
+
+  // --- Accueil ---
+  $("#btnNewProject").onclick = () => {
+    promptModal(t("new_project_title"), t("project_name_q") + " — " + t("new_version_hint"), "", name => {
+      state.project = emptyProject(name);
+      state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
+      state.ui.currentDocId = null; state.ui.selectedCodeId = null;
+      persistNow();
+      renderAll();
+    });
+  };
+  $("#btnSaveProject").onclick = async () => {
+    persistNow();
+    if (state.project.protected) {
+      const pw = projectPassword || await askPassword();
+      if (!pw) return;
+      projectPassword = pw;
+      exportProject(await encryptProjectJson(JSON.stringify(state.project), pw));
+    } else {
+      exportProject();
+    }
+    toast(t("project_saved_file"));
+  };
+  $("#btnOpenProject").onclick = () => $("#projInput").click();
+  $("#projInput").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    const p = await readProjectFile(file);
+    if (!p) return;
+    state.project = p;
+    state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
+    state.ui.currentDocId = null; state.ui.selectedCodeId = null;
+    state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
+    childCodes(null).forEach(c => expandedCodes.add(c.id));
+    persistNow();
+    renderAll();
+    toast(t("project_loaded") + " : " + state.project.name);
+  });
+  $("#btnProtect").onclick = openProtectModal;
+  $("#btnMergeProject").onclick = () => $("#mergeInput").click();
+  $("#mergeInput").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    const incoming = await readProjectFile(file);
+    if (incoming) openMergeModal(incoming);
+  });
+  $("#btnSampleProject").onclick = () => {
+    confirmModal(t("new_version_hint"), () => {
+      state.project = buildSampleProject();
+      state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
+      state.ui.currentDocId = state.project.documents[0]?.id ?? null;
+      state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
+      state.project.codes.forEach(c => expandedCodes.add(c.id));
+      persistNow();
+      renderAll();
+    });
+  };
+  $("#btnSearch").onclick = runSearch;
+  $("#searchInput").addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
+  $("#btnTrash").onclick = openTrash;
+
+  // --- Importer ---
+  $("#btnImportFiles").onclick = () => $("#fileInput").click();
+  $("#fileInput").addEventListener("change", async e => {
+    const files = [...e.target.files];
+    e.target.value = "";
+    let imported = 0, failed = [];
+    for (const f of files) {
+      try {
+        const text = /\.docx$/i.test(f.name)
+          ? await extractDocxText(f)
+          : (await f.text()).replace(/\r\n/g, "\n");
+        addDocument(f.name.replace(/\.[^.]+$/, ""), text);
+        imported++;
+      } catch (err) {
+        console.error("Import failed:", f.name, err);
+        failed.push(f.name);
+      }
+    }
+    if (imported) renderAll();
+    if (failed.length) toast(t("import_failed") + " : " + failed.join(", "));
+    else if (imported) toast(imported + " " + t("import_done"));
+  });
+  $("#btnImportCsv").onclick = () => $("#csvInput").click();
+  $("#csvInput").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (file) importCsv(await file.text(), file.name.replace(/\.[^.]+$/, ""));
+  });
+  $("#btnPasteDoc").onclick = openPasteDoc;
+  $("#btnStructuredText").onclick = openStructuredImport;
+  $("#btnNewGroup").onclick = () => promptModal(t("new_group"), t("new_group_name"), "", name => {
+    const g = addGroup(name); expandedGroups.add(g.id); renderDocTree();
+  });
+
+  // --- Codes ---
+  $("#btnNewCode").onclick = () => openNewCodeModal(null);
+  $("#btnAddRootCode").onclick = () => openNewCodeModal(null);
+  $("#btnCodeSelection").onclick = () => {
+    const sel = captureSelection();
+    if (!sel) return toast(t("no_selection"));
+    if (!state.ui.selectedCodeId) return toast(t("select_code_first"));
+    applyCodeToSelection(state.ui.selectedCodeId, sel);
+  };
+  $("#btnInVivo").onclick = () => {
+    const sel = captureSelection();
+    if (!sel) return toast(t("no_selection"));
+    inVivoCode(sel);
+  };
+  $("#btnAutoCode").onclick = openAutoCode;
+  $("#chkHighlights").addEventListener("change", e => { state.ui.showHighlights = e.target.checked; renderBrowser(); });
+
+  // --- Mémos ---
+  $("#btnProjectMemo").onclick = () => openMemoEditor("project", null, state.project.name);
+  $("#btnMemoManager").onclick = openMemoManager;
+
+  // --- Variables ---
+  $("#btnEditVariables").onclick = openVariablesList;
+  $("#btnDataEditor").onclick = openDataEditor;
+
+  // --- Analyse ---
+  $("#btnCodeMatrix").onclick = openCodeMatrix;
+  $("#btnCooc").onclick = openCooc;
+  $("#btnGroupCompare").onclick = openGroupCompare;
+  $("#btnWordFreq").onclick = openWordFreq;
+  $("#btnKwic").onclick = openKwic;
+  $("#btnStats").onclick = openStats;
+  $("#btnKappa").onclick = openKappa;
+
+  // --- Visualisation ---
+  $("#btnPortrait").onclick = openPortrait;
+  $("#btnWordCloud").onclick = openWordCloud;
+  $("#btnBarChart").onclick = openBarChart;
+
+  // --- Rapports ---
+  $("#btnExportSegments").onclick = () => { exportSegmentsCsv(state.project.segments); toast(t("export_done")); };
+  $("#btnExportDocx").onclick = () => { exportReportDocx(state.project.segments); toast(t("export_done")); };
+  $("#btnExportReport").onclick = () => openPrintableReport(state.project.segments);
+  $("#btnExportCodes").onclick = () => { exportCodeSystem(); toast(t("export_done")); };
+  $("#btnExportMatrixCsv").onclick = () => { exportMatrixCsv(); toast(t("export_done")); };
+
+  // Raccourci clavier : Alt+C = coder la sélection avec le code sélectionné (§2.4)
+  document.addEventListener("keydown", e => {
+    if (e.altKey && e.key.toLowerCase() === "c") {
+      e.preventDefault();
+      const sel = captureSelection();
+      if (sel && state.ui.selectedCodeId) applyCodeToSelection(state.ui.selectedCodeId, sel);
+    }
+  });
+}
+
+/* ================================================================
+   Volets et splitters
+================================================================ */
+function bindPanels() {
+  $("#btnActivateAllDocs").onclick = () => {
+    const all = state.project.documents.map(d => d.id);
+    const allOn = all.length && all.every(id => state.ui.activatedDocs.has(id));
+    state.ui.activatedDocs = allOn ? new Set() : new Set(all);
+    renderDocTree(); renderPanel4();
+  };
+  $("#btnActivateAllCodes").onclick = () => {
+    const all = state.project.codes.map(c => c.id);
+    const allOn = all.length && all.every(id => state.ui.activatedCodes.has(id));
+    state.ui.activatedCodes = allOn ? new Set() : new Set(all);
+    renderCodeTree(); renderPanel4();
+  };
+  $("#retrievalMode").addEventListener("change", e => { state.ui.retrievalMode = e.target.value; renderPanel4(); });
+  $("#btnDocMemo").onclick = () => {
+    const doc = getDoc(state.ui.currentDocId);
+    if (doc) openMemoEditor("document", doc.id, doc.name);
+  };
+  $("#btnDocProps").onclick = () => {
+    const doc = getDoc(state.ui.currentDocId);
+    if (doc) openDocProps(doc);
+  };
+
+  // Sélection de texte → menu de codage flottant
+  $("#docBrowser").addEventListener("mouseup", e => {
+    setTimeout(() => {
+      const sel = getSelectionOffsets();
+      if (sel) showCodingPopup(e.clientX, e.clientY, sel);
+      else hideCodingPopup();
+    }, 10);
+  });
+  document.addEventListener("mousedown", e => {
+    if (!e.target.closest("#codingPopup")) hideCodingPopup();
+  });
+  $("#popupInVivo").onclick = () => { if (pendingSelection) { inVivoCode(pendingSelection); hideCodingPopup(); } };
+  $("#popupNewCode").onclick = () => {
+    const sel = pendingSelection;
+    hideCodingPopup();
+    if (sel) openNewCodeModal(null, code => applyCodeToSelection(code.id, sel));
+  };
+}
+
+function bindSplitters() {
+  const ws = $("#workspace");
+  const drag = (el, onMove) => {
+    el.addEventListener("mousedown", e => {
+      e.preventDefault();
+      const move = ev => onMove(ev);
+      const up = () => { document.removeEventListener("mousemove", move); document.removeEventListener("mouseup", up); };
+      document.addEventListener("mousemove", move);
+      document.addEventListener("mouseup", up);
+    });
+  };
+  drag($("#splitV"), ev => {
+    const w = Math.min(Math.max(ev.clientX - ws.getBoundingClientRect().left, 180), ws.clientWidth - 300);
+    document.documentElement.style.setProperty("--left-w", w + "px");
+  });
+  const rowMove = ev => {
+    const r = ws.getBoundingClientRect();
+    const pct = Math.min(Math.max(((ev.clientY - r.top) / r.height) * 100, 15), 85);
+    document.documentElement.style.setProperty("--top-h", pct + "%");
+  };
+  drag($("#splitH1"), rowMove);
+  drag($("#splitH2"), rowMove);
+}
+
+/* ================================================================
+   Volet 1 : arbre des documents
+================================================================ */
+function renderDocTree() {
+  const root = $("#docTree");
+  root.innerHTML = "";
+  const ungrouped = state.project.documents.filter(d => !d.groupId || !getGroup(d.groupId));
+
+  const docRow = doc => {
+    const row = document.createElement("div");
+    row.className = "tree-item" + (doc.id === state.ui.currentDocId ? " selected" : "");
+    row.draggable = true;
+    const n = segmentsOfDoc(doc.id).length;
+    const memo = getMemo("document", doc.id);
+    row.innerHTML = `
+      <span class="caret"></span>
+      <span class="activ ${state.ui.activatedDocs.has(doc.id) ? "on" : ""}" title="${esc(t("activate_all"))}">✅</span>
+      <span class="label">📄 ${esc(doc.name)}</span>
+      ${memo ? `<span class="memo-flag" title="${esc(memo.text.slice(0, 120))}">📝</span>` : ""}
+      <span class="count">${n}</span>
+      <span class="row-actions">
+        <button data-act="memo" title="${esc(t("doc_memo"))}">📝</button>
+        <button data-act="props" title="${esc(t("doc_props"))}">⚙️</button>
+        <button data-act="del" title="${esc(t("delete"))}">🗑️</button>
+      </span>`;
+    row.querySelector(".activ").onclick = e => {
+      e.stopPropagation();
+      state.ui.activatedDocs.has(doc.id) ? state.ui.activatedDocs.delete(doc.id) : state.ui.activatedDocs.add(doc.id);
+      renderDocTree(); renderPanel4();
+    };
+    row.onclick = () => { state.ui.currentDocId = doc.id; renderDocTree(); renderBrowser(); };
+    row.querySelector("[data-act=memo]").onclick = e => { e.stopPropagation(); openMemoEditor("document", doc.id, doc.name); };
+    row.querySelector("[data-act=props]").onclick = e => { e.stopPropagation(); openDocProps(doc); };
+    row.querySelector("[data-act=del]").onclick = e => {
+      e.stopPropagation();
+      confirmModal(t("delete_doc_q"), () => { trashDocument(doc.id); renderAll(); });
+    };
+    row.addEventListener("dragstart", e => e.dataTransfer.setData("text/qualicode-doc", doc.id));
+    return row;
+  };
+
+  for (const g of state.project.documentGroups) {
+    const gr = document.createElement("div");
+    gr.className = "tree-item group-row";
+    const open = expandedGroups.has(g.id);
+    gr.innerHTML = `<span class="caret">${open ? "▼" : "►"}</span><span class="label">📁 ${esc(g.name)}</span>
+      <span class="count">${state.project.documents.filter(d => d.groupId === g.id).length}</span>
+      <span class="row-actions"><button data-act="ren" title="${esc(t("rename"))}">✏️</button></span>`;
+    gr.onclick = () => { open ? expandedGroups.delete(g.id) : expandedGroups.add(g.id); renderDocTree(); };
+    gr.querySelector("[data-act=ren]").onclick = e => {
+      e.stopPropagation();
+      promptModal(t("rename"), t("new_group_name"), g.name, name => { g.name = name; scheduleSave(); renderDocTree(); });
+    };
+    gr.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("text/qualicode-doc")) e.preventDefault(); });
+    gr.addEventListener("drop", e => {
+      const id = e.dataTransfer.getData("text/qualicode-doc");
+      const doc = getDoc(id);
+      if (doc) { doc.groupId = g.id; scheduleSave(); renderDocTree(); }
+    });
+    root.appendChild(gr);
+    if (open) {
+      const kids = document.createElement("div");
+      kids.className = "tree-children";
+      state.project.documents.filter(d => d.groupId === g.id).forEach(d => kids.appendChild(docRow(d)));
+      root.appendChild(kids);
+    }
+  }
+  ungrouped.forEach(d => root.appendChild(docRow(d)));
+
+  // Déposer hors groupe = retirer du groupe
+  root.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("text/qualicode-doc")) e.preventDefault(); });
+  root.addEventListener("drop", e => {
+    if (e.target !== root) return;
+    const id = e.dataTransfer.getData("text/qualicode-doc");
+    const doc = getDoc(id);
+    if (doc) { doc.groupId = null; scheduleSave(); renderDocTree(); }
+  });
+}
+
+/* ================================================================
+   Volet 2 : arbre des codes
+================================================================ */
+function renderCodeTree() {
+  const root = $("#codeTree");
+  root.innerHTML = "";
+  const build = (parentId, container) => {
+    for (const code of childCodes(parentId)) {
+      const kids = childCodes(code.id);
+      const open = expandedCodes.has(code.id);
+      const n = state.project.segments.filter(s => s.codeId === code.id).length;
+      const memo = getMemo("code", code.id);
+      const row = document.createElement("div");
+      row.className = "tree-item" + (code.id === state.ui.selectedCodeId ? " selected" : "");
+      row.draggable = true;
+      row.innerHTML = `
+        <span class="caret">${kids.length ? (open ? "▼" : "►") : ""}</span>
+        <span class="activ ${state.ui.activatedCodes.has(code.id) ? "on" : ""}">✅</span>
+        <span class="code-dot" style="background:${esc(code.color)}"></span>
+        <span class="label">${esc(code.name)}</span>
+        ${memo ? `<span class="memo-flag" title="${esc(memo.text.slice(0, 120))}">📝</span>` : ""}
+        <span class="count">${n}</span>
+        <span class="row-actions">
+          <button data-act="add" title="${esc(t("new_code"))}">＋</button>
+          <button data-act="memo" title="${esc(t("memo_title"))}">📝</button>
+          <button data-act="ren" title="${esc(t("rename"))}">✏️</button>
+          <button data-act="del" title="${esc(t("delete"))}">🗑️</button>
+        </span>`;
+      row.querySelector(".caret").onclick = e => {
+        e.stopPropagation();
+        if (kids.length) { open ? expandedCodes.delete(code.id) : expandedCodes.add(code.id); renderCodeTree(); }
+      };
+      row.querySelector(".activ").onclick = e => {
+        e.stopPropagation();
+        state.ui.activatedCodes.has(code.id) ? state.ui.activatedCodes.delete(code.id) : state.ui.activatedCodes.add(code.id);
+        renderCodeTree(); renderPanel4();
+      };
+      row.onclick = () => { state.ui.selectedCodeId = code.id; renderCodeTree(); };
+      row.ondblclick = () => promptModal(t("rename"), t("code_name_q"), code.name, name => { code.name = name; scheduleSave(); renderAll(); });
+      row.querySelector("[data-act=add]").onclick = e => { e.stopPropagation(); openNewCodeModal(code.id); };
+      row.querySelector("[data-act=memo]").onclick = e => { e.stopPropagation(); openMemoEditor("code", code.id, code.name); };
+      row.querySelector("[data-act=ren]").onclick = e => {
+        e.stopPropagation();
+        promptModal(t("rename"), t("code_name_q"), code.name, name => { code.name = name; scheduleSave(); renderAll(); });
+      };
+      row.querySelector("[data-act=del]").onclick = e => {
+        e.stopPropagation();
+        confirmModal(t("delete_code_q"), () => { trashCode(code.id); renderAll(); });
+      };
+      // Glisser-déposer : réorganisation hiérarchique
+      row.addEventListener("dragstart", e => { e.stopPropagation(); e.dataTransfer.setData("text/qualicode-code", code.id); });
+      row.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("text/qualicode-code")) e.preventDefault(); });
+      row.addEventListener("drop", e => {
+        e.stopPropagation();
+        const draggedId = e.dataTransfer.getData("text/qualicode-code");
+        if (!draggedId || draggedId === code.id) return;
+        // Empêche de déposer un code dans sa propre descendance
+        let p = code;
+        while (p) { if (p.id === draggedId) return; p = getCode(p.parentId); }
+        const dragged = getCode(draggedId);
+        if (dragged) { dragged.parentId = code.id; expandedCodes.add(code.id); scheduleSave(); renderCodeTree(); }
+      });
+      container.appendChild(row);
+      if (kids.length && open) {
+        const kc = document.createElement("div");
+        kc.className = "tree-children";
+        build(code.id, kc);
+        container.appendChild(kc);
+      }
+    }
+  };
+  build(null, root);
+
+  // Déposer à la racine
+  root.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("text/qualicode-code")) e.preventDefault(); });
+  root.addEventListener("drop", e => {
+    if (e.target !== root) return;
+    const dragged = getCode(e.dataTransfer.getData("text/qualicode-code"));
+    if (dragged) { dragged.parentId = null; scheduleSave(); renderCodeTree(); }
+  });
+}
+
+function openNewCodeModal(parentId, onCreated) {
+  const codes = flatCodes();
+  const swatches = CODE_COLORS.map((c, i) =>
+    `<span class="sw ${i === 0 ? "sel" : ""}" data-color="${c}" style="background:${c}"></span>`).join("");
+  const m = openModal({
+    title: t("new_code"),
+    bodyHtml: `
+      <div class="form-row"><label>${esc(t("name"))}</label><input type="text" id="ncName"></div>
+      <div class="form-row"><label>${esc(t("parent_code"))}</label>
+        <select id="ncParent">
+          <option value="">${esc(t("none"))}</option>
+          ${codes.map(c => `<option value="${c.id}" ${c.id === parentId ? "selected" : ""}>${"— ".repeat(c.depth)}${esc(c.name)}</option>`).join("")}
+        </select></div>
+      <div class="form-row"><label>${esc(t("color"))}</label><div class="color-swatches">${swatches}</div></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          const name = o.querySelector("#ncName").value.trim();
+          if (!name) return;
+          const parent = o.querySelector("#ncParent").value || null;
+          const color = o.querySelector(".sw.sel")?.dataset.color;
+          const code = addCode(name, parent, color);
+          if (parent) expandedCodes.add(parent);
+          close();
+          renderCodeTree(); renderStatus();
+          toast(t("code_created") + name);
+          if (onCreated) onCreated(code);
+        }
+      },
+    ],
+  });
+  m.body.querySelectorAll(".sw").forEach(sw => sw.onclick = () => {
+    m.body.querySelectorAll(".sw").forEach(x => x.classList.remove("sel"));
+    sw.classList.add("sel");
+  });
+}
+
+/* ================================================================
+   Volet 3 : navigateur de document + codage
+================================================================ */
+function hexToRgba(hex, alpha) {
+  const v = hex.replace("#", "");
+  const r = parseInt(v.slice(0, 2), 16), g = parseInt(v.slice(2, 4), 16), b = parseInt(v.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function renderBrowser() {
+  const el = $("#docBrowser");
+  const doc = getDoc(state.ui.currentDocId);
+  if (!doc) {
+    el.innerHTML = `<div class="empty-hint">${esc(t("hint_no_doc"))}</div>`;
+    $("#browserTitle").textContent = t("panel_browser");
+    return;
+  }
+  $("#browserTitle").textContent = "📖 " + doc.name;
+
+  const segs = state.ui.showHighlights ? segmentsOfDoc(doc.id) : [];
+  const paras = doc.text.split("\n");
+  const vars = Object.entries(doc.variables || {}).filter(([, v]) => v !== "").map(([k, v]) => `${k}: ${v}`).join(" · ");
+
+  let html = `<div class="doc-title-block"><h2>${esc(doc.name)}</h2>
+    <div class="doc-meta">${paras.length} ¶ · ${doc.text.length.toLocaleString()} car.${vars ? " · " + esc(vars) : ""}</div></div>
+    <div class="doc-content">`;
+
+  let offset = 0;
+  for (let i = 0; i < paras.length; i++) {
+    const text = paras[i];
+    const pStart = offset, pEnd = offset + text.length;
+    offset = pEnd + 1; // \n
+    html += `<div class="para" data-start="${pStart}"><span class="para-num">${i + 1}</span><span class="para-text">${renderParaText(text, pStart, segs)}</span></div>`;
+  }
+  html += "</div>";
+  el.innerHTML = html;
+
+  // Clic sur un segment surligné → fiche du segment
+  el.querySelectorAll("mark.seg").forEach(mark => {
+    mark.addEventListener("click", e => {
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed) return; // l'utilisateur est en train de sélectionner
+      e.stopPropagation();
+      const ids = mark.dataset.segids.split(",");
+      if (ids.length === 1) openSegmentModal(ids[0]);
+      else openSegmentChooser(ids);
+    });
+  });
+}
+
+// Rend un paragraphe avec surlignages ; préserve exactement le texte (offsets stables)
+function renderParaText(text, pStart, allSegs) {
+  const pEnd = pStart + text.length;
+  const segs = allSegs.filter(s => s.start < pEnd && s.end > pStart);
+
+  // Détection de locuteur (transcriptions) : « Nom : » en début de paragraphe
+  const spMatch = text.match(/^([^:\n]{1,32}?)\s?:/);
+  const speakerEnd = spMatch ? pStart + spMatch[0].length : -1;
+
+  const bounds = new Set([pStart, pEnd]);
+  if (speakerEnd > 0) bounds.add(speakerEnd);
+  for (const s of segs) {
+    bounds.add(Math.max(s.start, pStart));
+    bounds.add(Math.min(s.end, pEnd));
+  }
+  const pts = [...bounds].sort((a, b) => a - b);
+
+  let out = "";
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1];
+    if (a >= b) continue;
+    const chunk = esc(text.slice(a - pStart, b - pStart));
+    const covering = segs.filter(s => s.start <= a && s.end >= b);
+    const isSpeaker = speakerEnd > 0 && b <= speakerEnd;
+    if (covering.length) {
+      const code = getCode(covering[0].codeId);
+      const color = code ? hexToRgba(code.color, 0.35) : "var(--mark-multi)";
+      const names = covering.map(s => getCode(s.codeId)?.name ?? "?").join(" + ");
+      out += `<mark class="seg ${covering.length > 1 ? "multi" : ""} ${isSpeaker ? "speaker" : ""}" style="background:${color}" title="${esc(names)}" data-segids="${covering.map(s => s.id).join(",")}">${chunk}</mark>`;
+    } else if (isSpeaker) {
+      out += `<span class="speaker">${chunk}</span>`;
+    } else {
+      out += chunk;
+    }
+  }
+  return out || "&nbsp;";
+}
+
+/* ---------- Sélection de texte → offsets absolus ---------- */
+function absOffset(node, offsetInNode) {
+  let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  const paraText = el?.closest?.(".para-text");
+  if (!paraText) return null;
+  const pStart = Number(paraText.closest(".para").dataset.start);
+  if (node.nodeType !== Node.TEXT_NODE) {
+    // Ancré sur un élément : approximation par la somme des nœuds précédents
+    let acc = 0;
+    const kids = [...node.childNodes].slice(0, offsetInNode);
+    for (const k of kids) acc += k.textContent.length;
+    return pStart + acc;
+  }
+  let acc = 0;
+  const walker = document.createTreeWalker(paraText, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = walker.nextNode())) {
+    if (n === node) return pStart + acc + offsetInNode;
+    acc += n.textContent.length;
+  }
+  return null;
+}
+
+function getSelectionOffsets() {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
+  const r = sel.getRangeAt(0);
+  if (!$("#docBrowser").contains(r.commonAncestorContainer)) return null;
+  const a = absOffset(r.startContainer, r.startOffset);
+  const b = absOffset(r.endContainer, r.endOffset);
+  if (a == null || b == null || a === b) return null;
+  return { start: Math.min(a, b), end: Math.max(a, b) };
+}
+
+// Capture la sélection courante (avant qu'un clic de bouton ne la fasse disparaître)
+function captureSelection() {
+  return getSelectionOffsets() || pendingSelection;
+}
+
+function showCodingPopup(x, y, sel) {
+  pendingSelection = sel;
+  const popup = $("#codingPopup");
+  const list = $("#codingPopupList");
+  const codes = flatCodes();
+  list.innerHTML = codes.length
+    ? codes.map(c => `<div class="popup-code" data-id="${c.id}" style="padding-left:${8 + c.depth * 14}px">
+        <span class="code-dot" style="background:${esc(c.color)}"></span><span>${esc(c.name)}</span></div>`).join("")
+    : `<div style="padding:8px;color:var(--text-soft)">${esc(t("select_code_first"))}</div>`;
+  list.querySelectorAll(".popup-code").forEach(el => {
+    el.onclick = () => { applyCodeToSelection(el.dataset.id, pendingSelection); hideCodingPopup(); };
+  });
+  popup.hidden = false;
+  const pw = popup.offsetWidth, ph = popup.offsetHeight;
+  popup.style.left = Math.min(x + 6, window.innerWidth - pw - 10) + "px";
+  popup.style.top = Math.min(y + 10, window.innerHeight - ph - 10) + "px";
+}
+
+function hideCodingPopup() {
+  $("#codingPopup").hidden = true;
+}
+
+function applyCodeToSelection(codeId, sel) {
+  const doc = getDoc(state.ui.currentDocId);
+  if (!doc || !sel) return;
+  const start = Math.max(0, sel.start), end = Math.min(doc.text.length, sel.end);
+  if (end <= start) return;
+  addSegment(doc.id, codeId, start, end, doc.text.slice(start, end));
+  pendingSelection = null;
+  window.getSelection()?.removeAllRanges();
+  renderBrowser(); renderCodeTree(); renderDocTree(); renderPanel4(); renderStatus();
+  toast(t("coded_with") + " « " + (getCode(codeId)?.name ?? "?") + " »");
+}
+
+function inVivoCode(sel) {
+  const doc = getDoc(state.ui.currentDocId);
+  if (!doc || !sel) return;
+  const raw = doc.text.slice(sel.start, sel.end).trim().replace(/\s+/g, " ");
+  const name = raw.length > 40 ? raw.slice(0, 37) + "…" : raw;
+  if (!name) return;
+  const code = addCode(name);
+  applyCodeToSelection(code.id, sel);
+}
+
+/* ---------- Fiche segment (poids, commentaire, suppression) ---------- */
+function openSegmentModal(segId) {
+  const s = getSegment(segId);
+  if (!s) return;
+  const code = getCode(s.codeId), doc = getDoc(s.docId);
+  openModal({
+    title: t("edit_segment"),
+    bodyHtml: `
+      <p><span class="badge" style="background:${esc(hexToRgba(code?.color ?? "#888", 0.3))}">${esc(code?.name ?? "?")}</span>
+        · <strong>${esc(doc?.name ?? "?")}</strong></p>
+      <blockquote style="border-left:3px solid ${esc(code?.color ?? "#888")};margin:8px 0;padding:4px 12px;white-space:pre-wrap">${esc(s.text)}</blockquote>
+      <div class="form-row"><label>${esc(t("weight"))} (1–100)</label><input type="number" id="segWeight" min="1" max="100" value="${s.weight}" style="width:110px;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)"></div>
+      <div class="form-row"><label>${esc(t("comment"))}</label><textarea id="segComment" style="min-height:70px">${esc(s.comment)}</textarea></div>`,
+    footer: [
+      { label: t("uncode"), danger: true, onClick: (o, close) => { deleteSegment(s.id); close(); renderBrowser(); renderCodeTree(); renderDocTree(); renderPanel4(); renderStatus(); toast(t("segment_deleted")); } },
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          s.weight = Math.max(1, Math.min(100, Number(o.querySelector("#segWeight").value) || 1));
+          s.comment = o.querySelector("#segComment").value;
+          scheduleSave(); close(); renderPanel4();
+        }
+      },
+    ],
+  });
+}
+
+function openSegmentChooser(segIds) {
+  const items = segIds.map(id => {
+    const s = getSegment(id);
+    const c = s && getCode(s.codeId);
+    return s ? `<div class="popup-code" data-id="${s.id}" style="padding:6px 8px"><span class="code-dot" style="background:${esc(c?.color ?? "#888")}"></span> ${esc(c?.name ?? "?")}</div>` : "";
+  }).join("");
+  const m = openModal({ title: t("edit_segment"), bodyHtml: `<div>${items}</div>` });
+  m.body.querySelectorAll(".popup-code").forEach(el => {
+    el.onclick = () => { m.close(); openSegmentModal(el.dataset.id); };
+  });
+}
+
+/* ================================================================
+   Volet 4 : segments récupérés / résultats de recherche
+================================================================ */
+function retrieveSegments() {
+  const dOn = state.ui.activatedDocs, cOn = state.ui.activatedCodes;
+  let segs = state.project.segments.filter(s => dOn.has(s.docId) && cOn.has(s.codeId));
+  if (state.ui.retrievalMode === "and") {
+    // Intersection : ne garde que les segments chevauchant un segment d'un AUTRE code activé
+    segs = segs.filter(s =>
+      state.project.segments.some(o =>
+        o.id !== s.id && o.docId === s.docId && cOn.has(o.codeId) && o.codeId !== s.codeId &&
+        o.start < s.end && s.start < o.end));
+  }
+  return segs.sort((a, b) => (a.docId === b.docId ? a.start - b.start : 0));
+}
+
+function renderPanel4() {
+  const el = $("#retrievedPanel");
+  if (panel4Mode === "search") { renderSearchResults(el); return; }
+  const segs = retrieveSegments();
+  if (!segs.length) {
+    el.innerHTML = `<div class="empty-hint">${esc(t("no_segments"))}</div>`;
+    return;
+  }
+  let html = `<div class="panel-toolbar">
+    <span>${segs.length} ${esc(t("segments_lbl"))}</span>
+    <button class="mini-btn" id="btnExportRetrieved" title="CSV" style="width:auto;padding:0 8px">⬇ CSV</button>
+    <button class="mini-btn" id="btnPrintRetrieved" title="${esc(t("export_report"))}" style="width:auto;padding:0 8px">🖨️</button>
+  </div>`;
+  for (const s of segs) {
+    const code = getCode(s.codeId), doc = getDoc(s.docId);
+    html += `<div class="seg-card" data-id="${s.id}">
+      <div class="seg-card-head">
+        <span class="badge" style="background:${esc(hexToRgba(code?.color ?? "#888", 0.3))}">${esc(code?.name ?? "?")}</span>
+        <span class="src" data-doc="${s.docId}" data-start="${s.start}">${esc(doc?.name ?? "?")}</span>
+        ${s.weight !== 1 ? `<span class="weight-badge">${esc(t("weight"))}: ${s.weight}</span>` : ""}
+        ${s.coder ? `<span class="weight-badge">👤 ${esc(s.coder)}</span>` : ""}
+        <span class="spacer"></span>
+        <button class="mini-btn" data-act="edit" title="${esc(t("edit_segment"))}">✏️</button>
+      </div>
+      <div class="seg-card-body">${esc(s.text)}</div>
+      ${s.comment ? `<div class="seg-comment">💬 ${esc(s.comment)}</div>` : ""}
+    </div>`;
+  }
+  el.innerHTML = html;
+  el.querySelector("#btnExportRetrieved").onclick = () => { exportSegmentsCsv(segs); toast(t("export_done")); };
+  el.querySelector("#btnPrintRetrieved").onclick = () => openPrintableReport(segs);
+  el.querySelectorAll("[data-act=edit]").forEach(b => b.onclick = () => openSegmentModal(b.closest(".seg-card").dataset.id));
+  el.querySelectorAll(".src").forEach(sp => sp.onclick = () => gotoDocPosition(sp.dataset.doc, Number(sp.dataset.start)));
+}
+
+function gotoDocPosition(docId, charPos) {
+  state.ui.currentDocId = docId;
+  renderDocTree(); renderBrowser();
+  // Fait défiler jusqu'au paragraphe contenant la position
+  const paras = [...$("#docBrowser").querySelectorAll(".para")];
+  const target = paras.findLast
+    ? paras.findLast(p => Number(p.dataset.start) <= charPos)
+    : paras.filter(p => Number(p.dataset.start) <= charPos).pop();
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    target.style.transition = "background 0.4s";
+    target.style.background = "var(--accent-soft)";
+    setTimeout(() => { target.style.background = ""; }, 1600);
+  }
+}
+
+/* ---------- Recherche plein texte ---------- */
+function runSearch() {
+  const q = $("#searchInput").value.trim();
+  if (!q) return;
+  searchQuery = q;
+  searchResults = searchDocuments(q);
+  panel4Mode = "search";
+  renderPanel4();
+}
+
+function renderSearchResults(el) {
+  let html = `<div class="panel-toolbar">
+    <strong>${esc(t("search_results"))} « ${esc(searchQuery)} » — ${searchResults.length}</strong>
+    <button class="mini-btn" id="btnCloseSearch" style="width:auto;padding:0 8px">✕ ${esc(t("close"))}</button>
+  </div>`;
+  if (!searchResults.length) html += `<div class="empty-hint">${esc(t("search_none"))}</div>`;
+  for (const r of searchResults.slice(0, 500)) {
+    const doc = getDoc(r.docId);
+    let frag = esc(r.text.length > 260 ? r.text.slice(0, 260) + "…" : r.text);
+    for (const term of r.terms) {
+      frag = frag.replace(new RegExp("(" + term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi"), "<b>$1</b>");
+    }
+    html += `<div class="search-hit" data-doc="${r.docId}" data-start="${r.paraStart}">
+      <div class="hit-src">${esc(doc?.name ?? "?")} · ¶ ${r.paraIndex + 1}</div>
+      <div class="hit-text">${frag}</div></div>`;
+  }
+  el.innerHTML = html;
+  el.querySelector("#btnCloseSearch").onclick = () => { panel4Mode = "segments"; renderPanel4(); };
+  el.querySelectorAll(".search-hit").forEach(h => h.onclick = () => gotoDocPosition(h.dataset.doc, Number(h.dataset.start)));
+}
+
+/* ================================================================
+   Importation
+================================================================ */
+function openPasteDoc() {
+  const groups = state.project.documentGroups;
+  openModal({
+    title: t("paste_doc"),
+    wide: true,
+    bodyHtml: `
+      <div class="form-row"><label>${esc(t("doc_title"))}</label><input type="text" id="pdName"></div>
+      <div class="form-row"><label>${esc(t("group"))}</label>
+        <select id="pdGroup"><option value="">${esc(t("none"))}</option>
+        ${groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("")}</select></div>
+      <div class="form-row"><label>${esc(t("doc_text"))}</label><textarea id="pdText" style="min-height:240px"></textarea></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("add_doc"), primary: true, onClick: (o, close) => {
+          const name = o.querySelector("#pdName").value.trim() || "Document";
+          const text = o.querySelector("#pdText").value.replace(/\r\n/g, "\n");
+          if (!text.trim()) return;
+          const doc = addDocument(name, text, o.querySelector("#pdGroup").value || null);
+          state.ui.currentDocId = doc.id;
+          close(); renderAll();
+        }
+      },
+    ],
+  });
+}
+
+// Analyseur CSV minimal avec guillemets (séparateur , ou ;)
+function parseCsv(text) {
+  const sep = (text.split("\n")[0].match(/;/g) || []).length >= (text.split("\n")[0].match(/,/g) || []).length ? ";" : ",";
+  const rows = [];
+  let row = [], cell = "", inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQ) {
+      if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else inQ = false; }
+      else cell += ch;
+    } else if (ch === '"') inQ = true;
+    else if (ch === sep) { row.push(cell); cell = ""; }
+    else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); cell = "";
+      if (row.some(c => c.trim() !== "")) rows.push(row);
+      row = [];
+    } else cell += ch;
+  }
+  row.push(cell);
+  if (row.some(c => c.trim() !== "")) rows.push(row);
+  return rows;
+}
+
+function importCsv(text, baseName) {
+  const rows = parseCsv(text);
+  if (rows.length < 2) return toast(t("invalid_project"));
+  const header = rows[0].map(h => h.trim());
+  const group = addGroup(baseName);
+  expandedGroups.add(group.id);
+  let count = 0;
+  for (const row of rows.slice(1)) {
+    const title = (row[0] || "").trim() || `${baseName} ${count + 1}`;
+    const vars = {};
+    const paras = [];
+    for (let c = 1; c < header.length; c++) {
+      const val = (row[c] || "").trim();
+      if (!val) continue;
+      // Réponses courtes = variables (questions fermées), longues = texte (questions ouvertes)
+      if (val.length <= 50) {
+        vars[header[c]] = val;
+        if (!state.project.variables.includes(header[c])) state.project.variables.push(header[c]);
+      } else {
+        paras.push(header[c] + " :\n" + val);
+      }
+    }
+    const doc = addDocument(title, paras.join("\n\n") || title, group.id);
+    doc.variables = vars;
+    count++;
+  }
+  scheduleSave();
+  renderAll();
+  toast(count + " " + t("import_done"));
+}
+
+function openStructuredImport() {
+  openModal({
+    title: t("structured_title"),
+    wide: true,
+    bodyHtml: `
+      <p style="color:var(--text-soft);font-size:13px">${esc(t("structured_hint"))}</p>
+      <div class="form-row"><textarea id="stText" style="min-height:260px" placeholder="#DOC Entretien 1\nTexte du premier document…\n#DOC Entretien 2\nTexte du second document…"></textarea></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          const text = o.querySelector("#stText").value.replace(/\r\n/g, "\n");
+          const parts = text.split(/^#DOC[ \t]+/m).filter(p => p.trim());
+          let count = 0;
+          for (const part of parts) {
+            const nl = part.indexOf("\n");
+            const name = (nl === -1 ? part : part.slice(0, nl)).trim();
+            const body = (nl === -1 ? "" : part.slice(nl + 1)).trim();
+            if (name && body) { addDocument(name, body); count++; }
+          }
+          close(); renderAll();
+          toast(count + " " + t("import_done"));
+        }
+      },
+    ],
+  });
+}
+
+/* ================================================================
+   Codage automatique (recherche lexicale, §2.4)
+================================================================ */
+function openAutoCode() {
+  const codes = flatCodes();
+  openModal({
+    title: t("autocode_title"),
+    bodyHtml: `
+      <div class="form-row"><label>${esc(t("autocode_term"))}</label><input type="text" id="acTerm"></div>
+      <div class="form-row"><label>${esc(t("autocode_code"))}</label>
+        <select id="acCode">${codes.map(c => `<option value="${c.id}">${"— ".repeat(c.depth)}${esc(c.name)}</option>`).join("")}</select></div>
+      <div class="form-row"><label>${esc(t("autocode_scope"))}</label>
+        <select id="acScope">
+          <option value="sentence">${esc(t("scope_sentence"))}</option>
+          <option value="match">${esc(t("scope_match"))}</option>
+          <option value="para">${esc(t("scope_para"))}</option>
+        </select></div>
+      <div class="form-row"><label>${esc(t("document"))}s</label>
+        <select id="acDocs">
+          <option value="all">${esc(t("all_docs"))}</option>
+          <option value="activated">${esc(t("sel_docs_hint"))}</option>
+        </select></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          const term = o.querySelector("#acTerm").value.trim();
+          const codeId = o.querySelector("#acCode").value;
+          const scope = o.querySelector("#acScope").value;
+          const which = o.querySelector("#acDocs").value;
+          if (!term || !codeId) return;
+          const docs = which === "activated"
+            ? state.project.documents.filter(d => state.ui.activatedDocs.has(d.id))
+            : state.project.documents;
+          let n = 0;
+          for (const doc of docs) {
+            const lower = doc.text.toLowerCase();
+            const kw = term.toLowerCase();
+            let idx = lower.indexOf(kw);
+            while (idx !== -1) {
+              let s = idx, e = idx + term.length;
+              if (scope === "para") {
+                s = doc.text.lastIndexOf("\n", idx) + 1;
+                const ne = doc.text.indexOf("\n", idx);
+                e = ne === -1 ? doc.text.length : ne;
+              } else if (scope === "sentence") {
+                const boundary = /[.!?…]/;
+                s = idx; while (s > 0 && !boundary.test(doc.text[s - 1]) && doc.text[s - 1] !== "\n") s--;
+                e = idx + term.length; while (e < doc.text.length && !boundary.test(doc.text[e]) && doc.text[e] !== "\n") e++;
+                if (e < doc.text.length && boundary.test(doc.text[e])) e++;
+                while (s < idx && doc.text[s] === " ") s++;
+              }
+              addSegment(doc.id, codeId, s, e, doc.text.slice(s, e));
+              n++;
+              idx = lower.indexOf(kw, idx + kw.length);
+            }
+          }
+          close(); renderAll();
+          toast(n + " " + t("autocode_done"));
+        }
+      },
+    ],
+  });
+}
+
+/* ================================================================
+   Mémos (§2.5)
+================================================================ */
+function openMemoEditor(targetType, targetId, targetName) {
+  const memo = getMemo(targetType, targetId);
+  openModal({
+    title: t("memo_for") + (targetType === "project" ? t("project") : targetName),
+    bodyHtml: `<div class="form-row"><label>${esc(t("memo_text"))}</label>
+      <textarea id="memoText" style="min-height:180px">${esc(targetType === "project" ? state.project.memo : (memo?.text ?? ""))}</textarea></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          const text = o.querySelector("#memoText").value;
+          if (targetType === "project") { state.project.memo = text; scheduleSave(); }
+          else if (text.trim()) upsertMemo(targetType, targetId, text, targetName);
+          else state.project.memos = state.project.memos.filter(m => !(m.targetType === targetType && m.targetId === targetId));
+          scheduleSave(); close(); renderDocTree(); renderCodeTree();
+        }
+      },
+    ],
+  });
+}
+
+function openMemoManager() {
+  const targetName = m => {
+    if (m.targetType === "document") return "📄 " + (getDoc(m.targetId)?.name ?? "?");
+    if (m.targetType === "code") return "🏷️ " + (getCode(m.targetId)?.name ?? "?");
+    if (m.targetType === "segment") return "✂️ " + t("segment");
+    return "🗂️ " + t("project");
+  };
+  const memos = state.project.memos;
+  let html = state.project.memo
+    ? `<div class="search-hit" data-type="project"><div class="hit-src">🗂️ ${esc(t("project"))}</div><div class="hit-text">${esc(state.project.memo.slice(0, 220))}</div></div>` : "";
+  html += memos.map(m => `<div class="search-hit" data-type="${m.targetType}" data-id="${m.targetId}">
+      <div class="hit-src">${esc(targetName(m))} · ${new Date(m.created).toLocaleDateString()}</div>
+      <div class="hit-text">${esc(m.text.slice(0, 220))}</div></div>`).join("");
+  if (!html) html = `<div class="empty-hint">${esc(t("no_memos"))}</div>`;
+  const m = openModal({ title: t("memos_title"), wide: true, bodyHtml: html });
+  m.body.querySelectorAll(".search-hit").forEach(el => {
+    el.onclick = () => {
+      m.close();
+      const type = el.dataset.type;
+      if (type === "project") openMemoEditor("project", null, "");
+      else if (type === "document") openMemoEditor("document", el.dataset.id, getDoc(el.dataset.id)?.name ?? "");
+      else if (type === "code") openMemoEditor("code", el.dataset.id, getCode(el.dataset.id)?.name ?? "");
+    };
+  });
+}
+
+/* ================================================================
+   Variables de document (§2.3) et éditeur de données
+================================================================ */
+function openVariablesList() {
+  const render = body => {
+    body.innerHTML = `
+      ${state.project.variables.map((v, i) => `
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+          <span style="flex:1">🧮 ${esc(v)}</span>
+          <button class="mini-btn" data-del="${i}">🗑️</button>
+        </div>`).join("") || `<p style="color:var(--text-soft)">${esc(t("none"))}</p>`}
+      <div class="form-row" style="display:flex;gap:8px;margin-top:14px">
+        <input type="text" id="newVarName" placeholder="${esc(t("var_name"))}" style="flex:1">
+        <button class="btn primary" id="addVarBtn">${esc(t("add_variable"))}</button>
+      </div>`;
+    body.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+      const name = state.project.variables[Number(b.dataset.del)];
+      state.project.variables.splice(Number(b.dataset.del), 1);
+      state.project.documents.forEach(d => { if (d.variables) delete d.variables[name]; });
+      scheduleSave(); render(body);
+    });
+    body.querySelector("#addVarBtn").onclick = () => {
+      const name = body.querySelector("#newVarName").value.trim();
+      if (name && !state.project.variables.includes(name)) {
+        state.project.variables.push(name);
+        scheduleSave(); render(body);
+      }
+    };
+  };
+  const m = openModal({ title: t("variables_title"), bodyHtml: "" });
+  render(m.body);
+}
+
+function openDataEditor() {
+  const vars = state.project.variables;
+  const html = `<div class="table-scroll"><table class="data-table">
+    <thead><tr><th>${esc(t("document"))}</th>${vars.map(v => `<th>${esc(v)}</th>`).join("")}</tr></thead>
+    <tbody>${state.project.documents.map(d => `
+      <tr><td>${esc(d.name)}</td>${vars.map(v => `
+        <td><input type="text" data-doc="${d.id}" data-var="${esc(v)}" value="${esc(d.variables?.[v] ?? "")}"
+          style="border:none;background:transparent;color:inherit;width:110px;font-size:12.5px"></td>`).join("")}</tr>`).join("")}
+    </tbody></table></div>`;
+  const m = openModal({
+    title: t("data_editor_title"), wide: true, bodyHtml: html,
+    footer: [{ label: t("close"), primary: true, onClick: (o, close) => close() }],
+  });
+  m.body.querySelectorAll("input[data-doc]").forEach(inp => {
+    inp.addEventListener("change", () => {
+      const doc = getDoc(inp.dataset.doc);
+      if (!doc) return;
+      doc.variables = doc.variables || {};
+      doc.variables[inp.dataset.var] = inp.value.trim();
+      scheduleSave();
+    });
+  });
+}
+
+function openDocProps(doc) {
+  const groups = state.project.documentGroups;
+  const vars = state.project.variables;
+  // Locuteurs détectés (utile pour les transcriptions)
+  const speakers = [...new Set(doc.text.split("\n").map(l => (l.match(/^([^:\n]{1,32}?)\s?:/) || [])[1]).filter(Boolean))];
+  openModal({
+    title: t("doc_props_title"),
+    bodyHtml: `
+      <div class="form-row"><label>${esc(t("name"))}</label><input type="text" id="dpName" value="${esc(doc.name)}"></div>
+      <div class="form-row"><label>${esc(t("group"))}</label>
+        <select id="dpGroup"><option value="">${esc(t("none"))}</option>
+        ${groups.map(g => `<option value="${g.id}" ${doc.groupId === g.id ? "selected" : ""}>${esc(g.name)}</option>`).join("")}</select></div>
+      ${vars.map(v => `<div class="form-row"><label>${esc(v)}</label><input type="text" data-var="${esc(v)}" value="${esc(doc.variables?.[v] ?? "")}"></div>`).join("")}
+      ${speakers.length ? `<div class="form-row"><label>${esc(t("speakers_detected"))}</label><p style="margin:2px 0">${speakers.map(s => `<span class="badge" style="background:var(--accent-soft)">${esc(s)}</span>`).join(" ")}</p></div>` : ""}`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          doc.name = o.querySelector("#dpName").value.trim() || doc.name;
+          doc.groupId = o.querySelector("#dpGroup").value || null;
+          doc.variables = doc.variables || {};
+          o.querySelectorAll("input[data-var]").forEach(inp => { doc.variables[inp.dataset.var] = inp.value.trim(); });
+          scheduleSave(); close(); renderAll();
+        }
+      },
+    ],
+  });
+}
+
+/* ================================================================
+   Analyses (§2.6)
+================================================================ */
+function heatColor(v, max) {
+  if (!v) return "";
+  const alpha = 0.15 + 0.55 * Math.min(1, v / (max || 1));
+  return `background:rgba(38,96,164,${alpha.toFixed(2)});color:${alpha > 0.45 ? "#fff" : "inherit"}`;
+}
+
+function openCodeMatrix() {
+  const codes = flatCodes();
+  const docs = state.project.documents;
+  const { matrix } = codeMatrix(docs, codes);
+  const max = Math.max(1, ...matrix.flat());
+  const html = `<div class="table-scroll"><table class="data-table">
+    <thead><tr><th>${esc(t("code"))}</th>${docs.map(d => `<th title="${esc(d.name)}">${esc(d.name.length > 18 ? d.name.slice(0, 16) + "…" : d.name)}</th>`).join("")}<th>${esc(t("total"))}</th></tr></thead>
+    <tbody>${codes.map((c, i) => `
+      <tr><td style="padding-left:${10 + c.depth * 16}px"><span class="code-dot" style="background:${esc(c.color)};display:inline-block;vertical-align:-2px"></span> ${esc(c.name)}</td>
+      ${matrix[i].map((v, j) => `<td class="heat" data-code="${c.id}" data-doc="${docs[j].id}" style="${heatColor(v, max)}">${v || ""}</td>`).join("")}
+      <td class="num"><strong>${matrix[i].reduce((a, b) => a + b, 0)}</strong></td></tr>`).join("")}
+    </tbody></table></div>`;
+  const m = openModal({
+    title: t("matrix_title"), wide: true, bodyHtml: html,
+    footer: [
+      { label: "CSV", onClick: () => { exportMatrixCsv(); toast(t("export_done")); } },
+      { label: t("close"), primary: true, onClick: (o, close) => close() },
+    ],
+  });
+  // Clic sur une cellule → active le couple document/code et affiche les segments
+  m.body.querySelectorAll("td.heat").forEach(td => {
+    td.onclick = () => {
+      if (!td.textContent) return;
+      state.ui.activatedDocs = new Set([td.dataset.doc]);
+      state.ui.activatedCodes = new Set([td.dataset.code]);
+      panel4Mode = "segments";
+      m.close();
+      renderDocTree(); renderCodeTree(); renderPanel4();
+    };
+  });
+}
+
+function openCooc() {
+  const codes = flatCodes();
+  const { matrix } = coocMatrix(codes);
+  const max = Math.max(1, ...matrix.flat());
+  const html = `<div class="table-scroll"><table class="data-table">
+    <thead><tr><th></th>${codes.map(c => `<th title="${esc(c.name)}">${esc(c.name.length > 14 ? c.name.slice(0, 12) + "…" : c.name)}</th>`).join("")}</tr></thead>
+    <tbody>${codes.map((c, i) => `
+      <tr><td><span class="code-dot" style="background:${esc(c.color)};display:inline-block;vertical-align:-2px"></span> ${esc(c.name)}</td>
+      ${matrix[i].map((v, j) => i === j ? `<td style="background:var(--bg-ribbon)"></td>` : `<td class="heat" style="${heatColor(v, max)}">${v || ""}</td>`).join("")}</tr>`).join("")}
+    </tbody></table></div>`;
+  openModal({ title: t("cooc_title"), wide: true, bodyHtml: html, footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }] });
+}
+
+function openGroupCompare() {
+  const vars = state.project.variables;
+  if (!vars.length) return openVariablesList();
+  const renderTable = (body, variable) => {
+    const codes = flatCodes();
+    const { values, matrix } = groupComparison(variable, codes);
+    const max = Math.max(1, ...matrix.flat());
+    body.querySelector("#gcTable").innerHTML = `<div class="table-scroll"><table class="data-table">
+      <thead><tr><th>${esc(t("code"))}</th>${values.map(v => `<th>${esc(v)}</th>`).join("")}</tr></thead>
+      <tbody>${codes.map((c, i) => `
+        <tr><td style="padding-left:${10 + c.depth * 16}px">${esc(c.name)}</td>
+        ${matrix[i].map(v => `<td class="heat" style="${heatColor(v, max)}">${v || ""}</td>`).join("")}</tr>`).join("")}
+      </tbody></table></div>`;
+  };
+  const m = openModal({
+    title: t("groupcomp_title"), wide: true,
+    bodyHtml: `<div class="form-row"><label>${esc(t("variable"))}</label>
+      <select id="gcVar">${vars.map(v => `<option>${esc(v)}</option>`).join("")}</select></div><div id="gcTable"></div>`,
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  const sel = m.body.querySelector("#gcVar");
+  sel.onchange = () => renderTable(m.body, sel.value);
+  renderTable(m.body, sel.value);
+}
+
+function analysisDocs() {
+  const activated = state.project.documents.filter(d => state.ui.activatedDocs.has(d.id));
+  return activated.length ? activated : state.project.documents;
+}
+
+function openWordFreq() {
+  const renderTable = body => {
+    const minLength = Number(body.querySelector("#wfMin").value) || 3;
+    const useStopwords = body.querySelector("#wfStop").checked;
+    const freqs = wordFrequencies(analysisDocs(), { minLength, useStopwords }).slice(0, 300);
+    const total = freqs.reduce((a, [, n]) => a + n, 0);
+    body.querySelector("#wfTable").innerHTML = `<div class="table-scroll"><table class="data-table">
+      <thead><tr><th>#</th><th>${esc(t("word"))}</th><th>${esc(t("freq"))}</th><th>${esc(t("percent"))}</th></tr></thead>
+      <tbody>${freqs.map(([w, n], i) => `<tr><td class="num">${i + 1}</td><td>${esc(w)}</td><td class="num">${n}</td><td class="num">${(100 * n / total).toFixed(1)}</td></tr>`).join("")}</tbody>
+      </table></div>`;
+  };
+  const m = openModal({
+    title: t("wordfreq_title") + " — " + (state.ui.activatedDocs.size ? t("sel_docs_hint") : t("all_docs")),
+    wide: true,
+    bodyHtml: `<div class="panel-toolbar" style="gap:16px">
+        <label>${esc(t("min_length"))} <input type="number" id="wfMin" value="3" min="1" max="12" style="width:56px"></label>
+        <label><input type="checkbox" id="wfStop" checked> ${esc(t("stopwords"))}</label>
+      </div><div id="wfTable"></div>`,
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  m.body.querySelector("#wfMin").onchange = () => renderTable(m.body);
+  m.body.querySelector("#wfStop").onchange = () => renderTable(m.body);
+  renderTable(m.body);
+}
+
+function openKwic() {
+  const m = openModal({
+    title: t("kwic_title"), wide: true,
+    bodyHtml: `<div class="form-row" style="display:flex;gap:8px">
+        <input type="text" id="kwTerm" placeholder="${esc(t("kwic_term"))}" style="flex:1">
+        <button class="btn primary" id="kwGo">${esc(t("search"))}</button>
+      </div><div id="kwTable"></div>`,
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  const run = () => {
+    const term = m.body.querySelector("#kwTerm").value.trim();
+    if (!term) return;
+    const hits = kwic(analysisDocs(), term).slice(0, 400);
+    m.body.querySelector("#kwTable").innerHTML = `<div class="table-scroll"><table class="data-table kwic-table">
+      <thead><tr><th>${esc(t("document"))}</th><th>${esc(t("context"))} ◀</th><th></th><th>▶ ${esc(t("context"))}</th></tr></thead>
+      <tbody>${hits.map(h => `<tr><td>${esc(h.docName)}</td><td class="left">…${esc(h.left)}</td><td class="kw">${esc(h.match)}</td><td class="right">${esc(h.right)}…</td></tr>`).join("")}</tbody>
+      </table></div><p style="color:var(--text-soft);font-size:12px">${hits.length} occurrence(s)</p>`;
+  };
+  m.body.querySelector("#kwGo").onclick = run;
+  m.body.querySelector("#kwTerm").addEventListener("keydown", e => { if (e.key === "Enter") run(); });
+}
+
+function openStats() {
+  const stats = variableStats();
+  const docs = state.project.documents;
+  let html = `<p><strong>${docs.length}</strong> ${esc(t("docs"))} · <strong>${state.project.codes.length}</strong> ${esc(t("codes_lbl"))} · <strong>${state.project.segments.length}</strong> ${esc(t("segments_lbl"))}</p>`;
+  for (const s of stats) {
+    html += `<h4 style="margin:14px 0 6px">🧮 ${esc(s.variable)} (n=${s.n})</h4>
+      <div class="table-scroll"><table class="data-table">
+      <thead><tr><th>${esc(t("value"))}</th><th>${esc(t("count"))}</th><th>${esc(t("percent"))}</th></tr></thead>
+      <tbody>${s.values.map(([v, n]) => `<tr><td>${esc(v)}</td><td class="num">${n}</td><td class="num">${(100 * n / s.n).toFixed(1)}</td></tr>`).join("")}</tbody>
+      </table></div>`;
+  }
+  openModal({ title: t("stats_title"), wide: true, bodyHtml: html, footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }] });
+}
+
+/* ================================================================
+   Visualisations (§2.7)
+================================================================ */
+function openPortrait() {
+  const docs = state.project.documents;
+  if (!docs.length) return;
+  const render = (body, docId) => {
+    const segs = segmentsOfDoc(docId).sort((a, b) => a.start - b.start);
+    const usedCodes = [...new Set(segs.map(s => s.codeId))].map(getCode).filter(Boolean);
+    body.querySelector("#ptView").innerHTML = `
+      <p style="color:var(--text-soft);font-size:12.5px">${esc(t("portrait_hint"))}</p>
+      <div class="portrait">${segs.map(s => {
+        const c = getCode(s.codeId);
+        const size = Math.max(14, Math.min(46, Math.round(Math.sqrt(s.end - s.start) * 2)));
+        return `<span class="cell" style="background:${esc(c?.color ?? "#888")};width:${size}px;height:18px" title="${esc((c?.name ?? "?") + " — " + s.text.slice(0, 90))}"></span>`;
+      }).join("")}</div>
+      <div class="legend">${usedCodes.map(c => `<span class="item"><span class="code-dot" style="background:${esc(c.color)}"></span>${esc(c.name)}</span>`).join("")}</div>`;
+  };
+  const m = openModal({
+    title: t("portrait_title"), wide: true,
+    bodyHtml: `<div class="form-row"><select id="ptDoc">${docs.map(d => `<option value="${d.id}" ${d.id === state.ui.currentDocId ? "selected" : ""}>${esc(d.name)}</option>`).join("")}</select></div><div id="ptView"></div>`,
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  const sel = m.body.querySelector("#ptDoc");
+  sel.onchange = () => render(m.body, sel.value);
+  render(m.body, sel.value);
+}
+
+function openWordCloud() {
+  const freqs = wordFrequencies(analysisDocs(), { minLength: 3, useStopwords: true }).slice(0, 60);
+  const max = freqs[0]?.[1] || 1;
+  const html = `<div class="word-cloud">${freqs.map(([w, n], i) => {
+    const size = 13 + Math.round(34 * Math.sqrt(n / max));
+    const color = CODE_COLORS[i % CODE_COLORS.length];
+    return `<span style="font-size:${size}px;color:${color}" title="${n}">${esc(w)}</span>`;
+  }).join("")}</div>`;
+  openModal({
+    title: t("wordcloud_title") + " — " + (state.ui.activatedDocs.size ? t("sel_docs_hint") : t("all_docs")),
+    wide: true, bodyHtml: html,
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+}
+
+function openBarChart() {
+  const codes = flatCodes().map(c => ({ ...c, n: state.project.segments.filter(s => s.codeId === c.id).length }))
+    .filter(c => c.n > 0).sort((a, b) => b.n - a.n);
+  const max = codes[0]?.n || 1;
+  const html = `<div class="bar-chart">${codes.map(c => `
+    <div class="bar-row">
+      <span class="bar-label" title="${esc(c.name)}">${esc(c.name)}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${(100 * c.n / max).toFixed(1)}%;background:${esc(c.color)}">${c.n}</span></span>
+    </div>`).join("")}</div>`;
+  openModal({ title: t("barchart_title"), wide: true, bodyHtml: html, footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }] });
+}
+
+/* ================================================================
+   Protection par mot de passe (§2.1, §3.4)
+================================================================ */
+// Demande un mot de passe ; résout avec la saisie ou null si annulé
+function askPassword(title = t("enter_password")) {
+  return new Promise(resolve => {
+    const m = openModal({
+      title: t("protect_title"),
+      bodyHtml: `<div class="form-row"><label>${esc(title)}</label><input type="password" id="pwInput" autocomplete="off"></div>`,
+      footer: [
+        { label: t("cancel"), onClick: (o, close) => { close(); resolve(null); } },
+        { label: t("ok"), primary: true, onClick: (o, close) => { const v = o.querySelector("#pwInput").value; if (v) { close(); resolve(v); } } },
+      ],
+    });
+    m.body.querySelector("#pwInput").addEventListener("keydown", e => {
+      if (e.key === "Enter" && e.target.value) { m.close(); resolve(e.target.value); }
+    });
+    m.overlay.addEventListener("mousedown", e => { if (e.target === m.overlay) resolve(null); });
+  });
+}
+
+// Lit un fichier .projx (en clair ou chiffré) ; retourne le projet normalisé ou null
+async function readProjectFile(file) {
+  let raw;
+  try {
+    raw = JSON.parse(await file.text());
+  } catch {
+    toast(t("invalid_project"));
+    return null;
+  }
+  if (isEncryptedEnvelope(raw)) {
+    // Boucle de saisie tant que le mot de passe est incorrect (annulation possible)
+    for (;;) {
+      const pw = await askPassword();
+      if (!pw) return null;
+      try {
+        const json = await decryptProjectEnvelope(raw, pw);
+        const p = JSON.parse(json);
+        if (p.format !== "qualicode-projx") throw new Error("format");
+        projectPassword = pw;
+        return normalizeProject(p);
+      } catch {
+        toast(t("wrong_password"));
+      }
+    }
+  }
+  if (raw.format !== "qualicode-projx") {
+    toast(t("invalid_project"));
+    return null;
+  }
+  return normalizeProject(raw);
+}
+
+function openProtectModal() {
+  const isProtected = !!state.project.protected;
+  openModal({
+    title: t("protect_title"),
+    bodyHtml: `
+      <p style="color:var(--text-soft);font-size:13px">${esc(t("protection_hint"))}</p>
+      ${isProtected ? `<p><strong>🔒 ${esc(t("protection_active"))}</strong></p>` : ""}
+      <div class="form-row"><label>${esc(t("password"))}</label><input type="password" id="ppPw" autocomplete="new-password"></div>
+      <div class="form-row"><label>${esc(t("password_confirm"))}</label><input type="password" id="ppPw2" autocomplete="new-password"></div>`,
+    footer: [
+      ...(isProtected ? [{
+        label: t("remove_protection"), danger: true, onClick: (o, close) => {
+          state.project.protected = false;
+          projectPassword = null;
+          scheduleSave(); close(); toast(t("protection_off"));
+        }
+      }] : []),
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          const pw = o.querySelector("#ppPw").value;
+          const pw2 = o.querySelector("#ppPw2").value;
+          if (!pw) return;
+          if (pw !== pw2) return toast(t("password_mismatch"));
+          state.project.protected = true;
+          projectPassword = pw;
+          scheduleSave(); close(); toast(t("protection_on"));
+        }
+      },
+    ],
+  });
+}
+
+/* ================================================================
+   Fusion de projets et accord inter-codeurs (§2.1, §2.9)
+================================================================ */
+function openMergeModal(incoming) {
+  openModal({
+    title: t("merge_title"),
+    bodyHtml: `
+      <p>🧬 <strong>${esc(incoming.name)}</strong> — ${incoming.documents?.length ?? 0} ${esc(t("docs"))},
+        ${incoming.codes?.length ?? 0} ${esc(t("codes_lbl"))}, ${incoming.segments?.length ?? 0} ${esc(t("segments_lbl"))}</p>
+      <div class="form-row"><label>${esc(t("coder_label_q"))}</label><input type="text" id="mgCoder" value="C2"></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          const label = o.querySelector("#mgCoder").value.trim() || "C2";
+          const stats = mergeProjects(state.project, incoming, label);
+          persistNow();
+          close(); renderAll();
+          const names = t("merge_stats").split("|");
+          const values = [stats.docsMatched, stats.docsAdded, stats.codesMatched, stats.codesAdded, stats.segmentsAdded, stats.segmentsSkipped];
+          toast(t("merge_done") + " — " + values.map((v, i) => `${v} ${names[i]}`).join(", "));
+        }
+      },
+    ],
+  });
+}
+
+function openKappa() {
+  const labels = coderLabels(state.project);
+  if (labels.length < 2) {
+    return openModal({
+      title: t("kappa_title"),
+      bodyHtml: `<div class="empty-hint">${esc(t("need_two_coders"))}</div>`,
+      footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+    });
+  }
+  const renderTable = body => {
+    const coderA = body.querySelector("#kpA").value;
+    const coderB = body.querySelector("#kpB").value;
+    const r = interCoderAgreement(state.project, coderA, coderB);
+    const fmtK = k => (Math.round(k * 100) / 100).toFixed(2);
+    const kColor = k => k > 0.8 ? "#59a14f" : k > 0.6 ? "#8cd17d" : k > 0.4 ? "#edc948" : k > 0.2 ? "#f28e2b" : "#e15759";
+    const row = (label, x, bold = false) => `
+      <tr ${bold ? 'style="font-weight:700;border-top:2px solid var(--border)"' : ""}>
+        <td>${label}</td>
+        <td class="num">${x.a}</td><td class="num">${x.b}</td><td class="num">${x.c}</td><td class="num">${x.d}</td>
+        <td class="num">${(100 * x.po).toFixed(1)} %</td>
+        <td class="num" style="color:${kColor(x.kappa)};font-weight:700">${fmtK(x.kappa)}</td>
+        <td>${esc(t(kappaInterpretation(x.kappa)))}</td>
+      </tr>`;
+    body.querySelector("#kpTable").innerHTML = `
+      <p style="color:var(--text-soft);font-size:12.5px">${r.sharedDocs} ${esc(t("kappa_basis"))} — ${r.units} ¶</p>
+      <div class="table-scroll"><table class="data-table">
+        <thead><tr><th>${esc(t("code"))}</th><th>A∩B</th><th>A seul</th><th>B seul</th><th>ni A ni B</th>
+          <th>${esc(t("agreement"))}</th><th>κ</th><th>${esc(t("interpretation"))}</th></tr></thead>
+        <tbody>
+          ${r.perCode.map(x => row(`<span class="code-dot" style="background:${esc(x.code.color)};display:inline-block;vertical-align:-2px"></span> ${esc(x.code.name)}`, x)).join("")}
+          ${row(esc(t("overall")), r.overall, true)}
+        </tbody></table></div>`;
+  };
+  const m = openModal({
+    title: t("kappa_title"), wide: true,
+    bodyHtml: `
+      <div class="panel-toolbar" style="gap:16px">
+        <label>${esc(t("coder_a"))} <select id="kpA">${labels.map(l => `<option>${esc(l)}</option>`).join("")}</select></label>
+        <label>${esc(t("coder_b"))} <select id="kpB">${labels.map((l, i) => `<option ${i === 1 ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
+      </div><div id="kpTable"></div>`,
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  m.body.querySelector("#kpA").onchange = () => renderTable(m.body);
+  m.body.querySelector("#kpB").onchange = () => renderTable(m.body);
+  renderTable(m.body);
+}
+
+/* ================================================================
+   Corbeille (§3.5)
+================================================================ */
+function openTrash() {
+  const render = body => {
+    const { documents, codes } = state.project.trash;
+    if (!documents.length && !codes.length) {
+      body.innerHTML = `<div class="empty-hint">${esc(t("trash_empty"))}</div>`;
+      return;
+    }
+    body.innerHTML = `
+      ${documents.map((item, i) => `
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+          <span style="flex:1">📄 ${esc(item.doc.name)} <small style="color:var(--text-soft)">(${item.segments.length} seg.)</small></span>
+          <button class="btn" data-rdoc="${i}">${esc(t("restore"))}</button>
+        </div>`).join("")}
+      ${codes.map((item, i) => `
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+          <span style="flex:1">🏷️ ${esc(item.codes.map(c => c.name).join(", "))} <small style="color:var(--text-soft)">(${item.segments.length} seg.)</small></span>
+          <button class="btn" data-rcode="${i}">${esc(t("restore"))}</button>
+        </div>`).join("")}`;
+    body.querySelectorAll("[data-rdoc]").forEach(b => b.onclick = () => { restoreTrashedDoc(Number(b.dataset.rdoc)); renderAll(); render(body); });
+    body.querySelectorAll("[data-rcode]").forEach(b => b.onclick = () => { restoreTrashedCode(Number(b.dataset.rcode)); renderAll(); render(body); });
+  };
+  const m = openModal({
+    title: t("trash_title"), bodyHtml: "",
+    footer: [
+      { label: t("empty_trash"), danger: true, onClick: (o) => { state.project.trash = { documents: [], codes: [] }; scheduleSave(); render(o.querySelector(".modal-body")); } },
+      { label: t("close"), primary: true, onClick: (o, c) => c() },
+    ],
+  });
+  render(m.body);
+}
+
+/* ================================================================
+   Barre d'état
+================================================================ */
+function renderStatus() {
+  $("#statusDocs").textContent = `📄 ${state.project.documents.length} ${t("docs")}`;
+  $("#statusCodes").textContent = `🏷️ ${state.project.codes.length} ${t("codes_lbl")}`;
+  $("#statusSegments").textContent = `✂️ ${state.project.segments.length} ${t("segments_lbl")}`;
+}
+
+init();
+
+return {  };
+})();
+
+</script>
+</body>
+</html>

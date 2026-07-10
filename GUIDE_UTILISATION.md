@@ -20,13 +20,11 @@ Vos données restent **sur votre ordinateur**. Rien n'est envoyé sur internet.
 
 ## 2. Ouvrir l'application
 
-**La façon la plus simple** : ouvrez votre navigateur (Chrome, Edge, Firefox…) et allez à l'adresse :
+**La façon la plus simple** : téléchargez le fichier **QualiCode.html** (dossier `dist` du projet, ou fourni par votre équipe), puis **double-cliquez dessus**. L'application s'ouvre dans votre navigateur — sans installation, sans internet, sans manipulation technique. Vous pouvez copier ce fichier sur une clé USB et l'utiliser sur n'importe quel ordinateur.
 
-👉 **https://jacquesdunia2015-commits.github.io/JACK_M/**
+*Autre possibilité (en ligne)* : ouvrez votre navigateur à l'adresse **https://jacquesdunia2015-commits.github.io/JACK_M/** (si votre réseau y donne accès). Même en ligne, **vos données restent sur votre ordinateur** : le site ne fait que fournir l'application, il ne reçoit jamais vos textes.
 
-C'est tout ! Même en passant par cette adresse, **vos données restent sur votre ordinateur** : le site ne fait que fournir l'application, il ne reçoit jamais vos textes.
-
-*Autre possibilité (sans internet)* : téléchargez le dossier de l'application, ouvrez un terminal dedans, tapez `python3 -m http.server 8080` puis allez sur **http://localhost:8080**.
+*Autre possibilité (sources)* : téléchargez le dossier du projet, ouvrez un terminal dedans, tapez `python3 -m http.server 8080` puis allez sur **http://localhost:8080**.
 
 Au premier lancement, un **projet exemple** s'ouvre (une étude sur le télétravail, déjà partiellement codée). C'est parfait pour s'entraîner sans risque.
 
