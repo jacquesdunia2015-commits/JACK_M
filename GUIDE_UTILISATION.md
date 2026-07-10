@@ -20,9 +20,13 @@ Vos données restent **sur votre ordinateur**. Rien n'est envoyé sur internet.
 
 ## 2. Ouvrir l'application
 
-1. Ouvrez le dossier de l'application dans un terminal.
-2. Tapez : `python3 -m http.server 8080`
-3. Ouvrez votre navigateur (Chrome, Edge, Firefox…) à l'adresse : **http://localhost:8080**
+**La façon la plus simple** : ouvrez votre navigateur (Chrome, Edge, Firefox…) et allez à l'adresse :
+
+👉 **https://jacquesdunia2015-commits.github.io/JACK_M/**
+
+C'est tout ! Même en passant par cette adresse, **vos données restent sur votre ordinateur** : le site ne fait que fournir l'application, il ne reçoit jamais vos textes.
+
+*Autre possibilité (sans internet)* : téléchargez le dossier de l'application, ouvrez un terminal dedans, tapez `python3 -m http.server 8080` puis allez sur **http://localhost:8080**.
 
 Au premier lancement, un **projet exemple** s'ouvre (une étude sur le télétravail, déjà partiellement codée). C'est parfait pour s'entraîner sans risque.
 
@@ -153,7 +157,7 @@ Onglet **Visualisation** :
 - **☁️ Nuage de mots** : les mots fréquents, en grand.
 - **📊 Fréquences des codes** : le poids de chaque code en barres colorées.
 
-Onglet **Rapports** : exportez les segments (CSV pour Excel), la matrice, le système de codes, ou générez un **rapport imprimable** (qui peut être enregistré en PDF).
+Onglet **Rapports** : exportez les segments (CSV pour Excel), la matrice, le système de codes, un **rapport Word (.docx)** prêt à remettre (segments regroupés par code, avec les couleurs), ou un **rapport imprimable** (qui peut être enregistré en PDF).
 
 ---
 

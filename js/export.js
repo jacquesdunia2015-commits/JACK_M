@@ -2,15 +2,22 @@
 import { state, getDoc, getCode } from "./state.js";
 import { flatCodes, codeMatrix } from "./analysis.js";
 import { t } from "./i18n.js";
+import { buildReportDocx } from "./docxout.js";
 
-function download(filename, content, mime = "text/plain;charset=utf-8") {
-  const blob = new Blob(["﻿" + content], { type: mime }); // BOM pour Excel
+// Le lien doit être rattaché au DOM pour que le nom de fichier soit respecté
+function downloadBlob(filename, blob) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  document.body.appendChild(a);
   a.click();
+  a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function download(filename, content, mime = "text/plain;charset=utf-8") {
+  downloadBlob(filename, new Blob(["﻿" + content], { type: mime })); // BOM pour Excel
 }
 
 function csvEscape(v) {
@@ -29,13 +36,7 @@ function safeName(name) {
 // `payload` : le projet en clair, ou l'enveloppe chiffrée (crypto.js)
 export function exportProject(payload = state.project) {
   const json = JSON.stringify(payload, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = safeName(state.project.name) + ".projx";
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadBlob(safeName(state.project.name) + ".projx", new Blob([json], { type: "application/json" }));
 }
 
 /* ---------- Segments codés → CSV ---------- */
@@ -67,6 +68,29 @@ export function exportMatrixCsv() {
     rows.push(["  ".repeat(c.depth) + c.name, ...line, line.reduce((a, b) => a + b, 0)]);
   });
   download(safeName(state.project.name) + "_matrice.csv", toCsv(rows), "text/csv;charset=utf-8");
+}
+
+/* ---------- Rapport Word (.docx) natif ---------- */
+export function exportReportDocx(segments) {
+  const codes = flatCodes();
+  const groups = codes.map(c => ({
+    code: c,
+    segments: segments.filter(s => s.codeId === c.id).map(s => ({
+      docName: getDoc(s.docId)?.name ?? "?",
+      text: s.text, weight: s.weight, comment: s.comment,
+    })),
+  }));
+  const blob = buildReportDocx({
+    projectName: state.project.name,
+    memo: state.project.memo,
+    codes: groups,
+    labels: {
+      subtitle: `${t("report_title")} — ${new Date().toLocaleString()} · ${segments.length} ${t("segments_lbl")}`,
+      projectMemo: t("project_memo"),
+      weight: t("weight"),
+    },
+  });
+  downloadBlob(safeName(state.project.name) + "_rapport.docx", blob);
 }
 
 /* ---------- Rapport imprimable (HTML → impression/PDF) ---------- */

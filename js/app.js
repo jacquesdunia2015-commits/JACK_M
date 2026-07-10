@@ -12,7 +12,7 @@ import {
   searchDocuments, wordFrequencies, kwic, codeMatrix, coocMatrix,
   groupComparison, variableStats, flatCodes,
 } from "./analysis.js";
-import { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, openPrintableReport } from "./export.js";
+import { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, exportReportDocx, openPrintableReport } from "./export.js";
 import { buildSampleProject } from "./sample.js";
 import { extractDocxText } from "./docx.js";
 import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from "./crypto.js";
@@ -291,6 +291,7 @@ function bindRibbon() {
 
   // --- Rapports ---
   $("#btnExportSegments").onclick = () => { exportSegmentsCsv(state.project.segments); toast(t("export_done")); };
+  $("#btnExportDocx").onclick = () => { exportReportDocx(state.project.segments); toast(t("export_done")); };
   $("#btnExportReport").onclick = () => openPrintableReport(state.project.segments);
   $("#btnExportCodes").onclick = () => { exportCodeSystem(); toast(t("export_done")); };
   $("#btnExportMatrixCsv").onclick = () => { exportMatrixCsv(); toast(t("export_done")); };
