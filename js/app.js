@@ -53,6 +53,12 @@ function init() {
   bindSplitters();
   applyStaticTranslations();
   renderAll();
+
+  // Filet de sécurité : sauvegarde immédiate si la page se ferme ou passe en
+  // arrière-plan avant l'expiration du délai de sauvegarde automatique
+  const flush = () => { if (state.ui.dirty) persistNow(); };
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
 }
 
 function renderAll() {

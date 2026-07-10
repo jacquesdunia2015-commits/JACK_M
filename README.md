@@ -11,11 +11,15 @@ fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicale
 
 ## 🚀 Lancement
 
-**En ligne (recommandé)** : l'application est déployée automatiquement sur GitHub Pages —
+**Fichier unique (le plus simple)** : téléchargez **[dist/QualiCode.html](https://github.com/jacquesdunia2015-commits/JACK_M/raw/main/dist/QualiCode.html)**
+et ouvrez-le par **double-clic** — aucune installation, aucun serveur, fonctionne sans internet.
+(Régénérable à tout moment : `python3 tools/build_standalone.py`.)
+
+**En ligne** : l'application est déployée automatiquement sur GitHub Pages —
 👉 **https://jacquesdunia2015-commits.github.io/JACK_M/**
 (les données restent locales : rien n'est envoyé au serveur, qui ne fait que fournir les fichiers de l'application).
 
-**En local** : aucune installation, aucune dépendance. Il suffit de servir le dossier en statique :
+**En local (sources)** : aucune installation, aucune dépendance. Il suffit de servir le dossier en statique :
 
 ```bash
 # Option 1 — Python
