@@ -5,7 +5,12 @@ export const CODE_COLORS = [
   "#d37295", "#8cd17d", "#499894", "#f1ce63", "#86bcb6",
 ];
 
-const STORAGE_KEY = "qualicode.project";
+// Bibliothèque multi-projets : un index de métadonnées + une clé par projet.
+// L'ancienne clé unique "qualicode.project" est migrée au premier chargement.
+const LEGACY_KEY = "qualicode.project";
+const INDEX_KEY = "qualicode.projects.index";
+const CURRENT_KEY = "qualicode.currentProjectId";
+const PROJECT_PREFIX = "qualicode.project.";
 const PREFS_KEY = "qualicode.prefs";
 
 export function uid() {
@@ -17,6 +22,7 @@ export function emptyProject(name) {
   return {
     format: "qualicode-projx",
     version: 1,
+    id: uid(),
     name: name || "Projet sans titre",
     created: now,
     modified: now,
@@ -57,10 +63,26 @@ export function scheduleSave() {
   saveTimer = setTimeout(persistNow, 800);
 }
 
+function readIndex() {
+  try { return JSON.parse(localStorage.getItem(INDEX_KEY)) || []; } catch { return []; }
+}
+function writeIndex(index) {
+  localStorage.setItem(INDEX_KEY, JSON.stringify(index));
+}
+
 export function persistNow() {
   state.project.modified = new Date().toISOString();
+  if (!state.project.id) state.project.id = uid();
+  const p = state.project;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.project));
+    localStorage.setItem(PROJECT_PREFIX + p.id, JSON.stringify(p));
+    localStorage.setItem(CURRENT_KEY, p.id);
+    const index = readIndex().filter(e => e.id !== p.id);
+    index.unshift({
+      id: p.id, name: p.name, modified: p.modified,
+      documents: p.documents.length, codes: p.codes.length, segments: p.segments.length,
+    });
+    writeIndex(index);
     state.ui.dirty = false;
     if (onSavedCallback) onSavedCallback();
   } catch (e) {
@@ -68,12 +90,57 @@ export function persistNow() {
   }
 }
 
+// Migration de l'ancienne clé unique vers la bibliothèque multi-projets
+function migrateLegacyProject() {
+  try {
+    const raw = localStorage.getItem(LEGACY_KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    if (p && p.format === "qualicode-projx") {
+      const proj = normalizeProject(p);
+      localStorage.setItem(PROJECT_PREFIX + proj.id, JSON.stringify(proj));
+      localStorage.setItem(CURRENT_KEY, proj.id);
+      const index = readIndex().filter(e => e.id !== proj.id);
+      index.unshift({
+        id: proj.id, name: proj.name, modified: proj.modified,
+        documents: proj.documents.length, codes: proj.codes.length, segments: proj.segments.length,
+      });
+      writeIndex(index);
+    }
+    localStorage.removeItem(LEGACY_KEY);
+  } catch (e) { console.error(e); }
+}
+
+export function loadProjectById(id) {
+  try {
+    const raw = localStorage.getItem(PROJECT_PREFIX + id);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    if (p && p.format === "qualicode-projx") return normalizeProject(p);
+  } catch (e) { console.error(e); }
+  return null;
+}
+
+export function listProjects() {
+  return readIndex();
+}
+
+export function deleteProjectById(id) {
+  try {
+    localStorage.removeItem(PROJECT_PREFIX + id);
+    writeIndex(readIndex().filter(e => e.id !== id));
+    if (localStorage.getItem(CURRENT_KEY) === id) localStorage.removeItem(CURRENT_KEY);
+  } catch (e) { console.error(e); }
+}
+
 export function loadPersisted() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const p = JSON.parse(raw);
-      if (p && p.format === "qualicode-projx") { state.project = normalizeProject(p); return true; }
+    migrateLegacyProject();
+    const currentId = localStorage.getItem(CURRENT_KEY);
+    const candidates = [currentId, ...readIndex().map(e => e.id)].filter(Boolean);
+    for (const id of candidates) {
+      const p = loadProjectById(id);
+      if (p) { state.project = p; return true; }
     }
   } catch (e) { console.error(e); }
   return false;
@@ -95,6 +162,7 @@ export function loadPrefs() {
 export function normalizeProject(p) {
   const base = emptyProject(p.name);
   const proj = Object.assign(base, p);
+  proj.id = proj.id || uid();
   proj.trash = proj.trash || { documents: [], codes: [] };
   proj.memos = proj.memos || [];
   proj.variables = proj.variables || [];

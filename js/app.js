@@ -3,6 +3,7 @@ import { t, setLang, getLang, applyStaticTranslations } from "./i18n.js";
 import {
   state, emptyProject, normalizeProject, uid, CODE_COLORS,
   scheduleSave, persistNow, loadPersisted, setOnSaved, savePrefs, loadPrefs,
+  listProjects, loadProjectById, deleteProjectById,
   getDoc, getCode, getGroup, getSegment, childCodes, segmentsOfDoc,
   addDocument, addGroup, addCode, addSegment, deleteSegment,
   trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode,
@@ -198,6 +199,7 @@ function bindRibbon() {
     renderAll();
     toast(t("project_loaded") + " : " + state.project.name);
   });
+  $("#btnMyProjects").onclick = openMyProjects;
   $("#btnProtect").onclick = openProtectModal;
   $("#btnMergeProject").onclick = () => $("#mergeInput").click();
   $("#mergeInput").addEventListener("change", async e => {
@@ -1400,6 +1402,74 @@ function openBarChart() {
       <span class="bar-track"><span class="bar-fill" style="width:${(100 * c.n / max).toFixed(1)}%;background:${esc(c.color)}">${c.n}</span></span>
     </div>`).join("")}</div>`;
   openModal({ title: t("barchart_title"), wide: true, bodyHtml: html, footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }] });
+}
+
+/* ================================================================
+   Mes projets : bibliothèque locale multi-projets
+================================================================ */
+function switchToProject(project) {
+  state.project = project;
+  state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
+  state.ui.currentDocId = project.documents[0]?.id ?? null;
+  state.ui.selectedCodeId = null;
+  projectPassword = null;
+  panel4Mode = "segments";
+  project.documentGroups.forEach(g => expandedGroups.add(g.id));
+  childCodes(null).forEach(c => expandedCodes.add(c.id));
+  persistNow();
+  renderAll();
+}
+
+function openMyProjects() {
+  persistNow(); // le projet courant apparaît dans la liste avec ses chiffres à jour
+  const render = body => {
+    const projects = listProjects();
+    if (!projects.length) {
+      body.innerHTML = `<div class="empty-hint">${esc(t("no_projects"))}</div>`;
+      return;
+    }
+    body.innerHTML = `
+      <p style="color:var(--text-soft);font-size:12.5px;margin-top:0">${esc(t("my_projects_hint"))}</p>
+      ${projects.map(p => {
+        const isCurrent = p.id === state.project.id;
+        const date = new Date(p.modified).toLocaleString();
+        return `<div class="seg-card" data-id="${esc(p.id)}">
+          <div class="seg-card-head">
+            <span style="font-size:15px">🗂️</span>
+            <strong>${esc(p.name)}</strong>
+            ${isCurrent ? `<span class="badge" style="background:var(--accent-soft)">✓ ${esc(t("currently_open"))}</span>` : ""}
+            <span class="spacer"></span>
+            ${isCurrent ? "" : `<button class="btn primary" data-act="open" style="padding:4px 14px">${esc(t("open"))}</button>
+            <button class="mini-btn" data-act="del" title="${esc(t("delete"))}">🗑️</button>`}
+          </div>
+          <div class="seg-card-body" style="font-size:12px;color:var(--text-soft);padding:6px 12px">
+            ${date} · ${p.documents} ${esc(t("docs"))} · ${p.codes} ${esc(t("codes_lbl"))} · ${p.segments} ${esc(t("segments_lbl"))}
+          </div>
+        </div>`;
+      }).join("")}`;
+    body.querySelectorAll("[data-act=open]").forEach(btn => btn.onclick = () => {
+      const id = btn.closest(".seg-card").dataset.id;
+      const project = loadProjectById(id);
+      if (project) {
+        m.close();
+        switchToProject(project);
+        toast(t("project_loaded") + " : " + project.name);
+      }
+    });
+    body.querySelectorAll("[data-act=del]").forEach(btn => btn.onclick = () => {
+      const id = btn.closest(".seg-card").dataset.id;
+      confirmModal(t("delete_project_q"), () => {
+        deleteProjectById(id);
+        toast(t("project_deleted"));
+        render(body);
+      });
+    });
+  };
+  const m = openModal({
+    title: t("my_projects_title"), wide: true, bodyHtml: "",
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  render(m.body);
 }
 
 /* ================================================================

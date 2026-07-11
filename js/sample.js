@@ -3,6 +3,7 @@ import { emptyProject, uid, CODE_COLORS } from "./state.js";
 
 export function buildSampleProject() {
   const p = emptyProject("Exemple — Étude sur le télétravail");
+  p.id = "exemple-teletravail"; // identifiant stable : recharger l'exemple le remplace au lieu de le dupliquer
   p.memo = "Projet de démonstration : trois entretiens semi-directifs et un focus group fictifs sur le vécu du télétravail. Utilisez-le pour tester le codage, la récupération de segments et les analyses.";
   p.variables = ["âge", "sexe", "secteur", "ancienneté_télétravail"];
 

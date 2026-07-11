@@ -52,6 +52,14 @@ Tout en haut, un **ruban d'onglets** (Accueil, Importer, Codes, Mémos…) donne
 ### Créer un projet
 - Onglet **Accueil** → **🗂️ Nouveau projet** → donnez-lui un nom.
 
+### Retrouver vos projets : le bouton « 📚 Mes projets »
+- Onglet **Accueil** → **📚 Mes projets** : la liste de **tous les projets commencés sur cet ordinateur** s'affiche, avec leur date et leur contenu (documents, codes, segments).
+- Cliquez sur **Ouvrir** pour passer d'un projet à l'autre — le projet en cours est sauvegardé automatiquement avant la bascule.
+- Le bouton 🗑️ supprime un projet de l'ordinateur (enregistrez-le d'abord en `.projx` si vous voulez le garder).
+- À l'ouverture de l'application, c'est toujours **votre dernier projet** qui se rouvre tout seul.
+
+> 💡 « Mes projets » liste les projets de **cet ordinateur et de ce navigateur**. Pour emporter un projet ailleurs, utilisez 💾 Enregistrer (.projx) puis 📂 Ouvrir (.projx) sur l'autre machine.
+
 ### Importer vos textes (onglet **Importer**)
 Vous avez 4 façons de faire :
 
@@ -195,7 +203,10 @@ Quand deux personnes codent les mêmes entretiens (chacune de son côté) :
 → **Accueil → 🗑️ Corbeille** : cliquez sur *Restaurer*.
 
 **Où est enregistré mon travail ?**
-→ Automatiquement dans votre navigateur, sur votre ordinateur (regardez « ✓ Sauvegarde automatique » en bas à droite). Pour une copie durable ou pour changer d'ordinateur : **💾 Enregistrer (.projx)**, puis **📂 Ouvrir (.projx)** sur l'autre machine.
+→ Automatiquement dans votre navigateur, sur votre ordinateur (regardez « ✓ Sauvegarde automatique » en bas à droite). Tous vos projets sont visibles dans **Accueil → 📚 Mes projets**. Pour une copie durable ou pour changer d'ordinateur : **💾 Enregistrer (.projx)**, puis **📂 Ouvrir (.projx)** sur l'autre machine.
+
+**Comment reprendre un projet commencé hier ?**
+→ Rouvrez simplement l'application : le dernier projet se rouvre tout seul. S'il ne s'agit pas du bon, **Accueil → 📚 Mes projets** → cliquez sur **Ouvrir** à côté du projet voulu.
 
 **Un passage peut-il avoir plusieurs codes ?**
 → Oui ! Sélectionnez-le à nouveau et appliquez un autre code. Les chevauchements sont soulignés ; cliquez dessus pour choisir quel code consulter.
