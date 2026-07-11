@@ -80,7 +80,9 @@ export function loadPersisted() {
 }
 
 export function savePrefs() {
-  localStorage.setItem(PREFS_KEY, JSON.stringify({ lang: state.ui.lang, theme: state.ui.theme }));
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ lang: state.ui.lang, theme: state.ui.theme }));
+  } catch { /* stockage local indisponible (hébergement restreint) : préférences non persistées */ }
 }
 export function loadPrefs() {
   try {
