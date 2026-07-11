@@ -3,6 +3,11 @@ export const translations = {
   fr: {
     tab_home: "Accueil", tab_import: "Importer", tab_codes: "Codes", tab_memos: "Mémos",
     tab_variables: "Variables", tab_analysis: "Analyse", tab_visual: "Visualisation", tab_reports: "Rapports",
+    my_projects: "Mes projets", my_projects_title: "Mes projets (sur cet ordinateur)",
+    my_projects_hint: "Ces projets sont conservés dans ce navigateur, sur cet ordinateur. Pour transférer un projet sur une autre machine : Enregistrer (.projx) puis Ouvrir (.projx) là-bas.",
+    open: "Ouvrir", currently_open: "ouvert", no_projects: "Aucun projet enregistré sur cet ordinateur.",
+    delete_project_q: "Supprimer définitivement ce projet de cet ordinateur ? Si vous voulez le conserver, enregistrez-le d'abord en .projx.",
+    project_deleted: "Projet supprimé de cet ordinateur",
     new_project: "Nouveau projet", open_project: "Ouvrir (.projx)", save_project: "Enregistrer (.projx)",
     sample_project: "Projet exemple", grp_project: "Projet",
     search: "Rechercher", grp_search: "Recherche", search_ph: "Recherche plein texte (ET, OU, \"phrase\")…",
@@ -98,6 +103,11 @@ export const translations = {
   en: {
     tab_home: "Home", tab_import: "Import", tab_codes: "Codes", tab_memos: "Memos",
     tab_variables: "Variables", tab_analysis: "Analysis", tab_visual: "Visualization", tab_reports: "Reports",
+    my_projects: "My projects", my_projects_title: "My projects (on this computer)",
+    my_projects_hint: "These projects are kept in this browser, on this computer. To move a project to another machine: Save (.projx) then Open (.projx) there.",
+    open: "Open", currently_open: "open", no_projects: "No project stored on this computer.",
+    delete_project_q: "Permanently delete this project from this computer? If you want to keep it, save it as .projx first.",
+    project_deleted: "Project deleted from this computer",
     new_project: "New project", open_project: "Open (.projx)", save_project: "Save (.projx)",
     sample_project: "Sample project", grp_project: "Project",
     search: "Search", grp_search: "Search", search_ph: "Full-text search (AND, OR, \"phrase\")…",
