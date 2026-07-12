@@ -336,6 +336,11 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <div class="rlabel" data-i18n="grp_search">Recherche</div>
       </div>
       <div class="rgroup">
+        <button id="btnUndo" class="rbtn" disabled>↩️<span data-i18n="undo">Annuler</span></button>
+        <button id="btnRedo" class="rbtn" disabled>↪️<span data-i18n="redo">Rétablir</span></button>
+        <div class="rlabel" data-i18n="grp_edit">Édition</div>
+      </div>
+      <div class="rgroup">
         <button id="btnTrash" class="rbtn">🗑️<span data-i18n="trash">Corbeille</span></button>
         <div class="rlabel" data-i18n="grp_tools">Outils</div>
       </div>
@@ -541,6 +546,9 @@ const translations = {
     new_project: "Nouveau projet", open_project: "Ouvrir (.projx)", save_project: "Enregistrer (.projx)",
     sample_project: "Projet exemple", grp_project: "Projet",
     search: "Rechercher", grp_search: "Recherche", search_ph: "Recherche plein texte (ET, OU, \"phrase\")…",
+    undo: "Annuler", redo: "Rétablir", grp_edit: "Édition",
+    undo_done: "Action annulée", redo_done: "Action rétablie",
+    nothing_to_undo: "Rien à annuler", nothing_to_redo: "Rien à rétablir",
     trash: "Corbeille", grp_tools: "Outils",
     import_files: "Fichiers (DOCX, TXT, MD)", import_csv: "Enquête CSV", paste_doc: "Coller un texte",
     structured_text: "Texte structuré", grp_import: "Importation", new_group: "Nouveau groupe", grp_organize: "Organisation",
@@ -641,6 +649,9 @@ const translations = {
     new_project: "New project", open_project: "Open (.projx)", save_project: "Save (.projx)",
     sample_project: "Sample project", grp_project: "Project",
     search: "Search", grp_search: "Search", search_ph: "Full-text search (AND, OR, \"phrase\")…",
+    undo: "Undo", redo: "Redo", grp_edit: "Edit",
+    undo_done: "Action undone", redo_done: "Action redone",
+    nothing_to_undo: "Nothing to undo", nothing_to_redo: "Nothing to redo",
     trash: "Trash", grp_tools: "Tools",
     import_files: "Files (DOCX, TXT, MD)", import_csv: "CSV survey", paste_doc: "Paste text",
     structured_text: "Structured text", grp_import: "Import", new_group: "New group", grp_organize: "Organization",
@@ -947,8 +958,57 @@ function segmentsOfDoc(docId) {
   return state.project.segments.filter(s => s.docId === docId);
 }
 
+/* ---------- Undo / Redo (en mémoire, non persisté) ---------- */
+let _undoStack = [];
+let _redoStack = [];
+const MAX_UNDO = 30;
+
+function _snapshot() {
+  const p = state.project;
+  return {
+    segments: JSON.parse(JSON.stringify(p.segments)),
+    codes: JSON.parse(JSON.stringify(p.codes)),
+    documents: JSON.parse(JSON.stringify(p.documents)),
+    documentGroups: JSON.parse(JSON.stringify(p.documentGroups)),
+    trash: JSON.parse(JSON.stringify(p.trash)),
+    memos: JSON.parse(JSON.stringify(p.memos)),
+    variables: JSON.parse(JSON.stringify(p.variables)),
+  };
+}
+
+function pushUndoSnapshot() {
+  _undoStack.push(_snapshot());
+  if (_undoStack.length > MAX_UNDO) _undoStack.shift();
+  _redoStack = [];
+}
+
+function clearUndoHistory() {
+  _undoStack = [];
+  _redoStack = [];
+}
+
+function undoAction() {
+  if (!_undoStack.length) return false;
+  _redoStack.push(_snapshot());
+  Object.assign(state.project, _undoStack.pop());
+  scheduleSave();
+  return true;
+}
+
+function redoAction() {
+  if (!_redoStack.length) return false;
+  _undoStack.push(_snapshot());
+  Object.assign(state.project, _redoStack.pop());
+  scheduleSave();
+  return true;
+}
+
+function canUndo() { return _undoStack.length > 0; }
+function canRedo() { return _redoStack.length > 0; }
+
 /* ---------- Mutations ---------- */
 function addDocument(name, text, groupId = null) {
+  pushUndoSnapshot();
   const doc = { id: uid(), name, groupId, text, variables: {}, created: new Date().toISOString() };
   state.project.documents.push(doc);
   scheduleSave();
@@ -956,6 +1016,7 @@ function addDocument(name, text, groupId = null) {
 }
 
 function addGroup(name) {
+  pushUndoSnapshot();
   const g = { id: uid(), name };
   state.project.documentGroups.push(g);
   scheduleSave();
@@ -963,6 +1024,7 @@ function addGroup(name) {
 }
 
 function addCode(name, parentId = null, color = null) {
+  pushUndoSnapshot();
   const c = {
     id: uid(), name, parentId,
     color: color || CODE_COLORS[state.project.codes.length % CODE_COLORS.length],
@@ -977,6 +1039,7 @@ function addSegment(docId, codeId, start, end, text) {
   // Évite les doublons exacts (même code, même plage)
   const dup = state.project.segments.find(s => s.docId === docId && s.codeId === codeId && s.start === start && s.end === end);
   if (dup) return dup;
+  pushUndoSnapshot(); // seulement si on ajoute vraiment un nouveau segment
   const s = { id: uid(), docId, codeId, start, end, text, weight: 1, comment: "", created: new Date().toISOString() };
   state.project.segments.push(s);
   scheduleSave();
@@ -984,6 +1047,7 @@ function addSegment(docId, codeId, start, end, text) {
 }
 
 function deleteSegment(segId) {
+  pushUndoSnapshot();
   state.project.segments = state.project.segments.filter(s => s.id !== segId);
   scheduleSave();
 }
@@ -991,6 +1055,7 @@ function deleteSegment(segId) {
 function trashDocument(docId) {
   const doc = getDoc(docId);
   if (!doc) return;
+  pushUndoSnapshot();
   const segs = segmentsOfDoc(docId);
   state.project.trash.documents.push({ doc, segments: segs });
   state.project.documents = state.project.documents.filter(d => d.id !== docId);
@@ -1001,6 +1066,7 @@ function trashDocument(docId) {
 }
 
 function trashCode(codeId) {
+  pushUndoSnapshot();
   const ids = codeWithDescendants(codeId);
   const codes = state.project.codes.filter(c => ids.includes(c.id));
   const segs = state.project.segments.filter(s => ids.includes(s.codeId));
@@ -1013,6 +1079,7 @@ function trashCode(codeId) {
 }
 
 function restoreTrashedDoc(index) {
+  pushUndoSnapshot();
   const item = state.project.trash.documents.splice(index, 1)[0];
   if (!item) return;
   state.project.documents.push(item.doc);
@@ -1023,6 +1090,7 @@ function restoreTrashedDoc(index) {
 }
 
 function restoreTrashedCode(index) {
+  pushUndoSnapshot();
   const item = state.project.trash.codes.splice(index, 1)[0];
   if (!item) return;
   state.project.codes.push(...item.codes);
@@ -1047,7 +1115,7 @@ function getMemo(targetType, targetId) {
   return state.project.memos.find(m => m.targetType === targetType && m.targetId === targetId);
 }
 
-return { uid, emptyProject, setOnSaved, scheduleSave, persistNow, loadProjectById, listProjects, deleteProjectById, loadPersisted, savePrefs, loadPrefs, normalizeProject, childCodes, codeWithDescendants, segmentsOfCode, segmentsOfDoc, addDocument, addGroup, addCode, addSegment, deleteSegment, trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode, upsertMemo, getMemo, CODE_COLORS, state, getDoc, getCode, getGroup, getSegment };
+return { uid, emptyProject, setOnSaved, scheduleSave, persistNow, loadProjectById, listProjects, deleteProjectById, loadPersisted, savePrefs, loadPrefs, normalizeProject, childCodes, codeWithDescendants, segmentsOfCode, segmentsOfDoc, pushUndoSnapshot, clearUndoHistory, undoAction, redoAction, canUndo, canRedo, addDocument, addGroup, addCode, addSegment, deleteSegment, trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode, upsertMemo, getMemo, CODE_COLORS, state, getDoc, getCode, getGroup, getSegment };
 })();
 
 __QC["analysis"] = (function () {
@@ -2042,6 +2110,7 @@ const {
   addDocument, addGroup, addCode, addSegment, deleteSegment,
   trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode,
   upsertMemo, getMemo,
+  pushUndoSnapshot, undoAction, redoAction, canUndo, canRedo, clearUndoHistory,
 } = __QC["state"];
 const {
   searchDocuments, wordFrequencies, kwic, codeMatrix, coocMatrix,
@@ -2103,6 +2172,7 @@ function renderAll() {
   renderBrowser();
   renderPanel4();
   renderStatus();
+  updateUndoButtons();
   $("#projectName").textContent = state.project.name;
   $("#projectName").title = state.project.name;
 }
@@ -2338,14 +2408,42 @@ function bindRibbon() {
   $("#btnExportCodes").onclick = () => { exportCodeSystem(); toast(t("export_done")); };
   $("#btnExportMatrixCsv").onclick = () => { exportMatrixCsv(); toast(t("export_done")); };
 
-  // Raccourci clavier : Alt+C = coder la sélection avec le code sélectionné (§2.4)
+  // --- Annuler / Rétablir ---
+  $("#btnUndo").onclick = handleUndo;
+  $("#btnRedo").onclick = handleRedo;
+
+  // Raccourcis clavier : Alt+C, Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z
   document.addEventListener("keydown", e => {
     if (e.altKey && e.key.toLowerCase() === "c") {
       e.preventDefault();
       const sel = captureSelection();
       if (sel && state.ui.selectedCodeId) applyCodeToSelection(state.ui.selectedCodeId, sel);
+      return;
     }
+    const isMac = navigator.platform.startsWith("Mac");
+    const mod = isMac ? e.metaKey : e.ctrlKey;
+    if (mod && e.key === "z" && !e.shiftKey) { e.preventDefault(); handleUndo(); }
+    if (mod && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); handleRedo(); }
   });
+}
+
+function handleUndo() {
+  if (!undoAction()) return toast(t("nothing_to_undo"));
+  renderAll();
+  updateUndoButtons();
+  toast(t("undo_done"));
+}
+
+function handleRedo() {
+  if (!redoAction()) return toast(t("nothing_to_redo"));
+  renderAll();
+  updateUndoButtons();
+  toast(t("redo_done"));
+}
+
+function updateUndoButtons() {
+  $("#btnUndo").disabled = !canUndo();
+  $("#btnRedo").disabled = !canRedo();
 }
 
 /* ================================================================
@@ -2468,7 +2566,7 @@ function renderDocTree() {
     gr.onclick = () => { open ? expandedGroups.delete(g.id) : expandedGroups.add(g.id); renderDocTree(); };
     gr.querySelector("[data-act=ren]").onclick = e => {
       e.stopPropagation();
-      promptModal(t("rename"), t("new_group_name"), g.name, name => { g.name = name; scheduleSave(); renderDocTree(); });
+      promptModal(t("rename"), t("new_group_name"), g.name, name => { pushUndoSnapshot(); g.name = name; scheduleSave(); renderDocTree(); updateUndoButtons(); });
     };
     gr.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("text/qualicode-doc")) e.preventDefault(); });
     gr.addEventListener("drop", e => {
@@ -2534,12 +2632,12 @@ function renderCodeTree() {
         renderCodeTree(); renderPanel4();
       };
       row.onclick = () => { state.ui.selectedCodeId = code.id; renderCodeTree(); };
-      row.ondblclick = () => promptModal(t("rename"), t("code_name_q"), code.name, name => { code.name = name; scheduleSave(); renderAll(); });
+      row.ondblclick = () => promptModal(t("rename"), t("code_name_q"), code.name, name => { pushUndoSnapshot(); code.name = name; scheduleSave(); renderAll(); updateUndoButtons(); });
       row.querySelector("[data-act=add]").onclick = e => { e.stopPropagation(); openNewCodeModal(code.id); };
       row.querySelector("[data-act=memo]").onclick = e => { e.stopPropagation(); openMemoEditor("code", code.id, code.name); };
       row.querySelector("[data-act=ren]").onclick = e => {
         e.stopPropagation();
-        promptModal(t("rename"), t("code_name_q"), code.name, name => { code.name = name; scheduleSave(); renderAll(); });
+        promptModal(t("rename"), t("code_name_q"), code.name, name => { pushUndoSnapshot(); code.name = name; scheduleSave(); renderAll(); updateUndoButtons(); });
       };
       row.querySelector("[data-act=del]").onclick = e => {
         e.stopPropagation();
@@ -2556,7 +2654,7 @@ function renderCodeTree() {
         let p = code;
         while (p) { if (p.id === draggedId) return; p = getCode(p.parentId); }
         const dragged = getCode(draggedId);
-        if (dragged) { dragged.parentId = code.id; expandedCodes.add(code.id); scheduleSave(); renderCodeTree(); }
+        if (dragged) { pushUndoSnapshot(); dragged.parentId = code.id; expandedCodes.add(code.id); scheduleSave(); renderCodeTree(); updateUndoButtons(); }
       });
       container.appendChild(row);
       if (kids.length && open) {
@@ -2574,7 +2672,7 @@ function renderCodeTree() {
   root.addEventListener("drop", e => {
     if (e.target !== root) return;
     const dragged = getCode(e.dataTransfer.getData("text/qualicode-code"));
-    if (dragged) { dragged.parentId = null; scheduleSave(); renderCodeTree(); }
+    if (dragged) { pushUndoSnapshot(); dragged.parentId = null; scheduleSave(); renderCodeTree(); updateUndoButtons(); }
   });
 }
 
@@ -3448,6 +3546,8 @@ function switchToProject(project) {
   state.ui.selectedCodeId = null;
   projectPassword = null;
   panel4Mode = "segments";
+  clearUndoHistory();
+  updateUndoButtons();
   project.documentGroups.forEach(g => expandedGroups.add(g.id));
   childCodes(null).forEach(c => expandedCodes.add(c.id));
   persistNow();

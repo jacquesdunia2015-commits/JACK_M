@@ -195,8 +195,57 @@ export function segmentsOfDoc(docId) {
   return state.project.segments.filter(s => s.docId === docId);
 }
 
+/* ---------- Undo / Redo (en mémoire, non persisté) ---------- */
+let _undoStack = [];
+let _redoStack = [];
+const MAX_UNDO = 30;
+
+function _snapshot() {
+  const p = state.project;
+  return {
+    segments: JSON.parse(JSON.stringify(p.segments)),
+    codes: JSON.parse(JSON.stringify(p.codes)),
+    documents: JSON.parse(JSON.stringify(p.documents)),
+    documentGroups: JSON.parse(JSON.stringify(p.documentGroups)),
+    trash: JSON.parse(JSON.stringify(p.trash)),
+    memos: JSON.parse(JSON.stringify(p.memos)),
+    variables: JSON.parse(JSON.stringify(p.variables)),
+  };
+}
+
+export function pushUndoSnapshot() {
+  _undoStack.push(_snapshot());
+  if (_undoStack.length > MAX_UNDO) _undoStack.shift();
+  _redoStack = [];
+}
+
+export function clearUndoHistory() {
+  _undoStack = [];
+  _redoStack = [];
+}
+
+export function undoAction() {
+  if (!_undoStack.length) return false;
+  _redoStack.push(_snapshot());
+  Object.assign(state.project, _undoStack.pop());
+  scheduleSave();
+  return true;
+}
+
+export function redoAction() {
+  if (!_redoStack.length) return false;
+  _undoStack.push(_snapshot());
+  Object.assign(state.project, _redoStack.pop());
+  scheduleSave();
+  return true;
+}
+
+export function canUndo() { return _undoStack.length > 0; }
+export function canRedo() { return _redoStack.length > 0; }
+
 /* ---------- Mutations ---------- */
 export function addDocument(name, text, groupId = null) {
+  pushUndoSnapshot();
   const doc = { id: uid(), name, groupId, text, variables: {}, created: new Date().toISOString() };
   state.project.documents.push(doc);
   scheduleSave();
@@ -204,6 +253,7 @@ export function addDocument(name, text, groupId = null) {
 }
 
 export function addGroup(name) {
+  pushUndoSnapshot();
   const g = { id: uid(), name };
   state.project.documentGroups.push(g);
   scheduleSave();
@@ -211,6 +261,7 @@ export function addGroup(name) {
 }
 
 export function addCode(name, parentId = null, color = null) {
+  pushUndoSnapshot();
   const c = {
     id: uid(), name, parentId,
     color: color || CODE_COLORS[state.project.codes.length % CODE_COLORS.length],
@@ -225,6 +276,7 @@ export function addSegment(docId, codeId, start, end, text) {
   // Évite les doublons exacts (même code, même plage)
   const dup = state.project.segments.find(s => s.docId === docId && s.codeId === codeId && s.start === start && s.end === end);
   if (dup) return dup;
+  pushUndoSnapshot(); // seulement si on ajoute vraiment un nouveau segment
   const s = { id: uid(), docId, codeId, start, end, text, weight: 1, comment: "", created: new Date().toISOString() };
   state.project.segments.push(s);
   scheduleSave();
@@ -232,6 +284,7 @@ export function addSegment(docId, codeId, start, end, text) {
 }
 
 export function deleteSegment(segId) {
+  pushUndoSnapshot();
   state.project.segments = state.project.segments.filter(s => s.id !== segId);
   scheduleSave();
 }
@@ -239,6 +292,7 @@ export function deleteSegment(segId) {
 export function trashDocument(docId) {
   const doc = getDoc(docId);
   if (!doc) return;
+  pushUndoSnapshot();
   const segs = segmentsOfDoc(docId);
   state.project.trash.documents.push({ doc, segments: segs });
   state.project.documents = state.project.documents.filter(d => d.id !== docId);
@@ -249,6 +303,7 @@ export function trashDocument(docId) {
 }
 
 export function trashCode(codeId) {
+  pushUndoSnapshot();
   const ids = codeWithDescendants(codeId);
   const codes = state.project.codes.filter(c => ids.includes(c.id));
   const segs = state.project.segments.filter(s => ids.includes(s.codeId));
@@ -261,6 +316,7 @@ export function trashCode(codeId) {
 }
 
 export function restoreTrashedDoc(index) {
+  pushUndoSnapshot();
   const item = state.project.trash.documents.splice(index, 1)[0];
   if (!item) return;
   state.project.documents.push(item.doc);
@@ -271,6 +327,7 @@ export function restoreTrashedDoc(index) {
 }
 
 export function restoreTrashedCode(index) {
+  pushUndoSnapshot();
   const item = state.project.trash.codes.splice(index, 1)[0];
   if (!item) return;
   state.project.codes.push(...item.codes);

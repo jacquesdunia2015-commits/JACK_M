@@ -8,6 +8,7 @@ import {
   addDocument, addGroup, addCode, addSegment, deleteSegment,
   trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode,
   upsertMemo, getMemo,
+  pushUndoSnapshot, undoAction, redoAction, canUndo, canRedo, clearUndoHistory,
 } from "./state.js";
 import {
   searchDocuments, wordFrequencies, kwic, codeMatrix, coocMatrix,
@@ -69,6 +70,7 @@ function renderAll() {
   renderBrowser();
   renderPanel4();
   renderStatus();
+  updateUndoButtons();
   $("#projectName").textContent = state.project.name;
   $("#projectName").title = state.project.name;
 }
@@ -304,14 +306,42 @@ function bindRibbon() {
   $("#btnExportCodes").onclick = () => { exportCodeSystem(); toast(t("export_done")); };
   $("#btnExportMatrixCsv").onclick = () => { exportMatrixCsv(); toast(t("export_done")); };
 
-  // Raccourci clavier : Alt+C = coder la sélection avec le code sélectionné (§2.4)
+  // --- Annuler / Rétablir ---
+  $("#btnUndo").onclick = handleUndo;
+  $("#btnRedo").onclick = handleRedo;
+
+  // Raccourcis clavier : Alt+C, Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z
   document.addEventListener("keydown", e => {
     if (e.altKey && e.key.toLowerCase() === "c") {
       e.preventDefault();
       const sel = captureSelection();
       if (sel && state.ui.selectedCodeId) applyCodeToSelection(state.ui.selectedCodeId, sel);
+      return;
     }
+    const isMac = navigator.platform.startsWith("Mac");
+    const mod = isMac ? e.metaKey : e.ctrlKey;
+    if (mod && e.key === "z" && !e.shiftKey) { e.preventDefault(); handleUndo(); }
+    if (mod && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); handleRedo(); }
   });
+}
+
+function handleUndo() {
+  if (!undoAction()) return toast(t("nothing_to_undo"));
+  renderAll();
+  updateUndoButtons();
+  toast(t("undo_done"));
+}
+
+function handleRedo() {
+  if (!redoAction()) return toast(t("nothing_to_redo"));
+  renderAll();
+  updateUndoButtons();
+  toast(t("redo_done"));
+}
+
+function updateUndoButtons() {
+  $("#btnUndo").disabled = !canUndo();
+  $("#btnRedo").disabled = !canRedo();
 }
 
 /* ================================================================
@@ -434,7 +464,7 @@ function renderDocTree() {
     gr.onclick = () => { open ? expandedGroups.delete(g.id) : expandedGroups.add(g.id); renderDocTree(); };
     gr.querySelector("[data-act=ren]").onclick = e => {
       e.stopPropagation();
-      promptModal(t("rename"), t("new_group_name"), g.name, name => { g.name = name; scheduleSave(); renderDocTree(); });
+      promptModal(t("rename"), t("new_group_name"), g.name, name => { pushUndoSnapshot(); g.name = name; scheduleSave(); renderDocTree(); updateUndoButtons(); });
     };
     gr.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("text/qualicode-doc")) e.preventDefault(); });
     gr.addEventListener("drop", e => {
@@ -500,12 +530,12 @@ function renderCodeTree() {
         renderCodeTree(); renderPanel4();
       };
       row.onclick = () => { state.ui.selectedCodeId = code.id; renderCodeTree(); };
-      row.ondblclick = () => promptModal(t("rename"), t("code_name_q"), code.name, name => { code.name = name; scheduleSave(); renderAll(); });
+      row.ondblclick = () => promptModal(t("rename"), t("code_name_q"), code.name, name => { pushUndoSnapshot(); code.name = name; scheduleSave(); renderAll(); updateUndoButtons(); });
       row.querySelector("[data-act=add]").onclick = e => { e.stopPropagation(); openNewCodeModal(code.id); };
       row.querySelector("[data-act=memo]").onclick = e => { e.stopPropagation(); openMemoEditor("code", code.id, code.name); };
       row.querySelector("[data-act=ren]").onclick = e => {
         e.stopPropagation();
-        promptModal(t("rename"), t("code_name_q"), code.name, name => { code.name = name; scheduleSave(); renderAll(); });
+        promptModal(t("rename"), t("code_name_q"), code.name, name => { pushUndoSnapshot(); code.name = name; scheduleSave(); renderAll(); updateUndoButtons(); });
       };
       row.querySelector("[data-act=del]").onclick = e => {
         e.stopPropagation();
@@ -522,7 +552,7 @@ function renderCodeTree() {
         let p = code;
         while (p) { if (p.id === draggedId) return; p = getCode(p.parentId); }
         const dragged = getCode(draggedId);
-        if (dragged) { dragged.parentId = code.id; expandedCodes.add(code.id); scheduleSave(); renderCodeTree(); }
+        if (dragged) { pushUndoSnapshot(); dragged.parentId = code.id; expandedCodes.add(code.id); scheduleSave(); renderCodeTree(); updateUndoButtons(); }
       });
       container.appendChild(row);
       if (kids.length && open) {
@@ -540,7 +570,7 @@ function renderCodeTree() {
   root.addEventListener("drop", e => {
     if (e.target !== root) return;
     const dragged = getCode(e.dataTransfer.getData("text/qualicode-code"));
-    if (dragged) { dragged.parentId = null; scheduleSave(); renderCodeTree(); }
+    if (dragged) { pushUndoSnapshot(); dragged.parentId = null; scheduleSave(); renderCodeTree(); updateUndoButtons(); }
   });
 }
 
@@ -1414,6 +1444,8 @@ function switchToProject(project) {
   state.ui.selectedCodeId = null;
   projectPassword = null;
   panel4Mode = "segments";
+  clearUndoHistory();
+  updateUndoButtons();
   project.documentGroups.forEach(g => expandedGroups.add(g.id));
   childCodes(null).forEach(c => expandedCodes.add(c.id));
   persistNow();
