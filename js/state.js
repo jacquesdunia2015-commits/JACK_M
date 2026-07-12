@@ -34,6 +34,8 @@ export function emptyProject(name) {
     memos: [],            // {id, targetType: project|document|code|segment, targetId, title, text, created}
     variables: [],        // ["âge", "sexe", ...]
     trash: { documents: [], codes: [] },
+    savedQueries: [],   // {id, name, activatedDocs, activatedCodes, retrievalMode, created}
+    conceptMaps: [],    // {id, name, nodes:[{id,label,x,y,color,width,height}], edges:[{id,from,to,label}]}
   };
 }
 
@@ -166,6 +168,8 @@ export function normalizeProject(p) {
   proj.trash = proj.trash || { documents: [], codes: [] };
   proj.memos = proj.memos || [];
   proj.variables = proj.variables || [];
+  proj.savedQueries = proj.savedQueries || [];
+  proj.conceptMaps = proj.conceptMaps || [];
   return proj;
 }
 
@@ -333,6 +337,25 @@ export function restoreTrashedCode(index) {
   state.project.codes.push(...item.codes);
   const docIds = new Set(state.project.documents.map(d => d.id));
   state.project.segments.push(...item.segments.filter(s => docIds.has(s.docId)));
+  scheduleSave();
+}
+
+/* ---------- Requêtes sauvegardées ---------- */
+export function saveQuery(name, activatedDocs, activatedCodes, retrievalMode) {
+  const q = {
+    id: uid(), name,
+    activatedDocs: [...activatedDocs],
+    activatedCodes: [...activatedCodes],
+    retrievalMode,
+    created: new Date().toISOString(),
+  };
+  state.project.savedQueries.push(q);
+  scheduleSave();
+  return q;
+}
+
+export function deleteQuery(id) {
+  state.project.savedQueries = state.project.savedQueries.filter(q => q.id !== id);
   scheduleSave();
 }
 

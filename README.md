@@ -47,23 +47,23 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 | Domaine (réf. cahier des charges) | Fonctionnalités |
 |---|---|
 | **Gestion de projet (§2.1)** | Création, sauvegarde/ouverture dans un fichier conteneur unique `.projx` (JSON), sauvegarde automatique locale (localStorage), corbeille interne pour documents et codes |
-| **Importation (§2.2)** | Fichiers **DOCX** (extraction native sans dépendance : lecture ZIP via `DecompressionStream` + analyse de `word/document.xml`), TXT/MD, collage de texte, enquêtes CSV (réponses courtes → variables, réponses longues → texte), texte structuré (balises `#DOC`) |
+| **Importation (§2.2)** | Fichiers **DOCX** (extraction native sans dépendance : lecture ZIP via `DecompressionStream` + analyse de `word/document.xml`), **PDF** (extraction de texte native : décompression FlateDecode + analyse des opérateurs de texte — PDF « texte », pas les scans), TXT/MD, collage de texte, enquêtes CSV (réponses courtes → variables, réponses longues → texte), texte structuré (balises `#DOC`) |
 | **Organisation (§2.3)** | Groupes de documents (glisser-déposer), variables de document, navigateur avec numérotation des paragraphes, recherche plein texte booléenne (ET / OU / "phrase") |
 | **Codage (§2.4)** | Codes et sous-codes en arborescence illimitée avec couleurs, codage par sélection de texte (menu contextuel), codage in vivo, raccourci clavier `Alt+C`, codage automatique par recherche lexicale (occurrence / phrase / paragraphe), pondération des segments, fusion visuelle des chevauchements, fréquences en temps réel, glisser-déposer des codes |
-| **Récupération (§2.4)** | Activation de documents et de codes (✅), modes **OU** et **ET** (intersection/chevauchement), saut au passage source |
+| **Récupération (§2.4)** | Activation de documents et de codes (✅), modes **OU** et **ET** (intersection/chevauchement), saut au passage source, **requêtes sauvegardées** (combinaisons de filtres réutilisables, stockées dans le `.projx`), **recodage par glisser-déposer** (tirer une carte segment sur un code) |
 | **Mémos (§2.5)** | Mémos de projet, de document et de code ; commentaires sur segments ; gestionnaire de mémos ; indicateurs 📝 dans les arbres |
 | **Analyse (§2.6)** | Matrice codes × documents (cliquable), matrice de co-occurrences, comparaison de groupes par variable, fréquences de mots (anti-dictionnaire FR/EN), KWIC (mots en contexte), statistiques descriptives des variables |
-| **Visualisation (§2.7)** | Portrait de document (séquence colorée des segments), nuage de mots, diagramme de fréquences des codes |
-| **Rapports & exports (§2.8)** | Export CSV des segments (compatible Excel), export du système de codes, export CSV de la matrice, **rapport Word (.docx) natif** (archive ZIP + WordprocessingML générés sans bibliothèque), rapport HTML imprimable (→ PDF via l'impression navigateur), export/import du projet `.projx` |
+| **Visualisation (§2.7)** | Portrait de document (séquence colorée des segments), nuage de mots, diagramme de fréquences des codes, **cartes conceptuelles SVG** (nœuds déplaçables, flèches, plusieurs cartes par projet, export .svg) |
+| **Rapports & exports (§2.8)** | Export CSV des segments (compatible Excel), export du système de codes, export CSV de la matrice, **rapport Word (.docx) natif** (archive ZIP + WordprocessingML générés sans bibliothèque), **export REFI-QDA (.qdpx)** — format d'échange standard importable dans MAXQDA, NVivo et ATLAS.ti —, rapport HTML imprimable (→ PDF via l'impression navigateur), export/import du projet `.projx` |
 | **Sécurité (§2.1, §3.4)** | Protection du projet par mot de passe : fichier `.projx` chiffré en **AES-256-GCM**, clé dérivée par PBKDF2 (310 000 itérations, SHA-256) via l'API Web Crypto native |
 | **Équipe (§2.1, §2.9)** | **Fusion de projets** (appariement des documents, codes et mémos ; segments étiquetés par codeur) et **accord inter-codeurs par kappa de Cohen** (unité : le paragraphe, par code + global, interprétation Landis & Koch) — critère d'acceptation n°4 du cahier des charges |
 
 ## 🗺️ Feuille de route (fonctionnalités du cahier des charges non couvertes par ce MVP)
 
-- **Import PDF / RTF / ODT** (§2.2) — nécessite des bibliothèques d'extraction dédiées (DOCX est déjà couvert).
+- **Import RTF / ODT** (§2.2) — DOCX et PDF sont déjà couverts.
 - **Médias audio / vidéo / images et transcriptions horodatées** (§2.2, §2.7) — lecture synchronisée FFmpeg côté desktop.
 - **Import réseaux sociaux et références bibliographiques** (§2.2).
-- **Export REFI-QDA** (§2.8) — le format `.projx` (JSON documenté) prépare la conversion (l'export Word est déjà couvert).
+- **Import REFI-QDA** (§2.8) — l'export `.qdpx` est couvert ; l'import (lecture des projets MAXQDA/NVivo) reste à faire.
 - **Phase 2 cloud** : collaboration temps réel, rôles, journal des modifications (la fusion asynchrone et le kappa de Cohen sont déjà couverts).
 - **Empaquetage desktop** Windows/macOS : la base web actuelle est directement intégrable dans **Tauri** ou **Electron** (options recommandées §4).
 
@@ -79,13 +79,17 @@ js/analysis.js      Recherche booléenne, lexicométrie, matrices
 js/export.js        Exports CSV, rapport imprimable, conteneur .projx
 js/docx.js          Import DOCX natif (lecture ZIP + WordprocessingML)
 js/docxout.js       Export Word natif (écriture ZIP/CRC-32 + WordprocessingML)
+js/pdf.js           Import PDF natif (FlateDecode + opérateurs de texte BT/ET)
+js/refi.js          Export REFI-QDA .qdpx (XML urn:QDA-XML + sources texte)
+js/conceptmap.js    Éditeur de cartes conceptuelles SVG (nœuds, flèches, export)
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)
 js/sample.js        Projet exemple (étude sur le télétravail)
 ```
 
 **Modèle de données** (`.projx`, JSON) : `documents`, `documentGroups`, `codes` (hiérarchie par `parentId`),
-`segments` (offsets de caractères `start`/`end` dans le texte source, poids, commentaire), `memos`, `variables`, `trash`.
+`segments` (offsets de caractères `start`/`end` dans le texte source, poids, commentaire), `memos`, `variables`,
+`savedQueries` (combinaisons de filtres), `conceptMaps` (nœuds/arêtes), `trash`.
 
 Aucune dépendance externe : HTML/CSS/JavaScript natifs (modules ES), fonctionne hors ligne,
 données 100 % locales par défaut (conformité RGPD §3.4 : aucune télémétrie).

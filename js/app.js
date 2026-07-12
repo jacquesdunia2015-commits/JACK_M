@@ -9,14 +9,18 @@ import {
   trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode,
   upsertMemo, getMemo,
   pushUndoSnapshot, undoAction, redoAction, canUndo, canRedo, clearUndoHistory,
+  saveQuery, deleteQuery,
 } from "./state.js";
 import {
   searchDocuments, wordFrequencies, kwic, codeMatrix, coocMatrix,
   groupComparison, variableStats, flatCodes,
 } from "./analysis.js";
-import { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, exportReportDocx, openPrintableReport } from "./export.js";
+import { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, exportReportDocx, openPrintableReport, downloadBlob } from "./export.js";
 import { buildSampleProject } from "./sample.js";
 import { extractDocxText } from "./docx.js";
+import { extractPdfText } from "./pdf.js";
+import { buildRefiQdpx } from "./refi.js";
+import { openConceptMapEditor } from "./conceptmap.js";
 import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from "./crypto.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
@@ -236,7 +240,9 @@ function bindRibbon() {
       try {
         const text = /\.docx$/i.test(f.name)
           ? await extractDocxText(f)
-          : (await f.text()).replace(/\r\n/g, "\n");
+          : /\.pdf$/i.test(f.name)
+            ? await extractPdfText(await f.arrayBuffer())
+            : (await f.text()).replace(/\r\n/g, "\n");
         addDocument(f.name.replace(/\.[^.]+$/, ""), text);
         imported++;
       } catch (err) {
@@ -293,11 +299,13 @@ function bindRibbon() {
   $("#btnKwic").onclick = openKwic;
   $("#btnStats").onclick = openStats;
   $("#btnKappa").onclick = openKappa;
+  $("#btnSavedQueries").onclick = openSavedQueries;
 
   // --- Visualisation ---
   $("#btnPortrait").onclick = openPortrait;
   $("#btnWordCloud").onclick = openWordCloud;
   $("#btnBarChart").onclick = openBarChart;
+  $("#btnConceptMap").onclick = () => openConceptMapEditor(state.project, scheduleSave);
 
   // --- Rapports ---
   $("#btnExportSegments").onclick = () => { exportSegmentsCsv(state.project.segments); toast(t("export_done")); };
@@ -305,6 +313,11 @@ function bindRibbon() {
   $("#btnExportReport").onclick = () => openPrintableReport(state.project.segments);
   $("#btnExportCodes").onclick = () => { exportCodeSystem(); toast(t("export_done")); };
   $("#btnExportMatrixCsv").onclick = () => { exportMatrixCsv(); toast(t("export_done")); };
+  $("#btnExportRefi").onclick = () => {
+    const blob = buildRefiQdpx(state.project);
+    downloadBlob(state.project.name.replace(/[\\/:*?"<>|]/g, "_") + ".qdpx", blob);
+    toast(t("export_done") + " — " + t("refi_desc"));
+  };
 
   // --- Annuler / Rétablir ---
   $("#btnUndo").onclick = handleUndo;
@@ -541,11 +554,27 @@ function renderCodeTree() {
         e.stopPropagation();
         confirmModal(t("delete_code_q"), () => { trashCode(code.id); renderAll(); });
       };
-      // Glisser-déposer : réorganisation hiérarchique
+      // Glisser-déposer : réorganisation hiérarchique + recodage de segments
       row.addEventListener("dragstart", e => { e.stopPropagation(); e.dataTransfer.setData("text/qualicode-code", code.id); });
-      row.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("text/qualicode-code")) e.preventDefault(); });
+      row.addEventListener("dragover", e => {
+        if (e.dataTransfer.types.includes("text/qualicode-code") ||
+            e.dataTransfer.types.includes("text/qualicode-seg")) e.preventDefault();
+      });
       row.addEventListener("drop", e => {
         e.stopPropagation();
+        // Recodage : une carte segment déposée sur ce code
+        const segId = e.dataTransfer.getData("text/qualicode-seg");
+        if (segId) {
+          const seg = getSegment(segId);
+          if (seg && seg.codeId !== code.id) {
+            pushUndoSnapshot();
+            seg.codeId = code.id;
+            scheduleSave();
+            renderAll();
+            toast(t("recode_done") + " « " + code.name + " »");
+          }
+          return;
+        }
         const draggedId = e.dataTransfer.getData("text/qualicode-code");
         if (!draggedId || draggedId === code.id) return;
         // Empêche de déposer un code dans sa propre descendance
@@ -853,7 +882,7 @@ function renderPanel4() {
   </div>`;
   for (const s of segs) {
     const code = getCode(s.codeId), doc = getDoc(s.docId);
-    html += `<div class="seg-card" data-id="${s.id}">
+    html += `<div class="seg-card" data-id="${s.id}" draggable="true" title="${esc(t("drag_to_recode"))}">
       <div class="seg-card-head">
         <span class="badge" style="background:${esc(hexToRgba(code?.color ?? "#888", 0.3))}">${esc(code?.name ?? "?")}</span>
         <span class="src" data-doc="${s.docId}" data-start="${s.start}">${esc(doc?.name ?? "?")}</span>
@@ -871,6 +900,13 @@ function renderPanel4() {
   el.querySelector("#btnPrintRetrieved").onclick = () => openPrintableReport(segs);
   el.querySelectorAll("[data-act=edit]").forEach(b => b.onclick = () => openSegmentModal(b.closest(".seg-card").dataset.id));
   el.querySelectorAll(".src").forEach(sp => sp.onclick = () => gotoDocPosition(sp.dataset.doc, Number(sp.dataset.start)));
+  // Recodage par glisser-déposer : tirer une carte segment sur un code du volet Codes
+  el.querySelectorAll(".seg-card").forEach(card => {
+    card.addEventListener("dragstart", e => {
+      e.dataTransfer.setData("text/qualicode-seg", card.dataset.id);
+      e.dataTransfer.effectAllowed = "move";
+    });
+  });
 }
 
 function gotoDocPosition(docId, charPos) {
@@ -1615,6 +1651,62 @@ function openMergeModal(incoming) {
       },
     ],
   });
+}
+
+/* ================================================================
+   Requêtes sauvegardées : combinaisons de filtres réutilisables
+================================================================ */
+function openSavedQueries() {
+  const render = body => {
+    const queries = state.project.savedQueries;
+    const listHtml = queries.length
+      ? queries.map(q => {
+          const date = new Date(q.created).toLocaleDateString();
+          const modeLbl = q.retrievalMode === "and" ? "ET" : "OU";
+          return `<div class="seg-card" data-id="${esc(q.id)}">
+            <div class="seg-card-head">
+              <strong style="flex:1">${esc(q.name)}</strong>
+              <span style="color:var(--text-soft);font-size:12px">${q.activatedDocs.length} docs · ${q.activatedCodes.length} codes · ${modeLbl} · ${date}</span>
+              <button class="btn" data-act="load">${esc(t("load_query"))}</button>
+              <button class="mini-btn" data-act="delq" title="${esc(t("delete"))}">🗑️</button>
+            </div>
+          </div>`;
+        }).join("")
+      : `<div class="empty-hint">${esc(t("no_queries"))}</div>`;
+    body.innerHTML = `
+      <button class="btn primary" id="btnSaveCurrentQuery" style="margin-bottom:12px">💾 ${esc(t("save_query"))}</button>
+      ${listHtml}`;
+    body.querySelector("#btnSaveCurrentQuery").onclick = () => {
+      promptModal(t("save_query"), t("query_name_q"), "", name => {
+        saveQuery(name, state.ui.activatedDocs, state.ui.activatedCodes, state.ui.retrievalMode);
+        toast(t("query_saved"));
+        render(body);
+      });
+    };
+    body.querySelectorAll("[data-act=load]").forEach(b => b.onclick = () => {
+      const q = state.project.savedQueries.find(x => x.id === b.closest(".seg-card").dataset.id);
+      if (!q) return;
+      // N'active que les documents/codes qui existent encore
+      const docIds = new Set(state.project.documents.map(d => d.id));
+      const codeIds = new Set(state.project.codes.map(c => c.id));
+      state.ui.activatedDocs = new Set(q.activatedDocs.filter(id => docIds.has(id)));
+      state.ui.activatedCodes = new Set(q.activatedCodes.filter(id => codeIds.has(id)));
+      state.ui.retrievalMode = q.retrievalMode;
+      $("#retrievalMode").value = q.retrievalMode;
+      renderAll();
+      toast(t("query_loaded") + " : " + q.name);
+    });
+    body.querySelectorAll("[data-act=delq]").forEach(b => b.onclick = () => {
+      deleteQuery(b.closest(".seg-card").dataset.id);
+      toast(t("query_deleted"));
+      render(body);
+    });
+  };
+  const m = openModal({
+    title: t("saved_queries_title"), wide: true, bodyHtml: "",
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  render(m.body);
 }
 
 function openKappa() {

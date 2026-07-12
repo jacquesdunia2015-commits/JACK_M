@@ -349,7 +349,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
     <!-- Importer -->
     <div class="ribbon-pane" data-pane="import">
       <div class="rgroup">
-        <button id="btnImportFiles" class="rbtn">📄<span data-i18n="import_files">Fichiers (DOCX, TXT, MD)</span></button>
+        <button id="btnImportFiles" class="rbtn">📄<span data-i18n="import_files">Fichiers (DOCX, PDF, TXT, MD)</span></button>
         <button id="btnImportCsv" class="rbtn">📊<span data-i18n="import_csv">Enquête CSV</span></button>
         <button id="btnPasteDoc" class="rbtn">📋<span data-i18n="paste_doc">Coller un texte</span></button>
         <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
@@ -359,7 +359,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <button id="btnNewGroup" class="rbtn">📁<span data-i18n="new_group">Nouveau groupe</span></button>
         <div class="rlabel" data-i18n="grp_organize">Organisation</div>
       </div>
-      <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx" hidden>
+      <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx,.pdf" hidden>
       <input type="file" id="csvInput" accept=".csv" hidden>
       <input type="file" id="projInput" accept=".projx,.json" hidden>
     </div>
@@ -418,6 +418,10 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <div class="rlabel" data-i18n="grp_stats">Descriptives</div>
       </div>
       <div class="rgroup">
+        <button id="btnSavedQueries" class="rbtn">📋<span data-i18n="saved_queries">Requêtes sauvegardées</span></button>
+        <div class="rlabel" data-i18n="grp_queries">Requêtes</div>
+      </div>
+      <div class="rgroup">
         <button id="btnKappa" class="rbtn">🤝<span data-i18n="kappa">Accord inter-codeurs (κ)</span></button>
         <div class="rlabel" data-i18n="grp_team">Équipe</div>
       </div>
@@ -431,6 +435,10 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <button id="btnBarChart" class="rbtn">📊<span data-i18n="bar_chart">Fréquences des codes</span></button>
         <div class="rlabel" data-i18n="grp_visuals">Visualisations</div>
       </div>
+      <div class="rgroup">
+        <button id="btnConceptMap" class="rbtn">🗺️<span data-i18n="concept_map">Carte conceptuelle</span></button>
+        <div class="rlabel" data-i18n="grp_concept_maps">Modélisation</div>
+      </div>
     </div>
 
     <!-- Rapports -->
@@ -441,6 +449,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <button id="btnExportReport" class="rbtn">🖨️<span data-i18n="export_report">Rapport imprimable</span></button>
         <button id="btnExportCodes" class="rbtn">🌳<span data-i18n="export_codes">Système de codes</span></button>
         <button id="btnExportMatrixCsv" class="rbtn">🧮<span data-i18n="export_matrix">Matrice (CSV)</span></button>
+        <button id="btnExportRefi" class="rbtn">🌐<span data-i18n="export_refi">REFI-QDA (.qdpx)</span></button>
         <div class="rlabel" data-i18n="grp_exports">Exports</div>
       </div>
     </div>
@@ -546,11 +555,21 @@ const translations = {
     new_project: "Nouveau projet", open_project: "Ouvrir (.projx)", save_project: "Enregistrer (.projx)",
     sample_project: "Projet exemple", grp_project: "Projet",
     search: "Rechercher", grp_search: "Recherche", search_ph: "Recherche plein texte (ET, OU, \"phrase\")…",
+    saved_queries: "Requêtes sauvegardées", saved_queries_title: "Requêtes sauvegardées", grp_queries: "Requêtes",
+    save_query: "Sauvegarder la requête courante", load_query: "Charger", no_queries: "Aucune requête sauvegardée. Activez des documents et des codes, puis sauvegardez la combinaison ici.",
+    query_name_q: "Nom de la requête :", query_saved: "Requête sauvegardée", query_loaded: "Requête chargée", query_deleted: "Requête supprimée",
+    concept_map: "Carte conceptuelle", concept_maps_title: "Cartes conceptuelles", grp_concept_maps: "Modélisation",
+    new_concept_map: "Nouvelle carte", no_concept_maps: "Aucune carte — créez-en une", add_node: "Nœud",
+    link_mode: "Relier", select_mode: "Sélectionner", delete_sel: "Supprimer", export_svg: "Exporter SVG",
+    node_label_q: "Libellé du nœud :", map_name_q: "Nom de la carte :",
+    export_refi: "REFI-QDA (.qdpx)", refi_desc: "Format d'échange standard — importable dans MAXQDA, NVivo, ATLAS.ti",
+    pdf_import_fail: "Impossible de lire ce PDF. Il est peut-être scanné (image) ou protégé.",
+    recode_done: "Segment recodé vers", drag_to_recode: "Glissez cette carte sur un code (volet Codes) pour recoder le segment",
     undo: "Annuler", redo: "Rétablir", grp_edit: "Édition",
     undo_done: "Action annulée", redo_done: "Action rétablie",
     nothing_to_undo: "Rien à annuler", nothing_to_redo: "Rien à rétablir",
     trash: "Corbeille", grp_tools: "Outils",
-    import_files: "Fichiers (DOCX, TXT, MD)", import_csv: "Enquête CSV", paste_doc: "Coller un texte",
+    import_files: "Fichiers (DOCX, PDF, TXT, MD)", import_csv: "Enquête CSV", paste_doc: "Coller un texte",
     structured_text: "Texte structuré", grp_import: "Importation", new_group: "Nouveau groupe", grp_organize: "Organisation",
     new_code: "Nouveau code", code_selection: "Coder la sélection", in_vivo: "Codage in vivo",
     grp_coding: "Codage", autocode: "Codage automatique", grp_autocode: "Recherche lexicale",
@@ -649,11 +668,21 @@ const translations = {
     new_project: "New project", open_project: "Open (.projx)", save_project: "Save (.projx)",
     sample_project: "Sample project", grp_project: "Project",
     search: "Search", grp_search: "Search", search_ph: "Full-text search (AND, OR, \"phrase\")…",
+    saved_queries: "Saved queries", saved_queries_title: "Saved queries", grp_queries: "Queries",
+    save_query: "Save current query", load_query: "Load", no_queries: "No saved queries. Activate documents and codes, then save the combination here.",
+    query_name_q: "Query name:", query_saved: "Query saved", query_loaded: "Query loaded", query_deleted: "Query deleted",
+    concept_map: "Concept map", concept_maps_title: "Concept maps", grp_concept_maps: "Modeling",
+    new_concept_map: "New map", no_concept_maps: "No map — create one", add_node: "Node",
+    link_mode: "Link", select_mode: "Select", delete_sel: "Delete", export_svg: "Export SVG",
+    node_label_q: "Node label:", map_name_q: "Map name:",
+    export_refi: "REFI-QDA (.qdpx)", refi_desc: "Standard exchange format — importable in MAXQDA, NVivo, ATLAS.ti",
+    pdf_import_fail: "Unable to read this PDF. It may be scanned (image-based) or protected.",
+    recode_done: "Segment recoded to", drag_to_recode: "Drag this card onto a code (Codes panel) to recode the segment",
     undo: "Undo", redo: "Redo", grp_edit: "Edit",
     undo_done: "Action undone", redo_done: "Action redone",
     nothing_to_undo: "Nothing to undo", nothing_to_redo: "Nothing to redo",
     trash: "Trash", grp_tools: "Tools",
-    import_files: "Files (DOCX, TXT, MD)", import_csv: "CSV survey", paste_doc: "Paste text",
+    import_files: "Files (DOCX, PDF, TXT, MD)", import_csv: "CSV survey", paste_doc: "Paste text",
     structured_text: "Structured text", grp_import: "Import", new_group: "New group", grp_organize: "Organization",
     new_code: "New code", code_selection: "Code selection", in_vivo: "In-vivo coding",
     grp_coding: "Coding", autocode: "Auto-coding", grp_autocode: "Lexical search",
@@ -797,6 +826,8 @@ function emptyProject(name) {
     memos: [],            // {id, targetType: project|document|code|segment, targetId, title, text, created}
     variables: [],        // ["âge", "sexe", ...]
     trash: { documents: [], codes: [] },
+    savedQueries: [],   // {id, name, activatedDocs, activatedCodes, retrievalMode, created}
+    conceptMaps: [],    // {id, name, nodes:[{id,label,x,y,color,width,height}], edges:[{id,from,to,label}]}
   };
 }
 
@@ -929,6 +960,8 @@ function normalizeProject(p) {
   proj.trash = proj.trash || { documents: [], codes: [] };
   proj.memos = proj.memos || [];
   proj.variables = proj.variables || [];
+  proj.savedQueries = proj.savedQueries || [];
+  proj.conceptMaps = proj.conceptMaps || [];
   return proj;
 }
 
@@ -1099,6 +1132,25 @@ function restoreTrashedCode(index) {
   scheduleSave();
 }
 
+/* ---------- Requêtes sauvegardées ---------- */
+function saveQuery(name, activatedDocs, activatedCodes, retrievalMode) {
+  const q = {
+    id: uid(), name,
+    activatedDocs: [...activatedDocs],
+    activatedCodes: [...activatedCodes],
+    retrievalMode,
+    created: new Date().toISOString(),
+  };
+  state.project.savedQueries.push(q);
+  scheduleSave();
+  return q;
+}
+
+function deleteQuery(id) {
+  state.project.savedQueries = state.project.savedQueries.filter(q => q.id !== id);
+  scheduleSave();
+}
+
 function upsertMemo(targetType, targetId, text, title = "") {
   let memo = state.project.memos.find(m => m.targetType === targetType && m.targetId === targetId);
   if (memo) {
@@ -1115,7 +1167,7 @@ function getMemo(targetType, targetId) {
   return state.project.memos.find(m => m.targetType === targetType && m.targetId === targetId);
 }
 
-return { uid, emptyProject, setOnSaved, scheduleSave, persistNow, loadProjectById, listProjects, deleteProjectById, loadPersisted, savePrefs, loadPrefs, normalizeProject, childCodes, codeWithDescendants, segmentsOfCode, segmentsOfDoc, pushUndoSnapshot, clearUndoHistory, undoAction, redoAction, canUndo, canRedo, addDocument, addGroup, addCode, addSegment, deleteSegment, trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode, upsertMemo, getMemo, CODE_COLORS, state, getDoc, getCode, getGroup, getSegment };
+return { uid, emptyProject, setOnSaved, scheduleSave, persistNow, loadProjectById, listProjects, deleteProjectById, loadPersisted, savePrefs, loadPrefs, normalizeProject, childCodes, codeWithDescendants, segmentsOfCode, segmentsOfDoc, pushUndoSnapshot, clearUndoHistory, undoAction, redoAction, canUndo, canRedo, addDocument, addGroup, addCode, addSegment, deleteSegment, trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode, saveQuery, deleteQuery, upsertMemo, getMemo, CODE_COLORS, state, getDoc, getCode, getGroup, getSegment };
 })();
 
 __QC["analysis"] = (function () {
@@ -2095,7 +2147,713 @@ function openPrintableReport(segments) {
   if (w) { w.document.write(html); w.document.close(); }
 }
 
-return { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, exportReportDocx, openPrintableReport };
+return { downloadBlob, exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, exportReportDocx, openPrintableReport };
+})();
+
+__QC["pdf"] = (function () {
+"use strict";
+// js/pdf.js — Extracteur de texte PDF minimal (texte natif, pas de PDF scannés)
+// Supporte FlateDecode; ne nécessite aucune dépendance externe.
+
+async function extractPdfText(ab) {
+  const bytes = new Uint8Array(ab);
+  if (bytes[0] !== 0x25 || bytes[1] !== 0x50) // %P
+    throw new Error("Ce fichier n'est pas un PDF valide.");
+
+  const raw = binStr(bytes);
+
+  // Trouver tous les blocs stream...endstream
+  const streams = [];
+  let pos = 0;
+  while (pos < raw.length) {
+    const si = raw.indexOf('stream', pos);
+    if (si === -1) break;
+    const after = si + 6;
+    let ds;
+    if (raw[after] === '\r' && raw[after + 1] === '\n') ds = after + 2;
+    else if (raw[after] === '\n') ds = after + 1;
+    else { pos = si + 7; continue; }
+
+    let ei = raw.indexOf('endstream', ds);
+    if (ei === -1) break;
+    // L'EOL précédant 'endstream' ne fait pas partie des données ; les
+    // décompresseurs stricts rejettent tout octet excédentaire.
+    let de = ei;
+    while (de > ds && (raw[de - 1] === '\n' || raw[de - 1] === '\r')) de--;
+
+    // Dictionnaire de l'objet (on cherche en arrière depuis 'stream')
+    const dictEnd = si;
+    let dictStart = dictEnd - 1;
+    while (dictStart > 0 && raw.slice(dictStart - 2, dictStart) !== '<<') dictStart--;
+    dictStart = Math.max(0, raw.lastIndexOf('<<', dictEnd));
+    const dict = raw.slice(dictStart, dictEnd);
+
+    streams.push({ dict, data: bytes.slice(ds, de) });
+    pos = ei + 9;
+  }
+
+  // Extraire le texte de chaque stream
+  const texts = [];
+  for (const { dict, data } of streams) {
+    try {
+      let content;
+      const isFlate = /\/FlateDecode|\/Fl\b/.test(dict);
+      const isHex   = /\/ASCIIHexDecode/.test(dict);
+      const hasType = /\/Type\s*\//.test(dict);
+      const isXObj  = /\/Subtype\s*\/Form/.test(dict);
+      // Skip metadata-only streams
+      if (/\/Type\s*\/XRef|\/Type\s*\/ObjStm/.test(dict)) continue;
+
+      if (isFlate) {
+        content = await inflate(data);
+        if (!content) continue;
+      } else if (!hasType || isXObj) {
+        content = binStr(data);
+      } else {
+        continue;
+      }
+
+      const t = parsePdfOps(content);
+      if (t.trim().length > 3) texts.push(t);
+    } catch { /* stream illisible, on passe */ }
+  }
+
+  if (!texts.length) throw new Error("Impossible d'extraire le texte de ce PDF. Vérifiez qu'il n'est pas scanné (image) et qu'il n'est pas protégé.");
+  return texts.join('\n\n').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+// Décompression deflate (FlateDecode PDF)
+async function inflate(bytes) {
+  for (const fmt of ['deflate', 'deflate-raw']) {
+    try {
+      const ds = new DecompressionStream(fmt);
+      const w = ds.writable.getWriter();
+      const r = ds.readable.getReader();
+      // Les rejets de write/close sont signalés aussi par r.read() ;
+      // on les neutralise pour éviter une rejection non interceptée.
+      w.write(bytes.slice(0)).catch(() => {});
+      w.close().catch(() => {});
+      const chunks = [];
+      for (;;) {
+        const { done, value } = await r.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const len = chunks.reduce((n, c) => n + c.length, 0);
+      const out = new Uint8Array(len);
+      let off = 0;
+      for (const c of chunks) { out.set(c, off); off += c.length; }
+      return new TextDecoder('latin1').decode(out);
+    } catch { /* essayer le format suivant */ }
+  }
+  return null;
+}
+
+// Parser les opérateurs de texte PDF (BT...ET), dans l'ordre du flux :
+// les déplacements verticaux (Td/TD/Tm/T*) deviennent des sauts de ligne.
+function parsePdfOps(content) {
+  const out = [];
+  let lastY = null;
+  const btRe = /BT([\s\S]*?)ET/g;
+  let bm;
+  const opRe =
+    /(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(T[dD])|(?:(?:-?\d+(?:\.\d+)?\s+){4})(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+Tm|T\*|(\((?:[^)\\]|\\.)*\))\s*(?:Tj|'|")|(\[[\s\S]*?\])\s*TJ|<([0-9A-Fa-f\s]*)>\s*Tj/g;
+  while ((bm = btRe.exec(content)) !== null) {
+    const block = bm[1];
+    opRe.lastIndex = 0;
+    let m;
+    while ((m = opRe.exec(block)) !== null) {
+      if (m[3]) {                       // x y Td/TD : déplacement relatif
+        if (parseFloat(m[2]) !== 0) out.push('\n');
+      } else if (m[5] !== undefined) {  // matrice Tm : position absolue
+        const y = parseFloat(m[5]);
+        if (lastY !== null && Math.abs(y - lastY) > 2) out.push('\n');
+        lastY = y;
+      } else if (m[0] === 'T*') {
+        out.push('\n');
+      } else if (m[6]) {
+        out.push(decodeLiteral(m[6].slice(1, -1)));
+      } else if (m[7]) {
+        // Tableau TJ : chaînes + crénage (grand écart négatif = espace)
+        const arrRe = /(\((?:[^)\\]|\\.)*\))|<([0-9A-Fa-f\s]*)>|(-?\d+(?:\.\d+)?)/g;
+        let am;
+        while ((am = arrRe.exec(m[7])) !== null) {
+          if (am[1]) out.push(decodeLiteral(am[1].slice(1, -1)));
+          else if (am[2]) out.push(decodeHex(am[2]));
+          else if (parseFloat(am[3]) < -200) out.push(' ');
+        }
+      } else if (m[8] !== undefined) {
+        out.push(decodeHex(m[8]));
+      }
+    }
+    out.push('\n');
+  }
+  return out.join('');
+}
+
+function decodeLiteral(s) {
+  return s
+    .replace(/\\(\d{1,3})/g, (_, o) => String.fromCharCode(parseInt(o, 8)))
+    .replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t')
+    .replace(/\\(.)/g, '$1');
+}
+
+function decodeHex(hex) {
+  const h = hex.replace(/\s/g, '');
+  let out = '';
+  for (let i = 0; i < h.length; i += 2) out += String.fromCharCode(parseInt(h.slice(i, i + 2), 16));
+  return out;
+}
+
+function binStr(bytes) {
+  // Convertir en binaire par blocs pour éviter stack overflow sur grands fichiers
+  const chunkSize = 32768;
+  const parts = [];
+  for (let i = 0; i < bytes.length; i += chunkSize)
+    parts.push(String.fromCharCode(...bytes.subarray(i, i + chunkSize)));
+  return parts.join('');
+}
+
+return { extractPdfText };
+})();
+
+__QC["refi"] = (function () {
+"use strict";
+// js/refi.js — Export REFI-QDA 1.5 (.qdpx) — standard d'échange QDA
+// Compatible MAXQDA 2022+, NVivo 14+, ATLAS.ti 22+
+// Structure : project.qde (XML, schéma urn:QDA-XML:project:1.0) + Sources/*.txt
+
+const { buildZip } = __QC["docxout"];
+
+const xmlEsc = s => String(s ?? "")
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+// GUID déterministe et strictement hexadécimal (exigé par le schéma REFI) :
+// le même identifiant QualiCode produit toujours le même GUID, ce qui garantit
+// la cohérence des références croisées (CodeRef, SourceRef…).
+function toGuid(id) {
+  const s = String(id || "default");
+  let hex = "";
+  for (let i = 0; i < s.length && hex.length < 32; i++)
+    hex += s.charCodeAt(i).toString(16).padStart(2, "0").slice(-2);
+  let h = 0x811c9dc5; // remplissage FNV-1a pour les identifiants courts
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  while (hex.length < 32) { hex += h.toString(16).padStart(8, "0"); h = (Math.imul(h, 0x01000193) + 1) >>> 0; }
+  hex = hex.slice(0, 32);
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+function buildRefiQdpx(project) {
+  const now = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  const userGuid = toGuid("user-" + (project.id || "qc"));
+
+  // ── Codes (hiérarchiques)
+  function codeXml(code, all) {
+    const children = all.filter(c => c.parentId === code.id);
+    const inner = children.map(c => codeXml(c, all)).join("");
+    return `<Code guid="${toGuid(code.id)}" name="${xmlEsc(code.name)}" isCodable="true" color="${xmlEsc(code.color || "#888888")}">${inner}</Code>`;
+  }
+  const codes = project.codes || [];
+  const codesXml = codes.filter(c => !c.parentId).map(c => codeXml(c, codes)).join("");
+
+  // ── Variables (déclaration)
+  const vars = project.variables || [];
+  const varsXml = vars.map(v =>
+    `<Variable guid="${toGuid("var-" + v)}" name="${xmlEsc(v)}" typeOfVariable="Text"/>`
+  ).join("");
+
+  // ── Cas : porteur des valeurs de variables (le schéma les attache aux Cases)
+  const casesXml = (project.documents || []).map(doc => {
+    const vals = vars.map(v => {
+      const val = doc.variables?.[v];
+      if (!val) return "";
+      return `<VariableValue><VariableRef targetGUID="${toGuid("var-" + v)}"/><TextValue>${xmlEsc(val)}</TextValue></VariableValue>`;
+    }).join("");
+    return `<Case guid="${toGuid("case-" + doc.id)}" name="${xmlEsc(doc.name)}">${vals}<SourceRef targetGUID="${toGuid(doc.id)}"/></Case>`;
+  }).join("");
+
+  // ── Sources : un TextSource par document, codages en PlainTextSelection
+  const sourceFiles = []; // {name, text}
+  const sourcesXml = (project.documents || []).map(doc => {
+    const safeName = doc.name.replace(/[^a-zA-Z0-9_\-.]/g, "_").slice(0, 40);
+    const filePath = `Sources/${safeName}_${String(doc.id).slice(-6)}.txt`;
+    sourceFiles.push({ name: filePath, text: doc.text });
+
+    const segs = (project.segments || []).filter(s => s.docId === doc.id);
+    const selectionsXml = segs.map(seg =>
+      `<PlainTextSelection guid="${toGuid("sel-" + seg.id)}" startPosition="${seg.start}" endPosition="${seg.end}">` +
+        `<Coding guid="${toGuid(seg.id)}" creatingUser="${userGuid}" creationDateTime="${xmlEsc(seg.created || now)}">` +
+          `<CodeRef targetGUID="${toGuid(seg.codeId)}"/>` +
+        `</Coding>` +
+      `</PlainTextSelection>`
+    ).join("");
+
+    return `<TextSource guid="${toGuid(doc.id)}" name="${xmlEsc(doc.name)}" ` +
+      `plainTextPath="internal://${xmlEsc(filePath)}" creatingUser="${userGuid}" ` +
+      `creationDateTime="${xmlEsc(doc.created || now)}">${selectionsXml}</TextSource>`;
+  }).join("");
+
+  // ── Notes (mémos)
+  const memoParts = [];
+  if (project.memo) memoParts.push({ id: "project-memo", title: "Mémo du projet", text: project.memo, created: project.created });
+  for (const m of project.memos || []) memoParts.push({ id: m.id, title: m.title || "Mémo", text: m.text, created: m.created });
+  const notesXml = memoParts.map(m =>
+    `<Note guid="${toGuid("note-" + m.id)}" name="${xmlEsc(m.title)}" creatingUser="${userGuid}" ` +
+    `creationDateTime="${xmlEsc(m.created || now)}"><PlainTextContent>${xmlEsc(m.text)}</PlainTextContent></Note>`
+  ).join("");
+
+  // ── project.qde (l'ordre des sections suit le schéma REFI)
+  const qde = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<Project name="${xmlEsc(project.name)}" origin="QualiCode 2026" ` +
+    `creatingUserGUID="${userGuid}" ` +
+    `creationDateTime="${xmlEsc((project.created || now).replace(/\.\d+Z$/, "Z"))}" ` +
+    `modifiedDateTime="${xmlEsc((project.modified || now).replace(/\.\d+Z$/, "Z"))}" ` +
+    `xmlns="urn:QDA-XML:project:1.0">\n` +
+    `<Users><User guid="${userGuid}" name="Chercheur"/></Users>\n` +
+    (codesXml ? `<CodeBook><Codes>${codesXml}</Codes></CodeBook>\n` : "") +
+    (varsXml ? `<Variables>${varsXml}</Variables>\n` : "") +
+    (casesXml ? `<Cases>${casesXml}</Cases>\n` : "") +
+    (sourcesXml ? `<Sources>${sourcesXml}</Sources>\n` : "") +
+    (notesXml ? `<Notes>${notesXml}</Notes>\n` : "") +
+    `</Project>`;
+
+  // ── ZIP .qdpx (méthode STORE, noms UTF-8)
+  const entries = [{ name: "project.qde", text: qde }];
+  for (const sf of sourceFiles) entries.push({ name: sf.name, text: sf.text });
+  return buildZip(entries);
+}
+
+return { buildRefiQdpx };
+})();
+
+__QC["conceptmap"] = (function () {
+"use strict";
+// js/conceptmap.js — Éditeur de cartes conceptuelles SVG
+// Nœuds déplaçables, flèches, modes sélection / ajout / lien, export SVG.
+
+const { uid } = __QC["state"];
+const { t } = __QC["i18n"];
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+const NODE_COLORS = ["#4e79a7","#f28e2b","#e15759","#59a14f","#b07aa1","#76b7b2","#edc948"];
+let _colorIdx = 0;
+function nextColor() { return NODE_COLORS[(_colorIdx++) % NODE_COLORS.length]; }
+
+function openConceptMapEditor(project, onSave) {
+  if (!project.conceptMaps) project.conceptMaps = [];
+
+  // ── State
+  let mapIdx = 0;
+  let mode = "select"; // select | add | link
+  let selectedNodeId = null;
+  let selectedEdgeId = null;
+  let linkSourceId = null;
+
+  function getMap() { return project.conceptMaps[mapIdx] ?? null; }
+  function save() { onSave(); }
+
+  // ── Build modal DOM ──────────────────────────────────────────────────────────
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "modal wide";
+  modal.style.cssText = "max-width:920px;width:96vw;display:flex;flex-direction:column";
+  overlay.appendChild(modal);
+
+  // Header
+  const hdr = document.createElement("div");
+  hdr.className = "modal-header";
+  const hdrTitle = document.createElement("span");
+  hdrTitle.textContent = t("concept_maps_title");
+  const hdrClose = document.createElement("button");
+  hdrClose.className = "modal-close";
+  hdrClose.textContent = "×";
+  hdr.appendChild(hdrTitle);
+  hdr.appendChild(hdrClose);
+  modal.appendChild(hdr);
+
+  // Body (no padding, flex column)
+  const body = document.createElement("div");
+  body.className = "modal-body";
+  body.style.cssText = "padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1";
+  modal.appendChild(body);
+
+  // Toolbar
+  const tb = document.createElement("div");
+  tb.style.cssText =
+    "display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;" +
+    "border-bottom:1px solid var(--border);align-items:center;background:var(--bg-ribbon)";
+  body.appendChild(tb);
+
+  function sep() {
+    const d = document.createElement("div");
+    d.style.cssText = "width:1px;background:var(--border);height:22px;margin:0 2px";
+    tb.appendChild(d);
+  }
+  function tbBtn(label, primary) {
+    const b = document.createElement("button");
+    b.className = "btn" + (primary ? " primary" : "");
+    b.textContent = label;
+    tb.appendChild(b);
+    return b;
+  }
+
+  const mapSel = document.createElement("select");
+  mapSel.style.cssText =
+    "padding:4px 8px;border:1px solid var(--border);border-radius:6px;" +
+    "background:var(--bg);color:var(--text);font-size:13px;max-width:180px";
+  tb.appendChild(mapSel);
+  const btnNewMap = tbBtn("+ " + t("new_concept_map"));
+  sep();
+  const btnSelect = tbBtn("✋ " + t("select_mode"));
+  const btnAdd    = tbBtn("＋ " + t("add_node"));
+  const btnLink   = tbBtn("→ " + t("link_mode"));
+  sep();
+  const btnDelete    = tbBtn("🗑️ " + t("delete_sel"));
+  const btnExportSVG = tbBtn("📥 " + t("export_svg"));
+
+  // SVG canvas
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 800 500");
+  svg.style.cssText =
+    "width:100%;height:500px;background:var(--bg);display:block;cursor:default;touch-action:none;flex-shrink:0";
+  body.appendChild(svg);
+
+  // Defs – arrowhead marker
+  const defs = document.createElementNS(SVG_NS, "defs");
+  const marker = document.createElementNS(SVG_NS, "marker");
+  marker.setAttribute("id", "qc-arrow");
+  marker.setAttribute("markerWidth", "10");
+  marker.setAttribute("markerHeight", "7");
+  marker.setAttribute("refX", "9");
+  marker.setAttribute("refY", "3.5");
+  marker.setAttribute("orient", "auto");
+  const arrowPoly = document.createElementNS(SVG_NS, "polygon");
+  arrowPoly.setAttribute("points", "0 0,10 3.5,0 7");
+  arrowPoly.setAttribute("fill", "#777");
+  marker.appendChild(arrowPoly);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
+  // Layer groups
+  const edgeG = document.createElementNS(SVG_NS, "g");
+  const nodeG = document.createElementNS(SVG_NS, "g");
+  svg.appendChild(edgeG);
+  svg.appendChild(nodeG);
+
+  // Footer
+  const ftr = document.createElement("div");
+  ftr.className = "modal-footer";
+  const btnClose = document.createElement("button");
+  btnClose.className = "btn primary";
+  btnClose.textContent = t("close");
+  ftr.appendChild(btnClose);
+  modal.appendChild(ftr);
+
+  document.getElementById("modalRoot").appendChild(overlay);
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  function toSVG(e) {
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const p = pt.matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  function setMode(m) {
+    mode = m;
+    if (m !== "link") linkSourceId = null;
+    [btnSelect, btnAdd, btnLink].forEach(b => b.classList.remove("primary"));
+    (m === "select" ? btnSelect : m === "add" ? btnAdd : btnLink).classList.add("primary");
+    svg.style.cursor = m === "add" ? "crosshair" : "default";
+    render();
+  }
+
+  function refreshMapSel() {
+    mapSel.innerHTML = "";
+    if (!project.conceptMaps.length) {
+      const opt = document.createElement("option");
+      opt.value = "-1";
+      opt.textContent = t("no_concept_maps");
+      mapSel.appendChild(opt);
+    } else {
+      project.conceptMaps.forEach((m, i) => {
+        const opt = document.createElement("option");
+        opt.value = String(i);
+        opt.selected = (i === mapIdx);
+        opt.textContent = m.name;
+        mapSel.appendChild(opt);
+      });
+    }
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────────
+  function render() {
+    edgeG.innerHTML = "";
+    nodeG.innerHTML = "";
+    const map = getMap();
+    if (!map) return;
+
+    // ── Edges
+    for (const edge of map.edges) {
+      const fn = map.nodes.find(n => n.id === edge.from);
+      const tn = map.nodes.find(n => n.id === edge.to);
+      if (!fn || !tn) continue;
+
+      const isSel = edge.id === selectedEdgeId;
+      const stroke = isSel ? "#2660a4" : "#999";
+      const sw = isSel ? "2.5" : "1.8";
+
+      const line = document.createElementNS(SVG_NS, "line");
+      line.setAttribute("x1", fn.x); line.setAttribute("y1", fn.y);
+      line.setAttribute("x2", tn.x); line.setAttribute("y2", tn.y);
+      line.setAttribute("stroke", stroke);
+      line.setAttribute("stroke-width", sw);
+      line.setAttribute("marker-end", "url(#qc-arrow)");
+      edgeG.appendChild(line);
+
+      // Wider invisible hit area
+      const hit = document.createElementNS(SVG_NS, "line");
+      hit.setAttribute("x1", fn.x); hit.setAttribute("y1", fn.y);
+      hit.setAttribute("x2", tn.x); hit.setAttribute("y2", tn.y);
+      hit.setAttribute("stroke", "transparent");
+      hit.setAttribute("stroke-width", "14");
+      hit.style.cursor = "pointer";
+      edgeG.appendChild(hit);
+
+      // Edge label
+      if (edge.label) {
+        const tx = document.createElementNS(SVG_NS, "text");
+        tx.setAttribute("x", (fn.x + tn.x) / 2);
+        tx.setAttribute("y", (fn.y + tn.y) / 2 - 6);
+        tx.setAttribute("text-anchor", "middle");
+        tx.setAttribute("font-size", "11");
+        tx.setAttribute("fill", "#777");
+        tx.style.pointerEvents = "none";
+        tx.textContent = edge.label;
+        edgeG.appendChild(tx);
+      }
+
+      // Edge click handler
+      const edgeClick = ev => {
+        if (mode !== "select") return;
+        ev.stopPropagation();
+        selectedEdgeId = edge.id;
+        selectedNodeId = null;
+        render();
+      };
+      line.addEventListener("click", edgeClick);
+      hit.addEventListener("click", edgeClick);
+    }
+
+    // ── Nodes
+    for (const node of map.nodes) {
+      const w = node.width || 120;
+      const h = node.height || 36;
+      const isSel = node.id === selectedNodeId;
+      const isLinkSrc = node.id === linkSourceId;
+
+      const g = document.createElementNS(SVG_NS, "g");
+      g.style.cursor = "move";
+
+      const rect = document.createElementNS(SVG_NS, "rect");
+      rect.setAttribute("x", node.x - w / 2);
+      rect.setAttribute("y", node.y - h / 2);
+      rect.setAttribute("width", w);
+      rect.setAttribute("height", h);
+      rect.setAttribute("rx", "6");
+      rect.setAttribute("fill", node.color || "#4e79a7");
+      rect.setAttribute("stroke", isLinkSrc ? "#ffcc00" : (isSel ? "#fff" : "rgba(0,0,0,0.15)"));
+      rect.setAttribute("stroke-width", isLinkSrc || isSel ? "2.5" : "1");
+      g.appendChild(rect);
+
+      const tx = document.createElementNS(SVG_NS, "text");
+      tx.setAttribute("x", node.x);
+      tx.setAttribute("y", node.y + 5);
+      tx.setAttribute("text-anchor", "middle");
+      tx.setAttribute("font-size", "13");
+      tx.setAttribute("fill", "#fff");
+      tx.style.pointerEvents = "none";
+      tx.style.userSelect = "none";
+      tx.textContent = node.label || "";
+      g.appendChild(tx);
+
+      nodeG.appendChild(g);
+
+      // Double-click → rename
+      g.addEventListener("dblclick", ev => {
+        if (mode !== "select") return;
+        ev.stopPropagation();
+        const lbl = prompt(t("node_label_q"), node.label || "");
+        if (lbl !== null) {
+          node.label = lbl;
+          node.width = Math.max(70, Math.min(260, lbl.length * 8 + 24));
+          save(); render();
+        }
+      });
+
+      // Click → select or link
+      g.addEventListener("click", ev => {
+        ev.stopPropagation();
+        if (mode === "select") {
+          selectedNodeId = node.id;
+          selectedEdgeId = null;
+          render();
+        } else if (mode === "link") {
+          if (!linkSourceId) {
+            linkSourceId = node.id;
+            render();
+          } else if (linkSourceId !== node.id) {
+            const map2 = getMap();
+            if (map2) {
+              map2.edges.push({ id: uid(), from: linkSourceId, to: node.id, label: "" });
+              save();
+            }
+            linkSourceId = null;
+            render();
+          }
+        }
+      });
+
+      // Mousedown → drag (select mode only)
+      g.addEventListener("mousedown", ev => {
+        if (mode !== "select" || ev.button !== 0) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        selectedNodeId = node.id;
+        selectedEdgeId = null;
+        render();
+
+        const svgStart = toSVG(ev);
+        const origX = node.x, origY = node.y;
+
+        const onMove = e2 => {
+          const c = toSVG(e2);
+          node.x = Math.max(10, Math.min(790, origX + c.x - svgStart.x));
+          node.y = Math.max(10, Math.min(490, origY + c.y - svgStart.y));
+          render();
+        };
+        const onUp = () => {
+          save();
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+        };
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+    }
+  }
+
+  // ── SVG background click → add node or deselect
+  svg.addEventListener("click", ev => {
+    if (ev.target !== svg && ev.target !== edgeG && ev.target !== nodeG) return;
+    if (mode === "add") {
+      const coords = toSVG(ev);
+      const lbl = prompt(t("node_label_q"), "");
+      if (lbl === null) return;
+      const map = getMap();
+      if (!map) return;
+      const w = Math.max(70, Math.min(260, (lbl.length || 4) * 8 + 24));
+      map.nodes.push({
+        id: uid(), label: lbl,
+        x: Math.round(coords.x), y: Math.round(coords.y),
+        color: nextColor(), width: w, height: 36,
+      });
+      save(); render();
+    } else if (mode === "select") {
+      selectedNodeId = null;
+      selectedEdgeId = null;
+      linkSourceId = null;
+      render();
+    }
+  });
+
+  // ── Toolbar button handlers
+  btnSelect.onclick = () => setMode("select");
+  btnAdd.onclick    = () => setMode("add");
+  btnLink.onclick   = () => setMode("link");
+
+  btnNewMap.onclick = () => {
+    const name = prompt(t("map_name_q"), "");
+    if (!name) return;
+    project.conceptMaps.push({ id: uid(), name, nodes: [], edges: [] });
+    mapIdx = project.conceptMaps.length - 1;
+    save();
+    refreshMapSel();
+    render();
+  };
+
+  mapSel.onchange = () => {
+    const v = Number(mapSel.value);
+    if (v >= 0 && v < project.conceptMaps.length) {
+      mapIdx = v;
+      selectedNodeId = null;
+      selectedEdgeId = null;
+      linkSourceId = null;
+      render();
+    }
+  };
+
+  btnDelete.onclick = () => {
+    const map = getMap();
+    if (!map) return;
+    if (selectedNodeId) {
+      map.nodes = map.nodes.filter(n => n.id !== selectedNodeId);
+      map.edges = map.edges.filter(e => e.from !== selectedNodeId && e.to !== selectedNodeId);
+      selectedNodeId = null;
+      save(); render();
+    } else if (selectedEdgeId) {
+      map.edges = map.edges.filter(e => e.id !== selectedEdgeId);
+      selectedEdgeId = null;
+      save(); render();
+    }
+  };
+
+  btnExportSVG.onclick = () => {
+    const map = getMap();
+    if (!map) return;
+    const serializer = new XMLSerializer();
+    const clone = svg.cloneNode(true);
+    clone.setAttribute("xmlns", SVG_NS);
+    clone.setAttribute("width", "800");
+    clone.setAttribute("height", "500");
+    // Replace CSS custom properties for standalone SVG
+    clone.querySelectorAll("polygon[fill='#777']").forEach(p => p.setAttribute("fill", "#777"));
+    // White background rect
+    const bg = document.createElementNS(SVG_NS, "rect");
+    bg.setAttribute("x", "0"); bg.setAttribute("y", "0");
+    bg.setAttribute("width", "800"); bg.setAttribute("height", "500");
+    bg.setAttribute("fill", "#ffffff");
+    clone.insertBefore(bg, clone.firstChild);
+    const svgStr = serializer.serializeToString(clone);
+    const blob = new Blob([svgStr], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = (map.name || "carte") + ".svg";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  // ── Close
+  const close = () => overlay.remove();
+  hdrClose.onclick = close;
+  btnClose.onclick = close;
+  overlay.addEventListener("mousedown", ev => { if (ev.target === overlay) close(); });
+
+  // ── Initial render
+  refreshMapSel();
+  setMode("select");
+}
+
+return { openConceptMapEditor };
 })();
 
 __QC["app"] = (function () {
@@ -2111,14 +2869,18 @@ const {
   trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode,
   upsertMemo, getMemo,
   pushUndoSnapshot, undoAction, redoAction, canUndo, canRedo, clearUndoHistory,
+  saveQuery, deleteQuery,
 } = __QC["state"];
 const {
   searchDocuments, wordFrequencies, kwic, codeMatrix, coocMatrix,
   groupComparison, variableStats, flatCodes,
 } = __QC["analysis"];
-const { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, exportReportDocx, openPrintableReport } = __QC["export"];
+const { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, exportReportDocx, openPrintableReport, downloadBlob } = __QC["export"];
 const { buildSampleProject } = __QC["sample"];
 const { extractDocxText } = __QC["docx"];
+const { extractPdfText } = __QC["pdf"];
+const { buildRefiQdpx } = __QC["refi"];
+const { openConceptMapEditor } = __QC["conceptmap"];
 const { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } = __QC["crypto"];
 const { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } = __QC["merge"];
 
@@ -2338,7 +3100,9 @@ function bindRibbon() {
       try {
         const text = /\.docx$/i.test(f.name)
           ? await extractDocxText(f)
-          : (await f.text()).replace(/\r\n/g, "\n");
+          : /\.pdf$/i.test(f.name)
+            ? await extractPdfText(await f.arrayBuffer())
+            : (await f.text()).replace(/\r\n/g, "\n");
         addDocument(f.name.replace(/\.[^.]+$/, ""), text);
         imported++;
       } catch (err) {
@@ -2395,11 +3159,13 @@ function bindRibbon() {
   $("#btnKwic").onclick = openKwic;
   $("#btnStats").onclick = openStats;
   $("#btnKappa").onclick = openKappa;
+  $("#btnSavedQueries").onclick = openSavedQueries;
 
   // --- Visualisation ---
   $("#btnPortrait").onclick = openPortrait;
   $("#btnWordCloud").onclick = openWordCloud;
   $("#btnBarChart").onclick = openBarChart;
+  $("#btnConceptMap").onclick = () => openConceptMapEditor(state.project, scheduleSave);
 
   // --- Rapports ---
   $("#btnExportSegments").onclick = () => { exportSegmentsCsv(state.project.segments); toast(t("export_done")); };
@@ -2407,6 +3173,11 @@ function bindRibbon() {
   $("#btnExportReport").onclick = () => openPrintableReport(state.project.segments);
   $("#btnExportCodes").onclick = () => { exportCodeSystem(); toast(t("export_done")); };
   $("#btnExportMatrixCsv").onclick = () => { exportMatrixCsv(); toast(t("export_done")); };
+  $("#btnExportRefi").onclick = () => {
+    const blob = buildRefiQdpx(state.project);
+    downloadBlob(state.project.name.replace(/[\\/:*?"<>|]/g, "_") + ".qdpx", blob);
+    toast(t("export_done") + " — " + t("refi_desc"));
+  };
 
   // --- Annuler / Rétablir ---
   $("#btnUndo").onclick = handleUndo;
@@ -2643,11 +3414,27 @@ function renderCodeTree() {
         e.stopPropagation();
         confirmModal(t("delete_code_q"), () => { trashCode(code.id); renderAll(); });
       };
-      // Glisser-déposer : réorganisation hiérarchique
+      // Glisser-déposer : réorganisation hiérarchique + recodage de segments
       row.addEventListener("dragstart", e => { e.stopPropagation(); e.dataTransfer.setData("text/qualicode-code", code.id); });
-      row.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("text/qualicode-code")) e.preventDefault(); });
+      row.addEventListener("dragover", e => {
+        if (e.dataTransfer.types.includes("text/qualicode-code") ||
+            e.dataTransfer.types.includes("text/qualicode-seg")) e.preventDefault();
+      });
       row.addEventListener("drop", e => {
         e.stopPropagation();
+        // Recodage : une carte segment déposée sur ce code
+        const segId = e.dataTransfer.getData("text/qualicode-seg");
+        if (segId) {
+          const seg = getSegment(segId);
+          if (seg && seg.codeId !== code.id) {
+            pushUndoSnapshot();
+            seg.codeId = code.id;
+            scheduleSave();
+            renderAll();
+            toast(t("recode_done") + " « " + code.name + " »");
+          }
+          return;
+        }
         const draggedId = e.dataTransfer.getData("text/qualicode-code");
         if (!draggedId || draggedId === code.id) return;
         // Empêche de déposer un code dans sa propre descendance
@@ -2955,7 +3742,7 @@ function renderPanel4() {
   </div>`;
   for (const s of segs) {
     const code = getCode(s.codeId), doc = getDoc(s.docId);
-    html += `<div class="seg-card" data-id="${s.id}">
+    html += `<div class="seg-card" data-id="${s.id}" draggable="true" title="${esc(t("drag_to_recode"))}">
       <div class="seg-card-head">
         <span class="badge" style="background:${esc(hexToRgba(code?.color ?? "#888", 0.3))}">${esc(code?.name ?? "?")}</span>
         <span class="src" data-doc="${s.docId}" data-start="${s.start}">${esc(doc?.name ?? "?")}</span>
@@ -2973,6 +3760,13 @@ function renderPanel4() {
   el.querySelector("#btnPrintRetrieved").onclick = () => openPrintableReport(segs);
   el.querySelectorAll("[data-act=edit]").forEach(b => b.onclick = () => openSegmentModal(b.closest(".seg-card").dataset.id));
   el.querySelectorAll(".src").forEach(sp => sp.onclick = () => gotoDocPosition(sp.dataset.doc, Number(sp.dataset.start)));
+  // Recodage par glisser-déposer : tirer une carte segment sur un code du volet Codes
+  el.querySelectorAll(".seg-card").forEach(card => {
+    card.addEventListener("dragstart", e => {
+      e.dataTransfer.setData("text/qualicode-seg", card.dataset.id);
+      e.dataTransfer.effectAllowed = "move";
+    });
+  });
 }
 
 function gotoDocPosition(docId, charPos) {
@@ -3717,6 +4511,62 @@ function openMergeModal(incoming) {
       },
     ],
   });
+}
+
+/* ================================================================
+   Requêtes sauvegardées : combinaisons de filtres réutilisables
+================================================================ */
+function openSavedQueries() {
+  const render = body => {
+    const queries = state.project.savedQueries;
+    const listHtml = queries.length
+      ? queries.map(q => {
+          const date = new Date(q.created).toLocaleDateString();
+          const modeLbl = q.retrievalMode === "and" ? "ET" : "OU";
+          return `<div class="seg-card" data-id="${esc(q.id)}">
+            <div class="seg-card-head">
+              <strong style="flex:1">${esc(q.name)}</strong>
+              <span style="color:var(--text-soft);font-size:12px">${q.activatedDocs.length} docs · ${q.activatedCodes.length} codes · ${modeLbl} · ${date}</span>
+              <button class="btn" data-act="load">${esc(t("load_query"))}</button>
+              <button class="mini-btn" data-act="delq" title="${esc(t("delete"))}">🗑️</button>
+            </div>
+          </div>`;
+        }).join("")
+      : `<div class="empty-hint">${esc(t("no_queries"))}</div>`;
+    body.innerHTML = `
+      <button class="btn primary" id="btnSaveCurrentQuery" style="margin-bottom:12px">💾 ${esc(t("save_query"))}</button>
+      ${listHtml}`;
+    body.querySelector("#btnSaveCurrentQuery").onclick = () => {
+      promptModal(t("save_query"), t("query_name_q"), "", name => {
+        saveQuery(name, state.ui.activatedDocs, state.ui.activatedCodes, state.ui.retrievalMode);
+        toast(t("query_saved"));
+        render(body);
+      });
+    };
+    body.querySelectorAll("[data-act=load]").forEach(b => b.onclick = () => {
+      const q = state.project.savedQueries.find(x => x.id === b.closest(".seg-card").dataset.id);
+      if (!q) return;
+      // N'active que les documents/codes qui existent encore
+      const docIds = new Set(state.project.documents.map(d => d.id));
+      const codeIds = new Set(state.project.codes.map(c => c.id));
+      state.ui.activatedDocs = new Set(q.activatedDocs.filter(id => docIds.has(id)));
+      state.ui.activatedCodes = new Set(q.activatedCodes.filter(id => codeIds.has(id)));
+      state.ui.retrievalMode = q.retrievalMode;
+      $("#retrievalMode").value = q.retrievalMode;
+      renderAll();
+      toast(t("query_loaded") + " : " + q.name);
+    });
+    body.querySelectorAll("[data-act=delq]").forEach(b => b.onclick = () => {
+      deleteQuery(b.closest(".seg-card").dataset.id);
+      toast(t("query_deleted"));
+      render(body);
+    });
+  };
+  const m = openModal({
+    title: t("saved_queries_title"), wide: true, bodyHtml: "",
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  render(m.body);
 }
 
 function openKappa() {

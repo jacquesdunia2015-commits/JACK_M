@@ -66,7 +66,7 @@
     <!-- Importer -->
     <div class="ribbon-pane" data-pane="import">
       <div class="rgroup">
-        <button id="btnImportFiles" class="rbtn">📄<span data-i18n="import_files">Fichiers (DOCX, TXT, MD)</span></button>
+        <button id="btnImportFiles" class="rbtn">📄<span data-i18n="import_files">Fichiers (DOCX, PDF, TXT, MD)</span></button>
         <button id="btnImportCsv" class="rbtn">📊<span data-i18n="import_csv">Enquête CSV</span></button>
         <button id="btnPasteDoc" class="rbtn">📋<span data-i18n="paste_doc">Coller un texte</span></button>
         <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
@@ -76,7 +76,7 @@
         <button id="btnNewGroup" class="rbtn">📁<span data-i18n="new_group">Nouveau groupe</span></button>
         <div class="rlabel" data-i18n="grp_organize">Organisation</div>
       </div>
-      <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx" hidden>
+      <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx,.pdf" hidden>
       <input type="file" id="csvInput" accept=".csv" hidden>
       <input type="file" id="projInput" accept=".projx,.json" hidden>
     </div>
@@ -135,6 +135,10 @@
         <div class="rlabel" data-i18n="grp_stats">Descriptives</div>
       </div>
       <div class="rgroup">
+        <button id="btnSavedQueries" class="rbtn">📋<span data-i18n="saved_queries">Requêtes sauvegardées</span></button>
+        <div class="rlabel" data-i18n="grp_queries">Requêtes</div>
+      </div>
+      <div class="rgroup">
         <button id="btnKappa" class="rbtn">🤝<span data-i18n="kappa">Accord inter-codeurs (κ)</span></button>
         <div class="rlabel" data-i18n="grp_team">Équipe</div>
       </div>
@@ -148,6 +152,10 @@
         <button id="btnBarChart" class="rbtn">📊<span data-i18n="bar_chart">Fréquences des codes</span></button>
         <div class="rlabel" data-i18n="grp_visuals">Visualisations</div>
       </div>
+      <div class="rgroup">
+        <button id="btnConceptMap" class="rbtn">🗺️<span data-i18n="concept_map">Carte conceptuelle</span></button>
+        <div class="rlabel" data-i18n="grp_concept_maps">Modélisation</div>
+      </div>
     </div>
 
     <!-- Rapports -->
@@ -158,6 +166,7 @@
         <button id="btnExportReport" class="rbtn">🖨️<span data-i18n="export_report">Rapport imprimable</span></button>
         <button id="btnExportCodes" class="rbtn">🌳<span data-i18n="export_codes">Système de codes</span></button>
         <button id="btnExportMatrixCsv" class="rbtn">🧮<span data-i18n="export_matrix">Matrice (CSV)</span></button>
+        <button id="btnExportRefi" class="rbtn">🌐<span data-i18n="export_refi">REFI-QDA (.qdpx)</span></button>
         <div class="rlabel" data-i18n="grp_exports">Exports</div>
       </div>
     </div>

@@ -5,7 +5,7 @@ import { t } from "./i18n.js";
 import { buildReportDocx } from "./docxout.js";
 
 // Le lien doit être rattaché au DOM pour que le nom de fichier soit respecté
-function downloadBlob(filename, blob) {
+export function downloadBlob(filename, blob) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

@@ -63,7 +63,7 @@ Tout en haut, un **ruban d'onglets** (Accueil, Importer, Codes, Mémos…) donne
 ### Importer vos textes (onglet **Importer**)
 Vous avez 4 façons de faire :
 
-- **📄 Fichiers (DOCX, TXT, MD)** : choisissez vos fichiers Word (.docx) ou texte. C'est la méthode la plus courante.
+- **📄 Fichiers (DOCX, PDF, TXT, MD)** : choisissez vos fichiers Word (.docx), PDF ou texte. C'est la méthode la plus courante. *(PDF : seuls les PDF « texte » fonctionnent — un PDF scanné est une photo, son texte ne peut pas être extrait.)*
 - **📋 Coller un texte** : copiez-collez directement un texte.
 - **📊 Enquête CSV** : importez un tableau de réponses (une ligne = une personne). Les réponses courtes (âge, sexe…) deviennent automatiquement des « variables », les réponses longues deviennent le texte à coder.
 - **🧩 Texte structuré** : collez plusieurs entretiens d'un coup, séparés par des lignes `#DOC Nom de l'entretien`.
@@ -111,6 +111,15 @@ C'est la récompense du codage ! Dans les listes de gauche :
 - Les boutons **⬇ CSV** et **🖨️** exportent ou impriment ces résultats.
 
 > 💡 Le bouton ✅ dans l'en-tête de chaque volet active/désactive **tout** d'un coup.
+
+### Changer le code d'un passage (recodage)
+Vous vous êtes trompé de code ? **Attrapez une carte de résultat avec la souris et déposez-la sur le bon code** dans le volet Codes (en bas à gauche). Le passage change de code instantanément. (Annulable avec Ctrl+Z.)
+
+### Sauvegarder une combinaison de filtres (requêtes)
+Vous consultez souvent la même combinaison (par exemple : tous les entretiens femmes + le code « Obstacles ») ?
+1. Activez vos documents et codes comme d'habitude.
+2. Onglet **Analyse** → **📋 Requêtes sauvegardées** → **💾 Sauvegarder la requête courante** → donnez un nom.
+3. La prochaine fois : ouvrez la liste et cliquez sur **Charger** — tous vos filtres se remettent en place d'un coup.
 
 ---
 
@@ -162,8 +171,9 @@ Onglet **Visualisation** :
 - **🎨 Portrait de document** : le film coloré d'un entretien (chaque rectangle = un passage codé, dans l'ordre).
 - **☁️ Nuage de mots** : les mots fréquents, en grand.
 - **📊 Fréquences des codes** : le poids de chaque code en barres colorées.
+- **🗺️ Carte conceptuelle** : dessinez votre modèle théorique ! Créez des boîtes (vos concepts), déplacez-les, reliez-les par des flèches, puis exportez le schéma en image SVG pour l'insérer dans votre mémoire. Mode d'emploi : **＋ Nœud** puis cliquez sur le fond pour créer une boîte ; **→ Relier** puis cliquez sur deux boîtes pour tracer une flèche ; double-cliquez sur une boîte pour la renommer.
 
-Onglet **Rapports** : exportez les segments (CSV pour Excel), la matrice, le système de codes, un **rapport Word (.docx)** prêt à remettre (segments regroupés par code, avec les couleurs), ou un **rapport imprimable** (qui peut être enregistré en PDF).
+Onglet **Rapports** : exportez les segments (CSV pour Excel), la matrice, le système de codes, un **rapport Word (.docx)** prêt à remettre (segments regroupés par code, avec les couleurs), un **rapport imprimable** (qui peut être enregistré en PDF), ou le projet complet au format **REFI-QDA (.qdpx)** — le format d'échange standard : ce fichier s'ouvre directement dans **MAXQDA, NVivo ou ATLAS.ti** (pratique si votre directeur de mémoire utilise un de ces logiciels).
 
 ---
 
