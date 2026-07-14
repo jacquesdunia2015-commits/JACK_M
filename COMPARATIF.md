@@ -15,7 +15,8 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | RTF / ODT | ❌ | ✅ | ✅ | ✅ |
 | Enquêtes (CSV) avec variables automatiques | ✅ | ✅ | ✅ | ✅ |
 | Texte structuré multi-entretiens (#DOC) | ✅ | ✅ | 🔶 | 🔶 |
-| Audio / vidéo | ❌ | ✅ | ✅ | ✅ |
+| Audio (lecture locale + transcription assistée horodatée) | ✅ | ✅ | ✅ | ✅ |
+| Vidéo | ❌ | ✅ | ✅ | ✅ |
 | Images (coder des zones) | ❌ | ✅ | ✅ | ✅ |
 | Réseaux sociaux / pages web | ❌ | ✅ | ✅ | ✅ |
 | Références bibliographiques (Zotero, EndNote) | ❌ | ✅ | ✅ | ✅ |
@@ -35,7 +36,8 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Recodage par glisser-déposer | ✅ | ✅ | ✅ | ✅ |
 | Annuler / Rétablir (Ctrl+Z) | ✅ 30 niveaux | ✅ | ✅ | ✅ |
 | Fusion / réorganisation des codes (glisser-déposer) | ✅ | ✅ | ✅ | ✅ |
-| Codage direct sur audio/vidéo (horodaté) | ❌ | ✅ | ✅ | ✅ |
+| Horodatages cliquables dans la transcription (saut audio) | ✅ | ✅ | ✅ | ✅ |
+| Codage direct sur la piste audio/vidéo (sans transcription) | ❌ | ✅ | ✅ | ✅ |
 
 ## 3. Récupération et requêtes
 

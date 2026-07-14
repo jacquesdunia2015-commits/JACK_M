@@ -70,6 +70,7 @@
         <button id="btnImportCsv" class="rbtn">📊<span data-i18n="import_csv">Enquête CSV</span></button>
         <button id="btnPasteDoc" class="rbtn">📋<span data-i18n="paste_doc">Coller un texte</span></button>
         <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
+        <button id="btnTranscribe" class="rbtn">🎙️<span data-i18n="transcribe">Transcrire un audio</span></button>
         <div class="rlabel" data-i18n="grp_import">Importation</div>
       </div>
       <div class="rgroup">
@@ -79,6 +80,8 @@
       <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx,.pdf" hidden>
       <input type="file" id="csvInput" accept=".csv" hidden>
       <input type="file" id="projInput" accept=".projx,.json" hidden>
+      <input type="file" id="audioInput" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp" hidden>
+      <input type="file" id="transInput" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp" hidden>
     </div>
 
     <!-- Codes -->
@@ -207,6 +210,7 @@
     <div class="panel-header">
       <span id="browserTitle" data-i18n="panel_browser">📖 Navigateur de document</span>
       <span class="panel-actions">
+        <button id="btnDocAudio" class="mini-btn" data-i18n-title="attach_audio" title="Associer l'audio de l'entretien">🎧</button>
         <button id="btnDocMemo" class="mini-btn" data-i18n-title="doc_memo" title="Mémo du document">📝</button>
         <button id="btnDocProps" class="mini-btn" data-i18n-title="doc_props" title="Propriétés / variables">⚙️</button>
       </span>

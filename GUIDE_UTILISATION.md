@@ -67,6 +67,10 @@ Vous avez 4 façons de faire :
 - **📋 Coller un texte** : copiez-collez directement un texte.
 - **📊 Enquête CSV** : importez un tableau de réponses (une ligne = une personne). Les réponses courtes (âge, sexe…) deviennent automatiquement des « variables », les réponses longues deviennent le texte à coder.
 - **🧩 Texte structuré** : collez plusieurs entretiens d'un coup, séparés par des lignes `#DOC Nom de l'entretien`.
+- **🎙️ Transcrire un audio** : choisissez l'enregistrement de votre entretien (téléphone, dictaphone) — une fenêtre s'ouvre avec un **lecteur audio** et une zone de texte. Vous écoutez et vous tapez. Astuces : réduisez la **vitesse à 0,5×** pour taper en écoutant ; **Ctrl+Espace** met en pause ; **Ctrl+B** recule de 5 secondes ; **Ctrl+T** insère l'heure exacte `[12:34]` à l'endroit où vous tapez. L'audio reste sur votre ordinateur, rien n'est envoyé sur internet.
+
+### Réécouter un passage pendant le codage 🎧
+Si votre transcription contient des horodatages `[12:34]`, ils deviennent **cliquables** : un clic fait démarrer l'audio à ce moment précis — pratique pour vérifier un verbatim ou une intonation. Associez d'abord le fichier audio à l'entretien avec le bouton **🎧** (en haut du volet de lecture). L'audio étant trop volumineux pour être gardé dans le navigateur, il faudra le réassocier à chaque nouvelle session (l'application vous rappelle le nom du fichier attendu).
 
 ### Ranger vos textes
 - **📁 Nouveau groupe** crée un dossier (par exemple « Entretiens femmes », « Entretiens hommes »).

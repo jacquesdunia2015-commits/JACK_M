@@ -287,6 +287,34 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
   #searchInput { width: 170px; }
 }
 
+/* Lecteur audio horodaté */
+.audio-bar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: var(--bg-ribbon); border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 10px; margin: 8px; box-shadow: var(--shadow);
+}
+.audio-bar .audio-name { font-size: 12px; font-weight: 600; color: var(--accent); max-width: 220px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.audio-bar .audio-btn { width: auto; padding: 0 8px; font-size: 13px; }
+.audio-bar .audio-time { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--text-soft); }
+.audio-bar .audio-seek { flex: 1; min-width: 90px; accent-color: var(--accent); }
+.audio-bar .audio-speed { padding: 3px 6px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg); color: var(--text); font-size: 12px; }
+.audio-reattach { justify-content: space-between; font-size: 12.5px; color: var(--text-soft); }
+
+/* Horodatages cliquables dans le texte */
+.ts {
+  font-family: ui-monospace, monospace; font-size: 0.92em; cursor: pointer;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent); border-radius: 4px; padding: 0 3px;
+}
+.ts:hover { background: color-mix(in srgb, var(--accent) 28%, transparent); text-decoration: underline; }
+
+/* Modal de transcription */
+.trans-hint { font-size: 12px; color: var(--text-soft); background: var(--bg-hover);
+  border-radius: 6px; padding: 7px 10px; margin: 8px 0; }
+
 </style>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
 </head>
@@ -353,6 +381,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <button id="btnImportCsv" class="rbtn">📊<span data-i18n="import_csv">Enquête CSV</span></button>
         <button id="btnPasteDoc" class="rbtn">📋<span data-i18n="paste_doc">Coller un texte</span></button>
         <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
+        <button id="btnTranscribe" class="rbtn">🎙️<span data-i18n="transcribe">Transcrire un audio</span></button>
         <div class="rlabel" data-i18n="grp_import">Importation</div>
       </div>
       <div class="rgroup">
@@ -362,6 +391,8 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
       <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx,.pdf" hidden>
       <input type="file" id="csvInput" accept=".csv" hidden>
       <input type="file" id="projInput" accept=".projx,.json" hidden>
+      <input type="file" id="audioInput" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp" hidden>
+      <input type="file" id="transInput" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp" hidden>
     </div>
 
     <!-- Codes -->
@@ -490,6 +521,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
     <div class="panel-header">
       <span id="browserTitle" data-i18n="panel_browser">📖 Navigateur de document</span>
       <span class="panel-actions">
+        <button id="btnDocAudio" class="mini-btn" data-i18n-title="attach_audio" title="Associer l'audio de l'entretien">🎧</button>
         <button id="btnDocMemo" class="mini-btn" data-i18n-title="doc_memo" title="Mémo du document">📝</button>
         <button id="btnDocProps" class="mini-btn" data-i18n-title="doc_props" title="Propriétés / variables">⚙️</button>
       </span>
@@ -555,6 +587,15 @@ const translations = {
     new_project: "Nouveau projet", open_project: "Ouvrir (.projx)", save_project: "Enregistrer (.projx)",
     sample_project: "Projet exemple", grp_project: "Projet",
     search: "Rechercher", grp_search: "Recherche", search_ph: "Recherche plein texte (ET, OU, \"phrase\")…",
+    transcribe: "Transcrire un audio", transcribe_title: "Transcription assistée (audio local, rien n'est envoyé sur internet)",
+    transcribe_hint: "Raccourcis : Ctrl+Espace = lecture/pause · Ctrl+B = reculer de 5 s · Ctrl+T = insérer l'horodatage au curseur. Réduisez la vitesse (0,5×) pour taper en écoutant.",
+    transcribe_done: "Transcription ajoutée aux documents (audio associé 🎧)",
+    attach_audio: "Associer l'audio de l'entretien", audio_attached: "Audio associé :",
+    audio_reattach: "Cet entretien a un audio associé :", audio_reattach_btn: "Rouvrir le fichier audio",
+    ts_copy: "Horodatage", ts_copy_hint: "Copier l'horodatage du moment courant",
+    ts_copied: "Horodatage copié :", ts_no_audio: "Associez d'abord l'audio de cet entretien (bouton 🎧 en haut du volet).",
+    ts_click_hint: "Cliquer pour écouter ce passage",
+    back5: "Reculer de 5 secondes", fwd5: "Avancer de 5 secondes", play_pause: "Lecture / pause", speed: "Vitesse de lecture",
     saved_queries: "Requêtes sauvegardées", saved_queries_title: "Requêtes sauvegardées", grp_queries: "Requêtes",
     save_query: "Sauvegarder la requête courante", load_query: "Charger", no_queries: "Aucune requête sauvegardée. Activez des documents et des codes, puis sauvegardez la combinaison ici.",
     query_name_q: "Nom de la requête :", query_saved: "Requête sauvegardée", query_loaded: "Requête chargée", query_deleted: "Requête supprimée",
@@ -668,6 +709,15 @@ const translations = {
     new_project: "New project", open_project: "Open (.projx)", save_project: "Save (.projx)",
     sample_project: "Sample project", grp_project: "Project",
     search: "Search", grp_search: "Search", search_ph: "Full-text search (AND, OR, \"phrase\")…",
+    transcribe: "Transcribe audio", transcribe_title: "Assisted transcription (local audio, nothing sent online)",
+    transcribe_hint: "Shortcuts: Ctrl+Space = play/pause · Ctrl+B = back 5 s · Ctrl+T = insert timestamp at cursor. Slow the speed (0.5×) to type while listening.",
+    transcribe_done: "Transcription added to documents (audio attached 🎧)",
+    attach_audio: "Attach the interview audio", audio_attached: "Audio attached:",
+    audio_reattach: "This interview has an associated audio:", audio_reattach_btn: "Reopen audio file",
+    ts_copy: "Timestamp", ts_copy_hint: "Copy the current-time stamp",
+    ts_copied: "Timestamp copied:", ts_no_audio: "First attach this interview's audio (🎧 button at the top of the panel).",
+    ts_click_hint: "Click to listen to this passage",
+    back5: "Back 5 seconds", fwd5: "Forward 5 seconds", play_pause: "Play / pause", speed: "Playback speed",
     saved_queries: "Saved queries", saved_queries_title: "Saved queries", grp_queries: "Queries",
     save_query: "Save current query", load_query: "Load", no_queries: "No saved queries. Activate documents and codes, then save the combination here.",
     query_name_q: "Query name:", query_saved: "Query saved", query_loaded: "Query loaded", query_deleted: "Query deleted",
@@ -2856,6 +2906,141 @@ function openConceptMapEditor(project, onSave) {
 return { openConceptMapEditor };
 })();
 
+__QC["audio"] = (function () {
+"use strict";
+// js/audio.js — Lecteur audio horodaté pour la transcription et la relecture
+// Aucun serveur : le fichier audio est lu localement (URL blob, jamais téléversé).
+// Les horodatages [hh:mm:ss] ou [mm:ss] du texte deviennent cliquables.
+
+const { t } = __QC["i18n"];
+
+// [12:34] ou [1:02:34] — capturés avec leurs crochets
+const TS_RE = /\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g;
+
+function parseTs(h, m, s) {
+  return s !== undefined && s !== null && s !== ""
+    ? Number(h) * 3600 + Number(m) * 60 + Number(s)
+    : Number(h) * 60 + Number(m);
+}
+
+function fmtTs(totalSeconds) {
+  const sec = Math.max(0, Math.floor(totalSeconds));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  const mm = String(m).padStart(2, "0"), ss = String(s).padStart(2, "0");
+  return h > 0 ? `[${h}:${mm}:${ss}]` : `[${mm}:${ss}]`;
+}
+
+// Rend cliquables les horodatages d'un conteneur, sans modifier le texte
+// (les nœuds texte sont découpés, textContent reste identique : les offsets
+// de codage par caractères ne sont pas affectés).
+function wrapTimestamps(rootEl, onClick) {
+  const walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, {
+    acceptNode: n => {
+      TS_RE.lastIndex = 0; // le drapeau /g conserve lastIndex entre les appels
+      return TS_RE.test(n.textContent) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    },
+  });
+  const nodes = [];
+  let n;
+  while ((n = walker.nextNode())) nodes.push(n);
+  for (const node of nodes) {
+    if (node.parentElement?.closest(".ts")) continue;
+    const frag = document.createDocumentFragment();
+    let last = 0, m2;
+    TS_RE.lastIndex = 0;
+    const txt = node.textContent;
+    while ((m2 = TS_RE.exec(txt)) !== null) {
+      if (m2.index > last) frag.appendChild(document.createTextNode(txt.slice(last, m2.index)));
+      const span = document.createElement("span");
+      span.className = "ts";
+      span.textContent = m2[0];
+      span.title = t("ts_click_hint");
+      const sec = m2[3] !== undefined ? parseTs(m2[1], m2[2], m2[3]) : parseTs(m2[1], m2[2]);
+      span.addEventListener("click", e => { e.stopPropagation(); onClick(sec); });
+      frag.appendChild(span);
+      last = m2.index + m2[0].length;
+    }
+    if (last < txt.length) frag.appendChild(document.createTextNode(txt.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  }
+}
+
+// Barre de lecture réutilisable branchée sur un élément <audio>.
+// onCopyTs (optionnel) reçoit l'horodatage formaté du moment courant.
+function buildPlayerBar(audio, { onCopyTs } = {}) {
+  const bar = document.createElement("div");
+  bar.className = "audio-bar";
+
+  const btn = (label, title) => {
+    const b = document.createElement("button");
+    b.className = "mini-btn audio-btn";
+    b.textContent = label;
+    b.title = title;
+    bar.appendChild(b);
+    return b;
+  };
+
+  const bBack = btn("⏪ 5s", t("back5"));
+  const bPlay = btn("▶️", t("play_pause"));
+  const bFwd = btn("5s ⏩", t("fwd5"));
+
+  const time = document.createElement("span");
+  time.className = "audio-time";
+  time.textContent = "00:00 / 00:00";
+  bar.appendChild(time);
+
+  const seek = document.createElement("input");
+  seek.type = "range";
+  seek.min = "0"; seek.max = "100"; seek.value = "0"; seek.step = "0.1";
+  seek.className = "audio-seek";
+  bar.appendChild(seek);
+
+  const speed = document.createElement("select");
+  speed.className = "audio-speed";
+  speed.title = t("speed");
+  for (const v of [0.5, 0.75, 1, 1.25, 1.5, 2]) {
+    const o = document.createElement("option");
+    o.value = String(v);
+    o.textContent = v + "×";
+    if (v === 1) o.selected = true;
+    speed.appendChild(o);
+  }
+  bar.appendChild(speed);
+
+  const bCopy = btn("⏱ " + t("ts_copy"), t("ts_copy_hint"));
+
+  const fmtClock = s => {
+    const sec = Math.max(0, Math.floor(s || 0));
+    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), r = sec % 60;
+    const mm = String(m).padStart(2, "0"), ss = String(r).padStart(2, "0");
+    return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+  };
+  const refresh = () => {
+    bPlay.textContent = audio.paused ? "▶️" : "⏸";
+    time.textContent = fmtClock(audio.currentTime) + " / " + fmtClock(audio.duration);
+    if (audio.duration && !seek.matches(":active"))
+      seek.value = String((audio.currentTime / audio.duration) * 100);
+  };
+
+  bPlay.onclick = () => { audio.paused ? audio.play() : audio.pause(); };
+  bBack.onclick = () => { audio.currentTime = Math.max(0, audio.currentTime - 5); };
+  bFwd.onclick = () => { audio.currentTime = Math.min(audio.duration || Infinity, audio.currentTime + 5); };
+  speed.onchange = () => { audio.playbackRate = Number(speed.value); };
+  seek.oninput = () => { if (audio.duration) audio.currentTime = (Number(seek.value) / 100) * audio.duration; };
+  bCopy.onclick = () => { if (onCopyTs) onCopyTs(fmtTs(audio.currentTime)); };
+
+  audio.addEventListener("timeupdate", refresh);
+  audio.addEventListener("play", refresh);
+  audio.addEventListener("pause", refresh);
+  audio.addEventListener("loadedmetadata", refresh);
+  refresh();
+
+  return bar;
+}
+
+return { parseTs, fmtTs, wrapTimestamps, buildPlayerBar, TS_RE };
+})();
+
 __QC["app"] = (function () {
 "use strict";
 // QualiCode — application d'analyse qualitative de données (MVP du cahier des charges)
@@ -2881,6 +3066,7 @@ const { extractDocxText } = __QC["docx"];
 const { extractPdfText } = __QC["pdf"];
 const { buildRefiQdpx } = __QC["refi"];
 const { openConceptMapEditor } = __QC["conceptmap"];
+const { buildPlayerBar, wrapTimestamps, fmtTs } = __QC["audio"];
 const { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } = __QC["crypto"];
 const { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } = __QC["merge"];
 
@@ -2894,6 +3080,28 @@ let searchResults = [];
 let searchQuery = "";
 let pendingSelection = null;       // {start, end} sélection en attente de codage
 let projectPassword = null;        // mot de passe du projet, gardé en mémoire de session uniquement
+
+// Audio par document : blobs en mémoire de session uniquement (jamais persistés —
+// trop volumineux pour localStorage). Seul le nom du fichier est enregistré
+// dans le projet (doc.audioName) pour proposer la réassociation.
+const docAudio = new Map();        // docId → { url, name, el: HTMLAudioElement }
+
+function getDocAudioEl(docId) {
+  const a = docAudio.get(docId);
+  return a ? a.el : null;
+}
+
+function attachAudioToDoc(doc, file) {
+  const prev = docAudio.get(doc.id);
+  if (prev) URL.revokeObjectURL(prev.url);
+  const url = URL.createObjectURL(file);
+  const el = new Audio(url);
+  docAudio.set(doc.id, { url, name: file.name, el });
+  doc.audioName = file.name;
+  scheduleSave();
+  renderBrowser();
+  toast(t("audio_attached") + " " + file.name);
+}
 
 /* ================================================================
    Initialisation
@@ -3121,6 +3329,12 @@ function bindRibbon() {
     if (file) importCsv(await file.text(), file.name.replace(/\.[^.]+$/, ""));
   });
   $("#btnPasteDoc").onclick = openPasteDoc;
+  $("#btnTranscribe").onclick = () => $("#transInput").click();
+  $("#transInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (file) openTranscribe(file);
+  });
   $("#btnStructuredText").onclick = openStructuredImport;
   $("#btnNewGroup").onclick = () => promptModal(t("new_group"), t("new_group_name"), "", name => {
     const g = addGroup(name); expandedGroups.add(g.id); renderDocTree();
@@ -3238,6 +3452,16 @@ function bindPanels() {
     const doc = getDoc(state.ui.currentDocId);
     if (doc) openMemoEditor("document", doc.id, doc.name);
   };
+  $("#btnDocAudio").onclick = () => {
+    if (!getDoc(state.ui.currentDocId)) return toast(t("hint_no_doc"));
+    $("#audioInput").click();
+  };
+  $("#audioInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    const doc = getDoc(state.ui.currentDocId);
+    if (file && doc) attachAudioToDoc(doc, file);
+  });
   $("#btnDocProps").onclick = () => {
     const doc = getDoc(state.ui.currentDocId);
     if (doc) openDocProps(doc);
@@ -3537,6 +3761,42 @@ function renderBrowser() {
   }
   html += "</div>";
   el.innerHTML = html;
+
+  // --- Lecteur audio horodaté ---
+  // Met en pause l'audio des autres documents
+  for (const [id, a] of docAudio) if (id !== doc.id) a.el.pause();
+  const audioInfo = docAudio.get(doc.id);
+  if (audioInfo) {
+    const bar = buildPlayerBar(audioInfo.el, {
+      onCopyTs: ts => {
+        navigator.clipboard?.writeText(ts).catch(() => {});
+        toast(t("ts_copied") + " " + ts);
+      },
+    });
+    const label = document.createElement("span");
+    label.className = "audio-name";
+    label.textContent = "🎧 " + audioInfo.name;
+    bar.prepend(label);
+    el.prepend(bar);
+  } else if (doc.audioName) {
+    // Un audio était associé lors d'une session précédente : proposer la réassociation
+    const hint = document.createElement("div");
+    hint.className = "audio-bar audio-reattach";
+    hint.innerHTML = `<span>🎧 ${esc(t("audio_reattach"))} <strong>${esc(doc.audioName)}</strong></span>`;
+    const b = document.createElement("button");
+    b.className = "btn";
+    b.textContent = t("audio_reattach_btn");
+    b.onclick = () => $("#audioInput").click();
+    hint.appendChild(b);
+    el.prepend(hint);
+  }
+  // Horodatages [mm:ss] / [h:mm:ss] cliquables dans le texte
+  wrapTimestamps(el, sec => {
+    const a = docAudio.get(doc.id);
+    if (!a) return toast(t("ts_no_audio"));
+    a.el.currentTime = sec;
+    a.el.play();
+  });
 
   // Clic sur un segment surligné → fiche du segment
   el.querySelectorAll("mark.seg").forEach(mark => {
@@ -3844,6 +4104,64 @@ function openPasteDoc() {
       },
     ],
   });
+}
+
+/* ---------- Transcription assistée : audio + éditeur + horodatages ---------- */
+function openTranscribe(file) {
+  const url = URL.createObjectURL(file);
+  const audio = new Audio(url);
+  const groups = state.project.documentGroups;
+  const m = openModal({
+    title: t("transcribe_title"), wide: true,
+    bodyHtml: `
+      <div id="trPlayer"></div>
+      <p class="trans-hint">${esc(t("transcribe_hint"))}</p>
+      <div class="form-row"><label>${esc(t("doc_title"))}</label>
+        <input type="text" id="trName" value="${esc(file.name.replace(/\.[^.]+$/, ""))}"></div>
+      ${groups.length ? `<div class="form-row"><label>${esc(t("group"))}</label>
+        <select id="trGroup"><option value="">—</option>${groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("")}</select></div>` : `<select id="trGroup" hidden><option value=""></option></select>`}
+      <div class="form-row"><label>${esc(t("doc_text"))}</label>
+        <textarea id="trText" style="min-height:260px" placeholder="Enquêteur : …&#10;Participante : …"></textarea></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => { audio.pause(); URL.revokeObjectURL(url); close(); } },
+      {
+        label: t("add_doc"), primary: true, onClick: (o, close) => {
+          const text = o.querySelector("#trText").value.replace(/\r\n/g, "\n");
+          if (!text.trim()) return;
+          const name = o.querySelector("#trName").value.trim() || file.name;
+          const doc = addDocument(name, text, o.querySelector("#trGroup").value || null);
+          // L'audio reste associé au nouveau document pour la relecture
+          audio.pause();
+          docAudio.set(doc.id, { url, name: file.name, el: audio });
+          doc.audioName = file.name;
+          state.ui.currentDocId = doc.id;
+          scheduleSave();
+          close(); renderAll();
+          toast(t("transcribe_done"));
+        }
+      },
+    ],
+  });
+
+  const ta = m.body.querySelector("#trText");
+  const insertTs = ts => {
+    const pos = ta.selectionStart ?? ta.value.length;
+    ta.value = ta.value.slice(0, pos) + ts + " " + ta.value.slice(ta.selectionEnd ?? pos);
+    ta.selectionStart = ta.selectionEnd = pos + ts.length + 1;
+    ta.focus();
+  };
+  m.body.querySelector("#trPlayer").appendChild(buildPlayerBar(audio, { onCopyTs: insertTs }));
+
+  // Raccourcis (actifs dans la fenêtre de transcription) :
+  // Ctrl+Espace = lecture/pause · Ctrl+B = -5 s · Ctrl+T = horodatage au curseur
+  m.overlay.addEventListener("keydown", e => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    const k = e.key.toLowerCase();
+    if (k === " " || e.code === "Space") { e.preventDefault(); audio.paused ? audio.play() : audio.pause(); }
+    else if (k === "b") { e.preventDefault(); audio.currentTime = Math.max(0, audio.currentTime - 5); }
+    else if (k === "t") { e.preventDefault(); insertTs(fmtTs(audio.currentTime)); }
+  });
+  ta.focus();
 }
 
 // Analyseur CSV minimal avec guillemets (séparateur , ou ;)

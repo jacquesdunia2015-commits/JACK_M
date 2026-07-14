@@ -21,6 +21,7 @@ import { extractDocxText } from "./docx.js";
 import { extractPdfText } from "./pdf.js";
 import { buildRefiQdpx } from "./refi.js";
 import { openConceptMapEditor } from "./conceptmap.js";
+import { buildPlayerBar, wrapTimestamps, fmtTs } from "./audio.js";
 import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from "./crypto.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
@@ -34,6 +35,28 @@ let searchResults = [];
 let searchQuery = "";
 let pendingSelection = null;       // {start, end} sélection en attente de codage
 let projectPassword = null;        // mot de passe du projet, gardé en mémoire de session uniquement
+
+// Audio par document : blobs en mémoire de session uniquement (jamais persistés —
+// trop volumineux pour localStorage). Seul le nom du fichier est enregistré
+// dans le projet (doc.audioName) pour proposer la réassociation.
+const docAudio = new Map();        // docId → { url, name, el: HTMLAudioElement }
+
+function getDocAudioEl(docId) {
+  const a = docAudio.get(docId);
+  return a ? a.el : null;
+}
+
+function attachAudioToDoc(doc, file) {
+  const prev = docAudio.get(doc.id);
+  if (prev) URL.revokeObjectURL(prev.url);
+  const url = URL.createObjectURL(file);
+  const el = new Audio(url);
+  docAudio.set(doc.id, { url, name: file.name, el });
+  doc.audioName = file.name;
+  scheduleSave();
+  renderBrowser();
+  toast(t("audio_attached") + " " + file.name);
+}
 
 /* ================================================================
    Initialisation
@@ -261,6 +284,12 @@ function bindRibbon() {
     if (file) importCsv(await file.text(), file.name.replace(/\.[^.]+$/, ""));
   });
   $("#btnPasteDoc").onclick = openPasteDoc;
+  $("#btnTranscribe").onclick = () => $("#transInput").click();
+  $("#transInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (file) openTranscribe(file);
+  });
   $("#btnStructuredText").onclick = openStructuredImport;
   $("#btnNewGroup").onclick = () => promptModal(t("new_group"), t("new_group_name"), "", name => {
     const g = addGroup(name); expandedGroups.add(g.id); renderDocTree();
@@ -378,6 +407,16 @@ function bindPanels() {
     const doc = getDoc(state.ui.currentDocId);
     if (doc) openMemoEditor("document", doc.id, doc.name);
   };
+  $("#btnDocAudio").onclick = () => {
+    if (!getDoc(state.ui.currentDocId)) return toast(t("hint_no_doc"));
+    $("#audioInput").click();
+  };
+  $("#audioInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    const doc = getDoc(state.ui.currentDocId);
+    if (file && doc) attachAudioToDoc(doc, file);
+  });
   $("#btnDocProps").onclick = () => {
     const doc = getDoc(state.ui.currentDocId);
     if (doc) openDocProps(doc);
@@ -677,6 +716,42 @@ function renderBrowser() {
   }
   html += "</div>";
   el.innerHTML = html;
+
+  // --- Lecteur audio horodaté ---
+  // Met en pause l'audio des autres documents
+  for (const [id, a] of docAudio) if (id !== doc.id) a.el.pause();
+  const audioInfo = docAudio.get(doc.id);
+  if (audioInfo) {
+    const bar = buildPlayerBar(audioInfo.el, {
+      onCopyTs: ts => {
+        navigator.clipboard?.writeText(ts).catch(() => {});
+        toast(t("ts_copied") + " " + ts);
+      },
+    });
+    const label = document.createElement("span");
+    label.className = "audio-name";
+    label.textContent = "🎧 " + audioInfo.name;
+    bar.prepend(label);
+    el.prepend(bar);
+  } else if (doc.audioName) {
+    // Un audio était associé lors d'une session précédente : proposer la réassociation
+    const hint = document.createElement("div");
+    hint.className = "audio-bar audio-reattach";
+    hint.innerHTML = `<span>🎧 ${esc(t("audio_reattach"))} <strong>${esc(doc.audioName)}</strong></span>`;
+    const b = document.createElement("button");
+    b.className = "btn";
+    b.textContent = t("audio_reattach_btn");
+    b.onclick = () => $("#audioInput").click();
+    hint.appendChild(b);
+    el.prepend(hint);
+  }
+  // Horodatages [mm:ss] / [h:mm:ss] cliquables dans le texte
+  wrapTimestamps(el, sec => {
+    const a = docAudio.get(doc.id);
+    if (!a) return toast(t("ts_no_audio"));
+    a.el.currentTime = sec;
+    a.el.play();
+  });
 
   // Clic sur un segment surligné → fiche du segment
   el.querySelectorAll("mark.seg").forEach(mark => {
@@ -984,6 +1059,64 @@ function openPasteDoc() {
       },
     ],
   });
+}
+
+/* ---------- Transcription assistée : audio + éditeur + horodatages ---------- */
+function openTranscribe(file) {
+  const url = URL.createObjectURL(file);
+  const audio = new Audio(url);
+  const groups = state.project.documentGroups;
+  const m = openModal({
+    title: t("transcribe_title"), wide: true,
+    bodyHtml: `
+      <div id="trPlayer"></div>
+      <p class="trans-hint">${esc(t("transcribe_hint"))}</p>
+      <div class="form-row"><label>${esc(t("doc_title"))}</label>
+        <input type="text" id="trName" value="${esc(file.name.replace(/\.[^.]+$/, ""))}"></div>
+      ${groups.length ? `<div class="form-row"><label>${esc(t("group"))}</label>
+        <select id="trGroup"><option value="">—</option>${groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("")}</select></div>` : `<select id="trGroup" hidden><option value=""></option></select>`}
+      <div class="form-row"><label>${esc(t("doc_text"))}</label>
+        <textarea id="trText" style="min-height:260px" placeholder="Enquêteur : …&#10;Participante : …"></textarea></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, close) => { audio.pause(); URL.revokeObjectURL(url); close(); } },
+      {
+        label: t("add_doc"), primary: true, onClick: (o, close) => {
+          const text = o.querySelector("#trText").value.replace(/\r\n/g, "\n");
+          if (!text.trim()) return;
+          const name = o.querySelector("#trName").value.trim() || file.name;
+          const doc = addDocument(name, text, o.querySelector("#trGroup").value || null);
+          // L'audio reste associé au nouveau document pour la relecture
+          audio.pause();
+          docAudio.set(doc.id, { url, name: file.name, el: audio });
+          doc.audioName = file.name;
+          state.ui.currentDocId = doc.id;
+          scheduleSave();
+          close(); renderAll();
+          toast(t("transcribe_done"));
+        }
+      },
+    ],
+  });
+
+  const ta = m.body.querySelector("#trText");
+  const insertTs = ts => {
+    const pos = ta.selectionStart ?? ta.value.length;
+    ta.value = ta.value.slice(0, pos) + ts + " " + ta.value.slice(ta.selectionEnd ?? pos);
+    ta.selectionStart = ta.selectionEnd = pos + ts.length + 1;
+    ta.focus();
+  };
+  m.body.querySelector("#trPlayer").appendChild(buildPlayerBar(audio, { onCopyTs: insertTs }));
+
+  // Raccourcis (actifs dans la fenêtre de transcription) :
+  // Ctrl+Espace = lecture/pause · Ctrl+B = -5 s · Ctrl+T = horodatage au curseur
+  m.overlay.addEventListener("keydown", e => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    const k = e.key.toLowerCase();
+    if (k === " " || e.code === "Space") { e.preventDefault(); audio.paused ? audio.play() : audio.pause(); }
+    else if (k === "b") { e.preventDefault(); audio.currentTime = Math.max(0, audio.currentTime - 5); }
+    else if (k === "t") { e.preventDefault(); insertTs(fmtTs(audio.currentTime)); }
+  });
+  ta.focus();
 }
 
 // Analyseur CSV minimal avec guillemets (séparateur , ou ;)

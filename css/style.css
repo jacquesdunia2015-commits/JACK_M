@@ -279,3 +279,31 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
   :root { --left-w: 240px; }
   #searchInput { width: 170px; }
 }
+
+/* Lecteur audio horodaté */
+.audio-bar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: var(--bg-ribbon); border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 10px; margin: 8px; box-shadow: var(--shadow);
+}
+.audio-bar .audio-name { font-size: 12px; font-weight: 600; color: var(--accent); max-width: 220px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.audio-bar .audio-btn { width: auto; padding: 0 8px; font-size: 13px; }
+.audio-bar .audio-time { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--text-soft); }
+.audio-bar .audio-seek { flex: 1; min-width: 90px; accent-color: var(--accent); }
+.audio-bar .audio-speed { padding: 3px 6px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg); color: var(--text); font-size: 12px; }
+.audio-reattach { justify-content: space-between; font-size: 12.5px; color: var(--text-soft); }
+
+/* Horodatages cliquables dans le texte */
+.ts {
+  font-family: ui-monospace, monospace; font-size: 0.92em; cursor: pointer;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent); border-radius: 4px; padding: 0 3px;
+}
+.ts:hover { background: color-mix(in srgb, var(--accent) 28%, transparent); text-decoration: underline; }
+
+/* Modal de transcription */
+.trans-hint { font-size: 12px; color: var(--text-soft); background: var(--bg-hover);
+  border-radius: 6px; padding: 7px 10px; margin: 8px 0; }
