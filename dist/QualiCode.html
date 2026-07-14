@@ -320,6 +320,21 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
 .media-video { width: 100%; max-width: 640px; max-height: 280px; background: #000;
   border-radius: 8px; cursor: pointer; display: inline-block; }
 
+/* Codage de zones d'images */
+.img-code-wrap { position: relative; margin: 10px auto; max-width: 900px; cursor: crosshair; user-select: none; }
+.img-code-wrap img { width: 100%; display: block; border-radius: 8px; }
+.img-zone { position: absolute; border: 2.5px solid; border-radius: 4px; cursor: pointer; }
+.img-zone:hover { filter: brightness(1.15); }
+.img-zone-lbl { position: absolute; top: -1.6em; left: -2px; color: #fff; font-size: 11px;
+  padding: 1px 6px; border-radius: 4px; white-space: nowrap; max-width: 200px;
+  overflow: hidden; text-overflow: ellipsis; }
+.img-rubber { position: absolute; border: 2px dashed var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent); pointer-events: none; }
+.img-hint { position: sticky; bottom: 0; text-align: center; font-size: 12px;
+  color: var(--text-soft); padding: 6px; }
+.clip-btn.recording { background: #c0392b; color: #fff; animation: clip-pulse 1.2s infinite; }
+@keyframes clip-pulse { 50% { opacity: 0.6; } }
+
 </style>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
 </head>
@@ -383,7 +398,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
     <!-- Importer -->
     <div class="ribbon-pane" data-pane="import">
       <div class="rgroup">
-        <button id="btnImportFiles" class="rbtn">📄<span data-i18n="import_files">Fichiers (DOCX, PDF, TXT, MD)</span></button>
+        <button id="btnImportFiles" class="rbtn">📄<span data-i18n="import_files">Fichiers (DOCX, PDF, TXT, images)</span></button>
         <button id="btnImportCsv" class="rbtn">📊<span data-i18n="import_csv">Enquête CSV</span></button>
         <button id="btnPasteDoc" class="rbtn">📋<span data-i18n="paste_doc">Coller un texte</span></button>
         <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
@@ -395,7 +410,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <button id="btnNewGroup" class="rbtn">📁<span data-i18n="new_group">Nouveau groupe</span></button>
         <div class="rlabel" data-i18n="grp_organize">Organisation</div>
       </div>
-      <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx,.pdf" hidden>
+      <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx,.pdf,.jpg,.jpeg,.png,.webp,.gif,.bmp" hidden>
       <input type="file" id="csvInput" accept=".csv" hidden>
       <input type="file" id="projInput" accept=".projx,.json" hidden>
       <input type="file" id="audioInput" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp,.mp4,.webm,.mkv,.mov" hidden>
@@ -599,6 +614,21 @@ const translations = {
     new_project: "Nouveau projet", open_project: "Ouvrir (.projx)", save_project: "Enregistrer (.projx)",
     sample_project: "Projet exemple", grp_project: "Projet",
     search: "Rechercher", grp_search: "Recherche", search_ph: "Recherche plein texte (ET, OU, \"phrase\")…",
+    img_zones_lbl: "zone(s) codée(s) — tracez un rectangle pour coder",
+    img_hint: "🖱️ Tracez un rectangle sur l'image pour coder une zone · cliquez sur une zone pour la modifier",
+    img_zone_lbl: "[Image : zone codée]",
+    clip_start: "Coder un extrait", clip_end: "Fin",
+    clip_hint: "Codage direct sur la piste : cliquez au début de l'extrait, laissez jouer (ou avancez), puis cliquez à la fin — un code est appliqué à l'intervalle de temps.",
+    clip_too_short: "Extrait trop court (moins d'une seconde).",
+    clip_title: "Coder un extrait de la piste", clip_code: "Code à appliquer",
+    clip_note: "Note (facultatif)", clip_note_ph: "ex. hésitation marquée, ton agacé…",
+    ocr_title: "PDF scanné : reconnaissance de texte (OCR par IA)",
+    ocr_how: "« {f} » ne contient pas de texte : c'est probablement un scan (photos de pages). QualiCode peut en extraire les images et les faire transcrire par l'IA avec VOTRE clé API (console.anthropic.com). Vous relirez et corrigerez le texte avant de l'ajouter au projet.",
+    ocr_consent: "Je confirme que ce document peut être envoyé à un service externe (pages NON nominatives ou autorisation éthique obtenue).",
+    ocr_run: "Lancer l'OCR", ocr_extracting: "Extraction des pages du PDF…",
+    ocr_no_images: "Aucune image de page trouvée dans ce PDF (format de scan non pris en charge ou PDF protégé).",
+    ocr_page: "Transcription de la page {i} / {n}…",
+    ocr_done_check: "Transcription terminée — relisez et corrigez avant d'ajouter.",
     shared_folder: "Dossier partagé",
     sf_title: "Collaboration par dossier partagé",
     sf_how: "Choisissez un dossier synchronisé entre les membres de l'équipe (Google Drive, Dropbox, OneDrive, clé USB, partage réseau…). Chacun y PUBLIE sa propre copie du projet — un fichier par codeur, donc aucun conflit. Vous récupérez ensuite les copies des collègues et les fusionnez (puis Analyse → Accord inter-codeurs κ).",
@@ -664,7 +694,7 @@ const translations = {
     undo_done: "Action annulée", redo_done: "Action rétablie",
     nothing_to_undo: "Rien à annuler", nothing_to_redo: "Rien à rétablir",
     trash: "Corbeille", grp_tools: "Outils",
-    import_files: "Fichiers (DOCX, PDF, TXT, MD)", import_csv: "Enquête CSV", paste_doc: "Coller un texte",
+    import_files: "Fichiers (DOCX, PDF, TXT, images)", import_csv: "Enquête CSV", paste_doc: "Coller un texte",
     structured_text: "Texte structuré", grp_import: "Importation", new_group: "Nouveau groupe", grp_organize: "Organisation",
     new_code: "Nouveau code", code_selection: "Coder la sélection", in_vivo: "Codage in vivo",
     grp_coding: "Codage", autocode: "Codage automatique", grp_autocode: "Recherche lexicale",
@@ -763,6 +793,21 @@ const translations = {
     new_project: "New project", open_project: "Open (.projx)", save_project: "Save (.projx)",
     sample_project: "Sample project", grp_project: "Project",
     search: "Search", grp_search: "Search", search_ph: "Full-text search (AND, OR, \"phrase\")…",
+    img_zones_lbl: "coded zone(s) — draw a rectangle to code",
+    img_hint: "🖱️ Draw a rectangle on the picture to code a zone · click a zone to edit it",
+    img_zone_lbl: "[Image: coded zone]",
+    clip_start: "Code a clip", clip_end: "End",
+    clip_hint: "Direct coding on the track: click at the clip start, let it play (or seek), then click at the end — a code is applied to the time range.",
+    clip_too_short: "Clip too short (under one second).",
+    clip_title: "Code a clip of the track", clip_code: "Code to apply",
+    clip_note: "Note (optional)", clip_note_ph: "e.g. marked hesitation, annoyed tone…",
+    ocr_title: "Scanned PDF: text recognition (AI OCR)",
+    ocr_how: "“{f}” contains no text: it is probably a scan (page photos). QualiCode can extract its images and have the AI transcribe them with YOUR API key (console.anthropic.com). You will proofread before adding the text to the project.",
+    ocr_consent: "I confirm this document may be sent to an external service (non-identifying pages or ethics clearance obtained).",
+    ocr_run: "Run OCR", ocr_extracting: "Extracting PDF pages…",
+    ocr_no_images: "No page image found in this PDF (unsupported scan format or protected PDF).",
+    ocr_page: "Transcribing page {i} / {n}…",
+    ocr_done_check: "Transcription finished — proofread before adding.",
     shared_folder: "Shared folder",
     sf_title: "Shared-folder collaboration",
     sf_how: "Pick a folder synced between team members (Google Drive, Dropbox, OneDrive, USB stick, network share…). Everyone PUBLISHES their own copy of the project — one file per coder, so no conflicts. Then fetch your colleagues' copies and merge them (then Analysis → Inter-coder agreement κ).",
@@ -828,7 +873,7 @@ const translations = {
     undo_done: "Action undone", redo_done: "Action redone",
     nothing_to_undo: "Nothing to undo", nothing_to_redo: "Nothing to redo",
     trash: "Trash", grp_tools: "Tools",
-    import_files: "Files (DOCX, PDF, TXT, MD)", import_csv: "CSV survey", paste_doc: "Paste text",
+    import_files: "Files (DOCX, PDF, TXT, images)", import_csv: "CSV survey", paste_doc: "Paste text",
     structured_text: "Structured text", grp_import: "Import", new_group: "New group", grp_organize: "Organization",
     new_code: "New code", code_selection: "Code selection", in_vivo: "In-vivo coding",
     grp_coding: "Coding", autocode: "Auto-coding", grp_autocode: "Lexical search",
@@ -2526,7 +2571,9 @@ function buildRefiQdpx(project) {
     const filePath = `Sources/${safeName}_${String(doc.id).slice(-6)}.txt`;
     sourceFiles.push({ name: filePath, text: doc.text });
 
-    const segs = (project.segments || []).filter(s => s.docId === doc.id);
+    // Seuls les segments textuels sont exportables en PlainTextSelection
+    // (les zones d'images et extraits de piste ont des offsets négatifs)
+    const segs = (project.segments || []).filter(s => s.docId === doc.id && s.start >= 0);
     const selectionsXml = segs.map(seg =>
       `<PlainTextSelection guid="${toGuid("sel-" + seg.id)}" startPosition="${seg.start}" endPosition="${seg.end}">` +
         `<Coding guid="${toGuid(seg.id)}" creatingUser="${userGuid}" creationDateTime="${xmlEsc(seg.created || now)}">` +
@@ -3530,6 +3577,209 @@ function fileStatus(filename, lastModified) {
 return { isSyncSupported, pickFolder, getCoderName, setCoderName, publishFilename, writeToFolder, listProjxFiles, coderFromFilename, markSeen, fileStatus };
 })();
 
+__QC["imagecode"] = (function () {
+"use strict";
+// js/imagecode.js — Codage de zones d'images (photos de terrain, affiches…)
+// L'image est recompressée à l'import (JPEG ≤ 1600 px) puis stockée dans le
+// projet en dataURL. Les zones codées sont des rectangles normalisés (0–1),
+// stockés dans les segments (s.rect) — elles suivent l'image à toute taille.
+
+// Lit un fichier image, le réduit et le compresse pour le stockage local
+async function fileToDataUrl(file, maxDim = 1600, quality = 0.85) {
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(1, maxDim / Math.max(bmp.width, bmp.height));
+  const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  canvas.getContext("2d").drawImage(bmp, 0, 0, w, h);
+  bmp.close();
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+function isImageFile(file) {
+  return (file.type || "").startsWith("image/") || /\.(jpe?g|png|webp|gif|bmp)$/i.test(file.name || "");
+}
+
+// Construit la vue de codage : image + calques des zones + tracé à la souris.
+// onRectDrawn(rectNormalisé, clientX, clientY) — onSegmentClick(segId)
+function buildImageView({ doc, segments, getCode, hint, onRectDrawn, onSegmentClick }) {
+  const wrap = document.createElement("div");
+  wrap.className = "img-code-wrap";
+
+  const img = document.createElement("img");
+  img.src = doc.imageData;
+  img.draggable = false;
+  wrap.appendChild(img);
+
+  // Calques des zones déjà codées
+  for (const s of segments) {
+    if (!s.rect) continue;
+    const code = getCode(s.codeId);
+    const ov = document.createElement("div");
+    ov.className = "img-zone";
+    ov.style.left = (s.rect.x * 100) + "%";
+    ov.style.top = (s.rect.y * 100) + "%";
+    ov.style.width = (s.rect.w * 100) + "%";
+    ov.style.height = (s.rect.h * 100) + "%";
+    ov.style.borderColor = code?.color || "#888";
+    ov.style.background = (code?.color || "#888") + "33"; // ~20 % d'opacité
+    ov.title = (code?.name || "?") + (s.comment ? " — " + s.comment : "");
+    const lbl = document.createElement("span");
+    lbl.className = "img-zone-lbl";
+    lbl.style.background = code?.color || "#888";
+    lbl.textContent = code?.name || "?";
+    ov.appendChild(lbl);
+    ov.addEventListener("mousedown", e => e.stopPropagation());
+    ov.addEventListener("click", e => { e.stopPropagation(); onSegmentClick(s.id); });
+    wrap.appendChild(ov);
+  }
+
+  if (hint) {
+    const p = document.createElement("div");
+    p.className = "img-hint";
+    p.textContent = hint;
+    wrap.appendChild(p);
+  }
+
+  // Tracé d'une nouvelle zone (élastique)
+  let start = null, rubber = null;
+  const relPos = e => {
+    const r = img.getBoundingClientRect();
+    return {
+      x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)),
+      y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)),
+    };
+  };
+  wrap.addEventListener("mousedown", e => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    start = relPos(e);
+    rubber = document.createElement("div");
+    rubber.className = "img-rubber";
+    wrap.appendChild(rubber);
+    const onMove = ev => {
+      const p = relPos(ev);
+      const x = Math.min(start.x, p.x), y = Math.min(start.y, p.y);
+      const w = Math.abs(p.x - start.x), h = Math.abs(p.y - start.y);
+      Object.assign(rubber.style, { left: x * 100 + "%", top: y * 100 + "%", width: w * 100 + "%", height: h * 100 + "%" });
+    };
+    const onUp = ev => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      const p = relPos(ev);
+      const rect = {
+        x: Math.min(start.x, p.x), y: Math.min(start.y, p.y),
+        w: Math.abs(p.x - start.x), h: Math.abs(p.y - start.y),
+      };
+      rubber.remove(); rubber = null; start = null;
+      // Zone trop petite = simple clic : ignorée
+      if (rect.w > 0.02 && rect.h > 0.02) onRectDrawn(rect, ev.clientX, ev.clientY);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  });
+
+  return wrap;
+}
+
+return { fileToDataUrl, isImageFile, buildImageView };
+})();
+
+__QC["ocr"] = (function () {
+"use strict";
+// js/ocr.js — OCR des PDF scannés par IA (clé API de l'utilisateur).
+// Un PDF scanné ne contient pas de texte : chaque page est une photo.
+// On extrait NATIVEMENT les images JPEG embarquées (flux /DCTDecode), puis
+// l'IA les transcrit — mêmes garde-fous que les Suggestions IA : clé locale,
+// consentement explicite (les images partent vers le service), validation.
+
+const MAX_PAGES = 20;
+
+// Extrait les images JPEG embarquées d'un PDF (pages scannées)
+function extractPdfImages(ab) {
+  const bytes = new Uint8Array(ab);
+  // Représentation binaire → chaîne latin1 par blocs (fichiers volumineux)
+  const parts = [];
+  for (let i = 0; i < bytes.length; i += 32768)
+    parts.push(String.fromCharCode(...bytes.subarray(i, i + 32768)));
+  const raw = parts.join("");
+
+  const blobs = [];
+  let pos = 0;
+  while (pos < raw.length && blobs.length < MAX_PAGES) {
+    const si = raw.indexOf("stream", pos);
+    if (si === -1) break;
+    const after = si + 6;
+    let ds;
+    if (raw[after] === "\r" && raw[after + 1] === "\n") ds = after + 2;
+    else if (raw[after] === "\n") ds = after + 1;
+    else { pos = si + 7; continue; }
+    const ei = raw.indexOf("endstream", ds);
+    if (ei === -1) break;
+    let de = ei;
+    while (de > ds && (raw[de - 1] === "\n" || raw[de - 1] === "\r")) de--;
+
+    const dictStart = Math.max(0, raw.lastIndexOf("<<", si));
+    const dict = raw.slice(dictStart, si);
+    if (/\/DCTDecode/.test(dict) && /\/Subtype\s*\/Image/.test(dict)) {
+      blobs.push(new Blob([bytes.slice(ds, de)], { type: "image/jpeg" }));
+    }
+    pos = ei + 9;
+  }
+  return blobs;
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(",")[1]);
+    r.onerror = reject;
+    r.readAsDataURL(blob);
+  });
+}
+
+// Transcrit chaque page-image via l'API Anthropic (vision), avec la clé de l'utilisateur
+async function ocrImages({ apiKey, model, blobs, onProgress }) {
+  const pages = [];
+  for (let i = 0; i < blobs.length; i++) {
+    if (onProgress) onProgress(i + 1, blobs.length);
+    const data = await blobToBase64(blobs[i]);
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 4000,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: "image/jpeg", data } },
+            { type: "text", text: "Transcris fidèlement TOUT le texte lisible de cette page scannée, dans l'ordre de lecture, en conservant les paragraphes. Réponds UNIQUEMENT avec le texte transcrit, sans commentaire. Si la page est illisible, réponds : [page illisible]" },
+          ],
+        }],
+      }),
+    });
+    if (!resp.ok) {
+      if (resp.status === 401) throw new Error("cle-invalide");
+      if (resp.status === 429) throw new Error("quota");
+      let msg = "HTTP " + resp.status;
+      try { msg = (await resp.json()).error?.message || msg; } catch { /* corps illisible */ }
+      throw new Error(msg);
+    }
+    const out = await resp.json();
+    pages.push((out.content || []).map(b => b.text || "").join("").trim());
+  }
+  return pages.map((p, i) => (blobs.length > 1 ? `— Page ${i + 1} —\n` : "") + p).join("\n\n");
+}
+
+return { extractPdfImages, ocrImages };
+})();
+
 __QC["app"] = (function () {
 "use strict";
 // QualiCode — application d'analyse qualitative de données (MVP du cahier des charges)
@@ -3556,6 +3806,8 @@ const { extractPdfText } = __QC["pdf"];
 const { buildRefiQdpx } = __QC["refi"];
 const { openConceptMapEditor } = __QC["conceptmap"];
 const { buildPlayerBar, wrapTimestamps, fmtTs, createMediaElement } = __QC["audio"];
+const { fileToDataUrl, isImageFile, buildImageView } = __QC["imagecode"];
+const { extractPdfImages, ocrImages } = __QC["ocr"];
 const {
   detectSocialFormat, parseWhatsApp, buildChatDocument, chatStats,
   parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument,
@@ -3577,6 +3829,7 @@ let panel4Mode = "segments";       // segments | search
 let searchResults = [];
 let searchQuery = "";
 let pendingSelection = null;       // {start, end} sélection en attente de codage
+let pendingImageRect = null;       // {x,y,w,h} zone d'image en attente de codage
 let projectPassword = null;        // mot de passe du projet, gardé en mémoire de session uniquement
 
 // Média (audio OU vidéo) par document : blobs en mémoire de session uniquement
@@ -3801,9 +4054,20 @@ function bindRibbon() {
   $("#fileInput").addEventListener("change", async e => {
     const files = [...e.target.files];
     e.target.value = "";
-    let imported = 0, failed = [];
+    let imported = 0, failed = [], pdfForOcr = null;
     for (const f of files) {
       try {
+        if (isImageFile(f)) {
+          // Document image : codage par zones rectangulaires
+          const dataUrl = await fileToDataUrl(f);
+          const doc = addDocument(f.name.replace(/\.[^.]+$/, ""), "");
+          doc.kind = "image";
+          doc.imageData = dataUrl;
+          state.ui.currentDocId = doc.id;
+          scheduleSave();
+          imported++;
+          continue;
+        }
         const text = /\.docx$/i.test(f.name)
           ? await extractDocxText(f)
           : /\.pdf$/i.test(f.name)
@@ -3813,12 +4077,15 @@ function bindRibbon() {
         imported++;
       } catch (err) {
         console.error("Import failed:", f.name, err);
-        failed.push(f.name);
+        // PDF sans texte extractible : probablement un scan → proposer l'OCR
+        if (/\.pdf$/i.test(f.name) && !pdfForOcr) pdfForOcr = f;
+        else failed.push(f.name);
       }
     }
     if (imported) renderAll();
     if (failed.length) toast(t("import_failed") + " : " + failed.join(", "));
     else if (imported) toast(imported + " " + t("import_done"));
+    if (pdfForOcr) openOcrModal(pdfForOcr);
   });
   $("#btnImportCsv").onclick = () => $("#csvInput").click();
   $("#csvInput").addEventListener("change", async e => {
@@ -3975,6 +4242,8 @@ function bindPanels() {
   // Sélection de texte → menu de codage flottant
   $("#docBrowser").addEventListener("mouseup", e => {
     setTimeout(() => {
+      // Les documents image gèrent leur propre menu (tracé de zones)
+      if (getDoc(state.ui.currentDocId)?.kind === "image") return;
       const sel = getSelectionOffsets();
       if (sel) showCodingPopup(e.clientX, e.clientY, sel);
       else hideCodingPopup();
@@ -4247,7 +4516,24 @@ function renderBrowser() {
     $("#browserTitle").textContent = t("panel_browser");
     return;
   }
-  $("#browserTitle").textContent = "📖 " + doc.name;
+  $("#browserTitle").textContent = (doc.kind === "image" ? "🖼️ " : "📖 ") + doc.name;
+
+  // Document image : codage par zones rectangulaires
+  if (doc.kind === "image") {
+    const zones = state.ui.showHighlights ? segmentsOfDoc(doc.id).filter(s => s.rect) : [];
+    el.innerHTML = `<div class="doc-title-block"><h2>${esc(doc.name)}</h2>
+      <div class="doc-meta">🖼️ ${zones.length} ${esc(t("img_zones_lbl"))}</div></div>`;
+    el.appendChild(buildImageView({
+      doc, segments: zones, getCode,
+      hint: t("img_hint"),
+      onRectDrawn: (rect, x, y) => {
+        pendingImageRect = rect;
+        showCodingPopupCustom(x, y, codeId => applyCodeToRect(codeId));
+      },
+      onSegmentClick: segId => openSegmentModal(segId),
+    }));
+    return;
+  }
 
   const segs = state.ui.showHighlights ? segmentsOfDoc(doc.id) : [];
   const paras = doc.text.split("\n");
@@ -4282,6 +4568,29 @@ function renderBrowser() {
     label.className = "audio-name";
     label.textContent = (audioInfo.isVideo ? "🎬 " : "🎧 ") + audioInfo.name;
     bar.prepend(label);
+    // Codage direct sur la piste : marquer le début, puis la fin de l'extrait
+    const bClip = document.createElement("button");
+    bClip.className = "mini-btn audio-btn clip-btn";
+    bClip.textContent = "⏺ " + t("clip_start");
+    bClip.title = t("clip_hint");
+    let clipStart = null;
+    bClip.onclick = () => {
+      if (clipStart === null) {
+        clipStart = audioInfo.el.currentTime;
+        bClip.textContent = "⏹ " + t("clip_end") + " " + fmtTs(clipStart) + "→…";
+        bClip.classList.add("recording");
+      } else {
+        const a = Math.min(clipStart, audioInfo.el.currentTime);
+        const b = Math.max(clipStart, audioInfo.el.currentTime);
+        clipStart = null;
+        bClip.textContent = "⏺ " + t("clip_start");
+        bClip.classList.remove("recording");
+        if (b - a < 0.5) return toast(t("clip_too_short"));
+        audioInfo.el.pause();
+        openClipCodeModal(doc, a, b);
+      }
+    };
+    bar.appendChild(bClip);
     if (audioInfo.isVideo) {
       // Panneau vidéo repliable au-dessus de la barre de lecture
       const wrap = document.createElement("div");
@@ -4428,6 +4737,46 @@ function showCodingPopup(x, y, sel) {
 
 function hideCodingPopup() {
   $("#codingPopup").hidden = true;
+  // Restaure les boutons In vivo / Nouveau code (masqués en mode image)
+  $("#popupInVivo").style.display = "";
+  $("#popupNewCode").style.display = "";
+}
+
+// Variante du menu de codage : applique un rappel arbitraire (zones d'images…)
+function showCodingPopupCustom(x, y, applyFn) {
+  const popup = $("#codingPopup");
+  const list = $("#codingPopupList");
+  const codes = flatCodes();
+  list.innerHTML = codes.length
+    ? codes.map(c => `<div class="popup-code" data-id="${c.id}" style="padding-left:${8 + c.depth * 14}px">
+        <span class="code-dot" style="background:${esc(c.color)}"></span><span>${esc(c.name)}</span></div>`).join("")
+    : `<div style="padding:8px;color:var(--text-soft)">${esc(t("select_code_first"))}</div>`;
+  list.querySelectorAll(".popup-code").forEach(el => {
+    el.onclick = () => { applyFn(el.dataset.id); hideCodingPopup(); };
+  });
+  $("#popupInVivo").style.display = "none";
+  $("#popupNewCode").style.display = "none";
+  popup.hidden = false;
+  const pw = popup.offsetWidth, ph = popup.offsetHeight;
+  popup.style.left = Math.min(x + 6, window.innerWidth - pw - 10) + "px";
+  popup.style.top = Math.min(y + 10, window.innerHeight - ph - 10) + "px";
+}
+
+// Applique un code à la zone d'image en attente
+function applyCodeToRect(codeId) {
+  const doc = getDoc(state.ui.currentDocId);
+  if (!doc || !pendingImageRect) return;
+  pushUndoSnapshot();
+  state.project.segments.push({
+    id: uid(), docId: doc.id, codeId,
+    start: -1, end: -1, rect: pendingImageRect,
+    text: t("img_zone_lbl"), weight: 1, comment: "",
+    created: new Date().toISOString(),
+  });
+  pendingImageRect = null;
+  scheduleSave();
+  renderAll();
+  toast(t("coded_with") + " « " + (getCode(codeId)?.name ?? "?") + " »");
 }
 
 function applyCodeToSelection(codeId, sel) {
@@ -4525,7 +4874,7 @@ function renderPanel4() {
     html += `<div class="seg-card" data-id="${s.id}" draggable="true" title="${esc(t("drag_to_recode"))}">
       <div class="seg-card-head">
         <span class="badge" style="background:${esc(hexToRgba(code?.color ?? "#888", 0.3))}">${esc(code?.name ?? "?")}</span>
-        <span class="src" data-doc="${s.docId}" data-start="${s.start}">${esc(doc?.name ?? "?")}</span>
+        <span class="src" data-doc="${s.docId}" data-start="${s.start}"${s.mediaStart != null ? ` data-media="${s.mediaStart}"` : ""}>${esc(doc?.name ?? "?")}</span>
         ${s.weight !== 1 ? `<span class="weight-badge">${esc(t("weight"))}: ${s.weight}</span>` : ""}
         ${s.coder ? `<span class="weight-badge">👤 ${esc(s.coder)}</span>` : ""}
         <span class="spacer"></span>
@@ -4539,7 +4888,15 @@ function renderPanel4() {
   el.querySelector("#btnExportRetrieved").onclick = () => { exportSegmentsCsv(segs); toast(t("export_done")); };
   el.querySelector("#btnPrintRetrieved").onclick = () => openPrintableReport(segs);
   el.querySelectorAll("[data-act=edit]").forEach(b => b.onclick = () => openSegmentModal(b.closest(".seg-card").dataset.id));
-  el.querySelectorAll(".src").forEach(sp => sp.onclick = () => gotoDocPosition(sp.dataset.doc, Number(sp.dataset.start)));
+  el.querySelectorAll(".src").forEach(sp => sp.onclick = () => {
+    gotoDocPosition(sp.dataset.doc, Math.max(0, Number(sp.dataset.start)));
+    // Extrait codé sur la piste : saute le média au début de l'extrait
+    if (sp.dataset.media != null) {
+      const a = docAudio.get(sp.dataset.doc);
+      if (a) { a.el.currentTime = Number(sp.dataset.media); a.el.play(); }
+      else toast(t("ts_no_audio"));
+    }
+  });
   // Recodage par glisser-déposer : tirer une carte segment sur un code du volet Codes
   el.querySelectorAll(".seg-card").forEach(card => {
     card.addEventListener("dragstart", e => {
@@ -4688,6 +5045,101 @@ function openTranscribe(file) {
     else if (k === "t") { e.preventDefault(); insertTs(fmtTs(audio.currentTime)); }
   });
   ta.focus();
+}
+
+/* ---------- Codage direct sur la piste audio/vidéo ---------- */
+function openClipCodeModal(doc, mediaStart, mediaEnd) {
+  const codes = flatCodes();
+  if (!codes.length) return toast(t("select_code_first"));
+  openModal({
+    title: "⏺ " + t("clip_title"),
+    bodyHtml: `
+      <p>🎧 <strong>${esc(fmtTs(mediaStart))} → ${esc(fmtTs(mediaEnd))}</strong>
+        (${Math.round(mediaEnd - mediaStart)} s) — ${esc(doc.name)}</p>
+      <div class="form-row"><label>${esc(t("clip_code"))}</label>
+        <select id="clipCode">${codes.map(c =>
+          `<option value="${c.id}">${"— ".repeat(c.depth)}${esc(c.name)}</option>`).join("")}</select></div>
+      <div class="form-row"><label>${esc(t("clip_note"))}</label>
+        <input type="text" id="clipNote" placeholder="${esc(t("clip_note_ph"))}"></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, c) => c() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          const codeId = o.querySelector("#clipCode").value;
+          const note = o.querySelector("#clipNote").value.trim();
+          pushUndoSnapshot();
+          state.project.segments.push({
+            id: uid(), docId: doc.id, codeId,
+            start: -1, end: -1, mediaStart, mediaEnd,
+            text: `[🎧 ${fmtTs(mediaStart)}–${fmtTs(mediaEnd)}]` + (note ? " " + note : ""),
+            weight: 1, comment: "", created: new Date().toISOString(),
+          });
+          scheduleSave();
+          close(); renderAll();
+          toast(t("coded_with") + " « " + (getCode(codeId)?.name ?? "?") + " »");
+        }
+      },
+    ],
+  });
+}
+
+/* ---------- OCR des PDF scannés (IA, clé utilisateur) ---------- */
+async function openOcrModal(file) {
+  const cfg = getAiConfig();
+  const m = openModal({
+    title: "📖 " + t("ocr_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("ocr_how")).replace("{f}", file.name)}</p>
+      <div class="form-row"><label>${esc(t("ai_key"))}</label>
+        <input type="password" id="ocrKey" value="${esc(cfg.key || "")}" placeholder="sk-ant-…" autocomplete="off"></div>
+      <label class="rcheck" style="display:block;margin:10px 0;color:var(--danger,#c0392b)">
+        <input type="checkbox" id="ocrConsent"> ${esc(t("ocr_consent"))}</label>
+      <div id="ocrStatus" style="font-size:12.5px;color:var(--text-soft);margin:6px 0"></div>
+      <div id="ocrResult" hidden>
+        <div class="form-row"><label>${esc(t("doc_title"))}</label>
+          <input type="text" id="ocrName" value="${esc(file.name.replace(/\.[^.]+$/, ""))}"></div>
+        <textarea id="ocrText" style="min-height:220px;width:100%"></textarea>
+        <button class="btn primary" id="ocrAdd" style="margin-top:8px">✅ ${esc(t("add_doc"))}</button>
+      </div>`,
+    footer: [
+      { label: t("close"), onClick: (o, c) => c() },
+      { label: "🔎 " + t("ocr_run"), primary: true, onClick: o => run(o) },
+    ],
+  });
+
+  async function run(o) {
+    const status = o.querySelector("#ocrStatus");
+    const key = o.querySelector("#ocrKey").value.trim();
+    if (!key) { status.textContent = t("ai_need_key"); return; }
+    if (!o.querySelector("#ocrConsent").checked) { status.textContent = t("ai_need_consent"); return; }
+    saveAiConfig({ ...getAiConfig(), key });
+    try {
+      status.textContent = "⏳ " + t("ocr_extracting");
+      const blobs = extractPdfImages(await file.arrayBuffer());
+      if (!blobs.length) { status.textContent = "⚠️ " + t("ocr_no_images"); return; }
+      const model = getAiConfig().model || "claude-haiku-4-5-20251001";
+      const text = await ocrImages({
+        apiKey: key, model, blobs,
+        onProgress: (i, n) => { status.textContent = "⏳ " + t("ocr_page").replace("{i}", i).replace("{n}", n); },
+      });
+      status.textContent = "✅ " + t("ocr_done_check");
+      o.querySelector("#ocrResult").hidden = false;
+      o.querySelector("#ocrText").value = text;
+      o.querySelector("#ocrAdd").onclick = () => {
+        const txt = o.querySelector("#ocrText").value.trim();
+        if (!txt) return;
+        const doc = addDocument(o.querySelector("#ocrName").value.trim() || file.name, txt.replace(/\r\n/g, "\n"));
+        state.ui.currentDocId = doc.id;
+        m.close();
+        renderAll();
+        toast(t("import_done"));
+      };
+    } catch (e) {
+      status.textContent = "⚠️ " + (e.message === "cle-invalide" ? t("ai_bad_key")
+        : e.message === "quota" ? t("ai_quota")
+        : t("ai_error") + " " + e.message);
+    }
+  }
 }
 
 /* ---------- Import réseaux sociaux (exports WhatsApp / CSV / JSON) ---------- */

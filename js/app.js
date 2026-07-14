@@ -22,6 +22,8 @@ import { extractPdfText } from "./pdf.js";
 import { buildRefiQdpx } from "./refi.js";
 import { openConceptMapEditor } from "./conceptmap.js";
 import { buildPlayerBar, wrapTimestamps, fmtTs, createMediaElement } from "./audio.js";
+import { fileToDataUrl, isImageFile, buildImageView } from "./imagecode.js";
+import { extractPdfImages, ocrImages } from "./ocr.js";
 import {
   detectSocialFormat, parseWhatsApp, buildChatDocument, chatStats,
   parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument,
@@ -43,6 +45,7 @@ let panel4Mode = "segments";       // segments | search
 let searchResults = [];
 let searchQuery = "";
 let pendingSelection = null;       // {start, end} sélection en attente de codage
+let pendingImageRect = null;       // {x,y,w,h} zone d'image en attente de codage
 let projectPassword = null;        // mot de passe du projet, gardé en mémoire de session uniquement
 
 // Média (audio OU vidéo) par document : blobs en mémoire de session uniquement
@@ -267,9 +270,20 @@ function bindRibbon() {
   $("#fileInput").addEventListener("change", async e => {
     const files = [...e.target.files];
     e.target.value = "";
-    let imported = 0, failed = [];
+    let imported = 0, failed = [], pdfForOcr = null;
     for (const f of files) {
       try {
+        if (isImageFile(f)) {
+          // Document image : codage par zones rectangulaires
+          const dataUrl = await fileToDataUrl(f);
+          const doc = addDocument(f.name.replace(/\.[^.]+$/, ""), "");
+          doc.kind = "image";
+          doc.imageData = dataUrl;
+          state.ui.currentDocId = doc.id;
+          scheduleSave();
+          imported++;
+          continue;
+        }
         const text = /\.docx$/i.test(f.name)
           ? await extractDocxText(f)
           : /\.pdf$/i.test(f.name)
@@ -279,12 +293,15 @@ function bindRibbon() {
         imported++;
       } catch (err) {
         console.error("Import failed:", f.name, err);
-        failed.push(f.name);
+        // PDF sans texte extractible : probablement un scan → proposer l'OCR
+        if (/\.pdf$/i.test(f.name) && !pdfForOcr) pdfForOcr = f;
+        else failed.push(f.name);
       }
     }
     if (imported) renderAll();
     if (failed.length) toast(t("import_failed") + " : " + failed.join(", "));
     else if (imported) toast(imported + " " + t("import_done"));
+    if (pdfForOcr) openOcrModal(pdfForOcr);
   });
   $("#btnImportCsv").onclick = () => $("#csvInput").click();
   $("#csvInput").addEventListener("change", async e => {
@@ -441,6 +458,8 @@ function bindPanels() {
   // Sélection de texte → menu de codage flottant
   $("#docBrowser").addEventListener("mouseup", e => {
     setTimeout(() => {
+      // Les documents image gèrent leur propre menu (tracé de zones)
+      if (getDoc(state.ui.currentDocId)?.kind === "image") return;
       const sel = getSelectionOffsets();
       if (sel) showCodingPopup(e.clientX, e.clientY, sel);
       else hideCodingPopup();
@@ -713,7 +732,24 @@ function renderBrowser() {
     $("#browserTitle").textContent = t("panel_browser");
     return;
   }
-  $("#browserTitle").textContent = "📖 " + doc.name;
+  $("#browserTitle").textContent = (doc.kind === "image" ? "🖼️ " : "📖 ") + doc.name;
+
+  // Document image : codage par zones rectangulaires
+  if (doc.kind === "image") {
+    const zones = state.ui.showHighlights ? segmentsOfDoc(doc.id).filter(s => s.rect) : [];
+    el.innerHTML = `<div class="doc-title-block"><h2>${esc(doc.name)}</h2>
+      <div class="doc-meta">🖼️ ${zones.length} ${esc(t("img_zones_lbl"))}</div></div>`;
+    el.appendChild(buildImageView({
+      doc, segments: zones, getCode,
+      hint: t("img_hint"),
+      onRectDrawn: (rect, x, y) => {
+        pendingImageRect = rect;
+        showCodingPopupCustom(x, y, codeId => applyCodeToRect(codeId));
+      },
+      onSegmentClick: segId => openSegmentModal(segId),
+    }));
+    return;
+  }
 
   const segs = state.ui.showHighlights ? segmentsOfDoc(doc.id) : [];
   const paras = doc.text.split("\n");
@@ -748,6 +784,29 @@ function renderBrowser() {
     label.className = "audio-name";
     label.textContent = (audioInfo.isVideo ? "🎬 " : "🎧 ") + audioInfo.name;
     bar.prepend(label);
+    // Codage direct sur la piste : marquer le début, puis la fin de l'extrait
+    const bClip = document.createElement("button");
+    bClip.className = "mini-btn audio-btn clip-btn";
+    bClip.textContent = "⏺ " + t("clip_start");
+    bClip.title = t("clip_hint");
+    let clipStart = null;
+    bClip.onclick = () => {
+      if (clipStart === null) {
+        clipStart = audioInfo.el.currentTime;
+        bClip.textContent = "⏹ " + t("clip_end") + " " + fmtTs(clipStart) + "→…";
+        bClip.classList.add("recording");
+      } else {
+        const a = Math.min(clipStart, audioInfo.el.currentTime);
+        const b = Math.max(clipStart, audioInfo.el.currentTime);
+        clipStart = null;
+        bClip.textContent = "⏺ " + t("clip_start");
+        bClip.classList.remove("recording");
+        if (b - a < 0.5) return toast(t("clip_too_short"));
+        audioInfo.el.pause();
+        openClipCodeModal(doc, a, b);
+      }
+    };
+    bar.appendChild(bClip);
     if (audioInfo.isVideo) {
       // Panneau vidéo repliable au-dessus de la barre de lecture
       const wrap = document.createElement("div");
@@ -894,6 +953,46 @@ function showCodingPopup(x, y, sel) {
 
 function hideCodingPopup() {
   $("#codingPopup").hidden = true;
+  // Restaure les boutons In vivo / Nouveau code (masqués en mode image)
+  $("#popupInVivo").style.display = "";
+  $("#popupNewCode").style.display = "";
+}
+
+// Variante du menu de codage : applique un rappel arbitraire (zones d'images…)
+function showCodingPopupCustom(x, y, applyFn) {
+  const popup = $("#codingPopup");
+  const list = $("#codingPopupList");
+  const codes = flatCodes();
+  list.innerHTML = codes.length
+    ? codes.map(c => `<div class="popup-code" data-id="${c.id}" style="padding-left:${8 + c.depth * 14}px">
+        <span class="code-dot" style="background:${esc(c.color)}"></span><span>${esc(c.name)}</span></div>`).join("")
+    : `<div style="padding:8px;color:var(--text-soft)">${esc(t("select_code_first"))}</div>`;
+  list.querySelectorAll(".popup-code").forEach(el => {
+    el.onclick = () => { applyFn(el.dataset.id); hideCodingPopup(); };
+  });
+  $("#popupInVivo").style.display = "none";
+  $("#popupNewCode").style.display = "none";
+  popup.hidden = false;
+  const pw = popup.offsetWidth, ph = popup.offsetHeight;
+  popup.style.left = Math.min(x + 6, window.innerWidth - pw - 10) + "px";
+  popup.style.top = Math.min(y + 10, window.innerHeight - ph - 10) + "px";
+}
+
+// Applique un code à la zone d'image en attente
+function applyCodeToRect(codeId) {
+  const doc = getDoc(state.ui.currentDocId);
+  if (!doc || !pendingImageRect) return;
+  pushUndoSnapshot();
+  state.project.segments.push({
+    id: uid(), docId: doc.id, codeId,
+    start: -1, end: -1, rect: pendingImageRect,
+    text: t("img_zone_lbl"), weight: 1, comment: "",
+    created: new Date().toISOString(),
+  });
+  pendingImageRect = null;
+  scheduleSave();
+  renderAll();
+  toast(t("coded_with") + " « " + (getCode(codeId)?.name ?? "?") + " »");
 }
 
 function applyCodeToSelection(codeId, sel) {
@@ -991,7 +1090,7 @@ function renderPanel4() {
     html += `<div class="seg-card" data-id="${s.id}" draggable="true" title="${esc(t("drag_to_recode"))}">
       <div class="seg-card-head">
         <span class="badge" style="background:${esc(hexToRgba(code?.color ?? "#888", 0.3))}">${esc(code?.name ?? "?")}</span>
-        <span class="src" data-doc="${s.docId}" data-start="${s.start}">${esc(doc?.name ?? "?")}</span>
+        <span class="src" data-doc="${s.docId}" data-start="${s.start}"${s.mediaStart != null ? ` data-media="${s.mediaStart}"` : ""}>${esc(doc?.name ?? "?")}</span>
         ${s.weight !== 1 ? `<span class="weight-badge">${esc(t("weight"))}: ${s.weight}</span>` : ""}
         ${s.coder ? `<span class="weight-badge">👤 ${esc(s.coder)}</span>` : ""}
         <span class="spacer"></span>
@@ -1005,7 +1104,15 @@ function renderPanel4() {
   el.querySelector("#btnExportRetrieved").onclick = () => { exportSegmentsCsv(segs); toast(t("export_done")); };
   el.querySelector("#btnPrintRetrieved").onclick = () => openPrintableReport(segs);
   el.querySelectorAll("[data-act=edit]").forEach(b => b.onclick = () => openSegmentModal(b.closest(".seg-card").dataset.id));
-  el.querySelectorAll(".src").forEach(sp => sp.onclick = () => gotoDocPosition(sp.dataset.doc, Number(sp.dataset.start)));
+  el.querySelectorAll(".src").forEach(sp => sp.onclick = () => {
+    gotoDocPosition(sp.dataset.doc, Math.max(0, Number(sp.dataset.start)));
+    // Extrait codé sur la piste : saute le média au début de l'extrait
+    if (sp.dataset.media != null) {
+      const a = docAudio.get(sp.dataset.doc);
+      if (a) { a.el.currentTime = Number(sp.dataset.media); a.el.play(); }
+      else toast(t("ts_no_audio"));
+    }
+  });
   // Recodage par glisser-déposer : tirer une carte segment sur un code du volet Codes
   el.querySelectorAll(".seg-card").forEach(card => {
     card.addEventListener("dragstart", e => {
@@ -1154,6 +1261,101 @@ function openTranscribe(file) {
     else if (k === "t") { e.preventDefault(); insertTs(fmtTs(audio.currentTime)); }
   });
   ta.focus();
+}
+
+/* ---------- Codage direct sur la piste audio/vidéo ---------- */
+function openClipCodeModal(doc, mediaStart, mediaEnd) {
+  const codes = flatCodes();
+  if (!codes.length) return toast(t("select_code_first"));
+  openModal({
+    title: "⏺ " + t("clip_title"),
+    bodyHtml: `
+      <p>🎧 <strong>${esc(fmtTs(mediaStart))} → ${esc(fmtTs(mediaEnd))}</strong>
+        (${Math.round(mediaEnd - mediaStart)} s) — ${esc(doc.name)}</p>
+      <div class="form-row"><label>${esc(t("clip_code"))}</label>
+        <select id="clipCode">${codes.map(c =>
+          `<option value="${c.id}">${"— ".repeat(c.depth)}${esc(c.name)}</option>`).join("")}</select></div>
+      <div class="form-row"><label>${esc(t("clip_note"))}</label>
+        <input type="text" id="clipNote" placeholder="${esc(t("clip_note_ph"))}"></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, c) => c() },
+      {
+        label: t("ok"), primary: true, onClick: (o, close) => {
+          const codeId = o.querySelector("#clipCode").value;
+          const note = o.querySelector("#clipNote").value.trim();
+          pushUndoSnapshot();
+          state.project.segments.push({
+            id: uid(), docId: doc.id, codeId,
+            start: -1, end: -1, mediaStart, mediaEnd,
+            text: `[🎧 ${fmtTs(mediaStart)}–${fmtTs(mediaEnd)}]` + (note ? " " + note : ""),
+            weight: 1, comment: "", created: new Date().toISOString(),
+          });
+          scheduleSave();
+          close(); renderAll();
+          toast(t("coded_with") + " « " + (getCode(codeId)?.name ?? "?") + " »");
+        }
+      },
+    ],
+  });
+}
+
+/* ---------- OCR des PDF scannés (IA, clé utilisateur) ---------- */
+async function openOcrModal(file) {
+  const cfg = getAiConfig();
+  const m = openModal({
+    title: "📖 " + t("ocr_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("ocr_how")).replace("{f}", file.name)}</p>
+      <div class="form-row"><label>${esc(t("ai_key"))}</label>
+        <input type="password" id="ocrKey" value="${esc(cfg.key || "")}" placeholder="sk-ant-…" autocomplete="off"></div>
+      <label class="rcheck" style="display:block;margin:10px 0;color:var(--danger,#c0392b)">
+        <input type="checkbox" id="ocrConsent"> ${esc(t("ocr_consent"))}</label>
+      <div id="ocrStatus" style="font-size:12.5px;color:var(--text-soft);margin:6px 0"></div>
+      <div id="ocrResult" hidden>
+        <div class="form-row"><label>${esc(t("doc_title"))}</label>
+          <input type="text" id="ocrName" value="${esc(file.name.replace(/\.[^.]+$/, ""))}"></div>
+        <textarea id="ocrText" style="min-height:220px;width:100%"></textarea>
+        <button class="btn primary" id="ocrAdd" style="margin-top:8px">✅ ${esc(t("add_doc"))}</button>
+      </div>`,
+    footer: [
+      { label: t("close"), onClick: (o, c) => c() },
+      { label: "🔎 " + t("ocr_run"), primary: true, onClick: o => run(o) },
+    ],
+  });
+
+  async function run(o) {
+    const status = o.querySelector("#ocrStatus");
+    const key = o.querySelector("#ocrKey").value.trim();
+    if (!key) { status.textContent = t("ai_need_key"); return; }
+    if (!o.querySelector("#ocrConsent").checked) { status.textContent = t("ai_need_consent"); return; }
+    saveAiConfig({ ...getAiConfig(), key });
+    try {
+      status.textContent = "⏳ " + t("ocr_extracting");
+      const blobs = extractPdfImages(await file.arrayBuffer());
+      if (!blobs.length) { status.textContent = "⚠️ " + t("ocr_no_images"); return; }
+      const model = getAiConfig().model || "claude-haiku-4-5-20251001";
+      const text = await ocrImages({
+        apiKey: key, model, blobs,
+        onProgress: (i, n) => { status.textContent = "⏳ " + t("ocr_page").replace("{i}", i).replace("{n}", n); },
+      });
+      status.textContent = "✅ " + t("ocr_done_check");
+      o.querySelector("#ocrResult").hidden = false;
+      o.querySelector("#ocrText").value = text;
+      o.querySelector("#ocrAdd").onclick = () => {
+        const txt = o.querySelector("#ocrText").value.trim();
+        if (!txt) return;
+        const doc = addDocument(o.querySelector("#ocrName").value.trim() || file.name, txt.replace(/\r\n/g, "\n"));
+        state.ui.currentDocId = doc.id;
+        m.close();
+        renderAll();
+        toast(t("import_done"));
+      };
+    } catch (e) {
+      status.textContent = "⚠️ " + (e.message === "cle-invalide" ? t("ai_bad_key")
+        : e.message === "quota" ? t("ai_quota")
+        : t("ai_error") + " " + e.message);
+    }
+  }
 }
 
 /* ---------- Import réseaux sociaux (exports WhatsApp / CSV / JSON) ---------- */

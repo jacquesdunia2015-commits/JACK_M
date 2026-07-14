@@ -11,13 +11,13 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Texte (TXT / MD) | ✅ | ✅ | ✅ | ✅ |
 | Word (DOCX) | ✅ natif | ✅ | ✅ | ✅ |
 | PDF « texte » | ✅ natif | ✅ | ✅ | ✅ |
-| PDF scanné (OCR) | ❌ | 🔶 | 🔶 | 🔶 |
+| PDF scanné (OCR par IA, relecture avant ajout) | ✅ clé perso | 🔶 | 🔶 | 🔶 |
 | RTF / ODT | ❌ | ✅ | ✅ | ✅ |
 | Enquêtes (CSV) avec variables automatiques | ✅ | ✅ | ✅ | ✅ |
 | Texte structuré multi-entretiens (#DOC) | ✅ | ✅ | 🔶 | 🔶 |
 | Audio (lecture locale + transcription assistée horodatée) | ✅ | ✅ | ✅ | ✅ |
 | Vidéo (lecture locale + transcription assistée horodatée) | ✅ | ✅ | ✅ | ✅ |
-| Images (coder des zones) | ❌ | ✅ | ✅ | ✅ |
+| Images (coder des zones) | ✅ | ✅ | ✅ | ✅ |
 | Réseaux sociaux (import d'exports WhatsApp/CSV/JSON, sans API) | ✅ | ✅ | ✅ | ✅ |
 | Réseaux sociaux (connexion directe aux plateformes) | ❌ | 🔶 | 🔶 | 🔶 |
 | Références bibliographiques (Zotero, EndNote) | ❌ | ✅ | ✅ | ✅ |
@@ -38,7 +38,7 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Annuler / Rétablir (Ctrl+Z) | ✅ 30 niveaux | ✅ | ✅ | ✅ |
 | Fusion / réorganisation des codes (glisser-déposer) | ✅ | ✅ | ✅ | ✅ |
 | Horodatages cliquables dans la transcription (saut audio) | ✅ | ✅ | ✅ | ✅ |
-| Codage direct sur la piste audio/vidéo (sans transcription) | ❌ | ✅ | ✅ | ✅ |
+| Codage direct sur la piste audio/vidéo (extraits horodatés) | ✅ | ✅ | ✅ | ✅ |
 
 ## 3. Récupération et requêtes
 
@@ -116,5 +116,5 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 Pour une **analyse thématique de mémoire ou de thèse sur corpus textuel** (entretiens transcrits,
 focus groups, réponses ouvertes), QualiCode couvre désormais l'intégralité du flux de travail
 des trois logiciels commerciaux — du terrain au chapitre Résultats — et exporte vers eux au
-format standard REFI-QDA. Les écarts restants concernent les médias non textuels (audio, vidéo,
-images), les très gros corpus et la collaboration temps réel.
+format standard REFI-QDA — y compris désormais l'audio, la vidéo, les images et les PDF scannés.
+Les écarts restants : très gros corpus, collaboration temps réel serveur, statistiques avancées.

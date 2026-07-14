@@ -312,3 +312,18 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
 .video-wrap { position: sticky; top: 0; z-index: 6; margin: 8px 8px 0; text-align: center; }
 .media-video { width: 100%; max-width: 640px; max-height: 280px; background: #000;
   border-radius: 8px; cursor: pointer; display: inline-block; }
+
+/* Codage de zones d'images */
+.img-code-wrap { position: relative; margin: 10px auto; max-width: 900px; cursor: crosshair; user-select: none; }
+.img-code-wrap img { width: 100%; display: block; border-radius: 8px; }
+.img-zone { position: absolute; border: 2.5px solid; border-radius: 4px; cursor: pointer; }
+.img-zone:hover { filter: brightness(1.15); }
+.img-zone-lbl { position: absolute; top: -1.6em; left: -2px; color: #fff; font-size: 11px;
+  padding: 1px 6px; border-radius: 4px; white-space: nowrap; max-width: 200px;
+  overflow: hidden; text-overflow: ellipsis; }
+.img-rubber { position: absolute; border: 2px dashed var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent); pointer-events: none; }
+.img-hint { position: sticky; bottom: 0; text-align: center; font-size: 12px;
+  color: var(--text-soft); padding: 6px; }
+.clip-btn.recording { background: #c0392b; color: #fff; animation: clip-pulse 1.2s infinite; }
+@keyframes clip-pulse { 50% { opacity: 0.6; } }

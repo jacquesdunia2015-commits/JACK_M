@@ -59,7 +59,9 @@ export function buildRefiQdpx(project) {
     const filePath = `Sources/${safeName}_${String(doc.id).slice(-6)}.txt`;
     sourceFiles.push({ name: filePath, text: doc.text });
 
-    const segs = (project.segments || []).filter(s => s.docId === doc.id);
+    // Seuls les segments textuels sont exportables en PlainTextSelection
+    // (les zones d'images et extraits de piste ont des offsets négatifs)
+    const segs = (project.segments || []).filter(s => s.docId === doc.id && s.start >= 0);
     const selectionsXml = segs.map(seg =>
       `<PlainTextSelection guid="${toGuid("sel-" + seg.id)}" startPosition="${seg.start}" endPosition="${seg.end}">` +
         `<Coding guid="${toGuid(seg.id)}" creatingUser="${userGuid}" creationDateTime="${xmlEsc(seg.created || now)}">` +
