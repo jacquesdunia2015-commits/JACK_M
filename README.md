@@ -53,7 +53,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 | **Récupération (§2.4)** | Activation de documents et de codes (✅), modes **OU** et **ET** (intersection/chevauchement), saut au passage source, **requêtes sauvegardées** (combinaisons de filtres réutilisables, stockées dans le `.projx`), **recodage par glisser-déposer** (tirer une carte segment sur un code) |
 | **Mémos (§2.5)** | Mémos de projet, de document et de code ; commentaires sur segments ; gestionnaire de mémos ; indicateurs 📝 dans les arbres |
 | **Analyse (§2.6)** | Matrice codes × documents (cliquable), matrice de co-occurrences, comparaison de groupes par variable, fréquences de mots (anti-dictionnaire FR/EN), KWIC (mots en contexte), statistiques descriptives des variables |
-| **Audio (§2.2, §2.7)** | **Lecteur audio horodaté** : transcription assistée (vitesse 0,5×–2×, Ctrl+Espace/B/T), horodatages `[mm:ss]` cliquables dans les transcriptions (saut audio), audio 100 % local jamais téléversé |
+| **Audio / vidéo (§2.2, §2.7)** | **Lecteur audio et vidéo horodaté** : transcription assistée (image vidéo affichée, vitesse 0,5×–2×, Ctrl+Espace/B/T), horodatages `[mm:ss]` cliquables dans les transcriptions (saut au moment exact), panneau vidéo repliable au-dessus du texte, média 100 % local jamais téléversé |
 | **Visualisation (§2.7)** | Portrait de document (séquence colorée des segments), nuage de mots, diagramme de fréquences des codes, **cartes conceptuelles SVG** (nœuds déplaçables, flèches, plusieurs cartes par projet, export .svg) |
 | **Rapports & exports (§2.8)** | Export CSV des segments (compatible Excel), export du système de codes, export CSV de la matrice, **rapport Word (.docx) natif** (archive ZIP + WordprocessingML générés sans bibliothèque), **export REFI-QDA (.qdpx)** — format d'échange standard importable dans MAXQDA, NVivo et ATLAS.ti —, rapport HTML imprimable (→ PDF via l'impression navigateur), export/import du projet `.projx` |
 | **Sécurité (§2.1, §3.4)** | Protection du projet par mot de passe : fichier `.projx` chiffré en **AES-256-GCM**, clé dérivée par PBKDF2 (310 000 itérations, SHA-256) via l'API Web Crypto native |
@@ -62,7 +62,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 ## 🗺️ Feuille de route (fonctionnalités du cahier des charges non couvertes par ce MVP)
 
 - **Import RTF / ODT** (§2.2) — DOCX et PDF sont déjà couverts.
-- **Vidéo et images** (§2.2, §2.7) — l'audio horodaté est couvert ; reste le codage de zones d'images et la vidéo.
+- **Images** (§2.2, §2.7) — l'audio et la vidéo horodatés sont couverts ; reste le codage de zones d'images.
 - **Transcription automatique** (§2.2) — la transcription assistée (manuelle) est couverte ; la reconnaissance vocale nécessiterait un modèle local (Whisper WASM) ou une API.
 - **Références bibliographiques** (§2.2) — l'import réseaux sociaux (exports WhatsApp/CSV/JSON) est couvert.
 - **Import REFI-QDA** (§2.8) — l'export `.qdpx` est couvert ; l'import (lecture des projets MAXQDA/NVivo) reste à faire.
@@ -84,7 +84,7 @@ js/docxout.js       Export Word natif (écriture ZIP/CRC-32 + WordprocessingML)
 js/pdf.js           Import PDF natif (FlateDecode + opérateurs de texte BT/ET)
 js/refi.js          Export REFI-QDA .qdpx (XML urn:QDA-XML + sources texte)
 js/conceptmap.js    Éditeur de cartes conceptuelles SVG (nœuds, flèches, export)
-js/audio.js         Lecteur audio horodaté (transcription, horodatages cliquables)
+js/audio.js         Lecteur audio/vidéo horodaté (transcription, horodatages cliquables)
 js/social.js        Import réseaux sociaux sans API (WhatsApp, CSV/JSON de posts)
 js/ai.js            Suggestions de codage IA (clé utilisateur, validation humaine)
 js/sync.js          Collaboration par dossier partagé (File System Access)

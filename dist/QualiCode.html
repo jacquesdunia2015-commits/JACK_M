@@ -315,6 +315,11 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
 .trans-hint { font-size: 12px; color: var(--text-soft); background: var(--bg-hover);
   border-radius: 6px; padding: 7px 10px; margin: 8px 0; }
 
+/* Lecteur vidéo (transcription et relecture) */
+.video-wrap { position: sticky; top: 0; z-index: 6; margin: 8px 8px 0; text-align: center; }
+.media-video { width: 100%; max-width: 640px; max-height: 280px; background: #000;
+  border-radius: 8px; cursor: pointer; display: inline-block; }
+
 </style>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
 </head>
@@ -382,7 +387,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <button id="btnImportCsv" class="rbtn">📊<span data-i18n="import_csv">Enquête CSV</span></button>
         <button id="btnPasteDoc" class="rbtn">📋<span data-i18n="paste_doc">Coller un texte</span></button>
         <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
-        <button id="btnTranscribe" class="rbtn">🎙️<span data-i18n="transcribe">Transcrire un audio</span></button>
+        <button id="btnTranscribe" class="rbtn">🎙️<span data-i18n="transcribe">Transcrire un audio/vidéo</span></button>
         <button id="btnSocial" class="rbtn">📱<span data-i18n="social_import">Réseaux sociaux (export)</span></button>
         <div class="rlabel" data-i18n="grp_import">Importation</div>
       </div>
@@ -393,8 +398,8 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
       <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx,.pdf" hidden>
       <input type="file" id="csvInput" accept=".csv" hidden>
       <input type="file" id="projInput" accept=".projx,.json" hidden>
-      <input type="file" id="audioInput" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp" hidden>
-      <input type="file" id="transInput" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp" hidden>
+      <input type="file" id="audioInput" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp,.mp4,.webm,.mkv,.mov" hidden>
+      <input type="file" id="transInput" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp,.mp4,.webm,.mkv,.mov" hidden>
       <input type="file" id="socialInput" accept=".txt,.csv,.json" hidden>
     </div>
 
@@ -635,10 +640,11 @@ const translations = {
     posts_hint: "{n} lignes détectées. Choisissez les colonnes : chaque publication deviendra un paragraphe « Auteur (date) : texte » à coder.",
     posts_col_text: "Colonne du texte", posts_col_author: "Colonne de l'auteur", posts_col_date: "Colonne de la date",
     posts_source: "Plateforme (variable « source »)",
-    transcribe: "Transcrire un audio", transcribe_title: "Transcription assistée (audio local, rien n'est envoyé sur internet)",
+    transcribe: "Transcrire un audio/vidéo", transcribe_title: "Transcription assistée (audio local, rien n'est envoyé sur internet)",
     transcribe_hint: "Raccourcis : Ctrl+Espace = lecture/pause · Ctrl+B = reculer de 5 s · Ctrl+T = insérer l'horodatage au curseur. Réduisez la vitesse (0,5×) pour taper en écoutant.",
     transcribe_done: "Transcription ajoutée aux documents (audio associé 🎧)",
-    attach_audio: "Associer l'audio de l'entretien", audio_attached: "Audio associé :",
+    attach_audio: "Associer l'audio ou la vidéo de l'entretien",
+    video_attached: "Vidéo associée :", video_toggle: "Afficher / masquer l'image vidéo", audio_attached: "Audio associé :",
     audio_reattach: "Cet entretien a un audio associé :", audio_reattach_btn: "Rouvrir le fichier audio",
     ts_copy: "Horodatage", ts_copy_hint: "Copier l'horodatage du moment courant",
     ts_copied: "Horodatage copié :", ts_no_audio: "Associez d'abord l'audio de cet entretien (bouton 🎧 en haut du volet).",
@@ -798,10 +804,11 @@ const translations = {
     posts_hint: "{n} rows detected. Pick the columns: each post becomes an “Author (date): text” paragraph to code.",
     posts_col_text: "Text column", posts_col_author: "Author column", posts_col_date: "Date column",
     posts_source: "Platform (“source” variable)",
-    transcribe: "Transcribe audio", transcribe_title: "Assisted transcription (local audio, nothing sent online)",
+    transcribe: "Transcribe audio/video", transcribe_title: "Assisted transcription (local audio, nothing sent online)",
     transcribe_hint: "Shortcuts: Ctrl+Space = play/pause · Ctrl+B = back 5 s · Ctrl+T = insert timestamp at cursor. Slow the speed (0.5×) to type while listening.",
     transcribe_done: "Transcription added to documents (audio attached 🎧)",
-    attach_audio: "Attach the interview audio", audio_attached: "Audio attached:",
+    attach_audio: "Attach the interview audio or video",
+    video_attached: "Video attached:", video_toggle: "Show / hide the video picture", audio_attached: "Audio attached:",
     audio_reattach: "This interview has an associated audio:", audio_reattach_btn: "Reopen audio file",
     ts_copy: "Timestamp", ts_copy_hint: "Copy the current-time stamp",
     ts_copied: "Timestamp copied:", ts_no_audio: "First attach this interview's audio (🎧 button at the top of the panel).",
@@ -2997,11 +3004,39 @@ return { openConceptMapEditor };
 
 __QC["audio"] = (function () {
 "use strict";
-// js/audio.js — Lecteur audio horodaté pour la transcription et la relecture
-// Aucun serveur : le fichier audio est lu localement (URL blob, jamais téléversé).
+// js/audio.js — Lecteur audio/vidéo horodaté pour la transcription et la relecture
+// Aucun serveur : le média est lu localement (URL blob, jamais téléversé).
 // Les horodatages [hh:mm:ss] ou [mm:ss] du texte deviennent cliquables.
+// La barre de lecture fonctionne avec tout HTMLMediaElement (audio OU vidéo).
 
 const { t } = __QC["i18n"];
+
+const VIDEO_EXT = /\.(mp4|webm|mkv|mov|m4v|avi|3gp|ogv)$/i;
+
+function isVideoFile(file) {
+  return (file.type || "").startsWith("video/") || VIDEO_EXT.test(file.name || "");
+}
+
+// Crée l'élément média adapté au fichier : <video> (image visible) ou Audio.
+// Retourne { el, isVideo, url } — penser à révoquer l'URL quand on abandonne.
+function createMediaElement(file) {
+  const url = URL.createObjectURL(file);
+  const isVideo = isVideoFile(file);
+  let el;
+  if (isVideo) {
+    el = document.createElement("video");
+    el.className = "media-video";
+    el.playsInline = true;
+    el.preload = "metadata";
+    el.src = url;
+    // Clic sur l'image = lecture/pause (en plus de la barre)
+    el.addEventListener("click", () => { el.paused ? el.play() : el.pause(); });
+  } else {
+    el = new Audio(url);
+    el.preload = "metadata";
+  }
+  return { el, isVideo, url };
+}
 
 // [12:34] ou [1:02:34] — capturés avec leurs crochets
 const TS_RE = /\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g;
@@ -3127,7 +3162,7 @@ function buildPlayerBar(audio, { onCopyTs } = {}) {
   return bar;
 }
 
-return { parseTs, fmtTs, wrapTimestamps, buildPlayerBar, TS_RE };
+return { isVideoFile, createMediaElement, parseTs, fmtTs, wrapTimestamps, buildPlayerBar, TS_RE };
 })();
 
 __QC["social"] = (function () {
@@ -3520,7 +3555,7 @@ const { extractDocxText } = __QC["docx"];
 const { extractPdfText } = __QC["pdf"];
 const { buildRefiQdpx } = __QC["refi"];
 const { openConceptMapEditor } = __QC["conceptmap"];
-const { buildPlayerBar, wrapTimestamps, fmtTs } = __QC["audio"];
+const { buildPlayerBar, wrapTimestamps, fmtTs, createMediaElement } = __QC["audio"];
 const {
   detectSocialFormat, parseWhatsApp, buildChatDocument, chatStats,
   parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument,
@@ -3544,10 +3579,10 @@ let searchQuery = "";
 let pendingSelection = null;       // {start, end} sélection en attente de codage
 let projectPassword = null;        // mot de passe du projet, gardé en mémoire de session uniquement
 
-// Audio par document : blobs en mémoire de session uniquement (jamais persistés —
-// trop volumineux pour localStorage). Seul le nom du fichier est enregistré
-// dans le projet (doc.audioName) pour proposer la réassociation.
-const docAudio = new Map();        // docId → { url, name, el: HTMLAudioElement }
+// Média (audio OU vidéo) par document : blobs en mémoire de session uniquement
+// (jamais persistés — trop volumineux pour localStorage). Seul le nom du fichier
+// est enregistré dans le projet (doc.audioName) pour proposer la réassociation.
+const docAudio = new Map();        // docId → { url, name, el: HTMLMediaElement, isVideo }
 
 function getDocAudioEl(docId) {
   const a = docAudio.get(docId);
@@ -3556,14 +3591,13 @@ function getDocAudioEl(docId) {
 
 function attachAudioToDoc(doc, file) {
   const prev = docAudio.get(doc.id);
-  if (prev) URL.revokeObjectURL(prev.url);
-  const url = URL.createObjectURL(file);
-  const el = new Audio(url);
-  docAudio.set(doc.id, { url, name: file.name, el });
+  if (prev) { prev.el.pause(); URL.revokeObjectURL(prev.url); }
+  const { el, isVideo, url } = createMediaElement(file);
+  docAudio.set(doc.id, { url, name: file.name, el, isVideo });
   doc.audioName = file.name;
   scheduleSave();
   renderBrowser();
-  toast(t("audio_attached") + " " + file.name);
+  toast((isVideo ? t("video_attached") : t("audio_attached")) + " " + file.name);
 }
 
 /* ================================================================
@@ -4246,9 +4280,24 @@ function renderBrowser() {
     });
     const label = document.createElement("span");
     label.className = "audio-name";
-    label.textContent = "🎧 " + audioInfo.name;
+    label.textContent = (audioInfo.isVideo ? "🎬 " : "🎧 ") + audioInfo.name;
     bar.prepend(label);
-    el.prepend(bar);
+    if (audioInfo.isVideo) {
+      // Panneau vidéo repliable au-dessus de la barre de lecture
+      const wrap = document.createElement("div");
+      wrap.className = "video-wrap";
+      wrap.appendChild(audioInfo.el);
+      const toggle = document.createElement("button");
+      toggle.className = "mini-btn audio-btn";
+      toggle.textContent = "🎬";
+      toggle.title = t("video_toggle");
+      toggle.onclick = () => { wrap.hidden = !wrap.hidden; };
+      bar.appendChild(toggle);
+      el.prepend(bar);
+      el.prepend(wrap);
+    } else {
+      el.prepend(bar);
+    }
   } else if (doc.audioName) {
     // Un audio était associé lors d'une session précédente : proposer la réassociation
     const hint = document.createElement("div");
@@ -4577,14 +4626,14 @@ function openPasteDoc() {
   });
 }
 
-/* ---------- Transcription assistée : audio + éditeur + horodatages ---------- */
+/* ---------- Transcription assistée : audio/vidéo + éditeur + horodatages ---------- */
 function openTranscribe(file) {
-  const url = URL.createObjectURL(file);
-  const audio = new Audio(url);
+  const { el: audio, isVideo, url } = createMediaElement(file);
   const groups = state.project.documentGroups;
   const m = openModal({
-    title: t("transcribe_title"), wide: true,
+    title: (isVideo ? "🎬 " : "🎙️ ") + t("transcribe_title"), wide: true,
     bodyHtml: `
+      <div id="trVideo"></div>
       <div id="trPlayer"></div>
       <p class="trans-hint">${esc(t("transcribe_hint"))}</p>
       <div class="form-row"><label>${esc(t("doc_title"))}</label>
@@ -4601,9 +4650,9 @@ function openTranscribe(file) {
           if (!text.trim()) return;
           const name = o.querySelector("#trName").value.trim() || file.name;
           const doc = addDocument(name, text, o.querySelector("#trGroup").value || null);
-          // L'audio reste associé au nouveau document pour la relecture
+          // Le média reste associé au nouveau document pour la relecture
           audio.pause();
-          docAudio.set(doc.id, { url, name: file.name, el: audio });
+          docAudio.set(doc.id, { url, name: file.name, el: audio, isVideo });
           doc.audioName = file.name;
           state.ui.currentDocId = doc.id;
           scheduleSave();
@@ -4621,6 +4670,12 @@ function openTranscribe(file) {
     ta.selectionStart = ta.selectionEnd = pos + ts.length + 1;
     ta.focus();
   };
+  if (isVideo) {
+    const wrap = document.createElement("div");
+    wrap.className = "video-wrap";
+    wrap.appendChild(audio);
+    m.body.querySelector("#trVideo").appendChild(wrap);
+  }
   m.body.querySelector("#trPlayer").appendChild(buildPlayerBar(audio, { onCopyTs: insertTs }));
 
   // Raccourcis (actifs dans la fenêtre de transcription) :

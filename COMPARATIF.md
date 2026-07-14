@@ -16,7 +16,7 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Enquêtes (CSV) avec variables automatiques | ✅ | ✅ | ✅ | ✅ |
 | Texte structuré multi-entretiens (#DOC) | ✅ | ✅ | 🔶 | 🔶 |
 | Audio (lecture locale + transcription assistée horodatée) | ✅ | ✅ | ✅ | ✅ |
-| Vidéo | ❌ | ✅ | ✅ | ✅ |
+| Vidéo (lecture locale + transcription assistée horodatée) | ✅ | ✅ | ✅ | ✅ |
 | Images (coder des zones) | ❌ | ✅ | ✅ | ✅ |
 | Réseaux sociaux (import d'exports WhatsApp/CSV/JSON, sans API) | ✅ | ✅ | ✅ | ✅ |
 | Réseaux sociaux (connexion directe aux plateformes) | ❌ | 🔶 | 🔶 | 🔶 |
@@ -117,4 +117,4 @@ Pour une **analyse thématique de mémoire ou de thèse sur corpus textuel** (en
 focus groups, réponses ouvertes), QualiCode couvre désormais l'intégralité du flux de travail
 des trois logiciels commerciaux — du terrain au chapitre Résultats — et exporte vers eux au
 format standard REFI-QDA. Les écarts restants concernent les médias non textuels (audio, vidéo,
-images), l'IA, les très gros corpus et la collaboration temps réel.
+images), les très gros corpus et la collaboration temps réel.

@@ -307,3 +307,8 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
 /* Modal de transcription */
 .trans-hint { font-size: 12px; color: var(--text-soft); background: var(--bg-hover);
   border-radius: 6px; padding: 7px 10px; margin: 8px 0; }
+
+/* Lecteur vidéo (transcription et relecture) */
+.video-wrap { position: sticky; top: 0; z-index: 6; margin: 8px 8px 0; text-align: center; }
+.media-video { width: 100%; max-width: 640px; max-height: 280px; background: #000;
+  border-radius: 8px; cursor: pointer; display: inline-block; }

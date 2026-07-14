@@ -21,7 +21,7 @@ import { extractDocxText } from "./docx.js";
 import { extractPdfText } from "./pdf.js";
 import { buildRefiQdpx } from "./refi.js";
 import { openConceptMapEditor } from "./conceptmap.js";
-import { buildPlayerBar, wrapTimestamps, fmtTs } from "./audio.js";
+import { buildPlayerBar, wrapTimestamps, fmtTs, createMediaElement } from "./audio.js";
 import {
   detectSocialFormat, parseWhatsApp, buildChatDocument, chatStats,
   parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument,
@@ -45,10 +45,10 @@ let searchQuery = "";
 let pendingSelection = null;       // {start, end} sélection en attente de codage
 let projectPassword = null;        // mot de passe du projet, gardé en mémoire de session uniquement
 
-// Audio par document : blobs en mémoire de session uniquement (jamais persistés —
-// trop volumineux pour localStorage). Seul le nom du fichier est enregistré
-// dans le projet (doc.audioName) pour proposer la réassociation.
-const docAudio = new Map();        // docId → { url, name, el: HTMLAudioElement }
+// Média (audio OU vidéo) par document : blobs en mémoire de session uniquement
+// (jamais persistés — trop volumineux pour localStorage). Seul le nom du fichier
+// est enregistré dans le projet (doc.audioName) pour proposer la réassociation.
+const docAudio = new Map();        // docId → { url, name, el: HTMLMediaElement, isVideo }
 
 function getDocAudioEl(docId) {
   const a = docAudio.get(docId);
@@ -57,14 +57,13 @@ function getDocAudioEl(docId) {
 
 function attachAudioToDoc(doc, file) {
   const prev = docAudio.get(doc.id);
-  if (prev) URL.revokeObjectURL(prev.url);
-  const url = URL.createObjectURL(file);
-  const el = new Audio(url);
-  docAudio.set(doc.id, { url, name: file.name, el });
+  if (prev) { prev.el.pause(); URL.revokeObjectURL(prev.url); }
+  const { el, isVideo, url } = createMediaElement(file);
+  docAudio.set(doc.id, { url, name: file.name, el, isVideo });
   doc.audioName = file.name;
   scheduleSave();
   renderBrowser();
-  toast(t("audio_attached") + " " + file.name);
+  toast((isVideo ? t("video_attached") : t("audio_attached")) + " " + file.name);
 }
 
 /* ================================================================
@@ -747,9 +746,24 @@ function renderBrowser() {
     });
     const label = document.createElement("span");
     label.className = "audio-name";
-    label.textContent = "🎧 " + audioInfo.name;
+    label.textContent = (audioInfo.isVideo ? "🎬 " : "🎧 ") + audioInfo.name;
     bar.prepend(label);
-    el.prepend(bar);
+    if (audioInfo.isVideo) {
+      // Panneau vidéo repliable au-dessus de la barre de lecture
+      const wrap = document.createElement("div");
+      wrap.className = "video-wrap";
+      wrap.appendChild(audioInfo.el);
+      const toggle = document.createElement("button");
+      toggle.className = "mini-btn audio-btn";
+      toggle.textContent = "🎬";
+      toggle.title = t("video_toggle");
+      toggle.onclick = () => { wrap.hidden = !wrap.hidden; };
+      bar.appendChild(toggle);
+      el.prepend(bar);
+      el.prepend(wrap);
+    } else {
+      el.prepend(bar);
+    }
   } else if (doc.audioName) {
     // Un audio était associé lors d'une session précédente : proposer la réassociation
     const hint = document.createElement("div");
@@ -1078,14 +1092,14 @@ function openPasteDoc() {
   });
 }
 
-/* ---------- Transcription assistée : audio + éditeur + horodatages ---------- */
+/* ---------- Transcription assistée : audio/vidéo + éditeur + horodatages ---------- */
 function openTranscribe(file) {
-  const url = URL.createObjectURL(file);
-  const audio = new Audio(url);
+  const { el: audio, isVideo, url } = createMediaElement(file);
   const groups = state.project.documentGroups;
   const m = openModal({
-    title: t("transcribe_title"), wide: true,
+    title: (isVideo ? "🎬 " : "🎙️ ") + t("transcribe_title"), wide: true,
     bodyHtml: `
+      <div id="trVideo"></div>
       <div id="trPlayer"></div>
       <p class="trans-hint">${esc(t("transcribe_hint"))}</p>
       <div class="form-row"><label>${esc(t("doc_title"))}</label>
@@ -1102,9 +1116,9 @@ function openTranscribe(file) {
           if (!text.trim()) return;
           const name = o.querySelector("#trName").value.trim() || file.name;
           const doc = addDocument(name, text, o.querySelector("#trGroup").value || null);
-          // L'audio reste associé au nouveau document pour la relecture
+          // Le média reste associé au nouveau document pour la relecture
           audio.pause();
-          docAudio.set(doc.id, { url, name: file.name, el: audio });
+          docAudio.set(doc.id, { url, name: file.name, el: audio, isVideo });
           doc.audioName = file.name;
           state.ui.currentDocId = doc.id;
           scheduleSave();
@@ -1122,6 +1136,12 @@ function openTranscribe(file) {
     ta.selectionStart = ta.selectionEnd = pos + ts.length + 1;
     ta.focus();
   };
+  if (isVideo) {
+    const wrap = document.createElement("div");
+    wrap.className = "video-wrap";
+    wrap.appendChild(audio);
+    m.body.querySelector("#trVideo").appendChild(wrap);
+  }
   m.body.querySelector("#trPlayer").appendChild(buildPlayerBar(audio, { onCopyTs: insertTs }));
 
   // Raccourcis (actifs dans la fenêtre de transcription) :

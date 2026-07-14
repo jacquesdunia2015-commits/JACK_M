@@ -1,8 +1,36 @@
-// js/audio.js — Lecteur audio horodaté pour la transcription et la relecture
-// Aucun serveur : le fichier audio est lu localement (URL blob, jamais téléversé).
+// js/audio.js — Lecteur audio/vidéo horodaté pour la transcription et la relecture
+// Aucun serveur : le média est lu localement (URL blob, jamais téléversé).
 // Les horodatages [hh:mm:ss] ou [mm:ss] du texte deviennent cliquables.
+// La barre de lecture fonctionne avec tout HTMLMediaElement (audio OU vidéo).
 
 import { t } from "./i18n.js";
+
+const VIDEO_EXT = /\.(mp4|webm|mkv|mov|m4v|avi|3gp|ogv)$/i;
+
+export function isVideoFile(file) {
+  return (file.type || "").startsWith("video/") || VIDEO_EXT.test(file.name || "");
+}
+
+// Crée l'élément média adapté au fichier : <video> (image visible) ou Audio.
+// Retourne { el, isVideo, url } — penser à révoquer l'URL quand on abandonne.
+export function createMediaElement(file) {
+  const url = URL.createObjectURL(file);
+  const isVideo = isVideoFile(file);
+  let el;
+  if (isVideo) {
+    el = document.createElement("video");
+    el.className = "media-video";
+    el.playsInline = true;
+    el.preload = "metadata";
+    el.src = url;
+    // Clic sur l'image = lecture/pause (en plus de la barre)
+    el.addEventListener("click", () => { el.paused ? el.play() : el.pause(); });
+  } else {
+    el = new Audio(url);
+    el.preload = "metadata";
+  }
+  return { el, isVideo, url };
+}
 
 // [12:34] ou [1:02:34] — capturés avec leurs crochets
 export const TS_RE = /\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/g;
