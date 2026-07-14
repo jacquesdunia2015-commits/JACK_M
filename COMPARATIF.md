@@ -105,6 +105,7 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | 100 % hors ligne, données locales | ✅ | ✅ | ✅ | ✅ |
 | Fonctionne sans installation (un fichier HTML) | ✅ | ❌ | ❌ | ❌ |
 | Collaboration asynchrone (fusion de fichiers) | ✅ | ✅ | ✅ | ✅ |
+| Collaboration par dossier partagé (Drive/Dropbox, détection des nouveautés) | ✅ | 🔶 | 🔶 | 🔶 |
 | Collaboration temps réel multi-utilisateurs | ❌ | ✅ 💰 serveur | ✅ 💰 serveur | ✅ 💰 web |
 | Interface FR + EN | ✅ | ✅ | 🔶 | 🔶 |
 | Corpus de plusieurs milliers de documents | 🔶 (dizaines) | ✅ | ✅ | ✅ |

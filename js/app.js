@@ -27,6 +27,10 @@ import {
   parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument,
 } from "./social.js";
 import { AI_MODELS, getAiConfig, saveAiConfig, docParagraphs, suggestCodes } from "./ai.js";
+import {
+  isSyncSupported, pickFolder, getCoderName, setCoderName,
+  publishFilename, writeToFolder, listProjxFiles, coderFromFilename, markSeen, fileStatus,
+} from "./sync.js";
 import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from "./crypto.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
@@ -236,6 +240,7 @@ function bindRibbon() {
   $("#btnMyProjects").onclick = openMyProjects;
   $("#btnProtect").onclick = openProtectModal;
   $("#btnMergeProject").onclick = () => $("#mergeInput").click();
+  $("#btnSharedFolder").onclick = openSharedFolder;
   $("#mergeInput").addEventListener("change", async e => {
     const file = e.target.files[0];
     e.target.value = "";
@@ -1899,13 +1904,13 @@ function openProtectModal() {
 /* ================================================================
    Fusion de projets et accord inter-codeurs (§2.1, §2.9)
 ================================================================ */
-function openMergeModal(incoming) {
+function openMergeModal(incoming, { coderLabel, onMerged } = {}) {
   openModal({
     title: t("merge_title"),
     bodyHtml: `
       <p>🧬 <strong>${esc(incoming.name)}</strong> — ${incoming.documents?.length ?? 0} ${esc(t("docs"))},
         ${incoming.codes?.length ?? 0} ${esc(t("codes_lbl"))}, ${incoming.segments?.length ?? 0} ${esc(t("segments_lbl"))}</p>
-      <div class="form-row"><label>${esc(t("coder_label_q"))}</label><input type="text" id="mgCoder" value="C2"></div>`,
+      <div class="form-row"><label>${esc(t("coder_label_q"))}</label><input type="text" id="mgCoder" value="${esc(coderLabel || "C2")}"></div>`,
     footer: [
       { label: t("cancel"), onClick: (o, close) => close() },
       {
@@ -1917,10 +1922,126 @@ function openMergeModal(incoming) {
           const names = t("merge_stats").split("|");
           const values = [stats.docsMatched, stats.docsAdded, stats.codesMatched, stats.codesAdded, stats.segmentsAdded, stats.segmentsSkipped];
           toast(t("merge_done") + " — " + values.map((v, i) => `${v} ${names[i]}`).join(", "));
+          if (onMerged) onMerged();
         }
       },
     ],
   });
+}
+
+/* ================================================================
+   Collaboration par dossier partagé (Drive/Dropbox/USB synchronisé)
+================================================================ */
+let sharedDirHandle = null; // poignée du dossier, valable pour la session
+
+function openSharedFolder() {
+  if (!isSyncSupported()) {
+    return openModal({
+      title: "🔄 " + t("sf_title"),
+      bodyHtml: `<div class="empty-hint">${esc(t("sf_unsupported"))}</div>`,
+      footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+    });
+  }
+
+  const m = openModal({
+    title: "🔄 " + t("sf_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("sf_how"))}</p>
+      <div class="form-row"><label>${esc(t("sf_coder"))}</label>
+        <input type="text" id="sfCoder" value="${esc(getCoderName())}" placeholder="${esc(t("sf_coder_ph"))}"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+        <button class="btn" id="sfConnect">📁 ${esc(t("sf_connect"))}</button>
+        <button class="btn primary" id="sfPublish" disabled>📤 ${esc(t("sf_publish"))}</button>
+        <button class="btn" id="sfRefresh" disabled>🔍 ${esc(t("sf_refresh"))}</button>
+      </div>
+      <div id="sfStatus" style="font-size:12.5px;color:var(--text-soft);margin:6px 0">${
+        sharedDirHandle ? "📁 " + esc(sharedDirHandle.name) : esc(t("sf_not_connected"))}</div>
+      <div id="sfList"></div>`,
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+
+  const $$ = sel => m.body.querySelector(sel);
+  const setButtons = () => {
+    $$("#sfPublish").disabled = !sharedDirHandle;
+    $$("#sfRefresh").disabled = !sharedDirHandle;
+    if (sharedDirHandle) $$("#sfStatus").textContent = "📁 " + sharedDirHandle.name;
+  };
+  setButtons();
+
+  const myFilename = () => publishFilename(state.project.name, $$("#sfCoder").value.trim() || "codeur");
+
+  $$("#sfConnect").onclick = async () => {
+    try {
+      sharedDirHandle = await pickFolder();
+      setButtons();
+      await refresh();
+    } catch { /* sélection annulée */ }
+  };
+
+  $$("#sfPublish").onclick = async () => {
+    const coder = $$("#sfCoder").value.trim();
+    if (!coder) { $$("#sfStatus").textContent = t("sf_need_coder"); return; }
+    setCoderName(coder);
+    persistNow();
+    try {
+      let content;
+      if (state.project.protected) {
+        const pw = projectPassword || await askPassword();
+        if (!pw) return;
+        projectPassword = pw;
+        content = JSON.stringify(await encryptProjectJson(JSON.stringify(state.project), pw));
+      } else {
+        content = JSON.stringify(state.project);
+      }
+      await writeToFolder(sharedDirHandle, myFilename(), content);
+      toast(t("sf_published") + " " + myFilename());
+      await refresh();
+    } catch (e) {
+      $$("#sfStatus").textContent = "⚠️ " + t("sf_write_error") + " " + e.message;
+    }
+  };
+
+  $$("#sfRefresh").onclick = refresh;
+
+  async function refresh() {
+    const mine = myFilename();
+    let files;
+    try { files = await listProjxFiles(sharedDirHandle); }
+    catch (e) { $$("#sfStatus").textContent = "⚠️ " + e.message; return; }
+    const others = files.filter(f => f.name !== mine);
+    const mineThere = files.some(f => f.name === mine);
+    $$("#sfStatus").textContent = "📁 " + sharedDirHandle.name +
+      " — " + others.length + " " + t("sf_team_files") + (mineThere ? " · " + t("sf_mine_ok") : "");
+    if (!others.length) {
+      $$("#sfList").innerHTML = `<div class="empty-hint">${esc(t("sf_empty"))}</div>`;
+      return;
+    }
+    $$("#sfList").innerHTML = others.map((f, i) => {
+      const st = fileStatus(f.name, f.lastModified);
+      const badge = st === "new" ? `<span class="weight-badge">🆕 ${esc(t("sf_new"))}</span>`
+        : st === "updated" ? `<span class="weight-badge">🔁 ${esc(t("sf_updated"))}</span>`
+        : `<span class="weight-badge">✅ ${esc(t("sf_uptodate"))}</span>`;
+      return `<div class="seg-card">
+        <div class="seg-card-head">
+          <strong style="flex:1">${esc(f.name)}</strong>
+          ${badge}
+          <span style="color:var(--text-soft);font-size:11.5px">${new Date(f.lastModified).toLocaleString()}</span>
+          <button class="btn" data-merge="${i}">🧬 ${esc(t("sf_merge"))}</button>
+        </div>
+      </div>`;
+    }).join("");
+    $$("#sfList").querySelectorAll("[data-merge]").forEach(btn => btn.onclick = async () => {
+      const f = others[Number(btn.dataset.merge)];
+      const incoming = await readProjectFile(f.file);
+      if (!incoming) return;
+      openMergeModal(incoming, {
+        coderLabel: coderFromFilename(f.name) || "C2",
+        onMerged: () => { markSeen(f.name, f.lastModified); refresh(); },
+      });
+    });
+  }
+
+  if (sharedDirHandle) refresh();
 }
 
 /* ================================================================

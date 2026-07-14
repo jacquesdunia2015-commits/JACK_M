@@ -57,7 +57,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 | **Visualisation (§2.7)** | Portrait de document (séquence colorée des segments), nuage de mots, diagramme de fréquences des codes, **cartes conceptuelles SVG** (nœuds déplaçables, flèches, plusieurs cartes par projet, export .svg) |
 | **Rapports & exports (§2.8)** | Export CSV des segments (compatible Excel), export du système de codes, export CSV de la matrice, **rapport Word (.docx) natif** (archive ZIP + WordprocessingML générés sans bibliothèque), **export REFI-QDA (.qdpx)** — format d'échange standard importable dans MAXQDA, NVivo et ATLAS.ti —, rapport HTML imprimable (→ PDF via l'impression navigateur), export/import du projet `.projx` |
 | **Sécurité (§2.1, §3.4)** | Protection du projet par mot de passe : fichier `.projx` chiffré en **AES-256-GCM**, clé dérivée par PBKDF2 (310 000 itérations, SHA-256) via l'API Web Crypto native |
-| **Équipe (§2.1, §2.9)** | **Fusion de projets** (appariement des documents, codes et mémos ; segments étiquetés par codeur) et **accord inter-codeurs par kappa de Cohen** (unité : le paragraphe, par code + global, interprétation Landis & Koch) — critère d'acceptation n°4 du cahier des charges |
+| **Équipe (§2.1, §2.9)** | **Fusion de projets** (appariement des documents, codes et mémos ; segments étiquetés par codeur) et **accord inter-codeurs par kappa de Cohen** (unité : le paragraphe, par code + global, interprétation Landis & Koch) — critère d'acceptation n°4 du cahier des charges — et **collaboration par dossier partagé** (File System Access : chaque codeur publie sa copie dans un dossier synchronisé Drive/Dropbox/USB, détection des nouveautés, fusion en un clic, copie chiffrée si le projet est protégé) |
 
 ## 🗺️ Feuille de route (fonctionnalités du cahier des charges non couvertes par ce MVP)
 
@@ -66,7 +66,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 - **Transcription automatique** (§2.2) — la transcription assistée (manuelle) est couverte ; la reconnaissance vocale nécessiterait un modèle local (Whisper WASM) ou une API.
 - **Références bibliographiques** (§2.2) — l'import réseaux sociaux (exports WhatsApp/CSV/JSON) est couvert.
 - **Import REFI-QDA** (§2.8) — l'export `.qdpx` est couvert ; l'import (lecture des projets MAXQDA/NVivo) reste à faire.
-- **Phase 2 cloud** : collaboration temps réel, rôles, journal des modifications (la fusion asynchrone et le kappa de Cohen sont déjà couverts).
+- **Phase 2 cloud** : collaboration temps réel et rôles (la fusion asynchrone, le kappa et le dossier partagé sont déjà couverts).
 - **Empaquetage desktop** Windows/macOS : la base web actuelle est directement intégrable dans **Tauri** ou **Electron** (options recommandées §4).
 
 ## 🏗️ Architecture
@@ -87,6 +87,7 @@ js/conceptmap.js    Éditeur de cartes conceptuelles SVG (nœuds, flèches, expo
 js/audio.js         Lecteur audio horodaté (transcription, horodatages cliquables)
 js/social.js        Import réseaux sociaux sans API (WhatsApp, CSV/JSON de posts)
 js/ai.js            Suggestions de codage IA (clé utilisateur, validation humaine)
+js/sync.js          Collaboration par dossier partagé (File System Access)
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)
 js/sample.js        Projet exemple (étude sur le télétravail)

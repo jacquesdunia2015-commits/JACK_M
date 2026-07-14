@@ -205,6 +205,17 @@ Si vos données sont sensibles (c'est souvent le cas en recherche) :
 
 ## 12. Travailler à plusieurs (fusion et accord entre codeurs)
 
+### La façon la plus simple : le dossier partagé 🔄
+Si votre équipe a un dossier commun (Google Drive, Dropbox, OneDrive, clé USB qui circule, partage réseau) :
+
+1. Chacun ouvre **Accueil → 🔄 Dossier partagé**, choisit le dossier commun et entre son **nom de codeur**.
+2. Chacun clique **📤 Publier ma copie** : son projet est déposé dans le dossier (un fichier par personne, donc jamais de conflit). Republiez après chaque séance de codage.
+3. Pour récupérer le travail des autres : **🔍 Vérifier les nouveautés** — les copies des collègues apparaissent avec leur état (🆕 nouveau, 🔁 mis à jour, ✅ déjà fusionné) → cliquez **🧬 Fusionner** (le nom du codeur est pré-rempli).
+4. Puis **Analyse → 🤝 Accord inter-codeurs (κ)** comme d'habitude.
+
+À savoir : le navigateur demande de re-choisir le dossier à chaque session (règle de sécurité) ; cette fonction nécessite **Chrome ou Edge** (sur Firefox, utilisez l'échange manuel ci-dessous) ; si le projet est protégé par mot de passe, la copie publiée est **chiffrée** — toute l'équipe doit connaître le mot de passe.
+
+### L'échange manuel (marche partout)
 Quand deux personnes codent les mêmes entretiens (chacune de son côté) :
 
 1. Chaque personne travaille dans sa copie et **enregistre son fichier .projx**.
