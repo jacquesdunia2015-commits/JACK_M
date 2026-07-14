@@ -26,6 +26,7 @@ import {
   detectSocialFormat, parseWhatsApp, buildChatDocument, chatStats,
   parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument,
 } from "./social.js";
+import { AI_MODELS, getAiConfig, saveAiConfig, docParagraphs, suggestCodes } from "./ai.js";
 import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from "./crypto.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
@@ -320,6 +321,7 @@ function bindRibbon() {
     inVivoCode(sel);
   };
   $("#btnAutoCode").onclick = openAutoCode;
+  $("#btnAiSuggest").onclick = openAiSuggest;
   $("#chkHighlights").addEventListener("change", e => { state.ui.showHighlights = e.target.checked; renderBrowser(); });
 
   // --- Mémos ---
@@ -1919,6 +1921,94 @@ function openMergeModal(incoming) {
       },
     ],
   });
+}
+
+/* ================================================================
+   Suggestions IA : l'IA propose, le chercheur valide (clé utilisateur)
+================================================================ */
+function openAiSuggest() {
+  const doc = getDoc(state.ui.currentDocId);
+  if (!doc) return toast(t("hint_no_doc"));
+  const cfg = getAiConfig();
+
+  const m = openModal({
+    title: "🤖 " + t("ai_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("ai_how"))}</p>
+      <div class="form-row"><label>${esc(t("ai_key"))}</label>
+        <input type="password" id="aiKey" value="${esc(cfg.key || "")}" placeholder="sk-ant-…" autocomplete="off"></div>
+      <p style="font-size:11.5px;color:var(--text-soft);margin:2px 0 8px">${esc(t("ai_key_hint"))}</p>
+      <div class="form-row"><label>${esc(t("ai_model"))}</label>
+        <select id="aiModel">${AI_MODELS.map(mo =>
+          `<option value="${mo.id}" ${mo.id === cfg.model ? "selected" : ""}>${esc(mo.label)}</option>`).join("")}</select></div>
+      <div class="form-row"><label>${esc(t("ai_doc"))}</label><strong>${esc(doc.name)}</strong></div>
+      <label class="rcheck" style="display:block;margin:10px 0;color:var(--danger,#c0392b)">
+        <input type="checkbox" id="aiConsent"> ${esc(t("ai_consent"))}</label>
+      <div id="aiStatus" style="font-size:12.5px;color:var(--text-soft);margin:6px 0"></div>
+      <div id="aiResults"></div>`,
+    footer: [
+      { label: t("close"), onClick: (o, c) => c() },
+      { label: "🔎 " + t("ai_analyze"), primary: true, onClick: o => runAnalysis(o) },
+    ],
+  });
+
+  async function runAnalysis(o) {
+    const key = o.querySelector("#aiKey").value.trim();
+    const model = o.querySelector("#aiModel").value;
+    const status = o.querySelector("#aiStatus");
+    if (!key) { status.textContent = t("ai_need_key"); return; }
+    if (!o.querySelector("#aiConsent").checked) { status.textContent = t("ai_need_consent"); return; }
+    saveAiConfig({ key, model }); // clé gardée sur CET ordinateur uniquement
+
+    const paragraphs = docParagraphs(doc.text);
+    const codes = flatCodes().map(c => ({ name: c.name, definition: getMemo("code", c.id)?.text || "" }));
+    status.textContent = "⏳ " + t("ai_running");
+    o.querySelector("#aiResults").innerHTML = "";
+    try {
+      const sugs = await suggestCodes({ apiKey: key, model, docName: doc.name, paragraphs, codes });
+      renderSuggestions(o, sugs);
+      status.textContent = sugs.length ? "" : t("ai_none");
+    } catch (e) {
+      status.textContent = "⚠️ " + (e.message === "cle-invalide" ? t("ai_bad_key")
+        : e.message === "quota" ? t("ai_quota")
+        : e.message === "reponse-illisible" ? t("ai_bad_answer")
+        : t("ai_error") + " " + e.message);
+    }
+  }
+
+  function renderSuggestions(o, sugs) {
+    const existing = new Set(flatCodes().map(c => c.name.toLowerCase()));
+    o.querySelector("#aiResults").innerHTML = `
+      <p style="font-weight:600;margin:10px 0 6px">${sugs.length} ${esc(t("ai_suggestions"))}</p>
+      ${sugs.map((s, i) => `
+        <div class="seg-card">
+          <div class="seg-card-head">
+            <label class="rcheck" style="flex:1;display:flex;gap:8px;align-items:center">
+              <input type="checkbox" class="ai-pick" data-i="${i}" checked>
+              <span class="badge" style="background:var(--bg-hover)">${esc(s.code)}</span>
+              ${s.isNew && !existing.has(s.code.toLowerCase()) ? `<span class="weight-badge">✨ ${esc(t("ai_new_code"))}</span>` : ""}
+            </label>
+          </div>
+          <div class="seg-card-body">« ${esc(s.excerpt)} »</div>
+          ${s.why ? `<div class="seg-comment">💡 ${esc(s.why)}</div>` : ""}
+        </div>`).join("")}
+      <button class="btn primary" id="aiApply" style="margin-top:10px">✅ ${esc(t("ai_apply"))}</button>`;
+    o.querySelector("#aiApply").onclick = () => {
+      const picked = [...o.querySelectorAll(".ai-pick:checked")].map(cb => sugs[Number(cb.dataset.i)]);
+      if (!picked.length) return;
+      let created = 0, coded = 0;
+      for (const s of picked) {
+        let code = flatCodes().find(c => c.name.toLowerCase() === s.code.toLowerCase());
+        if (!code) { code = addCode(s.code); created++; }
+        addSegment(doc.id, code.id, s.start, s.end, doc.text.slice(s.start, s.end));
+        coded++;
+      }
+      renderAll();
+      toast(t("ai_applied").replace("{n}", coded).replace("{c}", created));
+      o.querySelector("#aiResults").innerHTML = "";
+      o.querySelector("#aiStatus").textContent = "✅ " + t("ai_applied").replace("{n}", coded).replace("{c}", created);
+    };
+  }
 }
 
 /* ================================================================

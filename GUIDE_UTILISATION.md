@@ -98,6 +98,15 @@ Trois autres façons de coder :
 - **Raccourci Alt+C** : applique au passage sélectionné le code actuellement choisi dans la liste.
 - **⚡ Codage automatique** : tapez un mot (ex. « fatigue »), choisissez un code, et le logiciel code automatiquement toutes les phrases qui contiennent ce mot.
 
+### 🤖 Se faire aider par l'IA (facultatif)
+Onglet **Codes → 🤖 Suggestions IA** : l'intelligence artificielle lit l'entretien ouvert et votre liste de codes, puis **propose** des passages à coder — avec une justification pour chacun. Vous cochez ce que vous acceptez, décochez ce que vous refusez, puis cliquez sur *Appliquer* : **rien n'est codé sans votre accord**.
+
+À savoir :
+- Il faut une **clé API personnelle** (créez-la sur console.anthropic.com — l'usage coûte quelques centimes par document) et une connexion internet.
+- La clé reste **sur votre ordinateur**, jamais dans le fichier projet.
+- ⚠️ **N'utilisez cette fonction que sur des textes anonymisés** : le texte du document est envoyé au service d'IA. Une case de confirmation vous le rappelle à chaque envoi. En cas de doute (données de santé identifiantes), codez à la main.
+- L'IA est un **assistant, pas un remplaçant** : dans votre mémoire, indiquez que le codage a été validé par vous (les jurys y sont attentifs).
+
 ### Modifier ou supprimer un codage
 Cliquez sur un passage surligné : une fiche s'ouvre. Vous pouvez y ajouter un **commentaire**, un **poids** (importance de 1 à 100), ou **retirer le code**.
 

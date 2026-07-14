@@ -410,6 +410,10 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <div class="rlabel" data-i18n="grp_autocode">Recherche lexicale</div>
       </div>
       <div class="rgroup">
+        <button id="btnAiSuggest" class="rbtn">🤖<span data-i18n="ai_suggest">Suggestions IA</span></button>
+        <div class="rlabel" data-i18n="grp_ai">Assistance IA</div>
+      </div>
+      <div class="rgroup">
         <label class="rcheck"><input type="checkbox" id="chkHighlights" checked> <span data-i18n="show_highlights">Afficher les surlignages</span></label>
         <div class="rlabel" data-i18n="grp_display">Affichage</div>
       </div>
@@ -589,6 +593,23 @@ const translations = {
     new_project: "Nouveau projet", open_project: "Ouvrir (.projx)", save_project: "Enregistrer (.projx)",
     sample_project: "Projet exemple", grp_project: "Projet",
     search: "Rechercher", grp_search: "Recherche", search_ph: "Recherche plein texte (ET, OU, \"phrase\")…",
+    ai_suggest: "Suggestions IA", grp_ai: "Assistance IA",
+    ai_title: "Suggestions de codage par IA (document ouvert)",
+    ai_how: "L'IA lit le document ouvert et votre livre de codes, puis PROPOSE des codages. Rien n'est appliqué sans votre validation, suggestion par suggestion. L'envoi utilise VOTRE clé API (console.anthropic.com) et nécessite une connexion internet.",
+    ai_key: "Clé API Anthropic", ai_key_hint: "La clé reste sur cet ordinateur (jamais enregistrée dans le fichier projet qui circule entre codeurs).",
+    ai_model: "Modèle", ai_doc: "Document analysé",
+    ai_consent: "Je confirme que ce document est ANONYMISÉ (aucun nom réel) et que son envoi à un service externe est autorisé par mon protocole éthique.",
+    ai_need_key: "Entrez votre clé API pour continuer.",
+    ai_need_consent: "Cochez la case de confirmation (anonymisation + éthique) avant l'envoi.",
+    ai_running: "Analyse en cours… (quelques secondes)",
+    ai_none: "Aucune suggestion pour ce document.",
+    ai_bad_key: "Clé API refusée. Vérifiez-la sur console.anthropic.com.",
+    ai_quota: "Limite de votre clé atteinte. Réessayez dans quelques minutes.",
+    ai_bad_answer: "Réponse inattendue de l'IA. Réessayez.",
+    ai_error: "Erreur :",
+    ai_suggestions: "suggestions — décochez celles à refuser, puis appliquez",
+    ai_new_code: "nouveau code", ai_apply: "Appliquer les suggestions cochées",
+    ai_applied: "{n} passages codés ({c} nouveaux codes créés)",
     social_import: "Réseaux sociaux (export)",
     social_unknown: "Format non reconnu. Formats acceptés : export de discussion WhatsApp (.txt), CSV ou JSON avec une colonne de texte.",
     social_done: "{n} messages importés en un document",
@@ -723,6 +744,23 @@ const translations = {
     new_project: "New project", open_project: "Open (.projx)", save_project: "Save (.projx)",
     sample_project: "Sample project", grp_project: "Project",
     search: "Search", grp_search: "Search", search_ph: "Full-text search (AND, OR, \"phrase\")…",
+    ai_suggest: "AI suggestions", grp_ai: "AI assistance",
+    ai_title: "AI coding suggestions (open document)",
+    ai_how: "The AI reads the open document and your codebook, then SUGGESTS codings. Nothing is applied without your validation, suggestion by suggestion. Requests use YOUR API key (console.anthropic.com) and require an internet connection.",
+    ai_key: "Anthropic API key", ai_key_hint: "The key stays on this computer (never stored in the project file shared between coders).",
+    ai_model: "Model", ai_doc: "Analyzed document",
+    ai_consent: "I confirm this document is ANONYMIZED (no real names) and that sending it to an external service is allowed by my ethics protocol.",
+    ai_need_key: "Enter your API key to continue.",
+    ai_need_consent: "Tick the confirmation box (anonymization + ethics) before sending.",
+    ai_running: "Analyzing… (a few seconds)",
+    ai_none: "No suggestions for this document.",
+    ai_bad_key: "API key rejected. Check it on console.anthropic.com.",
+    ai_quota: "Your key's rate limit was reached. Try again in a few minutes.",
+    ai_bad_answer: "Unexpected AI response. Try again.",
+    ai_error: "Error:",
+    ai_suggestions: "suggestions — untick the ones to reject, then apply",
+    ai_new_code: "new code", ai_apply: "Apply ticked suggestions",
+    ai_applied: "{n} passages coded ({c} new codes created)",
     social_import: "Social media (export)",
     social_unknown: "Unrecognized format. Accepted: WhatsApp chat export (.txt), CSV or JSON with a text column.",
     social_done: "{n} messages imported as one document",
@@ -3240,6 +3278,119 @@ function buildPostsDocument(rows, { author, text, date }) {
 return { detectSocialFormat, parseWhatsApp, buildChatDocument, chatStats, parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument };
 })();
 
+__QC["ai"] = (function () {
+"use strict";
+// js/ai.js — Suggestions de codage par IA, avec la clé API de l'utilisateur.
+// Garde-fous :
+//  • la clé est stockée sur CET ordinateur (localStorage), jamais dans le .projx
+//    qui circule entre codeurs ;
+//  • aucun envoi sans confirmation explicite (données anonymisées) ;
+//  • l'IA ne code jamais toute seule : elle propose, le chercheur valide.
+
+const AI_KEY = "qualicode.ai";
+
+const AI_MODELS = [
+  { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5 (rapide, économique)" },
+  { id: "claude-sonnet-5", label: "Claude Sonnet 5 (plus fin, plus cher)" },
+];
+
+function getAiConfig() {
+  try { return JSON.parse(localStorage.getItem(AI_KEY)) || {}; } catch { return {}; }
+}
+function saveAiConfig(cfg) {
+  try { localStorage.setItem(AI_KEY, JSON.stringify(cfg)); } catch { /* stockage indisponible */ }
+}
+
+// Découpe le document en paragraphes numérotés avec leur position (offset)
+function docParagraphs(text) {
+  const out = [];
+  let offset = 0;
+  for (const p of text.split("\n")) {
+    out.push({ start: offset, text: p });
+    offset += p.length + 1;
+  }
+  return out.filter(p => p.text.trim().length > 0);
+}
+
+function buildPrompt(docName, paragraphs, codes) {
+  const codeList = codes.map(c =>
+    `- « ${c.name} »${c.definition ? ` : ${c.definition.slice(0, 200)}` : ""}`).join("\n");
+  const paras = paragraphs.map((p, i) => `[¶${i}] ${p.text}`).join("\n");
+  return `Tu es un assistant de codage pour l'analyse qualitative (analyse thématique).
+
+LIVRE DE CODES du projet :
+${codeList || "(aucun code encore défini)"}
+
+DOCUMENT « ${docName} » (paragraphes numérotés) :
+${paras}
+
+TÂCHE : propose des codages. Pour chaque passage pertinent, indique :
+- "para" : le numéro du paragraphe (l'entier après ¶)
+- "code" : le nom EXACT d'un code du livre de codes ; si aucun ne convient et qu'un thème émergent important apparaît, propose un nouveau nom court et mets "nouveau": true
+- "extrait" : la citation EXACTE, mot pour mot, copiée du paragraphe (30 à 200 caractères)
+- "justification" : une phrase courte expliquant le choix
+
+Règles : ne code que ce qui est réellement pertinent (qualité avant quantité, 15 suggestions maximum) ; l'« extrait » doit être une sous-chaîne exacte du paragraphe indiqué ; ignore les questions de l'enquêteur, code les réponses des participants.
+
+Réponds UNIQUEMENT avec un tableau JSON, sans texte autour :
+[{"para": 0, "code": "…", "extrait": "…", "justification": "…", "nouveau": false}]`;
+}
+
+// Appelle l'API Anthropic depuis le navigateur avec la clé de l'utilisateur.
+async function suggestCodes({ apiKey, model, docName, paragraphs, codes }) {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 3000,
+      messages: [{ role: "user", content: buildPrompt(docName, paragraphs, codes) }],
+    }),
+  });
+  if (!resp.ok) {
+    let msg = "HTTP " + resp.status;
+    try { msg = (await resp.json()).error?.message || msg; } catch { /* corps illisible */ }
+    if (resp.status === 401) throw new Error("cle-invalide");
+    if (resp.status === 429) throw new Error("quota");
+    throw new Error(msg);
+  }
+  const data = await resp.json();
+  const raw = (data.content || []).map(b => b.text || "").join("");
+  // Tolère les clôtures markdown éventuelles autour du JSON
+  const jsonText = raw.replace(/^[\s\S]*?(\[)/, "$1").replace(/\][\s\S]*$/, "]");
+  let arr;
+  try { arr = JSON.parse(jsonText); } catch { throw new Error("reponse-illisible"); }
+  if (!Array.isArray(arr)) throw new Error("reponse-illisible");
+
+  // Validation + calcul des positions exactes dans le document
+  const out = [];
+  for (const s of arr.slice(0, 30)) {
+    const idx = Number(s.para);
+    const p = paragraphs[idx];
+    if (!p || !s.code || !s.extrait) continue;
+    const excerpt = String(s.extrait);
+    const at = p.text.indexOf(excerpt);
+    const start = at >= 0 ? p.start + at : p.start;
+    const end = at >= 0 ? start + excerpt.length : p.start + p.text.length;
+    out.push({
+      code: String(s.code).trim(),
+      isNew: !!s.nouveau,
+      excerpt: at >= 0 ? excerpt : p.text,
+      why: String(s.justification || ""),
+      start, end,
+    });
+  }
+  return out;
+}
+
+return { getAiConfig, saveAiConfig, docParagraphs, suggestCodes, AI_MODELS };
+})();
+
 __QC["app"] = (function () {
 "use strict";
 // QualiCode — application d'analyse qualitative de données (MVP du cahier des charges)
@@ -3270,6 +3421,7 @@ const {
   detectSocialFormat, parseWhatsApp, buildChatDocument, chatStats,
   parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument,
 } = __QC["social"];
+const { AI_MODELS, getAiConfig, saveAiConfig, docParagraphs, suggestCodes } = __QC["ai"];
 const { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } = __QC["crypto"];
 const { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } = __QC["merge"];
 
@@ -3564,6 +3716,7 @@ function bindRibbon() {
     inVivoCode(sel);
   };
   $("#btnAutoCode").onclick = openAutoCode;
+  $("#btnAiSuggest").onclick = openAiSuggest;
   $("#chkHighlights").addEventListener("change", e => { state.ui.showHighlights = e.target.checked; renderBrowser(); });
 
   // --- Mémos ---
@@ -5163,6 +5316,94 @@ function openMergeModal(incoming) {
       },
     ],
   });
+}
+
+/* ================================================================
+   Suggestions IA : l'IA propose, le chercheur valide (clé utilisateur)
+================================================================ */
+function openAiSuggest() {
+  const doc = getDoc(state.ui.currentDocId);
+  if (!doc) return toast(t("hint_no_doc"));
+  const cfg = getAiConfig();
+
+  const m = openModal({
+    title: "🤖 " + t("ai_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("ai_how"))}</p>
+      <div class="form-row"><label>${esc(t("ai_key"))}</label>
+        <input type="password" id="aiKey" value="${esc(cfg.key || "")}" placeholder="sk-ant-…" autocomplete="off"></div>
+      <p style="font-size:11.5px;color:var(--text-soft);margin:2px 0 8px">${esc(t("ai_key_hint"))}</p>
+      <div class="form-row"><label>${esc(t("ai_model"))}</label>
+        <select id="aiModel">${AI_MODELS.map(mo =>
+          `<option value="${mo.id}" ${mo.id === cfg.model ? "selected" : ""}>${esc(mo.label)}</option>`).join("")}</select></div>
+      <div class="form-row"><label>${esc(t("ai_doc"))}</label><strong>${esc(doc.name)}</strong></div>
+      <label class="rcheck" style="display:block;margin:10px 0;color:var(--danger,#c0392b)">
+        <input type="checkbox" id="aiConsent"> ${esc(t("ai_consent"))}</label>
+      <div id="aiStatus" style="font-size:12.5px;color:var(--text-soft);margin:6px 0"></div>
+      <div id="aiResults"></div>`,
+    footer: [
+      { label: t("close"), onClick: (o, c) => c() },
+      { label: "🔎 " + t("ai_analyze"), primary: true, onClick: o => runAnalysis(o) },
+    ],
+  });
+
+  async function runAnalysis(o) {
+    const key = o.querySelector("#aiKey").value.trim();
+    const model = o.querySelector("#aiModel").value;
+    const status = o.querySelector("#aiStatus");
+    if (!key) { status.textContent = t("ai_need_key"); return; }
+    if (!o.querySelector("#aiConsent").checked) { status.textContent = t("ai_need_consent"); return; }
+    saveAiConfig({ key, model }); // clé gardée sur CET ordinateur uniquement
+
+    const paragraphs = docParagraphs(doc.text);
+    const codes = flatCodes().map(c => ({ name: c.name, definition: getMemo("code", c.id)?.text || "" }));
+    status.textContent = "⏳ " + t("ai_running");
+    o.querySelector("#aiResults").innerHTML = "";
+    try {
+      const sugs = await suggestCodes({ apiKey: key, model, docName: doc.name, paragraphs, codes });
+      renderSuggestions(o, sugs);
+      status.textContent = sugs.length ? "" : t("ai_none");
+    } catch (e) {
+      status.textContent = "⚠️ " + (e.message === "cle-invalide" ? t("ai_bad_key")
+        : e.message === "quota" ? t("ai_quota")
+        : e.message === "reponse-illisible" ? t("ai_bad_answer")
+        : t("ai_error") + " " + e.message);
+    }
+  }
+
+  function renderSuggestions(o, sugs) {
+    const existing = new Set(flatCodes().map(c => c.name.toLowerCase()));
+    o.querySelector("#aiResults").innerHTML = `
+      <p style="font-weight:600;margin:10px 0 6px">${sugs.length} ${esc(t("ai_suggestions"))}</p>
+      ${sugs.map((s, i) => `
+        <div class="seg-card">
+          <div class="seg-card-head">
+            <label class="rcheck" style="flex:1;display:flex;gap:8px;align-items:center">
+              <input type="checkbox" class="ai-pick" data-i="${i}" checked>
+              <span class="badge" style="background:var(--bg-hover)">${esc(s.code)}</span>
+              ${s.isNew && !existing.has(s.code.toLowerCase()) ? `<span class="weight-badge">✨ ${esc(t("ai_new_code"))}</span>` : ""}
+            </label>
+          </div>
+          <div class="seg-card-body">« ${esc(s.excerpt)} »</div>
+          ${s.why ? `<div class="seg-comment">💡 ${esc(s.why)}</div>` : ""}
+        </div>`).join("")}
+      <button class="btn primary" id="aiApply" style="margin-top:10px">✅ ${esc(t("ai_apply"))}</button>`;
+    o.querySelector("#aiApply").onclick = () => {
+      const picked = [...o.querySelectorAll(".ai-pick:checked")].map(cb => sugs[Number(cb.dataset.i)]);
+      if (!picked.length) return;
+      let created = 0, coded = 0;
+      for (const s of picked) {
+        let code = flatCodes().find(c => c.name.toLowerCase() === s.code.toLowerCase());
+        if (!code) { code = addCode(s.code); created++; }
+        addSegment(doc.id, code.id, s.start, s.end, doc.text.slice(s.start, s.end));
+        coded++;
+      }
+      renderAll();
+      toast(t("ai_applied").replace("{n}", coded).replace("{c}", created));
+      o.querySelector("#aiResults").innerHTML = "";
+      o.querySelector("#aiStatus").textContent = "✅ " + t("ai_applied").replace("{n}", coded).replace("{c}", created);
+    };
+  }
 }
 
 /* ================================================================

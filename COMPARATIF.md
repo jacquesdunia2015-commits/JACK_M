@@ -31,7 +31,7 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Codage in vivo | ✅ | ✅ | ✅ | ✅ |
 | Raccourci clavier de codage | ✅ Alt+C | ✅ | ✅ | ✅ |
 | Codage automatique lexical (mot → code) | ✅ | ✅ | ✅ | ✅ |
-| Codage automatique par IA | ❌ | ✅ 💰 | ✅ 💰 | ✅ 💰 |
+| Suggestions de codage par IA (validation humaine) | ✅ clé perso | ✅ 💰 | ✅ 💰 | ✅ 💰 |
 | Poids / pertinence des segments | ✅ (1–100) | ✅ | ❌ | ❌ |
 | Commentaires sur segments | ✅ | ✅ | ✅ | ✅ |
 | Recodage par glisser-déposer | ✅ | ✅ | ✅ | ✅ |
