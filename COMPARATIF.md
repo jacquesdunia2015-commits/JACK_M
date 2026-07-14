@@ -18,7 +18,8 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Audio (lecture locale + transcription assistée horodatée) | ✅ | ✅ | ✅ | ✅ |
 | Vidéo | ❌ | ✅ | ✅ | ✅ |
 | Images (coder des zones) | ❌ | ✅ | ✅ | ✅ |
-| Réseaux sociaux / pages web | ❌ | ✅ | ✅ | ✅ |
+| Réseaux sociaux (import d'exports WhatsApp/CSV/JSON, sans API) | ✅ | ✅ | ✅ | ✅ |
+| Réseaux sociaux (connexion directe aux plateformes) | ❌ | 🔶 | 🔶 | 🔶 |
 | Références bibliographiques (Zotero, EndNote) | ❌ | ✅ | ✅ | ✅ |
 
 ## 2. Codage

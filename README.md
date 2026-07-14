@@ -47,7 +47,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 | Domaine (réf. cahier des charges) | Fonctionnalités |
 |---|---|
 | **Gestion de projet (§2.1)** | Création, sauvegarde/ouverture dans un fichier conteneur unique `.projx` (JSON), sauvegarde automatique locale (localStorage), corbeille interne pour documents et codes |
-| **Importation (§2.2)** | Fichiers **DOCX** (extraction native sans dépendance : lecture ZIP via `DecompressionStream` + analyse de `word/document.xml`), **PDF** (extraction de texte native : décompression FlateDecode + analyse des opérateurs de texte — PDF « texte », pas les scans), TXT/MD, collage de texte, enquêtes CSV (réponses courtes → variables, réponses longues → texte), texte structuré (balises `#DOC`), **transcription assistée** (lecteur audio local + raccourcis + horodatages) |
+| **Importation (§2.2)** | Fichiers **DOCX** (extraction native sans dépendance : lecture ZIP via `DecompressionStream` + analyse de `word/document.xml`), **PDF** (extraction de texte native : décompression FlateDecode + analyse des opérateurs de texte — PDF « texte », pas les scans), TXT/MD, collage de texte, enquêtes CSV (réponses courtes → variables, réponses longues → texte), texte structuré (balises `#DOC`), **transcription assistée** (lecteur audio local + raccourcis + horodatages), **réseaux sociaux sans API** (export WhatsApp .txt auto-détecté Android/iOS ; CSV/JSON de publications avec mappage auteur/texte/date auto-deviné, variable « source ») |
 | **Organisation (§2.3)** | Groupes de documents (glisser-déposer), variables de document, navigateur avec numérotation des paragraphes, recherche plein texte booléenne (ET / OU / "phrase") |
 | **Codage (§2.4)** | Codes et sous-codes en arborescence illimitée avec couleurs, codage par sélection de texte (menu contextuel), codage in vivo, raccourci clavier `Alt+C`, codage automatique par recherche lexicale (occurrence / phrase / paragraphe), pondération des segments, fusion visuelle des chevauchements, fréquences en temps réel, glisser-déposer des codes |
 | **Récupération (§2.4)** | Activation de documents et de codes (✅), modes **OU** et **ET** (intersection/chevauchement), saut au passage source, **requêtes sauvegardées** (combinaisons de filtres réutilisables, stockées dans le `.projx`), **recodage par glisser-déposer** (tirer une carte segment sur un code) |
@@ -64,7 +64,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 - **Import RTF / ODT** (§2.2) — DOCX et PDF sont déjà couverts.
 - **Vidéo et images** (§2.2, §2.7) — l'audio horodaté est couvert ; reste le codage de zones d'images et la vidéo.
 - **Transcription automatique** (§2.2) — la transcription assistée (manuelle) est couverte ; la reconnaissance vocale nécessiterait un modèle local (Whisper WASM) ou une API.
-- **Import réseaux sociaux et références bibliographiques** (§2.2).
+- **Références bibliographiques** (§2.2) — l'import réseaux sociaux (exports WhatsApp/CSV/JSON) est couvert.
 - **Import REFI-QDA** (§2.8) — l'export `.qdpx` est couvert ; l'import (lecture des projets MAXQDA/NVivo) reste à faire.
 - **Phase 2 cloud** : collaboration temps réel, rôles, journal des modifications (la fusion asynchrone et le kappa de Cohen sont déjà couverts).
 - **Empaquetage desktop** Windows/macOS : la base web actuelle est directement intégrable dans **Tauri** ou **Electron** (options recommandées §4).
@@ -85,6 +85,7 @@ js/pdf.js           Import PDF natif (FlateDecode + opérateurs de texte BT/ET)
 js/refi.js          Export REFI-QDA .qdpx (XML urn:QDA-XML + sources texte)
 js/conceptmap.js    Éditeur de cartes conceptuelles SVG (nœuds, flèches, export)
 js/audio.js         Lecteur audio horodaté (transcription, horodatages cliquables)
+js/social.js        Import réseaux sociaux sans API (WhatsApp, CSV/JSON de posts)
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)
 js/sample.js        Projet exemple (étude sur le télétravail)

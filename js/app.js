@@ -22,6 +22,10 @@ import { extractPdfText } from "./pdf.js";
 import { buildRefiQdpx } from "./refi.js";
 import { openConceptMapEditor } from "./conceptmap.js";
 import { buildPlayerBar, wrapTimestamps, fmtTs } from "./audio.js";
+import {
+  detectSocialFormat, parseWhatsApp, buildChatDocument, chatStats,
+  parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument,
+} from "./social.js";
 import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from "./crypto.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
@@ -289,6 +293,12 @@ function bindRibbon() {
     const file = e.target.files[0];
     e.target.value = "";
     if (file) openTranscribe(file);
+  });
+  $("#btnSocial").onclick = () => $("#socialInput").click();
+  $("#socialInput").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (file) openSocialImport(file, await file.text());
   });
   $("#btnStructuredText").onclick = openStructuredImport;
   $("#btnNewGroup").onclick = () => promptModal(t("new_group"), t("new_group_name"), "", name => {
@@ -1117,6 +1127,131 @@ function openTranscribe(file) {
     else if (k === "t") { e.preventDefault(); insertTs(fmtTs(audio.currentTime)); }
   });
   ta.focus();
+}
+
+/* ---------- Import réseaux sociaux (exports WhatsApp / CSV / JSON) ---------- */
+function setDocSource(doc, source) {
+  if (!state.project.variables.includes("source")) state.project.variables.push("source");
+  doc.variables = doc.variables || {};
+  doc.variables.source = source;
+}
+
+function groupSelectHtml(id) {
+  const groups = state.project.documentGroups;
+  return groups.length
+    ? `<div class="form-row"><label>${esc(t("group"))}</label>
+        <select id="${id}"><option value="">—</option>${groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("")}</select></div>`
+    : `<select id="${id}" hidden><option value=""></option></select>`;
+}
+
+function openSocialImport(file, text) {
+  const format = detectSocialFormat(file.name, text);
+  if (format === "whatsapp") return openWhatsAppImport(file, text);
+  if (format === "csv" || format === "json") return openPostsImport(file, text, format);
+  toast(t("social_unknown"));
+}
+
+// WhatsApp : aperçu + options, puis création du document
+function openWhatsAppImport(file, text) {
+  const { messages, system } = parseWhatsApp(text);
+  if (!messages.length) return toast(t("social_unknown"));
+  const stats = chatStats(messages);
+  const authorsHtml = stats.authors.slice(0, 8)
+    .map(([a, n]) => `<span class="badge" style="background:var(--bg-hover)">${esc(a)} · ${n}</span>`).join(" ");
+  const m = openModal({
+    title: "📱 " + t("wa_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("wa_stats"))
+        .replace("{n}", stats.count).replace("{a}", stats.authors.length)
+        .replace("{d1}", stats.firstDate).replace("{d2}", stats.lastDate)}
+        ${system ? " · " + system + " " + esc(t("wa_system_skipped")) : ""}</p>
+      <div style="margin-bottom:10px">${authorsHtml}</div>
+      <div class="form-row"><label>${esc(t("doc_title"))}</label>
+        <input type="text" id="waName" value="${esc(file.name.replace(/\.[^.]+$/, ""))}"></div>
+      ${groupSelectHtml("waGroup")}
+      <label class="rcheck" style="display:block;margin:10px 0"><input type="checkbox" id="waMerge" checked>
+        ${esc(t("wa_merge"))}</label>
+      <p style="font-size:12px;color:var(--text-soft)">${esc(t("wa_ethics"))}</p>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, c) => c() },
+      {
+        label: t("add_doc"), primary: true, onClick: (o, close) => {
+          const docText = buildChatDocument(messages, { mergeConsecutive: o.querySelector("#waMerge").checked });
+          const doc = addDocument(o.querySelector("#waName").value.trim() || file.name, docText,
+            o.querySelector("#waGroup").value || null);
+          setDocSource(doc, "WhatsApp");
+          state.ui.currentDocId = doc.id;
+          scheduleSave();
+          close(); renderAll();
+          toast(t("social_done").replace("{n}", stats.count));
+        }
+      },
+    ],
+  });
+}
+
+// CSV / JSON : mappage des colonnes auteur / texte / date, aperçu, création
+function openPostsImport(file, text, format) {
+  let table;
+  try {
+    table = format === "json" ? parseJsonRecords(text) : parseCsvRows(text);
+  } catch { return toast(t("social_unknown")); }
+  if (!table || table.length < 2) return toast(t("social_unknown"));
+  const headers = table[0], rows = table.slice(1);
+  const guess = guessMapping(headers);
+
+  const colSelect = (id, selIdx, allowNone) =>
+    `<select id="${id}">${allowNone ? `<option value="-1">—</option>` : ""}${headers.map((h, i) =>
+      `<option value="${i}" ${i === selIdx ? "selected" : ""}>${esc(h)}</option>`).join("")}</select>`;
+
+  const m = openModal({
+    title: "📱 " + t("posts_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("posts_hint")).replace("{n}", rows.length)}</p>
+      <div class="form-row"><label>${esc(t("posts_col_text"))} *</label>${colSelect("spText", guess.text === -1 ? 0 : guess.text, false)}</div>
+      <div class="form-row"><label>${esc(t("posts_col_author"))}</label>${colSelect("spAuthor", guess.author, true)}</div>
+      <div class="form-row"><label>${esc(t("posts_col_date"))}</label>${colSelect("spDate", guess.date, true)}</div>
+      <div class="form-row"><label>${esc(t("doc_title"))}</label>
+        <input type="text" id="spName" value="${esc(file.name.replace(/\.[^.]+$/, ""))}"></div>
+      ${groupSelectHtml("spGroup")}
+      <div class="form-row"><label>${esc(t("posts_source"))}</label>
+        <input type="text" id="spSource" value="${format === "json" ? "JSON" : "CSV"}" placeholder="X/Twitter, YouTube…"></div>
+      <div id="spPreview" style="max-height:180px;overflow:auto;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px"></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, c) => c() },
+      {
+        label: t("add_doc"), primary: true, onClick: (o, close) => {
+          const map = {
+            text: Number(o.querySelector("#spText").value),
+            author: Number(o.querySelector("#spAuthor").value),
+            date: Number(o.querySelector("#spDate").value),
+          };
+          const { text: docText, count } = buildPostsDocument(rows, map);
+          if (!count) return toast(t("social_unknown"));
+          const doc = addDocument(o.querySelector("#spName").value.trim() || file.name, docText,
+            o.querySelector("#spGroup").value || null);
+          setDocSource(doc, o.querySelector("#spSource").value.trim() || "Réseaux sociaux");
+          state.ui.currentDocId = doc.id;
+          scheduleSave();
+          close(); renderAll();
+          toast(t("social_done").replace("{n}", count));
+        }
+      },
+    ],
+  });
+
+  const refreshPreview = () => {
+    const map = {
+      text: Number(m.body.querySelector("#spText").value),
+      author: Number(m.body.querySelector("#spAuthor").value),
+      date: Number(m.body.querySelector("#spDate").value),
+    };
+    const { text: previewText } = buildPostsDocument(rows.slice(0, 5), map);
+    m.body.querySelector("#spPreview").textContent = previewText || "—";
+  };
+  ["spText", "spAuthor", "spDate"].forEach(id =>
+    m.body.querySelector("#" + id).addEventListener("change", refreshPreview));
+  refreshPreview();
 }
 
 // Analyseur CSV minimal avec guillemets (séparateur , ou ;)

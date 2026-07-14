@@ -382,6 +382,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <button id="btnPasteDoc" class="rbtn">📋<span data-i18n="paste_doc">Coller un texte</span></button>
         <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
         <button id="btnTranscribe" class="rbtn">🎙️<span data-i18n="transcribe">Transcrire un audio</span></button>
+        <button id="btnSocial" class="rbtn">📱<span data-i18n="social_import">Réseaux sociaux (export)</span></button>
         <div class="rlabel" data-i18n="grp_import">Importation</div>
       </div>
       <div class="rgroup">
@@ -393,6 +394,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
       <input type="file" id="projInput" accept=".projx,.json" hidden>
       <input type="file" id="audioInput" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp" hidden>
       <input type="file" id="transInput" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp" hidden>
+      <input type="file" id="socialInput" accept=".txt,.csv,.json" hidden>
     </div>
 
     <!-- Codes -->
@@ -587,6 +589,18 @@ const translations = {
     new_project: "Nouveau projet", open_project: "Ouvrir (.projx)", save_project: "Enregistrer (.projx)",
     sample_project: "Projet exemple", grp_project: "Projet",
     search: "Rechercher", grp_search: "Recherche", search_ph: "Recherche plein texte (ET, OU, \"phrase\")…",
+    social_import: "Réseaux sociaux (export)",
+    social_unknown: "Format non reconnu. Formats acceptés : export de discussion WhatsApp (.txt), CSV ou JSON avec une colonne de texte.",
+    social_done: "{n} messages importés en un document",
+    wa_title: "Import d'une discussion WhatsApp",
+    wa_stats: "{n} messages · {a} participants · du {d1} au {d2}",
+    wa_system_skipped: "messages système ignorés",
+    wa_merge: "Fusionner les messages consécutifs d'un même participant (recommandé pour le codage)",
+    wa_ethics: "⚠️ Éthique : n'importez une discussion qu'avec le consentement de ses participants, et anonymisez les noms si nécessaire (Variables → renommez les locuteurs dans le texte avant le codage).",
+    posts_title: "Import de publications (CSV / JSON)",
+    posts_hint: "{n} lignes détectées. Choisissez les colonnes : chaque publication deviendra un paragraphe « Auteur (date) : texte » à coder.",
+    posts_col_text: "Colonne du texte", posts_col_author: "Colonne de l'auteur", posts_col_date: "Colonne de la date",
+    posts_source: "Plateforme (variable « source »)",
     transcribe: "Transcrire un audio", transcribe_title: "Transcription assistée (audio local, rien n'est envoyé sur internet)",
     transcribe_hint: "Raccourcis : Ctrl+Espace = lecture/pause · Ctrl+B = reculer de 5 s · Ctrl+T = insérer l'horodatage au curseur. Réduisez la vitesse (0,5×) pour taper en écoutant.",
     transcribe_done: "Transcription ajoutée aux documents (audio associé 🎧)",
@@ -709,6 +723,18 @@ const translations = {
     new_project: "New project", open_project: "Open (.projx)", save_project: "Save (.projx)",
     sample_project: "Sample project", grp_project: "Project",
     search: "Search", grp_search: "Search", search_ph: "Full-text search (AND, OR, \"phrase\")…",
+    social_import: "Social media (export)",
+    social_unknown: "Unrecognized format. Accepted: WhatsApp chat export (.txt), CSV or JSON with a text column.",
+    social_done: "{n} messages imported as one document",
+    wa_title: "WhatsApp chat import",
+    wa_stats: "{n} messages · {a} participants · from {d1} to {d2}",
+    wa_system_skipped: "system messages skipped",
+    wa_merge: "Merge consecutive messages from the same participant (recommended for coding)",
+    wa_ethics: "⚠️ Ethics: only import a chat with its participants' consent, and anonymize names if needed before coding.",
+    posts_title: "Posts import (CSV / JSON)",
+    posts_hint: "{n} rows detected. Pick the columns: each post becomes an “Author (date): text” paragraph to code.",
+    posts_col_text: "Text column", posts_col_author: "Author column", posts_col_date: "Date column",
+    posts_source: "Platform (“source” variable)",
     transcribe: "Transcribe audio", transcribe_title: "Assisted transcription (local audio, nothing sent online)",
     transcribe_hint: "Shortcuts: Ctrl+Space = play/pause · Ctrl+B = back 5 s · Ctrl+T = insert timestamp at cursor. Slow the speed (0.5×) to type while listening.",
     transcribe_done: "Transcription added to documents (audio attached 🎧)",
@@ -3041,6 +3067,179 @@ function buildPlayerBar(audio, { onCopyTs } = {}) {
 return { parseTs, fmtTs, wrapTimestamps, buildPlayerBar, TS_RE };
 })();
 
+__QC["social"] = (function () {
+"use strict";
+// js/social.js — Import de données de réseaux sociaux SANS API :
+// on lit les fichiers d'export que l'utilisateur possède déjà.
+//  • WhatsApp : « Exporter la discussion » → .txt (Android et iOS)
+//  • X/Twitter, YouTube, Facebook… : exports CSV ou JSON d'outils de collecte
+// Aucune connexion aux plateformes : conforme à leurs conditions d'utilisation.
+
+/* ---------- Détection du format ---------- */
+function detectSocialFormat(filename, text) {
+  const head = text.slice(0, 4000);
+  // Les regex WhatsApp sont ancrées ligne par ligne
+  const headLines = head.split("\n").slice(0, 30);
+  if (headLines.some(l => WA_ANDROID_RE.test(l) || WA_IOS_RE.test(l))) return "whatsapp";
+  const name = filename.toLowerCase();
+  if (name.endsWith(".json")) return "json";
+  if (name.endsWith(".csv")) return "csv";
+  const t = head.trimStart();
+  if (t.startsWith("[") || t.startsWith("{")) return "json";
+  if (head.includes(",") || head.includes(";")) return "csv";
+  return null;
+}
+
+/* ---------- WhatsApp ---------- */
+// Android : « 12/03/2026, 14:23 - Jean: message » (variantes : « à 14:23 », h avec point)
+const WA_ANDROID_RE = /^(\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}),?\s*(?:à\s*)?(\d{1,2}[:.]\d{2})\s*-\s([^:]+?):\s([\s\S]*)$/;
+// iOS : « [12/03/2026, 14:23:45] Jean: message » (avec parfois ~ devant le nom)
+const WA_IOS_RE = /^\[(\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}),?\s*(\d{1,2}[:.]\d{2})(?::\d{2})?\]\s~?\s?([^:]+?):\s([\s\S]*)$/;
+// Lignes système (chiffrement, création du groupe…) : datées mais sans « Auteur : »
+const WA_SYSTEM_ANDROID = /^(\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}),?\s*(?:à\s*)?(\d{1,2}[:.]\d{2})\s*-\s(.*)$/;
+const WA_SYSTEM_IOS = /^\[(\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}),?\s*(\d{1,2}[:.]\d{2})(?::\d{2})?\]\s(.*)$/;
+
+function parseWhatsApp(text) {
+  const lines = text.replace(/\r\n/g, "\n").replace(/‎/g, "").split("\n");
+  const messages = [];
+  let system = 0, current = null;
+  for (const line of lines) {
+    const m = WA_ANDROID_RE.exec(line) || WA_IOS_RE.exec(line);
+    if (m) {
+      if (current) messages.push(current);
+      current = { date: m[1], time: m[2], author: m[3].trim(), text: m[4] };
+      continue;
+    }
+    if (WA_SYSTEM_ANDROID.test(line) || WA_SYSTEM_IOS.test(line)) {
+      if (current) { messages.push(current); current = null; }
+      system++;
+      continue;
+    }
+    // Suite d'un message multi-lignes
+    if (current) current.text += "\n" + line;
+  }
+  if (current) messages.push(current);
+  return { messages, system };
+}
+
+// Transforme les messages en texte de document : locuteurs « Nom : » (mis en
+// évidence par QualiCode) + séparateurs de journée.
+function buildChatDocument(messages, { mergeConsecutive = true } = {}) {
+  const out = [];
+  let lastDate = null, lastAuthor = null;
+  for (const msg of messages) {
+    const body = msg.text.trim();
+    if (!body || body === "<Médias omis>" || body === "<Media omitted>" || /^<.*>$/.test(body)) continue;
+    if (msg.date !== lastDate) {
+      out.push(`— ${msg.date} —`);
+      lastDate = msg.date;
+      lastAuthor = null;
+    }
+    if (mergeConsecutive && msg.author === lastAuthor && out.length) {
+      out[out.length - 1] += "\n" + body;
+    } else {
+      out.push(`${msg.author} : ${body}`);
+      lastAuthor = msg.author;
+    }
+  }
+  return out.join("\n\n");
+}
+
+function chatStats(messages) {
+  const authors = new Map();
+  for (const m of messages) authors.set(m.author, (authors.get(m.author) || 0) + 1);
+  return {
+    count: messages.length,
+    authors: [...authors.entries()].sort((a, b) => b[1] - a[1]),
+    firstDate: messages[0]?.date ?? "",
+    lastDate: messages[messages.length - 1]?.date ?? "",
+  };
+}
+
+/* ---------- CSV / JSON génériques (X/Twitter, YouTube, Facebook…) ---------- */
+// Analyseur CSV autonome (guillemets, séparateur , ou ;)
+function parseCsvRows(text) {
+  const sep = (text.split("\n")[0].match(/;/g) || []).length > (text.split("\n")[0].match(/,/g) || []).length ? ";" : ",";
+  const rows = [];
+  let row = [], field = "", inQ = false;
+  const src = text.replace(/\r\n/g, "\n");
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (inQ) {
+      if (c === '"') { if (src[i + 1] === '"') { field += '"'; i++; } else inQ = false; }
+      else field += c;
+    } else if (c === '"') inQ = true;
+    else if (c === sep) { row.push(field); field = ""; }
+    else if (c === "\n") { row.push(field); field = ""; if (row.some(f => f.trim() !== "")) rows.push(row); row = []; }
+    else field += c;
+  }
+  row.push(field);
+  if (row.some(f => f.trim() !== "")) rows.push(row);
+  return rows;
+}
+
+// JSON : accepte un tableau d'objets, ou un objet contenant un tableau
+// (clés courantes : data, items, results, posts, comments, messages).
+function parseJsonRecords(text) {
+  const data = JSON.parse(text);
+  let arr = Array.isArray(data) ? data
+    : data.data || data.items || data.results || data.posts || data.comments || data.messages;
+  if (!Array.isArray(arr)) throw new Error("no-array");
+  arr = arr.filter(x => x && typeof x === "object");
+  // Aplatis un niveau (ex. {node:{...}} ou {snippet:{...}})
+  arr = arr.map(x => {
+    const keys = Object.keys(x);
+    if (keys.length === 1 && typeof x[keys[0]] === "object") return x[keys[0]];
+    return x;
+  });
+  const headers = [...new Set(arr.flatMap(o => Object.keys(o).filter(k => typeof o[k] !== "object")))];
+  const rows = arr.map(o => headers.map(h => o[h] == null ? "" : String(o[h])));
+  return [headers, ...rows];
+}
+
+// Devine les colonnes auteur / texte / date d'après les en-têtes
+const AUTHOR_HINTS = ["author", "auteur", "user", "username", "screen_name", "name", "nom", "from", "channel", "commenter"];
+const TEXT_HINTS = ["text", "texte", "message", "content", "contenu", "comment", "commentaire", "body", "tweet", "post", "description", "title"];
+const DATE_HINTS = ["date", "created", "time", "timestamp", "published", "publie"];
+
+function guessCol(headers, hints) {
+  const low = headers.map(h => String(h).toLowerCase());
+  for (const hint of hints) {
+    const i = low.findIndex(h => h === hint);
+    if (i !== -1) return i;
+  }
+  for (const hint of hints) {
+    const i = low.findIndex(h => h.includes(hint));
+    if (i !== -1) return i;
+  }
+  return -1;
+}
+
+function guessMapping(headers) {
+  return {
+    author: guessCol(headers, AUTHOR_HINTS),
+    text: guessCol(headers, TEXT_HINTS),
+    date: guessCol(headers, DATE_HINTS),
+  };
+}
+
+// Construit le texte du document : « Auteur (date) : contenu », un post par paragraphe
+function buildPostsDocument(rows, { author, text, date }) {
+  const out = [];
+  for (const r of rows) {
+    const body = (text >= 0 ? r[text] : "").trim();
+    if (!body) continue;
+    const a = author >= 0 ? (r[author] || "").trim() : "";
+    const d = date >= 0 ? (r[date] || "").trim() : "";
+    const prefix = a ? `${a}${d ? ` (${d})` : ""} : ` : (d ? `(${d}) ` : "");
+    out.push(prefix + body);
+  }
+  return { text: out.join("\n\n"), count: out.length };
+}
+
+return { detectSocialFormat, parseWhatsApp, buildChatDocument, chatStats, parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument };
+})();
+
 __QC["app"] = (function () {
 "use strict";
 // QualiCode — application d'analyse qualitative de données (MVP du cahier des charges)
@@ -3067,6 +3266,10 @@ const { extractPdfText } = __QC["pdf"];
 const { buildRefiQdpx } = __QC["refi"];
 const { openConceptMapEditor } = __QC["conceptmap"];
 const { buildPlayerBar, wrapTimestamps, fmtTs } = __QC["audio"];
+const {
+  detectSocialFormat, parseWhatsApp, buildChatDocument, chatStats,
+  parseCsvRows, parseJsonRecords, guessMapping, buildPostsDocument,
+} = __QC["social"];
 const { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } = __QC["crypto"];
 const { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } = __QC["merge"];
 
@@ -3334,6 +3537,12 @@ function bindRibbon() {
     const file = e.target.files[0];
     e.target.value = "";
     if (file) openTranscribe(file);
+  });
+  $("#btnSocial").onclick = () => $("#socialInput").click();
+  $("#socialInput").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (file) openSocialImport(file, await file.text());
   });
   $("#btnStructuredText").onclick = openStructuredImport;
   $("#btnNewGroup").onclick = () => promptModal(t("new_group"), t("new_group_name"), "", name => {
@@ -4162,6 +4371,131 @@ function openTranscribe(file) {
     else if (k === "t") { e.preventDefault(); insertTs(fmtTs(audio.currentTime)); }
   });
   ta.focus();
+}
+
+/* ---------- Import réseaux sociaux (exports WhatsApp / CSV / JSON) ---------- */
+function setDocSource(doc, source) {
+  if (!state.project.variables.includes("source")) state.project.variables.push("source");
+  doc.variables = doc.variables || {};
+  doc.variables.source = source;
+}
+
+function groupSelectHtml(id) {
+  const groups = state.project.documentGroups;
+  return groups.length
+    ? `<div class="form-row"><label>${esc(t("group"))}</label>
+        <select id="${id}"><option value="">—</option>${groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("")}</select></div>`
+    : `<select id="${id}" hidden><option value=""></option></select>`;
+}
+
+function openSocialImport(file, text) {
+  const format = detectSocialFormat(file.name, text);
+  if (format === "whatsapp") return openWhatsAppImport(file, text);
+  if (format === "csv" || format === "json") return openPostsImport(file, text, format);
+  toast(t("social_unknown"));
+}
+
+// WhatsApp : aperçu + options, puis création du document
+function openWhatsAppImport(file, text) {
+  const { messages, system } = parseWhatsApp(text);
+  if (!messages.length) return toast(t("social_unknown"));
+  const stats = chatStats(messages);
+  const authorsHtml = stats.authors.slice(0, 8)
+    .map(([a, n]) => `<span class="badge" style="background:var(--bg-hover)">${esc(a)} · ${n}</span>`).join(" ");
+  const m = openModal({
+    title: "📱 " + t("wa_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("wa_stats"))
+        .replace("{n}", stats.count).replace("{a}", stats.authors.length)
+        .replace("{d1}", stats.firstDate).replace("{d2}", stats.lastDate)}
+        ${system ? " · " + system + " " + esc(t("wa_system_skipped")) : ""}</p>
+      <div style="margin-bottom:10px">${authorsHtml}</div>
+      <div class="form-row"><label>${esc(t("doc_title"))}</label>
+        <input type="text" id="waName" value="${esc(file.name.replace(/\.[^.]+$/, ""))}"></div>
+      ${groupSelectHtml("waGroup")}
+      <label class="rcheck" style="display:block;margin:10px 0"><input type="checkbox" id="waMerge" checked>
+        ${esc(t("wa_merge"))}</label>
+      <p style="font-size:12px;color:var(--text-soft)">${esc(t("wa_ethics"))}</p>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, c) => c() },
+      {
+        label: t("add_doc"), primary: true, onClick: (o, close) => {
+          const docText = buildChatDocument(messages, { mergeConsecutive: o.querySelector("#waMerge").checked });
+          const doc = addDocument(o.querySelector("#waName").value.trim() || file.name, docText,
+            o.querySelector("#waGroup").value || null);
+          setDocSource(doc, "WhatsApp");
+          state.ui.currentDocId = doc.id;
+          scheduleSave();
+          close(); renderAll();
+          toast(t("social_done").replace("{n}", stats.count));
+        }
+      },
+    ],
+  });
+}
+
+// CSV / JSON : mappage des colonnes auteur / texte / date, aperçu, création
+function openPostsImport(file, text, format) {
+  let table;
+  try {
+    table = format === "json" ? parseJsonRecords(text) : parseCsvRows(text);
+  } catch { return toast(t("social_unknown")); }
+  if (!table || table.length < 2) return toast(t("social_unknown"));
+  const headers = table[0], rows = table.slice(1);
+  const guess = guessMapping(headers);
+
+  const colSelect = (id, selIdx, allowNone) =>
+    `<select id="${id}">${allowNone ? `<option value="-1">—</option>` : ""}${headers.map((h, i) =>
+      `<option value="${i}" ${i === selIdx ? "selected" : ""}>${esc(h)}</option>`).join("")}</select>`;
+
+  const m = openModal({
+    title: "📱 " + t("posts_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("posts_hint")).replace("{n}", rows.length)}</p>
+      <div class="form-row"><label>${esc(t("posts_col_text"))} *</label>${colSelect("spText", guess.text === -1 ? 0 : guess.text, false)}</div>
+      <div class="form-row"><label>${esc(t("posts_col_author"))}</label>${colSelect("spAuthor", guess.author, true)}</div>
+      <div class="form-row"><label>${esc(t("posts_col_date"))}</label>${colSelect("spDate", guess.date, true)}</div>
+      <div class="form-row"><label>${esc(t("doc_title"))}</label>
+        <input type="text" id="spName" value="${esc(file.name.replace(/\.[^.]+$/, ""))}"></div>
+      ${groupSelectHtml("spGroup")}
+      <div class="form-row"><label>${esc(t("posts_source"))}</label>
+        <input type="text" id="spSource" value="${format === "json" ? "JSON" : "CSV"}" placeholder="X/Twitter, YouTube…"></div>
+      <div id="spPreview" style="max-height:180px;overflow:auto;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px"></div>`,
+    footer: [
+      { label: t("cancel"), onClick: (o, c) => c() },
+      {
+        label: t("add_doc"), primary: true, onClick: (o, close) => {
+          const map = {
+            text: Number(o.querySelector("#spText").value),
+            author: Number(o.querySelector("#spAuthor").value),
+            date: Number(o.querySelector("#spDate").value),
+          };
+          const { text: docText, count } = buildPostsDocument(rows, map);
+          if (!count) return toast(t("social_unknown"));
+          const doc = addDocument(o.querySelector("#spName").value.trim() || file.name, docText,
+            o.querySelector("#spGroup").value || null);
+          setDocSource(doc, o.querySelector("#spSource").value.trim() || "Réseaux sociaux");
+          state.ui.currentDocId = doc.id;
+          scheduleSave();
+          close(); renderAll();
+          toast(t("social_done").replace("{n}", count));
+        }
+      },
+    ],
+  });
+
+  const refreshPreview = () => {
+    const map = {
+      text: Number(m.body.querySelector("#spText").value),
+      author: Number(m.body.querySelector("#spAuthor").value),
+      date: Number(m.body.querySelector("#spDate").value),
+    };
+    const { text: previewText } = buildPostsDocument(rows.slice(0, 5), map);
+    m.body.querySelector("#spPreview").textContent = previewText || "—";
+  };
+  ["spText", "spAuthor", "spDate"].forEach(id =>
+    m.body.querySelector("#" + id).addEventListener("change", refreshPreview));
+  refreshPreview();
 }
 
 // Analyseur CSV minimal avec guillemets (séparateur , ou ;)
