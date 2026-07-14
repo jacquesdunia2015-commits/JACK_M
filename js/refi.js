@@ -3,6 +3,7 @@
 // Structure : project.qde (XML, schéma urn:QDA-XML:project:1.0) + Sources/*.txt
 
 import { buildZip } from "./docxout.js";
+import { uid } from "./state.js";
 
 const xmlEsc = s => String(s ?? "")
   .replace(/&/g, "&amp;").replace(/</g, "&lt;")
@@ -103,4 +104,179 @@ export function buildRefiQdpx(project) {
   const entries = [{ name: "project.qde", text: qde }];
   for (const sf of sourceFiles) entries.push({ name: sf.name, text: sf.text });
   return buildZip(entries);
+}
+
+/* ================================================================
+   Import REFI-QDA (.qdpx) — lecture des projets MAXQDA / NVivo /
+   ATLAS.ti / QualiCode au format d'échange standard.
+================================================================ */
+
+// Lecteur ZIP minimal : répertoire central + décompression deflate-raw
+async function readZipEntries(ab) {
+  const bytes = new Uint8Array(ab);
+  const view = new DataView(ab);
+  // EOCD (fin de répertoire central)
+  let eocd = -1;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65558); i--) {
+    if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("qdpx-invalide");
+  const count = view.getUint16(eocd + 10, true);
+  let off = view.getUint32(eocd + 16, true);
+  const entries = new Map();
+  const dec = new TextDecoder();
+  for (let n = 0; n < count; n++) {
+    if (view.getUint32(off, true) !== 0x02014b50) break;
+    const method = view.getUint16(off + 10, true);
+    const csize = view.getUint32(off + 20, true);
+    const nameLen = view.getUint16(off + 28, true);
+    const extraLen = view.getUint16(off + 30, true);
+    const cmtLen = view.getUint16(off + 32, true);
+    const lho = view.getUint32(off + 42, true);
+    const name = dec.decode(bytes.subarray(off + 46, off + 46 + nameLen));
+    // En-tête local : recalcule le début réel des données
+    const lNameLen = view.getUint16(lho + 26, true);
+    const lExtraLen = view.getUint16(lho + 28, true);
+    const dataStart = lho + 30 + lNameLen + lExtraLen;
+    const data = bytes.slice(dataStart, dataStart + csize);
+    let content;
+    if (method === 0) content = data;
+    else if (method === 8) {
+      const ds = new DecompressionStream("deflate-raw");
+      const w = ds.writable.getWriter();
+      w.write(data).catch(() => {});
+      w.close().catch(() => {});
+      const chunks = [];
+      const r = ds.readable.getReader();
+      for (;;) { const { done, value } = await r.read(); if (done) break; chunks.push(value); }
+      const len = chunks.reduce((s, c) => s + c.length, 0);
+      content = new Uint8Array(len);
+      let o = 0;
+      for (const c of chunks) { content.set(c, o); o += c.length; }
+    } else { off += 46 + nameLen + extraLen + cmtLen; continue; }
+    entries.set(name, content);
+    off += 46 + nameLen + extraLen + cmtLen;
+  }
+  return entries;
+}
+
+const CODE_IMPORT_COLORS = ["#e15759", "#f28e2b", "#edc948", "#59a14f", "#4e79a7", "#b07aa1", "#76b7b2", "#ff9da7"];
+
+// Construit un projet QualiCode depuis un .qdpx. Retourne {project, stats}.
+export async function importRefiQdpx(ab) {
+  const entries = await readZipEntries(ab);
+  const qdeName = [...entries.keys()].find(n => n.toLowerCase().endsWith(".qde"));
+  if (!qdeName) throw new Error("qdpx-invalide");
+  const xml = new DOMParser().parseFromString(new TextDecoder().decode(entries.get(qdeName)), "text/xml");
+  if (xml.querySelector("parsererror")) throw new Error("qdpx-invalide");
+  const all = tag => [...xml.getElementsByTagNameNS("*", tag)];
+  const projEl = all("Project")[0];
+  if (!projEl) throw new Error("qdpx-invalide");
+
+  const now = new Date().toISOString();
+  const project = {
+    format: "qualicode-projx", version: 1, id: uid(),
+    name: projEl.getAttribute("name") || "Projet importé",
+    created: now, modified: now, memo: "",
+    documentGroups: [], documents: [], codes: [], segments: [],
+    memos: [], variables: [], trash: { documents: [], codes: [] },
+    savedQueries: [], conceptMaps: [], bibliography: [],
+  };
+
+  // Codes (hiérarchie imbriquée)
+  const codeIdByGuid = new Map();
+  let colorIdx = 0;
+  const walkCodes = (el, parentId) => {
+    for (const child of el.children) {
+      if (child.localName !== "Code") continue;
+      const id = uid();
+      codeIdByGuid.set(child.getAttribute("guid"), id);
+      project.codes.push({
+        id, parentId,
+        name: child.getAttribute("name") || "Code",
+        color: child.getAttribute("color") || CODE_IMPORT_COLORS[(colorIdx++) % CODE_IMPORT_COLORS.length],
+        created: now,
+      });
+      walkCodes(child, id);
+    }
+  };
+  for (const cb of all("Codes")) walkCodes(cb, null);
+
+  // Variables déclarées
+  const varNameByGuid = new Map();
+  for (const v of all("Variable")) {
+    const name = v.getAttribute("name");
+    if (!name) continue;
+    varNameByGuid.set(v.getAttribute("guid"), name);
+    if (!project.variables.includes(name)) project.variables.push(name);
+  }
+
+  // Sources texte
+  const docIdByGuid = new Map();
+  const dec = new TextDecoder();
+  for (const src of all("TextSource")) {
+    const id = uid();
+    docIdByGuid.set(src.getAttribute("guid"), id);
+    let text = "";
+    const path = src.getAttribute("plainTextPath") || "";
+    const inner = [...src.children].find(c => c.localName === "PlainTextContent");
+    if (path.startsWith("internal://")) {
+      const p = path.slice("internal://".length);
+      const bytes = entries.get(p) || entries.get(decodeURIComponent(p));
+      if (bytes) text = dec.decode(bytes);
+    }
+    if (!text && inner) text = inner.textContent || "";
+    project.documents.push({
+      id, name: src.getAttribute("name") || "Document", groupId: null,
+      text: text.replace(/\r\n/g, "\n"), variables: {}, created: now,
+    });
+    // Codages : PlainTextSelection > Coding > CodeRef (ou Coding direct)
+    for (const sel of [...src.getElementsByTagNameNS("*", "PlainTextSelection")]) {
+      const start = Number(sel.getAttribute("startPosition") ?? 0);
+      const end = Number(sel.getAttribute("endPosition") ?? 0);
+      for (const ref of [...sel.getElementsByTagNameNS("*", "CodeRef")]) {
+        const codeId = codeIdByGuid.get(ref.getAttribute("targetGUID"));
+        if (!codeId || !(end > start)) continue;
+        project.segments.push({
+          id: uid(), docId: id, codeId, start, end,
+          text: text.slice(start, end), weight: 1, comment: "", created: now,
+        });
+      }
+    }
+  }
+
+  // Cas : valeurs de variables rattachées aux sources
+  for (const cas of all("Case")) {
+    const refs = [...cas.getElementsByTagNameNS("*", "SourceRef")]
+      .map(r => docIdByGuid.get(r.getAttribute("targetGUID"))).filter(Boolean);
+    if (!refs.length) continue;
+    for (const vv of [...cas.getElementsByTagNameNS("*", "VariableValue")]) {
+      const vref = vv.getElementsByTagNameNS("*", "VariableRef")[0];
+      const name = vref && varNameByGuid.get(vref.getAttribute("targetGUID"));
+      if (!name) continue;
+      const valEl = [...vv.children].find(c => /Value$/.test(c.localName) && c.localName !== "VariableRef");
+      const val = valEl ? valEl.textContent.trim() : "";
+      if (!val) continue;
+      for (const docId of refs) {
+        const doc = project.documents.find(d => d.id === docId);
+        if (doc) doc.variables[name] = val;
+      }
+    }
+  }
+
+  // Notes → mémos (la première note « projet » devient le mémo du projet)
+  for (const note of all("Note")) {
+    const content = [...note.getElementsByTagNameNS("*", "PlainTextContent")].map(x => x.textContent).join("") || "";
+    if (!content.trim()) continue;
+    if (!project.memo) project.memo = content;
+    else project.memos.push({
+      id: uid(), targetType: "project", targetId: null,
+      title: note.getAttribute("name") || "Mémo importé", text: content, created: now,
+    });
+  }
+
+  return {
+    project,
+    stats: { documents: project.documents.length, codes: project.codes.length, segments: project.segments.length },
+  };
 }

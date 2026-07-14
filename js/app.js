@@ -19,7 +19,8 @@ import { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, ex
 import { buildSampleProject } from "./sample.js";
 import { extractDocxText } from "./docx.js";
 import { extractPdfText } from "./pdf.js";
-import { buildRefiQdpx } from "./refi.js";
+import { buildRefiQdpx, importRefiQdpx } from "./refi.js";
+import { detectBiblioFormat, parseRis, parseBibtex, formatApa } from "./biblio.js";
 import { openConceptMapEditor } from "./conceptmap.js";
 import { buildPlayerBar, wrapTimestamps, fmtTs, createMediaElement } from "./audio.js";
 import { fileToDataUrl, isImageFile, buildImageView } from "./imagecode.js";
@@ -46,6 +47,7 @@ let searchResults = [];
 let searchQuery = "";
 let pendingSelection = null;       // {start, end} sélection en attente de codage
 let pendingImageRect = null;       // {x,y,w,h} zone d'image en attente de codage
+let docFilterQuery = "";           // filtre de l'arbre des documents (gros corpus)
 let projectPassword = null;        // mot de passe du projet, gardé en mémoire de session uniquement
 
 // Média (audio OU vidéo) par document : blobs en mémoire de session uniquement
@@ -72,13 +74,13 @@ function attachAudioToDoc(doc, file) {
 /* ================================================================
    Initialisation
 ================================================================ */
-function init() {
+async function init() {
   loadPrefs();
   setLang(state.ui.lang);
   document.body.classList.toggle("dark", state.ui.theme === "dark");
   $("#langLabel").textContent = getLang().toUpperCase();
 
-  if (!loadPersisted()) {
+  if (!(await loadPersisted())) {
     state.project = buildSampleProject();
     persistNow();
   }
@@ -228,6 +230,19 @@ function bindRibbon() {
     const file = e.target.files[0];
     e.target.value = "";
     if (!file) return;
+    // Import REFI-QDA : projet venant de MAXQDA / NVivo / ATLAS.ti (ou QualiCode)
+    if (/\.qdpx$/i.test(file.name)) {
+      try {
+        const { project, stats } = await importRefiQdpx(await file.arrayBuffer());
+        switchToProject(normalizeProject(project));
+        toast(t("refi_imported")
+          .replace("{d}", stats.documents).replace("{c}", stats.codes).replace("{s}", stats.segments));
+      } catch (err) {
+        console.error(err);
+        toast(t("refi_import_fail"));
+      }
+      return;
+    }
     const p = await readProjectFile(file);
     if (!p) return;
     state.project = p;
@@ -317,6 +332,24 @@ function bindRibbon() {
     if (file) openTranscribe(file);
   });
   $("#btnSocial").onclick = () => $("#socialInput").click();
+  $("#btnBiblio").onclick = openBiblio;
+  $("#biblioInput").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    const text = await file.text();
+    const fmt = detectBiblioFormat(file.name, text);
+    if (!fmt) return toast(t("bib_unknown"));
+    const refs = fmt === "ris" ? parseRis(text) : parseBibtex(text);
+    if (!refs.length) return toast(t("bib_unknown"));
+    pushUndoSnapshot();
+    for (const r of refs) state.project.bibliography.push({ id: uid(), ...r });
+    scheduleSave();
+    updateUndoButtons();
+    toast(t("bib_imported").replace("{n}", refs.length));
+    // Rafraîchit la liste si le modal Bibliographie est déjà ouvert
+    if (biblioRerender) biblioRerender();
+  });
   $("#socialInput").addEventListener("change", async e => {
     const file = e.target.files[0];
     e.target.value = "";
@@ -436,6 +469,7 @@ function bindPanels() {
     renderCodeTree(); renderPanel4();
   };
   $("#retrievalMode").addEventListener("change", e => { state.ui.retrievalMode = e.target.value; renderPanel4(); });
+  $("#docFilter").addEventListener("input", e => { docFilterQuery = e.target.value; renderDocTree(); });
   $("#btnDocMemo").onclick = () => {
     const doc = getDoc(state.ui.currentDocId);
     if (doc) openMemoEditor("document", doc.id, doc.name);
@@ -541,14 +575,29 @@ function renderDocTree() {
     return row;
   };
 
+  // Gros corpus : filtre par nom + plafond d'affichage (le DOM reste léger
+  // même avec des milliers de documents ; le filtre donne accès à tout)
+  const MAX_ROWS = 300;
+  const filter = docFilterQuery.trim().toLowerCase();
+  const matches = d => !filter || d.name.toLowerCase().includes(filter);
+  let shown = 0, hidden = 0;
+  const addRow = (container, d) => {
+    if (!matches(d)) return;
+    if (shown >= MAX_ROWS) { hidden++; return; }
+    container.appendChild(docRow(d));
+    shown++;
+  };
+
   for (const g of state.project.documentGroups) {
+    const groupDocs = state.project.documents.filter(d => d.groupId === g.id);
+    if (filter && !groupDocs.some(matches)) continue; // groupe sans résultat masqué
     const gr = document.createElement("div");
     gr.className = "tree-item group-row";
-    const open = expandedGroups.has(g.id);
+    const open = filter ? true : expandedGroups.has(g.id); // filtre actif : tout déplié
     gr.innerHTML = `<span class="caret">${open ? "▼" : "►"}</span><span class="label">📁 ${esc(g.name)}</span>
-      <span class="count">${state.project.documents.filter(d => d.groupId === g.id).length}</span>
+      <span class="count">${groupDocs.length}</span>
       <span class="row-actions"><button data-act="ren" title="${esc(t("rename"))}">✏️</button></span>`;
-    gr.onclick = () => { open ? expandedGroups.delete(g.id) : expandedGroups.add(g.id); renderDocTree(); };
+    gr.onclick = () => { expandedGroups.has(g.id) ? expandedGroups.delete(g.id) : expandedGroups.add(g.id); renderDocTree(); };
     gr.querySelector("[data-act=ren]").onclick = e => {
       e.stopPropagation();
       promptModal(t("rename"), t("new_group_name"), g.name, name => { pushUndoSnapshot(); g.name = name; scheduleSave(); renderDocTree(); updateUndoButtons(); });
@@ -563,11 +612,18 @@ function renderDocTree() {
     if (open) {
       const kids = document.createElement("div");
       kids.className = "tree-children";
-      state.project.documents.filter(d => d.groupId === g.id).forEach(d => kids.appendChild(docRow(d)));
+      groupDocs.forEach(d => addRow(kids, d));
       root.appendChild(kids);
     }
   }
-  ungrouped.forEach(d => root.appendChild(docRow(d)));
+  ungrouped.forEach(d => addRow(root, d));
+
+  if (hidden > 0) {
+    const more = document.createElement("div");
+    more.className = "empty-hint";
+    more.textContent = t("docs_hidden").replace("{n}", hidden);
+    root.appendChild(more);
+  }
 
   // Déposer hors groupe = retirer du groupe
   root.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("text/qualicode-doc")) e.preventDefault(); });
@@ -1358,6 +1414,54 @@ async function openOcrModal(file) {
   }
 }
 
+/* ---------- Bibliographie : références RIS / BibTeX ---------- */
+function openBiblio() {
+  const render = body => {
+    const refs = state.project.bibliography;
+    const listHtml = refs.length
+      ? refs.map(r => `
+        <div class="seg-card" data-id="${esc(r.id)}">
+          <div class="seg-card-head">
+            <span class="badge" style="background:var(--bg-hover)">${esc(r.type)}</span>
+            <strong style="flex:1">${esc(r.title)}</strong>
+            <span style="color:var(--text-soft);font-size:11.5px">${esc(r.year)}</span>
+            <button class="mini-btn" data-act="delref" title="${esc(t("delete"))}">🗑️</button>
+          </div>
+          <div class="seg-card-body" style="font-size:12.5px">${esc(formatApa(r))}</div>
+        </div>`).join("")
+      : `<div class="empty-hint">${esc(t("bib_empty"))}</div>`;
+    body.innerHTML = `
+      <p class="trans-hint">${esc(t("bib_hint"))}</p>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="btn primary" id="bibImport">📥 ${esc(t("bib_import"))}</button>
+        ${refs.length ? `<button class="btn" id="bibExport">📄 ${esc(t("bib_export"))}</button>` : ""}
+        <span style="align-self:center;color:var(--text-soft);font-size:12.5px">${refs.length} ${esc(t("bib_refs_lbl"))}</span>
+      </div>
+      ${listHtml}`;
+    body.querySelector("#bibImport").onclick = () => $("#biblioInput").click();
+    body.querySelector("#bibExport")?.addEventListener("click", () => {
+      const sorted = [...refs].sort((a, b) => (a.authors[0] || "").localeCompare(b.authors[0] || ""));
+      const txt = sorted.map(formatApa).join("\n\n");
+      downloadBlob("bibliographie.txt", new Blob(["﻿" + txt], { type: "text/plain;charset=utf-8" }));
+      toast(t("export_done"));
+    });
+    body.querySelectorAll("[data-act=delref]").forEach(b => b.onclick = () => {
+      pushUndoSnapshot();
+      state.project.bibliography = state.project.bibliography.filter(x => x.id !== b.closest(".seg-card").dataset.id);
+      scheduleSave();
+      updateUndoButtons();
+      render(body);
+    });
+  };
+  const m = openModal({
+    title: "📚 " + t("bib_title"), wide: true, bodyHtml: "",
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  render(m.body);
+  biblioRerender = () => { if (document.body.contains(m.body)) render(m.body); };
+}
+let biblioRerender = null;
+
 /* ---------- Import réseaux sociaux (exports WhatsApp / CSV / JSON) ---------- */
 function setDocSource(doc, source) {
   if (!state.project.variables.includes("source")) state.project.variables.push("source");
@@ -2012,9 +2116,9 @@ function openMyProjects() {
           </div>
         </div>`;
       }).join("")}`;
-    body.querySelectorAll("[data-act=open]").forEach(btn => btn.onclick = () => {
+    body.querySelectorAll("[data-act=open]").forEach(btn => btn.onclick = async () => {
       const id = btn.closest(".seg-card").dataset.id;
-      const project = loadProjectById(id);
+      const project = await loadProjectById(id);
       if (project) {
         m.close();
         switchToProject(project);

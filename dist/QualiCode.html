@@ -335,6 +335,11 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
 .clip-btn.recording { background: #c0392b; color: #fff; animation: clip-pulse 1.2s infinite; }
 @keyframes clip-pulse { 50% { opacity: 0.6; } }
 
+/* Filtre de l'arbre des documents (gros corpus) */
+.panel-filter { width: 110px; padding: 2px 7px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg); color: var(--text); font-size: 11.5px; }
+.panel-filter:focus { outline: none; border-color: var(--accent); }
+
 </style>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
 </head>
@@ -404,6 +409,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
         <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
         <button id="btnTranscribe" class="rbtn">🎙️<span data-i18n="transcribe">Transcrire un audio/vidéo</span></button>
         <button id="btnSocial" class="rbtn">📱<span data-i18n="social_import">Réseaux sociaux (export)</span></button>
+        <button id="btnBiblio" class="rbtn">📚<span data-i18n="biblio">Bibliographie (RIS/BibTeX)</span></button>
         <div class="rlabel" data-i18n="grp_import">Importation</div>
       </div>
       <div class="rgroup">
@@ -412,10 +418,11 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
       </div>
       <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx,.pdf,.jpg,.jpeg,.png,.webp,.gif,.bmp" hidden>
       <input type="file" id="csvInput" accept=".csv" hidden>
-      <input type="file" id="projInput" accept=".projx,.json" hidden>
+      <input type="file" id="projInput" accept=".projx,.json,.qdpx" hidden>
       <input type="file" id="audioInput" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp,.mp4,.webm,.mkv,.mov" hidden>
       <input type="file" id="transInput" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp,.mp4,.webm,.mkv,.mov" hidden>
       <input type="file" id="socialInput" accept=".txt,.csv,.json" hidden>
+      <input type="file" id="biblioInput" accept=".ris,.bib,.txt" hidden>
     </div>
 
     <!-- Codes -->
@@ -521,6 +528,7 @@ body.dark .search-hit b { background: #7a6014; color: #ffe9a8; }
     <div class="panel-header">
       <span data-i18n="panel_docs">📄 Système de documents</span>
       <span class="panel-actions">
+        <input type="search" id="docFilter" class="panel-filter" data-i18n-ph="doc_filter_ph" placeholder="Filtrer…">
         <button id="btnActivateAllDocs" class="mini-btn" data-i18n-title="activate_all" title="Tout activer / désactiver">✅</button>
       </span>
     </div>
@@ -614,6 +622,15 @@ const translations = {
     new_project: "Nouveau projet", open_project: "Ouvrir (.projx)", save_project: "Enregistrer (.projx)",
     sample_project: "Projet exemple", grp_project: "Projet",
     search: "Rechercher", grp_search: "Recherche", search_ph: "Recherche plein texte (ET, OU, \"phrase\")…",
+    doc_filter_ph: "Filtrer…", docs_hidden: "{n} documents non affichés — précisez le filtre pour les voir.",
+    refi_imported: "Projet REFI-QDA importé : {d} documents, {c} codes, {s} segments",
+    refi_import_fail: "Impossible de lire ce fichier .qdpx (format inattendu ou archive endommagée).",
+    biblio: "Bibliographie (RIS/BibTeX)", bib_title: "Références bibliographiques",
+    bib_hint: "Importez vos références depuis Zotero, EndNote ou Mendeley (export .ris ou .bib). Elles sont enregistrées dans le projet et exportables en liste formatée (style APA) pour le chapitre Références du mémoire.",
+    bib_import: "Importer (.ris / .bib)", bib_export: "Exporter la liste (APA)",
+    bib_empty: "Aucune référence. Depuis Zotero : sélection → clic droit → Exporter au format RIS.",
+    bib_unknown: "Format non reconnu : fichier .ris (EndNote/Zotero) ou .bib (BibTeX) attendu.",
+    bib_imported: "{n} références importées", bib_refs_lbl: "référence(s)",
     img_zones_lbl: "zone(s) codée(s) — tracez un rectangle pour coder",
     img_hint: "🖱️ Tracez un rectangle sur l'image pour coder une zone · cliquez sur une zone pour la modifier",
     img_zone_lbl: "[Image : zone codée]",
@@ -793,6 +810,15 @@ const translations = {
     new_project: "New project", open_project: "Open (.projx)", save_project: "Save (.projx)",
     sample_project: "Sample project", grp_project: "Project",
     search: "Search", grp_search: "Search", search_ph: "Full-text search (AND, OR, \"phrase\")…",
+    doc_filter_ph: "Filter…", docs_hidden: "{n} documents not shown — refine the filter to see them.",
+    refi_imported: "REFI-QDA project imported: {d} documents, {c} codes, {s} segments",
+    refi_import_fail: "Unable to read this .qdpx file (unexpected format or damaged archive).",
+    biblio: "Bibliography (RIS/BibTeX)", bib_title: "Bibliographic references",
+    bib_hint: "Import your references from Zotero, EndNote or Mendeley (.ris or .bib export). They are stored in the project and exportable as a formatted (APA-style) list for the thesis References chapter.",
+    bib_import: "Import (.ris / .bib)", bib_export: "Export list (APA)",
+    bib_empty: "No references. From Zotero: selection → right click → Export in RIS format.",
+    bib_unknown: "Unrecognized format: .ris (EndNote/Zotero) or .bib (BibTeX) file expected.",
+    bib_imported: "{n} references imported", bib_refs_lbl: "reference(s)",
     img_zones_lbl: "coded zone(s) — draw a rectangle to code",
     img_hint: "🖱️ Draw a rectangle on the picture to code a zone · click a zone to edit it",
     img_zone_lbl: "[Image: coded zone]",
@@ -1019,6 +1045,7 @@ function emptyProject(name) {
     trash: { documents: [], codes: [] },
     savedQueries: [],   // {id, name, activatedDocs, activatedCodes, retrievalMode, created}
     conceptMaps: [],    // {id, name, nodes:[{id,label,x,y,color,width,height}], edges:[{id,from,to,label}]}
+    bibliography: [],   // {id, type, authors, year, title, container, doi, notes}
   };
 }
 
@@ -1037,7 +1064,11 @@ const state = {
   },
 };
 
-/* ---------- Persistance ---------- */
+/* ---------- Persistance : IndexedDB (gros corpus) + index localStorage ----------
+   Les projets vivent dans IndexedDB (clonage structuré : pas de JSON.stringify,
+   capacité en gigaoctets → des milliers de documents). Seuls l'index de la
+   bibliothèque et les préférences restent dans localStorage (petits).
+   Les anciens projets stockés en localStorage sont migrés au premier chargement. */
 let saveTimer = null;
 let onSavedCallback = null;
 function setOnSaved(cb) { onSavedCallback = cb; }
@@ -1052,7 +1083,43 @@ function readIndex() {
   try { return JSON.parse(localStorage.getItem(INDEX_KEY)) || []; } catch { return []; }
 }
 function writeIndex(index) {
-  localStorage.setItem(INDEX_KEY, JSON.stringify(index));
+  try { localStorage.setItem(INDEX_KEY, JSON.stringify(index)); } catch (e) { console.error(e); }
+}
+
+let dbPromise = null;
+function openDb() {
+  if (!dbPromise) {
+    dbPromise = new Promise((resolve, reject) => {
+      const rq = indexedDB.open("qualicode", 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore("projects");
+      rq.onsuccess = () => resolve(rq.result);
+      rq.onerror = () => reject(rq.error);
+    });
+  }
+  return dbPromise;
+}
+function idbPut(key, value) {
+  return openDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction("projects", "readwrite");
+    tx.objectStore("projects").put(value, key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  }));
+}
+function idbGet(key) {
+  return openDb().then(db => new Promise((resolve, reject) => {
+    const rq = db.transaction("projects").objectStore("projects").get(key);
+    rq.onsuccess = () => resolve(rq.result ?? null);
+    rq.onerror = () => reject(rq.error);
+  }));
+}
+function idbDelete(key) {
+  return openDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction("projects", "readwrite");
+    tx.objectStore("projects").delete(key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  }));
 }
 
 function persistNow() {
@@ -1060,7 +1127,6 @@ function persistNow() {
   if (!state.project.id) state.project.id = uid();
   const p = state.project;
   try {
-    localStorage.setItem(PROJECT_PREFIX + p.id, JSON.stringify(p));
     localStorage.setItem(CURRENT_KEY, p.id);
     const index = readIndex().filter(e => e.id !== p.id);
     index.unshift({
@@ -1068,39 +1134,45 @@ function persistNow() {
       documents: p.documents.length, codes: p.codes.length, segments: p.segments.length,
     });
     writeIndex(index);
+  } catch (e) { console.error(e); }
+  // Écriture asynchrone (clonage structuré : rapide même sur un gros corpus)
+  return idbPut(p.id, p).then(() => {
     state.ui.dirty = false;
     if (onSavedCallback) onSavedCallback();
-  } catch (e) {
-    console.error("Autosave failed", e);
-  }
+  }).catch(e => console.error("Autosave failed", e));
 }
 
-// Migration de l'ancienne clé unique vers la bibliothèque multi-projets
-function migrateLegacyProject() {
+// Migration : ancienne clé unique + anciens projets localStorage → IndexedDB
+async function migrateLegacyProjects() {
   try {
-    const raw = localStorage.getItem(LEGACY_KEY);
-    if (!raw) return;
-    const p = JSON.parse(raw);
-    if (p && p.format === "qualicode-projx") {
-      const proj = normalizeProject(p);
-      localStorage.setItem(PROJECT_PREFIX + proj.id, JSON.stringify(proj));
-      localStorage.setItem(CURRENT_KEY, proj.id);
-      const index = readIndex().filter(e => e.id !== proj.id);
-      index.unshift({
-        id: proj.id, name: proj.name, modified: proj.modified,
-        documents: proj.documents.length, codes: proj.codes.length, segments: proj.segments.length,
-      });
-      writeIndex(index);
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k === LEGACY_KEY || (k && k.startsWith(PROJECT_PREFIX))) keys.push(k);
     }
-    localStorage.removeItem(LEGACY_KEY);
+    for (const k of keys) {
+      try {
+        const p = JSON.parse(localStorage.getItem(k));
+        if (p && p.format === "qualicode-projx") {
+          const proj = normalizeProject(p);
+          await idbPut(proj.id, proj);
+          const index = readIndex().filter(e => e.id !== proj.id);
+          index.unshift({
+            id: proj.id, name: proj.name, modified: proj.modified,
+            documents: proj.documents.length, codes: proj.codes.length, segments: proj.segments.length,
+          });
+          writeIndex(index);
+          if (k === LEGACY_KEY) localStorage.setItem(CURRENT_KEY, proj.id);
+        }
+      } catch (e) { console.error(e); }
+      localStorage.removeItem(k);
+    }
   } catch (e) { console.error(e); }
 }
 
-function loadProjectById(id) {
+async function loadProjectById(id) {
   try {
-    const raw = localStorage.getItem(PROJECT_PREFIX + id);
-    if (!raw) return null;
-    const p = JSON.parse(raw);
+    const p = await idbGet(id);
     if (p && p.format === "qualicode-projx") return normalizeProject(p);
   } catch (e) { console.error(e); }
   return null;
@@ -1112,19 +1184,19 @@ function listProjects() {
 
 function deleteProjectById(id) {
   try {
-    localStorage.removeItem(PROJECT_PREFIX + id);
+    idbDelete(id).catch(e => console.error(e));
     writeIndex(readIndex().filter(e => e.id !== id));
     if (localStorage.getItem(CURRENT_KEY) === id) localStorage.removeItem(CURRENT_KEY);
   } catch (e) { console.error(e); }
 }
 
-function loadPersisted() {
+async function loadPersisted() {
   try {
-    migrateLegacyProject();
+    await migrateLegacyProjects();
     const currentId = localStorage.getItem(CURRENT_KEY);
     const candidates = [currentId, ...readIndex().map(e => e.id)].filter(Boolean);
     for (const id of candidates) {
-      const p = loadProjectById(id);
+      const p = await loadProjectById(id);
       if (p) { state.project = p; return true; }
     }
   } catch (e) { console.error(e); }
@@ -1153,6 +1225,7 @@ function normalizeProject(p) {
   proj.variables = proj.variables || [];
   proj.savedQueries = proj.savedQueries || [];
   proj.conceptMaps = proj.conceptMaps || [];
+  proj.bibliography = proj.bibliography || [];
   return proj;
 }
 
@@ -1189,14 +1262,22 @@ const MAX_UNDO = 30;
 
 function _snapshot() {
   const p = state.project;
+  // Les documents sont copiés SUPERFICIELLEMENT : leurs champs volumineux
+  // (text, imageData) sont immuables après l'import, on les partage par
+  // référence — l'annulation reste instantanée même sur des milliers de docs.
+  const copyDoc = d => ({ ...d, variables: { ...(d.variables || {}) } });
   return {
     segments: JSON.parse(JSON.stringify(p.segments)),
     codes: JSON.parse(JSON.stringify(p.codes)),
-    documents: JSON.parse(JSON.stringify(p.documents)),
-    documentGroups: JSON.parse(JSON.stringify(p.documentGroups)),
-    trash: JSON.parse(JSON.stringify(p.trash)),
+    documents: p.documents.map(copyDoc),
+    documentGroups: p.documentGroups.map(g => ({ ...g })),
+    trash: {
+      documents: p.trash.documents.map(it => ({ doc: copyDoc(it.doc), segments: it.segments.slice() })),
+      codes: p.trash.codes.map(it => ({ codes: it.codes.map(c => ({ ...c })), segments: it.segments.slice() })),
+    },
     memos: JSON.parse(JSON.stringify(p.memos)),
-    variables: JSON.parse(JSON.stringify(p.variables)),
+    variables: p.variables.slice(),
+    bibliography: JSON.parse(JSON.stringify(p.bibliography || [])),
   };
 }
 
@@ -2515,6 +2596,7 @@ __QC["refi"] = (function () {
 // Structure : project.qde (XML, schéma urn:QDA-XML:project:1.0) + Sources/*.txt
 
 const { buildZip } = __QC["docxout"];
+const { uid } = __QC["state"];
 
 const xmlEsc = s => String(s ?? "")
   .replace(/&/g, "&amp;").replace(/</g, "&lt;")
@@ -2617,7 +2699,182 @@ function buildRefiQdpx(project) {
   return buildZip(entries);
 }
 
-return { buildRefiQdpx };
+/* ================================================================
+   Import REFI-QDA (.qdpx) — lecture des projets MAXQDA / NVivo /
+   ATLAS.ti / QualiCode au format d'échange standard.
+================================================================ */
+
+// Lecteur ZIP minimal : répertoire central + décompression deflate-raw
+async function readZipEntries(ab) {
+  const bytes = new Uint8Array(ab);
+  const view = new DataView(ab);
+  // EOCD (fin de répertoire central)
+  let eocd = -1;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65558); i--) {
+    if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("qdpx-invalide");
+  const count = view.getUint16(eocd + 10, true);
+  let off = view.getUint32(eocd + 16, true);
+  const entries = new Map();
+  const dec = new TextDecoder();
+  for (let n = 0; n < count; n++) {
+    if (view.getUint32(off, true) !== 0x02014b50) break;
+    const method = view.getUint16(off + 10, true);
+    const csize = view.getUint32(off + 20, true);
+    const nameLen = view.getUint16(off + 28, true);
+    const extraLen = view.getUint16(off + 30, true);
+    const cmtLen = view.getUint16(off + 32, true);
+    const lho = view.getUint32(off + 42, true);
+    const name = dec.decode(bytes.subarray(off + 46, off + 46 + nameLen));
+    // En-tête local : recalcule le début réel des données
+    const lNameLen = view.getUint16(lho + 26, true);
+    const lExtraLen = view.getUint16(lho + 28, true);
+    const dataStart = lho + 30 + lNameLen + lExtraLen;
+    const data = bytes.slice(dataStart, dataStart + csize);
+    let content;
+    if (method === 0) content = data;
+    else if (method === 8) {
+      const ds = new DecompressionStream("deflate-raw");
+      const w = ds.writable.getWriter();
+      w.write(data).catch(() => {});
+      w.close().catch(() => {});
+      const chunks = [];
+      const r = ds.readable.getReader();
+      for (;;) { const { done, value } = await r.read(); if (done) break; chunks.push(value); }
+      const len = chunks.reduce((s, c) => s + c.length, 0);
+      content = new Uint8Array(len);
+      let o = 0;
+      for (const c of chunks) { content.set(c, o); o += c.length; }
+    } else { off += 46 + nameLen + extraLen + cmtLen; continue; }
+    entries.set(name, content);
+    off += 46 + nameLen + extraLen + cmtLen;
+  }
+  return entries;
+}
+
+const CODE_IMPORT_COLORS = ["#e15759", "#f28e2b", "#edc948", "#59a14f", "#4e79a7", "#b07aa1", "#76b7b2", "#ff9da7"];
+
+// Construit un projet QualiCode depuis un .qdpx. Retourne {project, stats}.
+async function importRefiQdpx(ab) {
+  const entries = await readZipEntries(ab);
+  const qdeName = [...entries.keys()].find(n => n.toLowerCase().endsWith(".qde"));
+  if (!qdeName) throw new Error("qdpx-invalide");
+  const xml = new DOMParser().parseFromString(new TextDecoder().decode(entries.get(qdeName)), "text/xml");
+  if (xml.querySelector("parsererror")) throw new Error("qdpx-invalide");
+  const all = tag => [...xml.getElementsByTagNameNS("*", tag)];
+  const projEl = all("Project")[0];
+  if (!projEl) throw new Error("qdpx-invalide");
+
+  const now = new Date().toISOString();
+  const project = {
+    format: "qualicode-projx", version: 1, id: uid(),
+    name: projEl.getAttribute("name") || "Projet importé",
+    created: now, modified: now, memo: "",
+    documentGroups: [], documents: [], codes: [], segments: [],
+    memos: [], variables: [], trash: { documents: [], codes: [] },
+    savedQueries: [], conceptMaps: [], bibliography: [],
+  };
+
+  // Codes (hiérarchie imbriquée)
+  const codeIdByGuid = new Map();
+  let colorIdx = 0;
+  const walkCodes = (el, parentId) => {
+    for (const child of el.children) {
+      if (child.localName !== "Code") continue;
+      const id = uid();
+      codeIdByGuid.set(child.getAttribute("guid"), id);
+      project.codes.push({
+        id, parentId,
+        name: child.getAttribute("name") || "Code",
+        color: child.getAttribute("color") || CODE_IMPORT_COLORS[(colorIdx++) % CODE_IMPORT_COLORS.length],
+        created: now,
+      });
+      walkCodes(child, id);
+    }
+  };
+  for (const cb of all("Codes")) walkCodes(cb, null);
+
+  // Variables déclarées
+  const varNameByGuid = new Map();
+  for (const v of all("Variable")) {
+    const name = v.getAttribute("name");
+    if (!name) continue;
+    varNameByGuid.set(v.getAttribute("guid"), name);
+    if (!project.variables.includes(name)) project.variables.push(name);
+  }
+
+  // Sources texte
+  const docIdByGuid = new Map();
+  const dec = new TextDecoder();
+  for (const src of all("TextSource")) {
+    const id = uid();
+    docIdByGuid.set(src.getAttribute("guid"), id);
+    let text = "";
+    const path = src.getAttribute("plainTextPath") || "";
+    const inner = [...src.children].find(c => c.localName === "PlainTextContent");
+    if (path.startsWith("internal://")) {
+      const p = path.slice("internal://".length);
+      const bytes = entries.get(p) || entries.get(decodeURIComponent(p));
+      if (bytes) text = dec.decode(bytes);
+    }
+    if (!text && inner) text = inner.textContent || "";
+    project.documents.push({
+      id, name: src.getAttribute("name") || "Document", groupId: null,
+      text: text.replace(/\r\n/g, "\n"), variables: {}, created: now,
+    });
+    // Codages : PlainTextSelection > Coding > CodeRef (ou Coding direct)
+    for (const sel of [...src.getElementsByTagNameNS("*", "PlainTextSelection")]) {
+      const start = Number(sel.getAttribute("startPosition") ?? 0);
+      const end = Number(sel.getAttribute("endPosition") ?? 0);
+      for (const ref of [...sel.getElementsByTagNameNS("*", "CodeRef")]) {
+        const codeId = codeIdByGuid.get(ref.getAttribute("targetGUID"));
+        if (!codeId || !(end > start)) continue;
+        project.segments.push({
+          id: uid(), docId: id, codeId, start, end,
+          text: text.slice(start, end), weight: 1, comment: "", created: now,
+        });
+      }
+    }
+  }
+
+  // Cas : valeurs de variables rattachées aux sources
+  for (const cas of all("Case")) {
+    const refs = [...cas.getElementsByTagNameNS("*", "SourceRef")]
+      .map(r => docIdByGuid.get(r.getAttribute("targetGUID"))).filter(Boolean);
+    if (!refs.length) continue;
+    for (const vv of [...cas.getElementsByTagNameNS("*", "VariableValue")]) {
+      const vref = vv.getElementsByTagNameNS("*", "VariableRef")[0];
+      const name = vref && varNameByGuid.get(vref.getAttribute("targetGUID"));
+      if (!name) continue;
+      const valEl = [...vv.children].find(c => /Value$/.test(c.localName) && c.localName !== "VariableRef");
+      const val = valEl ? valEl.textContent.trim() : "";
+      if (!val) continue;
+      for (const docId of refs) {
+        const doc = project.documents.find(d => d.id === docId);
+        if (doc) doc.variables[name] = val;
+      }
+    }
+  }
+
+  // Notes → mémos (la première note « projet » devient le mémo du projet)
+  for (const note of all("Note")) {
+    const content = [...note.getElementsByTagNameNS("*", "PlainTextContent")].map(x => x.textContent).join("") || "";
+    if (!content.trim()) continue;
+    if (!project.memo) project.memo = content;
+    else project.memos.push({
+      id: uid(), targetType: "project", targetId: null,
+      title: note.getAttribute("name") || "Mémo importé", text: content, created: now,
+    });
+  }
+
+  return {
+    project,
+    stats: { documents: project.documents.length, codes: project.codes.length, segments: project.segments.length },
+  };
+}
+
+return { buildRefiQdpx, importRefiQdpx };
 })();
 
 __QC["conceptmap"] = (function () {
@@ -3780,6 +4037,123 @@ async function ocrImages({ apiKey, model, blobs, onProgress }) {
 return { extractPdfImages, ocrImages };
 })();
 
+__QC["biblio"] = (function () {
+"use strict";
+// js/biblio.js — Références bibliographiques (exports Zotero / EndNote / Mendeley)
+// Formats lus : RIS (.ris) et BibTeX (.bib). Stockées dans le projet
+// (project.bibliography), exportables en liste formatée pour le mémoire.
+
+function detectBiblioFormat(filename, text) {
+  if (/^\s*TY\s{2}-\s/m.test(text)) return "ris";
+  if (/@\w+\s*\{/.test(text)) return "bibtex";
+  if (/\.ris$/i.test(filename)) return "ris";
+  if (/\.bib$/i.test(filename)) return "bibtex";
+  return null;
+}
+
+const RIS_TYPES = { JOUR: "article", BOOK: "livre", CHAP: "chapitre", THES: "thèse", RPRT: "rapport", CONF: "communication", ELEC: "en ligne" };
+
+function parseRis(text) {
+  const refs = [];
+  let cur = null;
+  for (const line of text.replace(/\r\n/g, "\n").split("\n")) {
+    const m = /^([A-Z][A-Z0-9])\s{2}-\s?(.*)$/.exec(line.trim());
+    if (!m) continue;
+    const [, tag, valRaw] = m;
+    const val = valRaw.trim();
+    if (tag === "TY") { cur = { authors: [], type: RIS_TYPES[val] || val.toLowerCase() }; continue; }
+    if (!cur) continue;
+    if (tag === "ER") { refs.push(finishRef(cur)); cur = null; continue; }
+    if (tag === "AU" || tag === "A1") cur.authors.push(val);
+    else if (tag === "PY" || tag === "Y1") cur.year = (val.match(/\d{4}/) || [""])[0];
+    else if (tag === "TI" || tag === "T1") cur.title = val;
+    else if (tag === "JO" || tag === "JF" || tag === "T2" || tag === "BT") cur.container = cur.container || val;
+    else if (tag === "DO") cur.doi = val;
+    else if (tag === "PB") cur.publisher = val;
+    else if (tag === "VL") cur.volume = val;
+    else if (tag === "IS") cur.issue = val;
+    else if (tag === "SP") cur.pages = val + (cur.pages ? "–" + cur.pages : "");
+    else if (tag === "EP") cur.pages = cur.pages ? cur.pages.split("–")[0] + "–" + val : val;
+  }
+  if (cur) refs.push(finishRef(cur));
+  return refs.filter(r => r.title);
+}
+
+function parseBibtex(text) {
+  const refs = [];
+  const entryRe = /@(\w+)\s*\{\s*([^,]*),([\s\S]*?)\n\}/g;
+  let m;
+  while ((m = entryRe.exec(text)) !== null) {
+    const fields = {};
+    const fieldRe = /(\w+)\s*=\s*(?:\{((?:[^{}]|\{[^{}]*\})*)\}|"([^"]*)"|(\w+))/g;
+    let fm;
+    while ((fm = fieldRe.exec(m[3])) !== null)
+      fields[fm[1].toLowerCase()] = (fm[2] ?? fm[3] ?? fm[4] ?? "").replace(/[{}]/g, "").trim();
+    const type = { article: "article", book: "livre", incollection: "chapitre", inproceedings: "communication", phdthesis: "thèse", mastersthesis: "mémoire", techreport: "rapport" }[m[1].toLowerCase()] || m[1].toLowerCase();
+    refs.push(finishRef({
+      type,
+      authors: (fields.author || "").split(/\s+and\s+/i).filter(Boolean),
+      year: (fields.year || "").match(/\d{4}/)?.[0] || "",
+      title: fields.title || "",
+      container: fields.journal || fields.booktitle || "",
+      publisher: fields.publisher || "",
+      volume: fields.volume || "", issue: fields.number || "",
+      pages: (fields.pages || "").replace(/--/g, "–"),
+      doi: fields.doi || "",
+    }));
+  }
+  return refs.filter(r => r.title);
+}
+
+function finishRef(r) {
+  return {
+    type: r.type || "article",
+    authors: r.authors || [],
+    year: r.year || "",
+    title: r.title || "",
+    container: r.container || "",
+    publisher: r.publisher || "",
+    volume: r.volume || "", issue: r.issue || "", pages: r.pages || "",
+    doi: r.doi || "",
+  };
+}
+
+// « Nom, P. » quel que soit l'ordre d'origine (« Nom, Prénom » ou « Prénom Nom »)
+function apaAuthor(a) {
+  const s = a.trim();
+  if (!s) return "";
+  if (s.includes(",")) {
+    const [last, first] = s.split(",").map(x => x.trim());
+    return last + (first ? ", " + first.split(/\s+/).map(p => p[0].toUpperCase() + ".").join(" ") : "");
+  }
+  const parts = s.split(/\s+/);
+  if (parts.length === 1) return s;
+  const last = parts.pop();
+  return last + ", " + parts.map(p => p[0].toUpperCase() + ".").join(" ");
+}
+
+// Référence formatée (style proche APA 7, suffisant pour un mémoire)
+function formatApa(r) {
+  const auths = r.authors.map(apaAuthor).filter(Boolean);
+  let names = auths.length > 3 ? auths.slice(0, 3).join(", ") + ", et al." : auths.join(auths.length > 1 ? ", " : "");
+  if (auths.length === 2) names = auths[0] + " & " + auths[1];
+  const year = r.year ? ` (${r.year}).` : "";
+  let rest = ` ${r.title}.`;
+  if (r.container) {
+    rest += ` ${r.container}`;
+    if (r.volume) rest += `, ${r.volume}` + (r.issue ? `(${r.issue})` : "");
+    if (r.pages) rest += `, ${r.pages}`;
+    rest += ".";
+  } else if (r.publisher) {
+    rest += ` ${r.publisher}.`;
+  }
+  if (r.doi) rest += ` https://doi.org/${r.doi.replace(/^https?:\/\/doi\.org\//, "")}`;
+  return (names || "Anonyme") + year + rest;
+}
+
+return { detectBiblioFormat, parseRis, parseBibtex, formatApa };
+})();
+
 __QC["app"] = (function () {
 "use strict";
 // QualiCode — application d'analyse qualitative de données (MVP du cahier des charges)
@@ -3803,7 +4177,8 @@ const { exportProject, exportSegmentsCsv, exportCodeSystem, exportMatrixCsv, exp
 const { buildSampleProject } = __QC["sample"];
 const { extractDocxText } = __QC["docx"];
 const { extractPdfText } = __QC["pdf"];
-const { buildRefiQdpx } = __QC["refi"];
+const { buildRefiQdpx, importRefiQdpx } = __QC["refi"];
+const { detectBiblioFormat, parseRis, parseBibtex, formatApa } = __QC["biblio"];
 const { openConceptMapEditor } = __QC["conceptmap"];
 const { buildPlayerBar, wrapTimestamps, fmtTs, createMediaElement } = __QC["audio"];
 const { fileToDataUrl, isImageFile, buildImageView } = __QC["imagecode"];
@@ -3830,6 +4205,7 @@ let searchResults = [];
 let searchQuery = "";
 let pendingSelection = null;       // {start, end} sélection en attente de codage
 let pendingImageRect = null;       // {x,y,w,h} zone d'image en attente de codage
+let docFilterQuery = "";           // filtre de l'arbre des documents (gros corpus)
 let projectPassword = null;        // mot de passe du projet, gardé en mémoire de session uniquement
 
 // Média (audio OU vidéo) par document : blobs en mémoire de session uniquement
@@ -3856,13 +4232,13 @@ function attachAudioToDoc(doc, file) {
 /* ================================================================
    Initialisation
 ================================================================ */
-function init() {
+async function init() {
   loadPrefs();
   setLang(state.ui.lang);
   document.body.classList.toggle("dark", state.ui.theme === "dark");
   $("#langLabel").textContent = getLang().toUpperCase();
 
-  if (!loadPersisted()) {
+  if (!(await loadPersisted())) {
     state.project = buildSampleProject();
     persistNow();
   }
@@ -4012,6 +4388,19 @@ function bindRibbon() {
     const file = e.target.files[0];
     e.target.value = "";
     if (!file) return;
+    // Import REFI-QDA : projet venant de MAXQDA / NVivo / ATLAS.ti (ou QualiCode)
+    if (/\.qdpx$/i.test(file.name)) {
+      try {
+        const { project, stats } = await importRefiQdpx(await file.arrayBuffer());
+        switchToProject(normalizeProject(project));
+        toast(t("refi_imported")
+          .replace("{d}", stats.documents).replace("{c}", stats.codes).replace("{s}", stats.segments));
+      } catch (err) {
+        console.error(err);
+        toast(t("refi_import_fail"));
+      }
+      return;
+    }
     const p = await readProjectFile(file);
     if (!p) return;
     state.project = p;
@@ -4101,6 +4490,24 @@ function bindRibbon() {
     if (file) openTranscribe(file);
   });
   $("#btnSocial").onclick = () => $("#socialInput").click();
+  $("#btnBiblio").onclick = openBiblio;
+  $("#biblioInput").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    const text = await file.text();
+    const fmt = detectBiblioFormat(file.name, text);
+    if (!fmt) return toast(t("bib_unknown"));
+    const refs = fmt === "ris" ? parseRis(text) : parseBibtex(text);
+    if (!refs.length) return toast(t("bib_unknown"));
+    pushUndoSnapshot();
+    for (const r of refs) state.project.bibliography.push({ id: uid(), ...r });
+    scheduleSave();
+    updateUndoButtons();
+    toast(t("bib_imported").replace("{n}", refs.length));
+    // Rafraîchit la liste si le modal Bibliographie est déjà ouvert
+    if (biblioRerender) biblioRerender();
+  });
   $("#socialInput").addEventListener("change", async e => {
     const file = e.target.files[0];
     e.target.value = "";
@@ -4220,6 +4627,7 @@ function bindPanels() {
     renderCodeTree(); renderPanel4();
   };
   $("#retrievalMode").addEventListener("change", e => { state.ui.retrievalMode = e.target.value; renderPanel4(); });
+  $("#docFilter").addEventListener("input", e => { docFilterQuery = e.target.value; renderDocTree(); });
   $("#btnDocMemo").onclick = () => {
     const doc = getDoc(state.ui.currentDocId);
     if (doc) openMemoEditor("document", doc.id, doc.name);
@@ -4325,14 +4733,29 @@ function renderDocTree() {
     return row;
   };
 
+  // Gros corpus : filtre par nom + plafond d'affichage (le DOM reste léger
+  // même avec des milliers de documents ; le filtre donne accès à tout)
+  const MAX_ROWS = 300;
+  const filter = docFilterQuery.trim().toLowerCase();
+  const matches = d => !filter || d.name.toLowerCase().includes(filter);
+  let shown = 0, hidden = 0;
+  const addRow = (container, d) => {
+    if (!matches(d)) return;
+    if (shown >= MAX_ROWS) { hidden++; return; }
+    container.appendChild(docRow(d));
+    shown++;
+  };
+
   for (const g of state.project.documentGroups) {
+    const groupDocs = state.project.documents.filter(d => d.groupId === g.id);
+    if (filter && !groupDocs.some(matches)) continue; // groupe sans résultat masqué
     const gr = document.createElement("div");
     gr.className = "tree-item group-row";
-    const open = expandedGroups.has(g.id);
+    const open = filter ? true : expandedGroups.has(g.id); // filtre actif : tout déplié
     gr.innerHTML = `<span class="caret">${open ? "▼" : "►"}</span><span class="label">📁 ${esc(g.name)}</span>
-      <span class="count">${state.project.documents.filter(d => d.groupId === g.id).length}</span>
+      <span class="count">${groupDocs.length}</span>
       <span class="row-actions"><button data-act="ren" title="${esc(t("rename"))}">✏️</button></span>`;
-    gr.onclick = () => { open ? expandedGroups.delete(g.id) : expandedGroups.add(g.id); renderDocTree(); };
+    gr.onclick = () => { expandedGroups.has(g.id) ? expandedGroups.delete(g.id) : expandedGroups.add(g.id); renderDocTree(); };
     gr.querySelector("[data-act=ren]").onclick = e => {
       e.stopPropagation();
       promptModal(t("rename"), t("new_group_name"), g.name, name => { pushUndoSnapshot(); g.name = name; scheduleSave(); renderDocTree(); updateUndoButtons(); });
@@ -4347,11 +4770,18 @@ function renderDocTree() {
     if (open) {
       const kids = document.createElement("div");
       kids.className = "tree-children";
-      state.project.documents.filter(d => d.groupId === g.id).forEach(d => kids.appendChild(docRow(d)));
+      groupDocs.forEach(d => addRow(kids, d));
       root.appendChild(kids);
     }
   }
-  ungrouped.forEach(d => root.appendChild(docRow(d)));
+  ungrouped.forEach(d => addRow(root, d));
+
+  if (hidden > 0) {
+    const more = document.createElement("div");
+    more.className = "empty-hint";
+    more.textContent = t("docs_hidden").replace("{n}", hidden);
+    root.appendChild(more);
+  }
 
   // Déposer hors groupe = retirer du groupe
   root.addEventListener("dragover", e => { if (e.dataTransfer.types.includes("text/qualicode-doc")) e.preventDefault(); });
@@ -5142,6 +5572,54 @@ async function openOcrModal(file) {
   }
 }
 
+/* ---------- Bibliographie : références RIS / BibTeX ---------- */
+function openBiblio() {
+  const render = body => {
+    const refs = state.project.bibliography;
+    const listHtml = refs.length
+      ? refs.map(r => `
+        <div class="seg-card" data-id="${esc(r.id)}">
+          <div class="seg-card-head">
+            <span class="badge" style="background:var(--bg-hover)">${esc(r.type)}</span>
+            <strong style="flex:1">${esc(r.title)}</strong>
+            <span style="color:var(--text-soft);font-size:11.5px">${esc(r.year)}</span>
+            <button class="mini-btn" data-act="delref" title="${esc(t("delete"))}">🗑️</button>
+          </div>
+          <div class="seg-card-body" style="font-size:12.5px">${esc(formatApa(r))}</div>
+        </div>`).join("")
+      : `<div class="empty-hint">${esc(t("bib_empty"))}</div>`;
+    body.innerHTML = `
+      <p class="trans-hint">${esc(t("bib_hint"))}</p>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="btn primary" id="bibImport">📥 ${esc(t("bib_import"))}</button>
+        ${refs.length ? `<button class="btn" id="bibExport">📄 ${esc(t("bib_export"))}</button>` : ""}
+        <span style="align-self:center;color:var(--text-soft);font-size:12.5px">${refs.length} ${esc(t("bib_refs_lbl"))}</span>
+      </div>
+      ${listHtml}`;
+    body.querySelector("#bibImport").onclick = () => $("#biblioInput").click();
+    body.querySelector("#bibExport")?.addEventListener("click", () => {
+      const sorted = [...refs].sort((a, b) => (a.authors[0] || "").localeCompare(b.authors[0] || ""));
+      const txt = sorted.map(formatApa).join("\n\n");
+      downloadBlob("bibliographie.txt", new Blob(["﻿" + txt], { type: "text/plain;charset=utf-8" }));
+      toast(t("export_done"));
+    });
+    body.querySelectorAll("[data-act=delref]").forEach(b => b.onclick = () => {
+      pushUndoSnapshot();
+      state.project.bibliography = state.project.bibliography.filter(x => x.id !== b.closest(".seg-card").dataset.id);
+      scheduleSave();
+      updateUndoButtons();
+      render(body);
+    });
+  };
+  const m = openModal({
+    title: "📚 " + t("bib_title"), wide: true, bodyHtml: "",
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  render(m.body);
+  biblioRerender = () => { if (document.body.contains(m.body)) render(m.body); };
+}
+let biblioRerender = null;
+
 /* ---------- Import réseaux sociaux (exports WhatsApp / CSV / JSON) ---------- */
 function setDocSource(doc, source) {
   if (!state.project.variables.includes("source")) state.project.variables.push("source");
@@ -5796,9 +6274,9 @@ function openMyProjects() {
           </div>
         </div>`;
       }).join("")}`;
-    body.querySelectorAll("[data-act=open]").forEach(btn => btn.onclick = () => {
+    body.querySelectorAll("[data-act=open]").forEach(btn => btn.onclick = async () => {
       const id = btn.closest(".seg-card").dataset.id;
-      const project = loadProjectById(id);
+      const project = await loadProjectById(id);
       if (project) {
         m.close();
         switchToProject(project);

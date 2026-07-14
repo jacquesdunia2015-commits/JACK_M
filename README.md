@@ -46,16 +46,17 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 
 | Domaine (réf. cahier des charges) | Fonctionnalités |
 |---|---|
-| **Gestion de projet (§2.1)** | Création, sauvegarde/ouverture dans un fichier conteneur unique `.projx` (JSON), sauvegarde automatique locale (localStorage), corbeille interne pour documents et codes |
+| **Gestion de projet (§2.1)** | Création, sauvegarde/ouverture dans un fichier conteneur unique `.projx` (JSON), **sauvegarde automatique dans IndexedDB** (clonage structuré : gros corpus de milliers de documents, migration automatique depuis localStorage), corbeille interne, **filtre + plafond d'affichage** de l'arbre des documents, instantanés d'annulation légers (textes partagés par référence) |
 | **Importation (§2.2)** | Fichiers **DOCX** (extraction native sans dépendance : lecture ZIP via `DecompressionStream` + analyse de `word/document.xml`), **PDF** (extraction de texte native : décompression FlateDecode + analyse des opérateurs de texte — PDF « texte », pas les scans), TXT/MD, collage de texte, enquêtes CSV (réponses courtes → variables, réponses longues → texte), texte structuré (balises `#DOC`), **transcription assistée** (lecteur audio local + raccourcis + horodatages), **réseaux sociaux sans API** (export WhatsApp .txt auto-détecté Android/iOS ; CSV/JSON de publications avec mappage auteur/texte/date auto-deviné, variable « source »), **images** (photos recompressées, codage par zones rectangulaires), **OCR des PDF scannés** (extraction native des pages JPEG + transcription IA avec clé utilisateur, relecture avant ajout) |
 | **Organisation (§2.3)** | Groupes de documents (glisser-déposer), variables de document, navigateur avec numérotation des paragraphes, recherche plein texte booléenne (ET / OU / "phrase") |
 | **Codage (§2.4)** | Codes et sous-codes en arborescence illimitée avec couleurs, codage par sélection de texte (menu contextuel), codage in vivo, raccourci clavier `Alt+C`, codage automatique par recherche lexicale (occurrence / phrase / paragraphe), pondération des segments, fusion visuelle des chevauchements, fréquences en temps réel, glisser-déposer des codes, **suggestions de codage par IA** (clé API de l'utilisateur, consentement explicite à chaque envoi, validation humaine suggestion par suggestion, clé jamais stockée dans le projet) |
 | **Récupération (§2.4)** | Activation de documents et de codes (✅), modes **OU** et **ET** (intersection/chevauchement), saut au passage source, **requêtes sauvegardées** (combinaisons de filtres réutilisables, stockées dans le `.projx`), **recodage par glisser-déposer** (tirer une carte segment sur un code) |
+| **Bibliographie (§2.2)** | Import **RIS / BibTeX** (Zotero, EndNote, Mendeley), stockage dans le projet, **export en liste formatée style APA** pour le chapitre Références |
 | **Mémos (§2.5)** | Mémos de projet, de document et de code ; commentaires sur segments ; gestionnaire de mémos ; indicateurs 📝 dans les arbres |
 | **Analyse (§2.6)** | Matrice codes × documents (cliquable), matrice de co-occurrences, comparaison de groupes par variable, fréquences de mots (anti-dictionnaire FR/EN), KWIC (mots en contexte), statistiques descriptives des variables |
 | **Audio / vidéo (§2.2, §2.7)** | **Lecteur audio et vidéo horodaté** : transcription assistée (image vidéo affichée, vitesse 0,5×–2×, Ctrl+Espace/B/T), horodatages `[mm:ss]` cliquables dans les transcriptions (saut au moment exact), panneau vidéo repliable au-dessus du texte, média 100 % local jamais téléversé, **codage direct sur la piste** (⏺ début/fin d'extrait → code + note, relecture au clic) |
 | **Visualisation (§2.7)** | Portrait de document (séquence colorée des segments), nuage de mots, diagramme de fréquences des codes, **cartes conceptuelles SVG** (nœuds déplaçables, flèches, plusieurs cartes par projet, export .svg) |
-| **Rapports & exports (§2.8)** | Export CSV des segments (compatible Excel), export du système de codes, export CSV de la matrice, **rapport Word (.docx) natif** (archive ZIP + WordprocessingML générés sans bibliothèque), **export REFI-QDA (.qdpx)** — format d'échange standard importable dans MAXQDA, NVivo et ATLAS.ti —, rapport HTML imprimable (→ PDF via l'impression navigateur), export/import du projet `.projx` |
+| **Rapports & exports (§2.8)** | Export CSV des segments (compatible Excel), export du système de codes, export CSV de la matrice, **rapport Word (.docx) natif** (archive ZIP + WordprocessingML générés sans bibliothèque), **export ET import REFI-QDA (.qdpx)** — échange bidirectionnel avec MAXQDA, NVivo et ATLAS.ti (lecture ZIP native deflate, hiérarchie de codes, codages, variables via Cases) —, rapport HTML imprimable (→ PDF via l'impression navigateur), export/import du projet `.projx` |
 | **Sécurité (§2.1, §3.4)** | Protection du projet par mot de passe : fichier `.projx` chiffré en **AES-256-GCM**, clé dérivée par PBKDF2 (310 000 itérations, SHA-256) via l'API Web Crypto native |
 | **Équipe (§2.1, §2.9)** | **Fusion de projets** (appariement des documents, codes et mémos ; segments étiquetés par codeur) et **accord inter-codeurs par kappa de Cohen** (unité : le paragraphe, par code + global, interprétation Landis & Koch) — critère d'acceptation n°4 du cahier des charges — et **collaboration par dossier partagé** (File System Access : chaque codeur publie sa copie dans un dossier synchronisé Drive/Dropbox/USB, détection des nouveautés, fusion en un clic, copie chiffrée si le projet est protégé) |
 
@@ -63,8 +64,6 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 
 - **Import RTF / ODT** (§2.2) — DOCX et PDF sont déjà couverts.
 - **Transcription automatique de la parole** (§2.2) — la transcription assistée et l'OCR des scans sont couverts ; la reconnaissance vocale nécessiterait un modèle local (Whisper WASM) ou une API.
-- **Références bibliographiques** (§2.2) — l'import réseaux sociaux (exports WhatsApp/CSV/JSON) est couvert.
-- **Import REFI-QDA** (§2.8) — l'export `.qdpx` est couvert ; l'import (lecture des projets MAXQDA/NVivo) reste à faire.
 - **Phase 2 cloud** : collaboration temps réel et rôles (la fusion asynchrone, le kappa et le dossier partagé sont déjà couverts).
 - **Empaquetage desktop** Windows/macOS : la base web actuelle est directement intégrable dans **Tauri** ou **Electron** (options recommandées §4).
 
@@ -89,6 +88,7 @@ js/ai.js            Suggestions de codage IA (clé utilisateur, validation humai
 js/sync.js          Collaboration par dossier partagé (File System Access)
 js/imagecode.js     Codage de zones d'images (rectangles normalisés, calques)
 js/ocr.js           OCR des PDF scannés (extraction JPEG native + IA, clé utilisateur)
+js/biblio.js        Références bibliographiques (RIS/BibTeX → liste APA)
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)
 js/sample.js        Projet exemple (étude sur le télétravail)

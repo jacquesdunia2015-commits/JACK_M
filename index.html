@@ -73,6 +73,7 @@
         <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
         <button id="btnTranscribe" class="rbtn">🎙️<span data-i18n="transcribe">Transcrire un audio/vidéo</span></button>
         <button id="btnSocial" class="rbtn">📱<span data-i18n="social_import">Réseaux sociaux (export)</span></button>
+        <button id="btnBiblio" class="rbtn">📚<span data-i18n="biblio">Bibliographie (RIS/BibTeX)</span></button>
         <div class="rlabel" data-i18n="grp_import">Importation</div>
       </div>
       <div class="rgroup">
@@ -81,10 +82,11 @@
       </div>
       <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx,.pdf,.jpg,.jpeg,.png,.webp,.gif,.bmp" hidden>
       <input type="file" id="csvInput" accept=".csv" hidden>
-      <input type="file" id="projInput" accept=".projx,.json" hidden>
+      <input type="file" id="projInput" accept=".projx,.json,.qdpx" hidden>
       <input type="file" id="audioInput" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp,.mp4,.webm,.mkv,.mov" hidden>
       <input type="file" id="transInput" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp,.mp4,.webm,.mkv,.mov" hidden>
       <input type="file" id="socialInput" accept=".txt,.csv,.json" hidden>
+      <input type="file" id="biblioInput" accept=".ris,.bib,.txt" hidden>
     </div>
 
     <!-- Codes -->
@@ -190,6 +192,7 @@
     <div class="panel-header">
       <span data-i18n="panel_docs">📄 Système de documents</span>
       <span class="panel-actions">
+        <input type="search" id="docFilter" class="panel-filter" data-i18n-ph="doc_filter_ph" placeholder="Filtrer…">
         <button id="btnActivateAllDocs" class="mini-btn" data-i18n-title="activate_all" title="Tout activer / désactiver">✅</button>
       </span>
     </div>

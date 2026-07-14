@@ -20,7 +20,7 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Images (coder des zones) | ✅ | ✅ | ✅ | ✅ |
 | Réseaux sociaux (import d'exports WhatsApp/CSV/JSON, sans API) | ✅ | ✅ | ✅ | ✅ |
 | Réseaux sociaux (connexion directe aux plateformes) | ❌ | 🔶 | 🔶 | 🔶 |
-| Références bibliographiques (Zotero, EndNote) | ❌ | ✅ | ✅ | ✅ |
+| Références bibliographiques (Zotero, EndNote — RIS/BibTeX) | ✅ | ✅ | ✅ | ✅ |
 
 ## 2. Codage
 
@@ -95,7 +95,7 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Rapport imprimable / PDF | ✅ | ✅ | ✅ | ✅ |
 | Export du système de codes | ✅ | ✅ | ✅ | ✅ |
 | **Export REFI-QDA (.qdpx)** — échange inter-logiciels | ✅ | ✅ | ✅ | ✅ |
-| **Import** REFI-QDA | ❌ | ✅ | ✅ | ✅ |
+| **Import** REFI-QDA | ✅ | ✅ | ✅ | ✅ |
 
 ## 8. Sécurité, collaboration, plateforme
 
@@ -108,7 +108,7 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Collaboration par dossier partagé (Drive/Dropbox, détection des nouveautés) | ✅ | 🔶 | 🔶 | 🔶 |
 | Collaboration temps réel multi-utilisateurs | ❌ | ✅ 💰 serveur | ✅ 💰 serveur | ✅ 💰 web |
 | Interface FR + EN | ✅ | ✅ | 🔶 | 🔶 |
-| Corpus de plusieurs milliers de documents | 🔶 (dizaines) | ✅ | ✅ | ✅ |
+| Corpus de plusieurs milliers de documents (IndexedDB + filtre) | ✅ | ✅ | ✅ | ✅ |
 | **Prix** | **Gratuit, libre** | ≈ 630 €/licence | ≈ 1 200 €/licence | ≈ 700 €/licence |
 
 ## En résumé
@@ -117,4 +117,4 @@ Pour une **analyse thématique de mémoire ou de thèse sur corpus textuel** (en
 focus groups, réponses ouvertes), QualiCode couvre désormais l'intégralité du flux de travail
 des trois logiciels commerciaux — du terrain au chapitre Résultats — et exporte vers eux au
 format standard REFI-QDA — y compris désormais l'audio, la vidéo, les images et les PDF scannés.
-Les écarts restants : très gros corpus, collaboration temps réel serveur, statistiques avancées.
+Les écarts restants : collaboration temps réel serveur, statistiques avancées type SPSS/R, et le poli d'interface de logiciels vieux de 25 ans.

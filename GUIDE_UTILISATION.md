@@ -70,6 +70,7 @@ Vous avez 4 façons de faire :
 - **🎙️ Transcrire un audio/vidéo** : choisissez l'enregistrement de votre entretien (téléphone, dictaphone, **ou une vidéo** — l'image s'affiche alors au-dessus de la zone de texte) — une fenêtre s'ouvre avec un **lecteur** et une zone de texte. Vous écoutez et vous tapez. Astuces : réduisez la **vitesse à 0,5×** pour taper en écoutant ; **Ctrl+Espace** met en pause ; **Ctrl+B** recule de 5 secondes ; **Ctrl+T** insère l'heure exacte `[12:34]` à l'endroit où vous tapez. L'audio reste sur votre ordinateur, rien n'est envoyé sur internet.
 - **🖼️ Photos et images** : choisissez une image (photo de terrain, affiche, dessin d'un participant…) avec 📄 Fichiers — elle devient un document à part entière. Pour la coder : **tracez un rectangle** sur la zone qui vous intéresse et choisissez un code — la zone se colore avec une étiquette. Cliquez sur une zone pour la commenter, la pondérer ou la supprimer.
 - **📄 PDF scanné (OCR)** : si un PDF est un scan (photos de pages, sans texte), QualiCode vous propose automatiquement la **reconnaissance de texte par IA** : il extrait les pages et les fait transcrire avec votre clé API (comme les Suggestions IA). Vous **relisez et corrigez** le texte avant de l'ajouter au projet. ⚠️ Les pages partent vers le service d'IA : uniquement pour des documents non nominatifs ou avec autorisation éthique.
+- **📚 Bibliographie (RIS/BibTeX)** : importez vos références depuis **Zotero, EndNote ou Mendeley** (export .ris ou .bib). Elles sont conservées dans le projet et exportables en **liste formatée style APA** — prête à coller dans le chapitre Références de votre mémoire.
 - **📱 Réseaux sociaux (export)** : importez une **discussion WhatsApp** (dans WhatsApp : ouvrir la discussion → ⋮ → Plus → Exporter la discussion → *Sans fichiers médias* → choisissez le fichier .txt obtenu) ou un **fichier CSV/JSON** de publications (tweets, commentaires YouTube…). QualiCode reconnaît le format tout seul : les messages WhatsApp deviennent un entretien avec les locuteurs mis en évidence ; pour un CSV/JSON, vous choisissez quelles colonnes contiennent l'auteur, le texte et la date. ⚠️ N'importez une discussion qu'avec le **consentement** de ses participants.
 
 ### Coder directement sur la piste audio/vidéo ⏺
@@ -241,6 +242,12 @@ Quand deux personnes codent les mêmes entretiens (chacune de son côté) :
 
 **J'ai supprimé un document ou un code par erreur !**
 → **Accueil → 🗑️ Corbeille** : cliquez sur *Restaurer*.
+
+**Puis-je travailler avec des centaines ou des milliers de documents ?**
+→ Oui. Le stockage utilise une base interne du navigateur (IndexedDB) sans la limite des anciens systèmes, l'affichage de la liste reste rapide (plafonné avec message), et la **case Filtrer…** en haut du volet Documents retrouve n'importe quel document instantanément.
+
+**Puis-je ouvrir un projet venant de MAXQDA, NVivo ou ATLAS.ti ?**
+→ Oui : exportez-le depuis ce logiciel au format **REFI-QDA (.qdpx)**, puis dans QualiCode : **Accueil → 📂 Ouvrir** et choisissez le fichier .qdpx — documents, codes (avec leur hiérarchie), codages et variables sont repris. L'inverse marche aussi (Rapports → REFI-QDA).
 
 **Où est enregistré mon travail ?**
 → Automatiquement dans votre navigateur, sur votre ordinateur (regardez « ✓ Sauvegarde automatique » en bas à droite). Tous vos projets sont visibles dans **Accueil → 📚 Mes projets**. Pour une copie durable ou pour changer d'ordinateur : **💾 Enregistrer (.projx)**, puis **📂 Ouvrir (.projx)** sur l'autre machine.

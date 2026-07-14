@@ -36,6 +36,7 @@ export function emptyProject(name) {
     trash: { documents: [], codes: [] },
     savedQueries: [],   // {id, name, activatedDocs, activatedCodes, retrievalMode, created}
     conceptMaps: [],    // {id, name, nodes:[{id,label,x,y,color,width,height}], edges:[{id,from,to,label}]}
+    bibliography: [],   // {id, type, authors, year, title, container, doi, notes}
   };
 }
 
@@ -54,7 +55,11 @@ export const state = {
   },
 };
 
-/* ---------- Persistance ---------- */
+/* ---------- Persistance : IndexedDB (gros corpus) + index localStorage ----------
+   Les projets vivent dans IndexedDB (clonage structuré : pas de JSON.stringify,
+   capacité en gigaoctets → des milliers de documents). Seuls l'index de la
+   bibliothèque et les préférences restent dans localStorage (petits).
+   Les anciens projets stockés en localStorage sont migrés au premier chargement. */
 let saveTimer = null;
 let onSavedCallback = null;
 export function setOnSaved(cb) { onSavedCallback = cb; }
@@ -69,7 +74,43 @@ function readIndex() {
   try { return JSON.parse(localStorage.getItem(INDEX_KEY)) || []; } catch { return []; }
 }
 function writeIndex(index) {
-  localStorage.setItem(INDEX_KEY, JSON.stringify(index));
+  try { localStorage.setItem(INDEX_KEY, JSON.stringify(index)); } catch (e) { console.error(e); }
+}
+
+let dbPromise = null;
+function openDb() {
+  if (!dbPromise) {
+    dbPromise = new Promise((resolve, reject) => {
+      const rq = indexedDB.open("qualicode", 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore("projects");
+      rq.onsuccess = () => resolve(rq.result);
+      rq.onerror = () => reject(rq.error);
+    });
+  }
+  return dbPromise;
+}
+function idbPut(key, value) {
+  return openDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction("projects", "readwrite");
+    tx.objectStore("projects").put(value, key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  }));
+}
+function idbGet(key) {
+  return openDb().then(db => new Promise((resolve, reject) => {
+    const rq = db.transaction("projects").objectStore("projects").get(key);
+    rq.onsuccess = () => resolve(rq.result ?? null);
+    rq.onerror = () => reject(rq.error);
+  }));
+}
+function idbDelete(key) {
+  return openDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction("projects", "readwrite");
+    tx.objectStore("projects").delete(key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  }));
 }
 
 export function persistNow() {
@@ -77,7 +118,6 @@ export function persistNow() {
   if (!state.project.id) state.project.id = uid();
   const p = state.project;
   try {
-    localStorage.setItem(PROJECT_PREFIX + p.id, JSON.stringify(p));
     localStorage.setItem(CURRENT_KEY, p.id);
     const index = readIndex().filter(e => e.id !== p.id);
     index.unshift({
@@ -85,39 +125,45 @@ export function persistNow() {
       documents: p.documents.length, codes: p.codes.length, segments: p.segments.length,
     });
     writeIndex(index);
+  } catch (e) { console.error(e); }
+  // Écriture asynchrone (clonage structuré : rapide même sur un gros corpus)
+  return idbPut(p.id, p).then(() => {
     state.ui.dirty = false;
     if (onSavedCallback) onSavedCallback();
-  } catch (e) {
-    console.error("Autosave failed", e);
-  }
+  }).catch(e => console.error("Autosave failed", e));
 }
 
-// Migration de l'ancienne clé unique vers la bibliothèque multi-projets
-function migrateLegacyProject() {
+// Migration : ancienne clé unique + anciens projets localStorage → IndexedDB
+async function migrateLegacyProjects() {
   try {
-    const raw = localStorage.getItem(LEGACY_KEY);
-    if (!raw) return;
-    const p = JSON.parse(raw);
-    if (p && p.format === "qualicode-projx") {
-      const proj = normalizeProject(p);
-      localStorage.setItem(PROJECT_PREFIX + proj.id, JSON.stringify(proj));
-      localStorage.setItem(CURRENT_KEY, proj.id);
-      const index = readIndex().filter(e => e.id !== proj.id);
-      index.unshift({
-        id: proj.id, name: proj.name, modified: proj.modified,
-        documents: proj.documents.length, codes: proj.codes.length, segments: proj.segments.length,
-      });
-      writeIndex(index);
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k === LEGACY_KEY || (k && k.startsWith(PROJECT_PREFIX))) keys.push(k);
     }
-    localStorage.removeItem(LEGACY_KEY);
+    for (const k of keys) {
+      try {
+        const p = JSON.parse(localStorage.getItem(k));
+        if (p && p.format === "qualicode-projx") {
+          const proj = normalizeProject(p);
+          await idbPut(proj.id, proj);
+          const index = readIndex().filter(e => e.id !== proj.id);
+          index.unshift({
+            id: proj.id, name: proj.name, modified: proj.modified,
+            documents: proj.documents.length, codes: proj.codes.length, segments: proj.segments.length,
+          });
+          writeIndex(index);
+          if (k === LEGACY_KEY) localStorage.setItem(CURRENT_KEY, proj.id);
+        }
+      } catch (e) { console.error(e); }
+      localStorage.removeItem(k);
+    }
   } catch (e) { console.error(e); }
 }
 
-export function loadProjectById(id) {
+export async function loadProjectById(id) {
   try {
-    const raw = localStorage.getItem(PROJECT_PREFIX + id);
-    if (!raw) return null;
-    const p = JSON.parse(raw);
+    const p = await idbGet(id);
     if (p && p.format === "qualicode-projx") return normalizeProject(p);
   } catch (e) { console.error(e); }
   return null;
@@ -129,19 +175,19 @@ export function listProjects() {
 
 export function deleteProjectById(id) {
   try {
-    localStorage.removeItem(PROJECT_PREFIX + id);
+    idbDelete(id).catch(e => console.error(e));
     writeIndex(readIndex().filter(e => e.id !== id));
     if (localStorage.getItem(CURRENT_KEY) === id) localStorage.removeItem(CURRENT_KEY);
   } catch (e) { console.error(e); }
 }
 
-export function loadPersisted() {
+export async function loadPersisted() {
   try {
-    migrateLegacyProject();
+    await migrateLegacyProjects();
     const currentId = localStorage.getItem(CURRENT_KEY);
     const candidates = [currentId, ...readIndex().map(e => e.id)].filter(Boolean);
     for (const id of candidates) {
-      const p = loadProjectById(id);
+      const p = await loadProjectById(id);
       if (p) { state.project = p; return true; }
     }
   } catch (e) { console.error(e); }
@@ -170,6 +216,7 @@ export function normalizeProject(p) {
   proj.variables = proj.variables || [];
   proj.savedQueries = proj.savedQueries || [];
   proj.conceptMaps = proj.conceptMaps || [];
+  proj.bibliography = proj.bibliography || [];
   return proj;
 }
 
@@ -206,14 +253,22 @@ const MAX_UNDO = 30;
 
 function _snapshot() {
   const p = state.project;
+  // Les documents sont copiés SUPERFICIELLEMENT : leurs champs volumineux
+  // (text, imageData) sont immuables après l'import, on les partage par
+  // référence — l'annulation reste instantanée même sur des milliers de docs.
+  const copyDoc = d => ({ ...d, variables: { ...(d.variables || {}) } });
   return {
     segments: JSON.parse(JSON.stringify(p.segments)),
     codes: JSON.parse(JSON.stringify(p.codes)),
-    documents: JSON.parse(JSON.stringify(p.documents)),
-    documentGroups: JSON.parse(JSON.stringify(p.documentGroups)),
-    trash: JSON.parse(JSON.stringify(p.trash)),
+    documents: p.documents.map(copyDoc),
+    documentGroups: p.documentGroups.map(g => ({ ...g })),
+    trash: {
+      documents: p.trash.documents.map(it => ({ doc: copyDoc(it.doc), segments: it.segments.slice() })),
+      codes: p.trash.codes.map(it => ({ codes: it.codes.map(c => ({ ...c })), segments: it.segments.slice() })),
+    },
     memos: JSON.parse(JSON.stringify(p.memos)),
-    variables: JSON.parse(JSON.stringify(p.variables)),
+    variables: p.variables.slice(),
+    bibliography: JSON.parse(JSON.stringify(p.bibliography || [])),
   };
 }
 
