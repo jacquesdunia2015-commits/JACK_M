@@ -103,6 +103,8 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Fonctionnalité | QualiCode | MAXQDA | NVivo | ATLAS.ti |
 |---|:---:|:---:|:---:|:---:|
 | Chiffrement du projet par mot de passe | ✅ AES-256 | 🔶 | 🔶 | 🔶 |
+| Mot de passe à l'ouverture de l'application (verrou d'écran) | ✅ | ❌ | ❌ | ❌ |
+| Essai gratuit puis abonnement jour/semaine/mois/an (activation hors ligne) | ✅ | 🔶 essai 14 j, abonnement annuel seulement | 🔶 | 🔶 |
 | 100 % hors ligne, données locales | ✅ | ✅ | ✅ | ✅ |
 | Fonctionne sans installation (un fichier HTML) | ✅ | ❌ | ❌ | ❌ |
 | Collaboration asynchrone (fusion de fichiers) | ✅ | ✅ | ✅ | ✅ |
@@ -111,7 +113,7 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Palette de commandes (Ctrl+K, toutes les actions au clavier) | ✅ | ❌ | ❌ | ❌ |
 | Interface multilingue | ✅ 12 langues (dont kinyarwanda, kiswahili, lingála, wolof, arabe RTL) | 🔶 ~5 langues | 🔶 | 🔶 |
 | Corpus de plusieurs milliers de documents (IndexedDB + filtre) | ✅ | ✅ | ✅ | ✅ |
-| **Prix** | **Gratuit, libre** | ≈ 630 €/licence | ≈ 1 200 €/licence | ≈ 700 €/licence |
+| **Prix** | **Essai 5 j, puis de $1,50/jour à $199 à vie (tarif Afrique) — voir PRICING.md** | ≈ 630 €/licence | ≈ 1 200 €/licence | ≈ 700 €/licence |
 
 ## En résumé
 
@@ -119,4 +121,4 @@ Pour une **analyse thématique de mémoire ou de thèse sur corpus textuel** (en
 focus groups, réponses ouvertes), QualiCode couvre désormais l'intégralité du flux de travail
 des trois logiciels commerciaux — du terrain au chapitre Résultats — et exporte vers eux au
 format standard REFI-QDA — y compris désormais l'audio, la vidéo, les images et les PDF scannés.
-QualiCode couvre désormais aussi le temps réel (serveur fourni), les statistiques avancées et le pont R/SPSS — et apporte des fonctions que les logiciels commerciaux n'ont pas (palette de commandes, fichier unique sans installation, chiffrement AES-256, gratuité).
+QualiCode couvre désormais aussi le temps réel (serveur fourni), les statistiques avancées et le pont R/SPSS — et apporte des fonctions que les logiciels commerciaux n'ont pas (palette de commandes, fichier unique sans installation, chiffrement AES-256 + verrou d'application, formules d'abonnement à la journée et prix 3 à 40 fois inférieur).

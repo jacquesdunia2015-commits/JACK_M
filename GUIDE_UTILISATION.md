@@ -285,6 +285,35 @@ Si votre équipe dispose d'un serveur de synchronisation (fichier `server/sync-s
 **L'application marche-t-elle sans internet ?**
 → Oui, entièrement. Aucune donnée ne quitte votre ordinateur.
 
+## 17. Mot de passe d'ouverture et verrouillage d'écran 🔐
+
+En plus du chiffrement du fichier `.projx` (section 11), vous pouvez exiger un
+mot de passe **à chaque ouverture de QualiCode**, avant tout accès aux projets :
+
+1. Accueil → **🔐 Mot de passe app** ;
+2. tapez le mot de passe deux fois → « Définir le mot de passe » ;
+3. c'est fait : au prochain lancement, l'écran de déverrouillage apparaîtra.
+
+Un bouton **🔒** apparaît en haut à droite : cliquez-le pour verrouiller
+l'écran quand vous quittez votre poste (comme `Windows + L`).
+
+⚠️ Ce mot de passe n'est **pas récupérable** en cas d'oubli — notez-le en lieu
+sûr. Pour le changer ou le supprimer : Accueil → 🔐 (le mot de passe actuel est
+demandé).
+
+## 18. Essai gratuit, abonnement et activation 💳
+
+- À la première ouverture, vous disposez d'un **essai gratuit complet de
+  5 jours** (l'état est affiché dans la barre du bas).
+- À la fin de l'essai, un écran vous demande une **clé de licence**. Vos
+  données ne sont jamais bloquées : « Exporter mes données » reste disponible.
+- Pour acheter : **💳 Abonnement** → choisissez une formule (jour, semaine,
+  mois, an, à vie) → payez par le canal indiqué (mobile money Orange/MTN/
+  Airtel, carte Visa/Mastercard, Stripe, PayPal, cryptomonnaie) → envoyez la
+  preuve au contact affiché → vous recevez une clé `QC1-…`.
+- Collez la clé dans « 💳 Abonnement » → **Activer**. L'activation fonctionne
+  **hors ligne** et la barre du bas affiche votre formule et sa date de fin.
+
 ---
 
 *Bonne analyse ! 🔍*

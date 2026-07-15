@@ -375,3 +375,40 @@ kbd {
 /* Écriture droite→gauche (arabe) : les volets et le ruban suivent dir=rtl */
 [dir="rtl"] .rlabel { text-align: right; }
 [dir="rtl"] .seg-card-head { direction: rtl; }
+
+/* ================================================================
+   Verrou d'application et écran de licence
+================================================================ */
+#qcLockScreen, #qcLicScreen {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5f8a 60%, #3a7ca5 100%);
+}
+.lock-card {
+  background: #fff; color: #1c2b3a; border-radius: 12px;
+  box-shadow: 0 12px 48px rgba(0,0,0,.35);
+  padding: 32px 36px; width: min(420px, 92vw); text-align: center;
+}
+.lic-card { width: min(640px, 94vw); max-height: 92vh; overflow-y: auto; }
+.lock-logo { font-size: 42px; }
+.lock-card h1 { margin: 4px 0 12px; font-size: 22px; letter-spacing: .5px; }
+.lock-form { display: flex; gap: 8px; margin-top: 12px; }
+.lock-form input { flex: 1; padding: 8px 10px; border: 1px solid #b8c4d0; border-radius: 6px; font-size: 14px; }
+.lock-msg { color: #c0392b; font-size: 13px; margin-top: 8px; }
+.lock-card.shake { animation: lockshake .3s; }
+@keyframes lockshake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.lic-pay { text-align: left; margin-top: 14px; }
+.lic-pay summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+.lic-export { margin-top: 14px; }
+.lic-state { font-size: 14px; }
+
+/* Tableau des tarifs et canaux de paiement */
+.pay-table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 13px; }
+.pay-table th, .pay-table td { border: 1px solid #d5dde5; padding: 5px 8px; text-align: left; }
+.pay-table th { background: #eef3f8; }
+body.dark .pay-table th { background: #2a3542; }
+body.dark .pay-table th, body.dark .pay-table td { border-color: #46586a; }
+.pay-steps li, .pay-channels li { margin: 4px 0; font-size: 13px; }
+.pay-channels code { user-select: all; }
+body.dark .lock-card { background: #202b36; color: #e4ecf4; }
+body.dark .lock-form input { background: #16202a; color: #e4ecf4; border-color: #46586a; }

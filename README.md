@@ -8,6 +8,8 @@ import de textes, codage hiérarchique, récupération de segments, analyses et 
 fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicales, visualisations, rapports).
 
 📖 **Nouveau sur QualiCode ?** Lisez le **[Guide d'utilisation](GUIDE_UTILISATION.md)** — pas à pas, en français simple.
+🎓 **Jamais fait d'analyse qualitative ?** Le **[Manuel du débutant complet (A → Z)](MANUEL_DEBUTANT.md)** explique tout, concepts compris.
+💰 **Commercialisation** : [PRICING.md](PRICING.md) (tarifs, licences, paiements) · [MARKETING.md](MARKETING.md) (cibles, canaux, modèle économique).
 
 ## 🚀 Lancement
 
@@ -62,7 +64,8 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 | **Audio / vidéo (§2.2, §2.7)** | **Lecteur audio et vidéo horodaté** : transcription assistée (image vidéo affichée, vitesse 0,5×–2×, Ctrl+Espace/B/T), horodatages `[mm:ss]` cliquables dans les transcriptions (saut au moment exact), panneau vidéo repliable au-dessus du texte, média 100 % local jamais téléversé, **codage direct sur la piste** (⏺ début/fin d'extrait → code + note, relecture au clic) |
 | **Visualisation (§2.7)** | Portrait de document (séquence colorée des segments), nuage de mots, diagramme de fréquences des codes, **cartes conceptuelles SVG** (nœuds déplaçables, flèches, plusieurs cartes par projet, export .svg) |
 | **Rapports & exports (§2.8)** | Export CSV des segments (compatible Excel), export du système de codes, export CSV de la matrice, **rapport Word (.docx) natif** (archive ZIP + WordprocessingML générés sans bibliothèque), **export ET import REFI-QDA (.qdpx)** — échange bidirectionnel avec MAXQDA, NVivo et ATLAS.ti (lecture ZIP native deflate, hiérarchie de codes, codages, variables via Cases) —, rapport HTML imprimable (→ PDF via l'impression navigateur), export/import du projet `.projx` |
-| **Sécurité (§2.1, §3.4)** | Protection du projet par mot de passe : fichier `.projx` chiffré en **AES-256-GCM**, clé dérivée par PBKDF2 (310 000 itérations, SHA-256) via l'API Web Crypto native |
+| **Sécurité (§2.1, §3.4)** | Protection du projet par mot de passe : fichier `.projx` chiffré en **AES-256-GCM**, clé dérivée par PBKDF2 (310 000 itérations, SHA-256) via l'API Web Crypto native ; **verrou d'application** : mot de passe demandé à chaque ouverture de QualiCode avant tout accès aux données (condensat PBKDF2 salé, jamais le mot de passe en clair), bouton 🔒 de verrouillage manuel de l'écran |
+| **Licence & abonnement** | **Essai gratuit complet de 5 jours**, puis formules jour / semaine / mois / an / à vie activées par **clé de licence signée HMAC-SHA256 vérifiée hors ligne** (générateur vendeur `tools/generer_cle.py`) ; écran d'expiration non punitif (l'export des données reste toujours possible) ; modale « 💳 Abonnement » avec grille tarifaire 2 zones (USD) et canaux de paiement configurables (`js/payments.js`) : mobile money Orange/MTN/Airtel via agrégateur, Visa/Mastercard, Stripe, PayPal, cryptomonnaie — voir [PRICING.md](PRICING.md) et [MARKETING.md](MARKETING.md) |
 | **Équipe (§2.1, §2.9)** | **Fusion de projets** (appariement des documents, codes et mémos ; segments étiquetés par codeur) et **accord inter-codeurs par kappa de Cohen** (unité : le paragraphe, par code + global, interprétation Landis & Koch) — critère d'acceptation n°4 du cahier des charges — et **collaboration par dossier partagé** (File System Access : chaque codeur publie sa copie dans un dossier synchronisé Drive/Dropbox/USB, détection des nouveautés, fusion en un clic, copie chiffrée si le projet est protégé), **collaboration en temps réel** (client WebSocket + serveur de relais fourni `server/sync-server.mjs`, zéro dépendance, aucun stockage serveur : chaque codeur possède ses segments, présence en direct, reconnexion automatique) |
 
 ## 🗺️ Feuille de route (fonctionnalités du cahier des charges non couvertes par ce MVP)
@@ -110,6 +113,9 @@ js/ocr.js           OCR des PDF scannés (extraction JPEG native + IA, clé util
 js/biblio.js        Références bibliographiques (RIS/BibTeX → liste APA)
 js/stats.js         Statistiques avancées (χ², V de Cramér, corrélations, pont R)
 js/realtime.js      Client temps réel WebSocket (contribution par codeur)
+js/applock.js       Verrou d'application (mot de passe à l'ouverture, PBKDF2)
+js/license.js       Essai 5 jours + clés d'abonnement HMAC vérifiées hors ligne
+js/payments.js      Grille tarifaire USD + canaux de paiement configurables
 server/sync-server.mjs  Serveur de relais WebSocket (RFC 6455, zéro dépendance)
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)

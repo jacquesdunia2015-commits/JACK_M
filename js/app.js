@@ -37,6 +37,9 @@ import {
   publishFilename, writeToFolder, listProjxFiles, coderFromFilename, markSeen, fileStatus,
 } from "./sync.js";
 import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from "./crypto.js";
+import { hasAppLock, setAppLock, removeAppLock, verifyAppLock, applockGate, showLockScreen } from "./applock.js";
+import { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS } from "./license.js";
+import { buildPaymentsHtml } from "./payments.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
 const $ = sel => document.querySelector(sel);
@@ -82,10 +85,15 @@ async function init() {
   document.body.classList.toggle("dark", state.ui.theme === "dark");
   $("#langLabel").textContent = getLang().toUpperCase();
 
+  // Verrou d'application : mot de passe AVANT tout accès aux données
+  await applockGate();
+
   if (!(await loadPersisted())) {
     state.project = buildSampleProject();
     persistNow();
   }
+  // Abonnement : essai 5 jours puis clé de licence ; l'export reste possible
+  await licenseGate(() => exportProject());
   // Déplie les racines par défaut
   state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
   childCodes(null).forEach(c => expandedCodes.add(c.id));
@@ -283,6 +291,10 @@ function bindRibbon() {
   });
   $("#btnMyProjects").onclick = openMyProjects;
   $("#btnProtect").onclick = openProtectModal;
+  $("#btnApplock").onclick = openApplockModal;
+  $("#btnLicense").onclick = openLicenseModal;
+  $("#btnLockNow").hidden = !hasAppLock();
+  $("#btnLockNow").onclick = () => showLockScreen();
   $("#btnMergeProject").onclick = () => $("#mergeInput").click();
   $("#btnSharedFolder").onclick = openSharedFolder;
   $("#mergeInput").addEventListener("change", async e => {
@@ -2888,12 +2900,95 @@ function openTrash() {
 }
 
 /* ================================================================
+   Verrou d'application et licence
+================================================================ */
+function openApplockModal() {
+  const locked = hasAppLock();
+  const m = openModal({
+    title: "🔐 " + t("applock_title"),
+    bodyHtml: `
+      <p class="hint">${esc(t("applock_hint"))}</p>
+      ${locked ? `<div class="form-row"><label>${esc(t("applock_current"))}</label><input type="password" id="alCur"></div>` : ""}
+      <div class="form-row"><label>${esc(t("applock_new"))}</label><input type="password" id="alNew"></div>
+      <div class="form-row"><label>${esc(t("applock_confirm"))}</label><input type="password" id="alNew2"></div>
+      <p class="lock-msg" id="alMsg" hidden></p>`,
+    footer: [
+      ...(locked ? [{
+        label: t("applock_remove"), danger: true,
+        onClick: async (o, close) => {
+          if (!(await verifyAppLock(o.querySelector("#alCur").value))) return showAlMsg(o, t("applock_badpw"));
+          removeAppLock();
+          $("#btnLockNow").hidden = true;
+          close(); toast(t("applock_removed"));
+        },
+      }] : []),
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: locked ? t("applock_change") : t("applock_set"), primary: true,
+        onClick: async (o, close) => {
+          if (locked && !(await verifyAppLock(o.querySelector("#alCur").value))) return showAlMsg(o, t("applock_badpw"));
+          const p1 = o.querySelector("#alNew").value, p2 = o.querySelector("#alNew2").value;
+          if (p1.length < 4) return showAlMsg(o, t("applock_short"));
+          if (p1 !== p2) return showAlMsg(o, t("applock_mismatch"));
+          await setAppLock(p1);
+          $("#btnLockNow").hidden = false;
+          close(); toast("🔐 " + t("applock_set_ok"));
+        },
+      },
+    ],
+  });
+  function showAlMsg(o, text) {
+    const el = o.querySelector("#alMsg");
+    el.textContent = text; el.hidden = false;
+  }
+  return m;
+}
+
+async function openLicenseModal() {
+  const st = await licenseStatus();
+  let stateLine;
+  if (st.state === "active") {
+    stateLine = `✅ <b>${esc(t("lic_state_active"))}</b> — ${esc(t(PLAN_LABELS[st.plan]))}` +
+      (st.plan === "life" ? "" : ` · ${esc(t("lic_expires"))} ${esc(st.exp)}`) +
+      (st.licensee ? ` · ${esc(t("lic_licensee"))} : ${esc(st.licensee)}` : "");
+  } else if (st.state === "trial") {
+    stateLine = `⏳ <b>${esc(t("lic_state_trial").replace("{n}", st.daysLeft))}</b>`;
+  } else {
+    stateLine = `⛔ <b>${esc(t("lic_state_expired"))}</b>`;
+  }
+  openModal({
+    title: "💳 " + t("lic_title"), wide: true,
+    bodyHtml: `
+      <p class="lic-state">${stateLine}</p>
+      <div class="form-row"><label>${esc(t("lic_key_label"))}</label>
+        <input type="text" id="licKey" placeholder="QC1-…" spellcheck="false"></div>
+      <p class="lock-msg" id="licMsg" hidden></p>
+      <hr>
+      <h3>${esc(t("lic_buy_title"))}</h3>
+      ${buildPaymentsHtml()}`,
+    footer: [
+      { label: t("close"), onClick: (o, close) => close() },
+      {
+        label: t("lic_activate"), primary: true,
+        onClick: async (o, close) => {
+          const r = await activateKey(o.querySelector("#licKey").value);
+          const msg = o.querySelector("#licMsg");
+          if (r.ok) { close(); toast("✅ " + t("lic_activated")); renderStatus(); }
+          else { msg.textContent = t(r.reason === "expired" ? "lic_key_expired" : "lic_invalid"); msg.hidden = false; }
+        },
+      },
+    ],
+  });
+}
+
+/* ================================================================
    Barre d'état
 ================================================================ */
 function renderStatus() {
   $("#statusDocs").textContent = `📄 ${state.project.documents.length} ${t("docs")}`;
   $("#statusCodes").textContent = `🏷️ ${state.project.codes.length} ${t("codes_lbl")}`;
   $("#statusSegments").textContent = `✂️ ${state.project.segments.length} ${t("segments_lbl")}`;
+  licenseStatus().then(st => { $("#licStatus").textContent = licenseBadge(st); });
 }
 
 init();

@@ -383,6 +383,43 @@ kbd {
 [dir="rtl"] .rlabel { text-align: right; }
 [dir="rtl"] .seg-card-head { direction: rtl; }
 
+/* ================================================================
+   Verrou d'application et écran de licence
+================================================================ */
+#qcLockScreen, #qcLicScreen {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5f8a 60%, #3a7ca5 100%);
+}
+.lock-card {
+  background: #fff; color: #1c2b3a; border-radius: 12px;
+  box-shadow: 0 12px 48px rgba(0,0,0,.35);
+  padding: 32px 36px; width: min(420px, 92vw); text-align: center;
+}
+.lic-card { width: min(640px, 94vw); max-height: 92vh; overflow-y: auto; }
+.lock-logo { font-size: 42px; }
+.lock-card h1 { margin: 4px 0 12px; font-size: 22px; letter-spacing: .5px; }
+.lock-form { display: flex; gap: 8px; margin-top: 12px; }
+.lock-form input { flex: 1; padding: 8px 10px; border: 1px solid #b8c4d0; border-radius: 6px; font-size: 14px; }
+.lock-msg { color: #c0392b; font-size: 13px; margin-top: 8px; }
+.lock-card.shake { animation: lockshake .3s; }
+@keyframes lockshake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.lic-pay { text-align: left; margin-top: 14px; }
+.lic-pay summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+.lic-export { margin-top: 14px; }
+.lic-state { font-size: 14px; }
+
+/* Tableau des tarifs et canaux de paiement */
+.pay-table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 13px; }
+.pay-table th, .pay-table td { border: 1px solid #d5dde5; padding: 5px 8px; text-align: left; }
+.pay-table th { background: #eef3f8; }
+body.dark .pay-table th { background: #2a3542; }
+body.dark .pay-table th, body.dark .pay-table td { border-color: #46586a; }
+.pay-steps li, .pay-channels li { margin: 4px 0; font-size: 13px; }
+.pay-channels code { user-select: all; }
+body.dark .lock-card { background: #202b36; color: #e4ecf4; }
+body.dark .lock-form input { background: #16202a; color: #e4ecf4; border-color: #46586a; }
+
 </style>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
 </head>
@@ -406,6 +443,7 @@ kbd {
       <span id="projectName" class="project-name" title=""></span>
       <button id="btnLang" class="icon-btn" title="Français / English">🌐 <span id="langLabel">FR</span></button>
       <button id="btnShortcuts" class="icon-btn" data-i18n-title="hk_title" title="Raccourcis clavier (F1)">⌨️</button>
+      <button id="btnLockNow" class="icon-btn" data-i18n-title="lock_now" title="Verrouiller l'écran" hidden>🔒</button>
       <button id="btnTheme" class="icon-btn" title="Thème clair / sombre">🌓</button>
     </div>
   </div>
@@ -423,6 +461,8 @@ kbd {
       </div>
       <div class="rgroup">
         <button id="btnProtect" class="rbtn">🔒<span data-i18n="protect">Mot de passe</span></button>
+        <button id="btnApplock" class="rbtn">🔐<span data-i18n="applock_btn">Mot de passe app</span></button>
+        <button id="btnLicense" class="rbtn">💳<span data-i18n="lic_btn">Abonnement</span></button>
         <button id="btnMergeProject" class="rbtn">🧬<span data-i18n="merge_project">Fusionner (.projx)</span></button>
         <button id="btnSharedFolder" class="rbtn">🔄<span data-i18n="shared_folder">Dossier partagé</span></button>
         <button id="btnRealtime" class="rbtn">🌐<span data-i18n="rt_btn">Temps réel (serveur)</span></button>
@@ -636,6 +676,7 @@ kbd {
   <span id="statusCodes"></span>
   <span id="statusSegments"></span>
   <span id="rtStatus"></span>
+  <span id="licStatus"></span>
   <span id="statusSaved" class="right"></span>
 </footer>
 
@@ -1224,6 +1265,37 @@ const translations = {
     pdf_import_fail: "Impossible de lire ce PDF. Il est peut-être scanné (image) ou protégé.",
     recode_done: "Segment recodé vers", drag_to_recode: "Glissez cette carte sur un code (volet Codes) pour recoder le segment",
     lang_title: "Langue de l'interface", lang_hint: "FR et EN sont complets ; les autres langues couvrent l'essentiel et complètent en français. Les textes longs restent en français.",
+    lock_enter: "Cette application est protégée. Entrez le mot de passe pour continuer.",
+    lock_wrong: "Mot de passe incorrect.", lock_unlock: "Déverrouiller", lock_now: "Verrouiller l'écran",
+    applock_btn: "Mot de passe app", applock_title: "Mot de passe de l'application",
+    applock_hint: "Ce mot de passe sera demandé à chaque ouverture de QualiCode, avant tout accès aux projets. Il protège l'accès sur cet appareil ; pour protéger un fichier .projx qui circule, utilisez aussi « Protéger » (chiffrement AES-256). Si vous l'oubliez, il n'y a AUCUN moyen de le récupérer.",
+    applock_set: "Définir le mot de passe", applock_change: "Changer le mot de passe", applock_remove: "Supprimer le mot de passe",
+    applock_current: "Mot de passe actuel :", applock_new: "Nouveau mot de passe :", applock_confirm: "Confirmez le mot de passe :",
+    applock_mismatch: "Les deux saisies ne correspondent pas.", applock_short: "4 caractères minimum.",
+    applock_set_ok: "Mot de passe défini. Il sera demandé à la prochaine ouverture.",
+    applock_removed: "Mot de passe supprimé.", applock_badpw: "Mot de passe actuel incorrect.",
+    lic_btn: "Abonnement", lic_title: "Licence et abonnement",
+    lic_trial_badge: "Essai : {n} j restants", lic_expired_badge: "Licence expirée",
+    lic_state_trial: "Essai gratuit — {n} jour(s) restant(s)", lic_state_active: "Licence active",
+    lic_state_expired: "Licence ou essai expiré",
+    lic_plan_day: "Formule Jour", lic_plan_week: "Formule Semaine", lic_plan_month: "Formule Mois",
+    lic_plan_year: "Formule An", lic_plan_life: "Licence à vie",
+    lic_expires: "Expire le", lic_licensee: "Licencié",
+    lic_key_label: "Clé de licence (reçue après paiement) :", lic_activate: "Activer",
+    lic_invalid: "Clé invalide. Vérifiez la copie (la clé commence par QC1-).",
+    lic_key_expired: "Cette clé est déjà expirée. Contactez le vendeur.",
+    lic_activated: "Licence activée. Merci !",
+    lic_expired_msg: "Votre essai gratuit de 5 jours (ou votre abonnement) est terminé. Entrez une clé de licence pour continuer.",
+    lic_clock_msg: "L'horloge de l'appareil semble avoir été reculée. Entrez une clé de licence valide pour continuer.",
+    lic_buy_title: "Tarifs et moyens de paiement", lic_export_btn: "Exporter mes données (.projx) — toujours possible",
+    pay_title: "S'abonner / Acheter", pay_plan: "Formule", pay_free: "Gratuit", pay_days: "jours",
+    pay_plan_trial: "Essai (complet)", pay_plan_day: "1 jour", pay_plan_week: "1 semaine (7 j)",
+    pay_plan_month: "1 mois (31 j)", pay_plan_year: "1 an (366 j) — 2 mois offerts", pay_plan_life: "À vie (achat définitif)",
+    pay_how_title: "Comment payer et activer",
+    pay_step1: "Payez la formule choisie par l'un des canaux ci-dessous (mobile money, carte Visa/Mastercard, Stripe, PayPal ou cryptomonnaie).",
+    pay_step2: "Envoyez la preuve de paiement (capture ou référence de transaction) à",
+    pay_step3: "Vous recevez votre clé de licence (QC1-…) — collez-la dans « 💳 Abonnement » : l'application s'active immédiatement, même hors ligne.",
+    pay_not_configured: "Canaux de paiement en cours de configuration — contactez le vendeur par e-mail pour payer.",
     undo: "Annuler", redo: "Rétablir", grp_edit: "Édition",
     undo_done: "Action annulée", redo_done: "Action rétablie",
     nothing_to_undo: "Rien à annuler", nothing_to_redo: "Rien à rétablir",
@@ -1439,6 +1511,37 @@ const translations = {
     pdf_import_fail: "Unable to read this PDF. It may be scanned (image-based) or protected.",
     recode_done: "Segment recoded to", drag_to_recode: "Drag this card onto a code (Codes panel) to recode the segment",
     lang_title: "Interface language", lang_hint: "FR and EN are complete; other languages cover the essentials and fall back to French for long texts.",
+    lock_enter: "This application is protected. Enter the password to continue.",
+    lock_wrong: "Wrong password.", lock_unlock: "Unlock", lock_now: "Lock screen",
+    applock_btn: "App password", applock_title: "Application password",
+    applock_hint: "This password will be asked every time QualiCode opens, before any project can be accessed. It protects access on this device; to protect a .projx file that travels, also use “Protect” (AES-256 encryption). If you forget it, there is NO way to recover it.",
+    applock_set: "Set password", applock_change: "Change password", applock_remove: "Remove password",
+    applock_current: "Current password:", applock_new: "New password:", applock_confirm: "Confirm password:",
+    applock_mismatch: "The two entries do not match.", applock_short: "Minimum 4 characters.",
+    applock_set_ok: "Password set. It will be asked at the next launch.",
+    applock_removed: "Password removed.", applock_badpw: "Current password is incorrect.",
+    lic_btn: "Subscription", lic_title: "License & subscription",
+    lic_trial_badge: "Trial: {n} d left", lic_expired_badge: "License expired",
+    lic_state_trial: "Free trial — {n} day(s) left", lic_state_active: "Active license",
+    lic_state_expired: "License or trial expired",
+    lic_plan_day: "Day plan", lic_plan_week: "Week plan", lic_plan_month: "Month plan",
+    lic_plan_year: "Year plan", lic_plan_life: "Lifetime license",
+    lic_expires: "Expires on", lic_licensee: "Licensee",
+    lic_key_label: "License key (received after payment):", lic_activate: "Activate",
+    lic_invalid: "Invalid key. Check the copy (keys start with QC1-).",
+    lic_key_expired: "This key has already expired. Contact the vendor.",
+    lic_activated: "License activated. Thank you!",
+    lic_expired_msg: "Your 5-day free trial (or your subscription) has ended. Enter a license key to continue.",
+    lic_clock_msg: "The device clock appears to have been set back. Enter a valid license key to continue.",
+    lic_buy_title: "Prices and payment methods", lic_export_btn: "Export my data (.projx) — always available",
+    pay_title: "Subscribe / Buy", pay_plan: "Plan", pay_free: "Free", pay_days: "days",
+    pay_plan_trial: "Trial (full app)", pay_plan_day: "1 day", pay_plan_week: "1 week (7 d)",
+    pay_plan_month: "1 month (31 d)", pay_plan_year: "1 year (366 d) — 2 months free", pay_plan_life: "Lifetime (one-time purchase)",
+    pay_how_title: "How to pay and activate",
+    pay_step1: "Pay for your plan through one of the channels below (mobile money, Visa/Mastercard, Stripe, PayPal or cryptocurrency).",
+    pay_step2: "Send the payment proof (screenshot or transaction reference) to",
+    pay_step3: "You receive your license key (QC1-…) — paste it into “💳 Subscription”: the app activates immediately, even offline.",
+    pay_not_configured: "Payment channels are being set up — contact the vendor by e-mail to pay.",
     undo: "Undo", redo: "Redo", grp_edit: "Edit",
     undo_done: "Action undone", redo_done: "Action redone",
     nothing_to_undo: "Nothing to undo", nothing_to_redo: "Nothing to redo",
@@ -2501,6 +2604,381 @@ async function decryptProjectEnvelope(envelope, password) {
 }
 
 return { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope };
+})();
+
+__QC["applock"] = (function () {
+"use strict";
+// Verrou d'application : un mot de passe est demandé à CHAQUE ouverture de
+// QualiCode avant tout accès aux données (bibliothèque de projets comprise).
+// Le mot de passe n'est jamais stocké : seul un condensat PBKDF2-SHA256 salé
+// est conservé dans localStorage. Complémentaire du chiffrement AES-256 des
+// fichiers .projx (js/crypto.js) : ici on protège l'accès à l'application sur
+// la machine, là-bas on protège le fichier qui circule.
+
+const { t } = __QC["i18n"];
+
+const STORE_KEY = "qualicode.applock";
+const ITERATIONS = 310000;
+const enc = new TextEncoder();
+
+function b64(buffer) {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+
+function fromB64(s) {
+  return Uint8Array.from(atob(s), c => c.charCodeAt(0));
+}
+
+async function deriveHash(password, salt) {
+  const material = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations: ITERATIONS, hash: "SHA-256" },
+    material,
+    256
+  );
+  return b64(bits);
+}
+
+function hasAppLock() {
+  return !!localStorage.getItem(STORE_KEY);
+}
+
+async function setAppLock(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const hash = await deriveHash(password, salt);
+  localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, iterations: ITERATIONS, salt: b64(salt), hash }));
+}
+
+function removeAppLock() {
+  localStorage.removeItem(STORE_KEY);
+}
+
+async function verifyAppLock(password) {
+  const rec = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+  if (!rec) return true;
+  const hash = await deriveHash(password, fromB64(rec.salt));
+  return hash === rec.hash;
+}
+
+/** Affiche l'écran de verrouillage ; la promesse est résolue au déverrouillage. */
+function showLockScreen() {
+  return new Promise(resolve => {
+    document.getElementById("qcLockScreen")?.remove();
+    const el = document.createElement("div");
+    el.id = "qcLockScreen";
+    el.innerHTML = `
+      <div class="lock-card">
+        <div class="lock-logo">🔐</div>
+        <h1>QualiCode</h1>
+        <p>${t("lock_enter")}</p>
+        <form class="lock-form">
+          <input type="password" id="lockPw" autocomplete="current-password" autofocus>
+          <button type="submit" class="btn primary">${t("lock_unlock")}</button>
+        </form>
+        <p class="lock-msg" hidden></p>
+      </div>`;
+    document.body.appendChild(el);
+    const input = el.querySelector("#lockPw");
+    const msg = el.querySelector(".lock-msg");
+    input.focus();
+    el.querySelector(".lock-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const ok = await verifyAppLock(input.value);
+      if (ok) { el.remove(); resolve(); }
+      else {
+        msg.textContent = t("lock_wrong");
+        msg.hidden = false;
+        input.value = "";
+        input.focus();
+        const card = el.querySelector(".lock-card");
+        card.classList.remove("shake");
+        void card.offsetWidth;
+        card.classList.add("shake");
+      }
+    });
+  });
+}
+
+/** Barrière d'entrée : ne rend la main que si l'application est déverrouillée. */
+async function applockGate() {
+  if (!hasAppLock()) return;
+  await showLockScreen();
+}
+
+return { hasAppLock, setAppLock, removeAppLock, verifyAppLock, showLockScreen, applockGate };
+})();
+
+__QC["payments"] = (function () {
+"use strict";
+// Tarifs et canaux de paiement de QualiCode.
+//
+// IMPORTANT (à lire avant commercialisation) : une application 100 % locale ne
+// peut pas encaisser un paiement toute seule. Le circuit est donc :
+//   1. le client paie par l'un des canaux ci-dessous (lien Stripe, PayPal,
+//      mobile money, virement, crypto…) ;
+//   2. le vendeur reçoit la notification de paiement (e-mail / SMS de
+//      l'opérateur ou du prestataire) ;
+//   3. le vendeur génère une clé de licence avec tools/generer_cle.py et
+//      l'envoie au client (e-mail ou WhatsApp) ;
+//   4. le client colle la clé dans « 💳 Abonnement » → l'application s'active,
+//      même hors ligne.
+// Pour automatiser l'étape 2→3 (livraison instantanée de la clé), il faut un
+// petit serveur avec les webhooks du prestataire — voir PRICING.md §5.
+//
+// PERSONNALISEZ PAY_CONFIG avec VOS liens et numéros marchands réels avant de
+// distribuer l'application. Les valeurs « À CONFIGURER » sont des exemples.
+
+const { t } = __QC["i18n"];
+
+/** Grille tarifaire en dollars US — deux zones (parité de pouvoir d'achat). */
+const PRICING = {
+  currency: "USD",
+  zones: [
+    { id: "afrique", label: "Afrique (tarif solidaire)", day: 1.5, week: 6, month: 15, year: 99, life: 199 },
+    { id: "international", label: "International", day: 4, week: 15, month: 29, year: 199, life: 399 },
+  ],
+  institution: { afrique: 990, international: 1990, seats: 10 },
+  trialDays: 5,
+};
+
+/** Canaux de paiement affichés au client. À remplacer par vos comptes réels. */
+const PAY_CONFIG = {
+  contactEmail: "jacquesdunia2015@gmail.com",
+  whatsapp: "+257 00 00 00 00", // À CONFIGURER : votre numéro WhatsApp Business
+  stripeLink: "", // À CONFIGURER : lien « Payment Link » créé sur stripe.com (Visa, Mastercard)
+  paypalLink: "", // À CONFIGURER : ex. https://paypal.me/VotreNom
+  aggregatorLink: "", // À CONFIGURER : page de paiement CinetPay / Flutterwave / PawaPay (mobile money + cartes)
+  mobileMoney: [
+    { op: "Orange Money", number: "À CONFIGURER", name: "Nom du marchand" },
+    { op: "MTN MoMo", number: "À CONFIGURER", name: "Nom du marchand" },
+    { op: "Airtel Money", number: "À CONFIGURER", name: "Nom du marchand" },
+  ],
+  crypto: [
+    { coin: "USDT (TRC-20)", address: "À CONFIGURER" },
+    { coin: "Bitcoin (BTC)", address: "À CONFIGURER" },
+  ],
+};
+
+const fmt = v => "$" + (Number.isInteger(v) ? v : v.toFixed(2));
+
+/** Tableau HTML des formules (essai, jour, semaine, mois, an, à vie). */
+function buildPricingHtml() {
+  const rows = [
+    ["pay_plan_trial", z => t("pay_free") + " · 5 " + t("pay_days")],
+    ["pay_plan_day", z => fmt(z.day)],
+    ["pay_plan_week", z => fmt(z.week)],
+    ["pay_plan_month", z => fmt(z.month)],
+    ["pay_plan_year", z => fmt(z.year)],
+    ["pay_plan_life", z => fmt(z.life)],
+  ];
+  const zs = PRICING.zones;
+  let h = `<table class="pay-table"><thead><tr><th>${t("pay_plan")}</th>`;
+  for (const z of zs) h += `<th>${z.label}</th>`;
+  h += "</tr></thead><tbody>";
+  for (const [key, cell] of rows) {
+    h += `<tr><td>${t(key)}</td>`;
+    for (const z of zs) h += `<td>${cell(z)}</td>`;
+    h += "</tr>";
+  }
+  h += "</tbody></table>";
+  return h;
+}
+
+/** Liste HTML des canaux de paiement configurés + marche à suivre. */
+function buildPaymentsHtml() {
+  const c = PAY_CONFIG;
+  const li = [];
+  if (c.aggregatorLink) li.push(`<li>📱 <b>Mobile money</b> (Orange, MTN, Airtel) &amp; cartes : <a href="${c.aggregatorLink}" target="_blank" rel="noopener">${c.aggregatorLink}</a></li>`);
+  for (const m of c.mobileMoney) {
+    if (m.number && !/CONFIGURER/.test(m.number)) li.push(`<li>📱 <b>${m.op}</b> : ${m.number} (${m.name})</li>`);
+  }
+  if (c.stripeLink) li.push(`<li>💳 <b>Visa / Mastercard (Stripe)</b> : <a href="${c.stripeLink}" target="_blank" rel="noopener">${c.stripeLink}</a></li>`);
+  if (c.paypalLink) li.push(`<li>🅿️ <b>PayPal</b> : <a href="${c.paypalLink}" target="_blank" rel="noopener">${c.paypalLink}</a></li>`);
+  for (const k of c.crypto) {
+    if (k.address && !/CONFIGURER/.test(k.address)) li.push(`<li>₿ <b>${k.coin}</b> : <code>${k.address}</code></li>`);
+  }
+  const channels = li.length
+    ? `<ul class="pay-channels">${li.join("")}</ul>`
+    : `<p class="hint">${t("pay_not_configured")}</p>`;
+  return `
+    ${buildPricingHtml()}
+    <h3>${t("pay_how_title")}</h3>
+    <ol class="pay-steps">
+      <li>${t("pay_step1")}</li>
+      <li>${t("pay_step2")} <b>${c.contactEmail}</b>${c.whatsapp && !/00 00/.test(c.whatsapp) ? " / WhatsApp " + c.whatsapp : ""}</li>
+      <li>${t("pay_step3")}</li>
+    </ol>
+    ${channels}`;
+}
+
+return { buildPricingHtml, buildPaymentsHtml, PRICING, PAY_CONFIG };
+})();
+
+__QC["license"] = (function () {
+"use strict";
+// Licences et abonnements de QualiCode.
+//
+// Fonctionnement 100 % hors ligne :
+//  - essai gratuit de 5 jours au premier lancement (date stockée localement) ;
+//  - ensuite, une clé de licence signée HMAC-SHA256 active l'application pour
+//    la durée payée : jour, semaine, mois, an ou à vie ;
+//  - les clés sont générées par le vendeur avec tools/generer_cle.py et
+//    vérifiées ici sans aucun serveur.
+//
+// Honnêteté technique : le secret de signature est embarqué dans l'application
+// (obligatoire pour vérifier hors ligne). Un utilisateur technique qui lit le
+// code source peut donc fabriquer une clé. C'est une protection « honnête
+// dissuasive » (comme les licences de WinRAR ou Sublime Text), pas un DRM
+// inviolable — aucun logiciel local n'en a. Changez LICENSE_SECRET (ici ET
+// dans tools/generer_cle.py) avant toute distribution commerciale.
+
+const { t } = __QC["i18n"];
+const { buildPaymentsHtml } = __QC["payments"];
+
+const LICENSE_SECRET = "QualiCode-2026-CHANGEZ-MOI-avant-vente";
+const STORE_KEY = "qualicode.license";
+const TRIAL_DAYS = 5;
+const DAY_MS = 86400000;
+
+const PLAN_LABELS = { day: "lic_plan_day", week: "lic_plan_week", month: "lic_plan_month", year: "lic_plan_year", life: "lic_plan_life" };
+
+const enc2 = new TextEncoder();
+
+function b64u(s) {
+  return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromB64u(s) {
+  return decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/"))));
+}
+
+async function hmacHex(payload) {
+  const key = await crypto.subtle.importKey("raw", enc2.encode(LICENSE_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, enc2.encode(payload));
+  return [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 20);
+}
+
+/** Fabrique une clé (utilisé par les tests ; le vendeur utilise tools/generer_cle.py). */
+async function makeKey(plan, expIso, licensee) {
+  const payload = `${plan}|${expIso}|${licensee || ""}`;
+  return `QC1-${b64u(payload)}-${await hmacHex(payload)}`;
+}
+
+/** Vérifie une clé ; retourne { ok, plan, exp, licensee } ou { ok:false, reason }. */
+async function verifyKey(key) {
+  try {
+    const m = /^QC1-([A-Za-z0-9_-]+)-([0-9a-f]{20})$/.exec((key || "").trim());
+    if (!m) return { ok: false, reason: "format" };
+    const payload = fromB64u(m[1]);
+    if ((await hmacHex(payload)) !== m[2]) return { ok: false, reason: "signature" };
+    const [plan, exp, licensee] = payload.split("|");
+    if (!PLAN_LABELS[plan] || !/^\d{4}-\d{2}-\d{2}$/.test(exp)) return { ok: false, reason: "format" };
+    return { ok: true, plan, exp, licensee };
+  } catch {
+    return { ok: false, reason: "format" };
+  }
+}
+
+function readStore() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch { return {}; }
+}
+
+function writeStore(rec) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(rec));
+}
+
+/** Active une clé après vérification (et refuse une clé déjà expirée). */
+async function activateKey(key) {
+  const v = await verifyKey(key);
+  if (!v.ok) return v;
+  if (endOfDay(v.exp) < Date.now()) return { ok: false, reason: "expired" };
+  const rec = readStore();
+  rec.key = key.trim();
+  writeStore(rec);
+  return v;
+}
+
+function endOfDay(iso) {
+  return new Date(iso + "T23:59:59").getTime();
+}
+
+/** État courant : { state: "active"|"trial"|"expired", daysLeft, plan, exp, reason }. */
+async function licenseStatus() {
+  const rec = readStore();
+  const now = Date.now();
+
+  // Détection grossière de recul d'horloge (> 36 h en arrière)
+  const tampered = rec.lastSeen && now < rec.lastSeen - 1.5 * DAY_MS;
+  rec.lastSeen = Math.max(now, rec.lastSeen || 0);
+  if (!rec.trialStart) rec.trialStart = now;
+  writeStore(rec);
+
+  if (rec.key) {
+    const v = await verifyKey(rec.key);
+    if (v.ok && endOfDay(v.exp) >= now && !tampered) {
+      return { state: "active", plan: v.plan, exp: v.exp, licensee: v.licensee, daysLeft: Math.ceil((endOfDay(v.exp) - now) / DAY_MS) };
+    }
+    if (v.ok && endOfDay(v.exp) < now) return { state: "expired", reason: "key", plan: v.plan, exp: v.exp };
+  }
+  if (tampered) return { state: "expired", reason: "clock" };
+
+  const elapsed = now - rec.trialStart;
+  const daysLeft = Math.ceil((TRIAL_DAYS * DAY_MS - elapsed) / DAY_MS);
+  if (daysLeft > 0) return { state: "trial", daysLeft };
+  return { state: "expired", reason: "trial" };
+}
+
+/** Texte court pour la barre d'état. */
+function licenseBadge(st) {
+  if (st.state === "active") return "💳 " + t(PLAN_LABELS[st.plan]) + (st.plan === "life" ? "" : " → " + st.exp);
+  if (st.state === "trial") return "⏳ " + t("lic_trial_badge").replace("{n}", st.daysLeft);
+  return "⛔ " + t("lic_expired_badge");
+}
+
+/**
+ * Barrière d'abonnement : si l'essai et la licence sont expirés, affiche un
+ * écran bloquant (saisie de clé + tarifs + canaux de paiement). Les données ne
+ * sont jamais prises en otage : un bouton exporte le projet même expiré.
+ * `onExport` est fourni par app.js. Résout quand une clé valide est saisie.
+ */
+async function licenseGate(onExport) {
+  const st = await licenseStatus();
+  if (st.state !== "expired") return st;
+  return new Promise(resolve => {
+    document.getElementById("qcLicScreen")?.remove();
+    const el = document.createElement("div");
+    el.id = "qcLicScreen";
+    el.innerHTML = `
+      <div class="lock-card lic-card">
+        <div class="lock-logo">💳</div>
+        <h1>QualiCode</h1>
+        <p><b>${t(st.reason === "clock" ? "lic_clock_msg" : "lic_expired_msg")}</b></p>
+        <form class="lock-form">
+          <input type="text" id="licKeyIn" placeholder="QC1-…" spellcheck="false">
+          <button type="submit" class="btn primary">${t("lic_activate")}</button>
+        </form>
+        <p class="lock-msg" hidden></p>
+        <details class="lic-pay"><summary>${t("lic_buy_title")}</summary>${buildPaymentsHtml()}</details>
+        <button type="button" class="btn lic-export">📦 ${t("lic_export_btn")}</button>
+      </div>`;
+    document.body.appendChild(el);
+    const input = el.querySelector("#licKeyIn");
+    const msg = el.querySelector(".lock-msg");
+    input.focus();
+    el.querySelector(".lic-export").onclick = () => onExport && onExport();
+    el.querySelector(".lock-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const r = await activateKey(input.value);
+      if (r.ok) { el.remove(); resolve(await licenseStatus()); }
+      else {
+        msg.textContent = t(r.reason === "expired" ? "lic_key_expired" : "lic_invalid");
+        msg.hidden = false;
+      }
+    });
+  });
+}
+
+return { makeKey, verifyKey, activateKey, licenseStatus, licenseBadge, licenseGate, PLAN_LABELS };
 })();
 
 __QC["merge"] = (function () {
@@ -5017,6 +5495,9 @@ const {
   publishFilename, writeToFolder, listProjxFiles, coderFromFilename, markSeen, fileStatus,
 } = __QC["sync"];
 const { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } = __QC["crypto"];
+const { hasAppLock, setAppLock, removeAppLock, verifyAppLock, applockGate, showLockScreen } = __QC["applock"];
+const { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS } = __QC["license"];
+const { buildPaymentsHtml } = __QC["payments"];
 const { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } = __QC["merge"];
 
 const $ = sel => document.querySelector(sel);
@@ -5062,10 +5543,15 @@ async function init() {
   document.body.classList.toggle("dark", state.ui.theme === "dark");
   $("#langLabel").textContent = getLang().toUpperCase();
 
+  // Verrou d'application : mot de passe AVANT tout accès aux données
+  await applockGate();
+
   if (!(await loadPersisted())) {
     state.project = buildSampleProject();
     persistNow();
   }
+  // Abonnement : essai 5 jours puis clé de licence ; l'export reste possible
+  await licenseGate(() => exportProject());
   // Déplie les racines par défaut
   state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
   childCodes(null).forEach(c => expandedCodes.add(c.id));
@@ -5263,6 +5749,10 @@ function bindRibbon() {
   });
   $("#btnMyProjects").onclick = openMyProjects;
   $("#btnProtect").onclick = openProtectModal;
+  $("#btnApplock").onclick = openApplockModal;
+  $("#btnLicense").onclick = openLicenseModal;
+  $("#btnLockNow").hidden = !hasAppLock();
+  $("#btnLockNow").onclick = () => showLockScreen();
   $("#btnMergeProject").onclick = () => $("#mergeInput").click();
   $("#btnSharedFolder").onclick = openSharedFolder;
   $("#mergeInput").addEventListener("change", async e => {
@@ -7868,12 +8358,95 @@ function openTrash() {
 }
 
 /* ================================================================
+   Verrou d'application et licence
+================================================================ */
+function openApplockModal() {
+  const locked = hasAppLock();
+  const m = openModal({
+    title: "🔐 " + t("applock_title"),
+    bodyHtml: `
+      <p class="hint">${esc(t("applock_hint"))}</p>
+      ${locked ? `<div class="form-row"><label>${esc(t("applock_current"))}</label><input type="password" id="alCur"></div>` : ""}
+      <div class="form-row"><label>${esc(t("applock_new"))}</label><input type="password" id="alNew"></div>
+      <div class="form-row"><label>${esc(t("applock_confirm"))}</label><input type="password" id="alNew2"></div>
+      <p class="lock-msg" id="alMsg" hidden></p>`,
+    footer: [
+      ...(locked ? [{
+        label: t("applock_remove"), danger: true,
+        onClick: async (o, close) => {
+          if (!(await verifyAppLock(o.querySelector("#alCur").value))) return showAlMsg(o, t("applock_badpw"));
+          removeAppLock();
+          $("#btnLockNow").hidden = true;
+          close(); toast(t("applock_removed"));
+        },
+      }] : []),
+      { label: t("cancel"), onClick: (o, close) => close() },
+      {
+        label: locked ? t("applock_change") : t("applock_set"), primary: true,
+        onClick: async (o, close) => {
+          if (locked && !(await verifyAppLock(o.querySelector("#alCur").value))) return showAlMsg(o, t("applock_badpw"));
+          const p1 = o.querySelector("#alNew").value, p2 = o.querySelector("#alNew2").value;
+          if (p1.length < 4) return showAlMsg(o, t("applock_short"));
+          if (p1 !== p2) return showAlMsg(o, t("applock_mismatch"));
+          await setAppLock(p1);
+          $("#btnLockNow").hidden = false;
+          close(); toast("🔐 " + t("applock_set_ok"));
+        },
+      },
+    ],
+  });
+  function showAlMsg(o, text) {
+    const el = o.querySelector("#alMsg");
+    el.textContent = text; el.hidden = false;
+  }
+  return m;
+}
+
+async function openLicenseModal() {
+  const st = await licenseStatus();
+  let stateLine;
+  if (st.state === "active") {
+    stateLine = `✅ <b>${esc(t("lic_state_active"))}</b> — ${esc(t(PLAN_LABELS[st.plan]))}` +
+      (st.plan === "life" ? "" : ` · ${esc(t("lic_expires"))} ${esc(st.exp)}`) +
+      (st.licensee ? ` · ${esc(t("lic_licensee"))} : ${esc(st.licensee)}` : "");
+  } else if (st.state === "trial") {
+    stateLine = `⏳ <b>${esc(t("lic_state_trial").replace("{n}", st.daysLeft))}</b>`;
+  } else {
+    stateLine = `⛔ <b>${esc(t("lic_state_expired"))}</b>`;
+  }
+  openModal({
+    title: "💳 " + t("lic_title"), wide: true,
+    bodyHtml: `
+      <p class="lic-state">${stateLine}</p>
+      <div class="form-row"><label>${esc(t("lic_key_label"))}</label>
+        <input type="text" id="licKey" placeholder="QC1-…" spellcheck="false"></div>
+      <p class="lock-msg" id="licMsg" hidden></p>
+      <hr>
+      <h3>${esc(t("lic_buy_title"))}</h3>
+      ${buildPaymentsHtml()}`,
+    footer: [
+      { label: t("close"), onClick: (o, close) => close() },
+      {
+        label: t("lic_activate"), primary: true,
+        onClick: async (o, close) => {
+          const r = await activateKey(o.querySelector("#licKey").value);
+          const msg = o.querySelector("#licMsg");
+          if (r.ok) { close(); toast("✅ " + t("lic_activated")); renderStatus(); }
+          else { msg.textContent = t(r.reason === "expired" ? "lic_key_expired" : "lic_invalid"); msg.hidden = false; }
+        },
+      },
+    ],
+  });
+}
+
+/* ================================================================
    Barre d'état
 ================================================================ */
 function renderStatus() {
   $("#statusDocs").textContent = `📄 ${state.project.documents.length} ${t("docs")}`;
   $("#statusCodes").textContent = `🏷️ ${state.project.codes.length} ${t("codes_lbl")}`;
   $("#statusSegments").textContent = `✂️ ${state.project.segments.length} ${t("segments_lbl")}`;
+  licenseStatus().then(st => { $("#licStatus").textContent = licenseBadge(st); });
 }
 
 init();
