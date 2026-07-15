@@ -62,7 +62,8 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Statistiques descriptives des variables | ✅ | ✅ | ✅ | 🔶 |
 | Accord inter-codeurs (kappa de Cohen) | ✅ | ✅ | ✅ | ✅ |
 | Fusion de projets multi-codeurs | ✅ | ✅ | ✅ | ✅ |
-| Statistiques avancées / pont SPSS-R | ❌ | ✅ 💰 | ✅ 💰 | 🔶 |
+| Statistiques avancées : χ² + p, V de Cramér, corrélations | ✅ | ✅ 💰 | ✅ 💰 | 🔶 |
+| Pont R / SPSS / jamovi (matrice + script prêt) | ✅ | ✅ 💰 | ✅ 💰 | 🔶 |
 | Analyse longitudinale | ❌ | 🔶 | ✅ | ❌ |
 | Framework matrix (Ritchie & Spencer) | ❌ | ❌ | ✅ | ❌ |
 | Cas (regrouper plusieurs documents = 1 participant) | 🔶 via groupes | ✅ | ✅ | ✅ |
@@ -106,7 +107,8 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Fonctionne sans installation (un fichier HTML) | ✅ | ❌ | ❌ | ❌ |
 | Collaboration asynchrone (fusion de fichiers) | ✅ | ✅ | ✅ | ✅ |
 | Collaboration par dossier partagé (Drive/Dropbox, détection des nouveautés) | ✅ | 🔶 | 🔶 | 🔶 |
-| Collaboration temps réel multi-utilisateurs | ❌ | ✅ 💰 serveur | ✅ 💰 serveur | ✅ 💰 web |
+| Collaboration temps réel multi-utilisateurs | ✅ serveur fourni | ✅ 💰 serveur | ✅ 💰 serveur | ✅ 💰 web |
+| Palette de commandes (Ctrl+K, toutes les actions au clavier) | ✅ | ❌ | ❌ | ❌ |
 | Interface FR + EN | ✅ | ✅ | 🔶 | 🔶 |
 | Corpus de plusieurs milliers de documents (IndexedDB + filtre) | ✅ | ✅ | ✅ | ✅ |
 | **Prix** | **Gratuit, libre** | ≈ 630 €/licence | ≈ 1 200 €/licence | ≈ 700 €/licence |
@@ -117,4 +119,4 @@ Pour une **analyse thématique de mémoire ou de thèse sur corpus textuel** (en
 focus groups, réponses ouvertes), QualiCode couvre désormais l'intégralité du flux de travail
 des trois logiciels commerciaux — du terrain au chapitre Résultats — et exporte vers eux au
 format standard REFI-QDA — y compris désormais l'audio, la vidéo, les images et les PDF scannés.
-Les écarts restants : collaboration temps réel serveur, statistiques avancées type SPSS/R, et le poli d'interface de logiciels vieux de 25 ans.
+QualiCode couvre désormais aussi le temps réel (serveur fourni), les statistiques avancées et le pont R/SPSS — et apporte des fonctions que les logiciels commerciaux n'ont pas (palette de commandes, fichier unique sans installation, chiffrement AES-256, gratuité).

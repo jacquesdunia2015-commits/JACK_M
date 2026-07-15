@@ -238,7 +238,28 @@ Quand deux personnes codent les mêmes entretiens (chacune de son côté) :
 
 ---
 
-## 13. Petites questions fréquentes
+## 13. Aller plus vite : la palette de commandes ⌨️
+
+Appuyez sur **Ctrl+K** n'importe où : une barre s'ouvre, tapez le début d'une action (« fusionner », « nuage », « rapport »…) et validez avec Entrée — plus besoin de chercher le bouton. Autres raccourcis : **Ctrl+S** enregistre le .projx, **Ctrl+F** va à la recherche, **F1** affiche tous les raccourcis (aussi via le bouton ⌨️ en haut à droite).
+
+## 14. Les statistiques avancées 📐
+
+Onglet **Analyse → 📐 Statistiques avancées** :
+- **Croisement code × variable (χ²)** : par exemple « le code *Obstacles financiers* dépend-il du *sexe* ? ». Le logiciel affiche le tableau, le χ², la valeur p, le V de Cramér **et une phrase d'interprétation en clair** (significatif ou non). Un avertissement s'affiche si l'échantillon est trop petit.
+- **Corrélations entre codes** : quels thèmes varient ensemble d'un entretien à l'autre (matrice colorée, bleu = ensemble, rouge = opposés).
+- **Pont R / SPSS / jamovi** : téléchargez la matrice documents × codes (+ variables) en CSV et un **script R prêt à exécuter** — pour les analyses mixtes poussées de votre mémoire ou vos articles.
+
+## 15. Travailler à plusieurs EN DIRECT 🌐
+
+Si votre équipe dispose d'un serveur de synchronisation (fichier `server/sync-server.mjs` du projet, lancé avec `node server/sync-server.mjs` sur une machine accessible) :
+1. Chacun ouvre **Accueil → 🌐 Temps réel (serveur)**, entre l'adresse (`ws://adresse:8765`), la même **salle** et son **nom de codeur**.
+2. C'est tout : les codages de chacun apparaissent chez les autres **en direct** (indicateur 🟢 en bas de l'écran avec la liste des personnes connectées).
+3. Chaque codeur reste propriétaire de ses segments — aucun conflit possible — et le kappa se calcule à tout moment.
+4. Le serveur ne stocke **aucune donnée** : il fait passer les messages, c'est tout. Si la connexion tombe, l'application se reconnecte toute seule et vous continuez hors ligne sans rien perdre.
+
+> 💡 Pas de serveur ? Le **🔄 Dossier partagé** (section 12) reste la solution simple.
+
+## 16. Petites questions fréquentes
 
 **J'ai supprimé un document ou un code par erreur !**
 → **Accueil → 🗑️ Corbeille** : cliquez sur *Restaurer*.

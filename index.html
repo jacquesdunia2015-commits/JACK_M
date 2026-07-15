@@ -26,6 +26,7 @@
     <div class="ribbon-right">
       <span id="projectName" class="project-name" title=""></span>
       <button id="btnLang" class="icon-btn" title="Français / English">🌐 <span id="langLabel">FR</span></button>
+      <button id="btnShortcuts" class="icon-btn" data-i18n-title="hk_title" title="Raccourcis clavier (F1)">⌨️</button>
       <button id="btnTheme" class="icon-btn" title="Thème clair / sombre">🌓</button>
     </div>
   </div>
@@ -45,6 +46,7 @@
         <button id="btnProtect" class="rbtn">🔒<span data-i18n="protect">Mot de passe</span></button>
         <button id="btnMergeProject" class="rbtn">🧬<span data-i18n="merge_project">Fusionner (.projx)</span></button>
         <button id="btnSharedFolder" class="rbtn">🔄<span data-i18n="shared_folder">Dossier partagé</span></button>
+        <button id="btnRealtime" class="rbtn">🌐<span data-i18n="rt_btn">Temps réel (serveur)</span></button>
         <div class="rlabel" data-i18n="grp_team">Équipe</div>
         <input type="file" id="mergeInput" accept=".projx,.json" hidden>
       </div>
@@ -144,6 +146,7 @@
       </div>
       <div class="rgroup">
         <button id="btnStats" class="rbtn">📈<span data-i18n="stats">Statistiques</span></button>
+        <button id="btnAdvStats" class="rbtn">📐<span data-i18n="adv_stats">Statistiques avancées (χ², R)</span></button>
         <div class="rlabel" data-i18n="grp_stats">Descriptives</div>
       </div>
       <div class="rgroup">
@@ -253,6 +256,7 @@
   <span id="statusDocs"></span>
   <span id="statusCodes"></span>
   <span id="statusSegments"></span>
+  <span id="rtStatus"></span>
   <span id="statusSaved" class="right"></span>
 </footer>
 

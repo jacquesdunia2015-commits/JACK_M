@@ -21,6 +21,8 @@ import { extractDocxText } from "./docx.js";
 import { extractPdfText } from "./pdf.js";
 import { buildRefiQdpx, importRefiQdpx } from "./refi.js";
 import { detectBiblioFormat, parseRis, parseBibtex, formatApa } from "./biblio.js";
+import { chiSquareTest, spearman, docCodeMatrix, codeByVariableTable, buildRExport } from "./stats.js";
+import { rtConnect, rtDisconnect, rtStatus, rtBroadcast, setRtHandlers } from "./realtime.js";
 import { openConceptMapEditor } from "./conceptmap.js";
 import { buildPlayerBar, wrapTimestamps, fmtTs, createMediaElement } from "./audio.js";
 import { fileToDataUrl, isImageFile, buildImageView } from "./imagecode.js";
@@ -88,7 +90,21 @@ async function init() {
   state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
   childCodes(null).forEach(c => expandedCodes.add(c.id));
 
-  setOnSaved(() => { $("#statusSaved").textContent = "✓ " + t("autosaved") + " · " + new Date().toLocaleTimeString(); });
+  setOnSaved(() => {
+    $("#statusSaved").textContent = "✓ " + t("autosaved") + " · " + new Date().toLocaleTimeString();
+    // Diffusion temps réel de la contribution locale après chaque sauvegarde
+    if (rtStatus().connected) rtBroadcast(myContribution());
+  });
+  setRtHandlers({
+    onRemoteUpdate: applyRemoteUpdate,
+    onStatus: (status, detail) => {
+      renderRtStatus();
+      if (status === "connected") { toast("🟢 " + t("rt_connected")); rtBroadcast(myContribution()); }
+      else if (status === "disconnected") toast("⚪ " + t("rt_offline"));
+      else if (status === "peer-joined") { toast("👋 " + detail); rtBroadcast(myContribution()); }
+      else if (status === "presence") renderRtStatus();
+    },
+  });
 
   bindRibbon();
   bindPanels();
@@ -393,8 +409,11 @@ function bindRibbon() {
   $("#btnWordFreq").onclick = openWordFreq;
   $("#btnKwic").onclick = openKwic;
   $("#btnStats").onclick = openStats;
+  $("#btnAdvStats").onclick = openAdvStats;
   $("#btnKappa").onclick = openKappa;
   $("#btnSavedQueries").onclick = openSavedQueries;
+  $("#btnRealtime").onclick = openRealtime;
+  $("#btnShortcuts").onclick = openShortcutsHelp;
 
   // --- Visualisation ---
   $("#btnPortrait").onclick = openPortrait;
@@ -430,6 +449,17 @@ function bindRibbon() {
     const mod = isMac ? e.metaKey : e.ctrlKey;
     if (mod && e.key === "z" && !e.shiftKey) { e.preventDefault(); handleUndo(); }
     if (mod && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); handleRedo(); }
+    if (mod && e.key.toLowerCase() === "k") { e.preventDefault(); openPalette(); }
+    if (mod && e.key.toLowerCase() === "s") { e.preventDefault(); $("#btnSaveProject").click(); }
+    if (mod && e.key.toLowerCase() === "f") {
+      e.preventDefault();
+      // Le champ de recherche vit dans l'onglet Accueil : on y bascule d'abord
+      document.querySelector('#ribbonTabs [data-tab="home"]').click();
+      $("#searchInput").focus();
+    }
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "F1") { e.preventDefault(); openShortcutsHelp(); }
   });
 }
 
@@ -2456,6 +2486,257 @@ function openAiSuggest() {
       o.querySelector("#aiStatus").textContent = "✅ " + t("ai_applied").replace("{n}", coded).replace("{c}", created);
     };
   }
+}
+
+/* ================================================================
+   Collaboration en temps réel (serveur de synchronisation fourni)
+================================================================ */
+function myContribution() {
+  // Mes segments = ceux qui ne portent pas d'étiquette de codeur
+  return {
+    projectName: state.project.name,
+    codes: flatCodes().map(c => ({ id: c.id, name: c.name, color: c.color })),
+    segments: state.project.segments.filter(s => !s.coder),
+    docNames: state.project.documents.map(d => ({ id: d.id, name: d.name })),
+  };
+}
+
+function applyRemoteUpdate(msg) {
+  const label = msg.coder;
+  // Codes : appariés par nom (insensible à la casse), créés s'ils manquent
+  const byName = new Map(flatCodes().map(c => [c.name.toLowerCase(), c]));
+  const codeMap = new Map();
+  for (const rc of msg.codes || []) {
+    const mine = byName.get(String(rc.name).toLowerCase());
+    if (mine) { codeMap.set(rc.id, mine.id); continue; }
+    const created = { id: uid(), name: rc.name, parentId: null, color: rc.color || "#888", created: new Date().toISOString() };
+    state.project.codes.push(created);
+    byName.set(created.name.toLowerCase(), created);
+    codeMap.set(rc.id, created.id);
+  }
+  // Documents appariés par nom ; la contribution précédente du codeur est remplacée
+  const docByName = new Map(state.project.documents.map(d => [d.name, d.id]));
+  const remoteDocName = new Map((msg.docNames || []).map(d => [d.id, d.name]));
+  state.project.segments = state.project.segments.filter(s => s.coder !== label);
+  let added = 0;
+  for (const rs of msg.segments || []) {
+    const docId = docByName.get(remoteDocName.get(rs.docId));
+    const codeId = codeMap.get(rs.codeId);
+    if (!docId || !codeId) continue;
+    state.project.segments.push({ ...rs, id: uid(), docId, codeId, coder: label });
+    added++;
+  }
+  scheduleSave();
+  renderAll();
+  toast("🔄 " + label + " : " + added + " " + t("segments_lbl"));
+}
+
+function renderRtStatus() {
+  const st = rtStatus();
+  const el = $("#rtStatus");
+  if (!el) return;
+  el.textContent = st.connected
+    ? "🟢 " + t("rt_live") + (st.peers.length ? " · " + st.peers.join(", ") : "")
+    : "";
+}
+
+function openRealtime() {
+  const st = rtStatus();
+  const m = openModal({
+    title: "🌐 " + t("rt_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("rt_how"))}</p>
+      <div class="form-row"><label>${esc(t("rt_url"))}</label>
+        <input type="text" id="rtUrl" value="${esc(st.url || "ws://localhost:8765")}" placeholder="ws://serveur:8765"></div>
+      <div class="form-row"><label>${esc(t("rt_room"))}</label>
+        <input type="text" id="rtRoom" value="${esc(st.room || state.project.name)}"></div>
+      <div class="form-row"><label>${esc(t("sf_coder"))}</label>
+        <input type="text" id="rtCoder" value="${esc(st.coder || getCoderName())}"></div>
+      <div id="rtInfo" style="font-size:12.5px;margin:8px 0;color:var(--text-soft)">${
+        st.connected ? "🟢 " + esc(t("rt_connected")) + " — " + esc(st.peers.join(", ") || t("rt_alone")) : "⚪ " + esc(t("rt_offline"))}</div>
+      <p style="font-size:11.5px;color:var(--text-soft)">${esc(t("rt_server_hint"))}</p>`,
+    footer: [
+      { label: t("close"), onClick: (o, c) => c() },
+      { label: "🔌 " + t("rt_disconnect"), onClick: (o, c) => { rtDisconnect(); renderRtStatus(); c(); } },
+      {
+        label: "🟢 " + t("rt_connect"), primary: true, onClick: (o, close) => {
+          const coder = o.querySelector("#rtCoder").value.trim();
+          if (!coder) return;
+          setCoderName(coder);
+          rtConnect({ url: o.querySelector("#rtUrl").value.trim(), room: o.querySelector("#rtRoom").value.trim() || "qualicode", coder });
+          close();
+        }
+      },
+    ],
+  });
+}
+
+/* ================================================================
+   Statistiques avancées (χ², V de Cramér, corrélations, pont R/SPSS)
+================================================================ */
+function openAdvStats() {
+  const codes = flatCodes();
+  const vars = state.project.variables;
+  const m = openModal({
+    title: "📐 " + t("adv_title"), wide: true,
+    bodyHtml: `
+      <p class="trans-hint">${esc(t("adv_hint"))}</p>
+      <h4 style="margin:10px 0 6px">${esc(t("adv_cross"))}</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="asCode">${codes.map(c => `<option value="${c.id}">${"— ".repeat(c.depth)}${esc(c.name)}</option>`).join("")}</select>
+        <select id="asVar">${vars.map(v => `<option>${esc(v)}</option>`).join("")}</select>
+        <button class="btn primary" id="asRun">χ² ${esc(t("adv_run"))}</button>
+      </div>
+      <div id="asResult" style="margin:10px 0"></div>
+      <h4 style="margin:14px 0 6px">${esc(t("adv_corr"))}</h4>
+      <button class="btn" id="asCorr">🔢 ${esc(t("adv_corr_run"))}</button>
+      <div id="asCorrOut" style="margin:10px 0;overflow:auto"></div>
+      <h4 style="margin:14px 0 6px">${esc(t("adv_bridge"))}</h4>
+      <p style="font-size:12px;color:var(--text-soft)">${esc(t("adv_bridge_hint"))}</p>
+      <button class="btn" id="asCsv">⬇ qualicode_matrice.csv</button>
+      <button class="btn" id="asR">⬇ script_analyse.R</button>`,
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
+  const body = m.body;
+
+  body.querySelector("#asRun").onclick = () => {
+    const codeId = body.querySelector("#asCode").value;
+    const variable = body.querySelector("#asVar").value;
+    const out = body.querySelector("#asResult");
+    if (!variable) { out.innerHTML = `<div class="empty-hint">${esc(t("adv_need_var"))}</div>`; return; }
+    const ids = codeWithDescendantsLocal(codeId);
+    const data = codeByVariableTable(state.project, ids, variable);
+    if (!data) { out.innerHTML = `<div class="empty-hint">${esc(t("adv_need_cats"))}</div>`; return; }
+    const test = chiSquareTest(data.table);
+    if (!test) { out.innerHTML = `<div class="empty-hint">${esc(t("adv_need_cats"))}</div>`; return; }
+    const codeName = getCode(codeId)?.name ?? "?";
+    const sig = test.p < 0.05;
+    out.innerHTML = `
+      <table class="data-table"><thead><tr><th></th>${data.cats.map(c => `<th>${esc(c)}</th>`).join("")}</tr></thead>
+      <tbody>
+        <tr><td><strong>${esc(t("adv_with"))} « ${esc(codeName)} »</strong></td>${data.table[0].map(v => `<td>${v}</td>`).join("")}</tr>
+        <tr><td><strong>${esc(t("adv_without"))}</strong></td>${data.table[1].map(v => `<td>${v}</td>`).join("")}</tr>
+      </tbody></table>
+      <p style="margin:8px 0"><strong>χ²(${test.df}) = ${test.chi2.toFixed(2)}</strong> ·
+        p = ${test.p < 0.001 ? "&lt; 0,001" : test.p.toFixed(3)} ·
+        V de Cramér = ${test.v.toFixed(2)} · n = ${test.n}</p>
+      <p style="font-weight:600;color:${sig ? "var(--accent)" : "var(--text-soft)"}">
+        ${esc(sig ? t("adv_sig") : t("adv_nonsig"))}</p>
+      ${test.lowExpectedShare > 0.2 ? `<p style="font-size:12px;color:#c0392b">⚠️ ${esc(t("adv_low_n"))}</p>` : ""}`;
+  };
+
+  body.querySelector("#asCorr").onclick = () => {
+    const { codes: cs, rows } = docCodeMatrix(state.project, codes);
+    // Les 10 codes les plus fréquents, pour une matrice lisible
+    const totals = cs.map(c => ({ c, total: rows.reduce((a, r) => a + r.counts[c.id], 0) }))
+      .filter(x => x.total > 0).sort((a, b) => b.total - a.total).slice(0, 10);
+    if (totals.length < 2 || rows.length < 3) {
+      body.querySelector("#asCorrOut").innerHTML = `<div class="empty-hint">${esc(t("adv_need_data"))}</div>`;
+      return;
+    }
+    const series = totals.map(x => rows.map(r => r.counts[x.c.id]));
+    let html = `<table class="data-table"><thead><tr><th></th>${totals.map(x => `<th title="${esc(x.c.name)}">${esc(x.c.name.slice(0, 12))}</th>`).join("")}</tr></thead><tbody>`;
+    for (let i = 0; i < totals.length; i++) {
+      html += `<tr><td><strong>${esc(totals[i].c.name.slice(0, 18))}</strong></td>`;
+      for (let j = 0; j < totals.length; j++) {
+        if (j === i) { html += `<td>—</td>`; continue; }
+        const res = spearman(series[i], series[j]);
+        if (!res) { html += `<td></td>`; continue; }
+        const shade = Math.min(0.85, Math.abs(res.r));
+        const color = res.r >= 0 ? `rgba(78,121,167,${shade})` : `rgba(225,87,89,${shade})`;
+        html += `<td class="heat" style="background:${color}" title="ρ=${res.r.toFixed(2)} p=${res.p.toFixed(3)}">${res.r.toFixed(2)}</td>`;
+      }
+      html += `</tr>`;
+    }
+    body.querySelector("#asCorrOut").innerHTML = html + `</tbody></table>
+      <p style="font-size:11.5px;color:var(--text-soft)">${esc(t("adv_corr_note"))}</p>`;
+  };
+
+  const doExport = which => {
+    const { csv, script } = buildRExport(state.project, codes);
+    if (which === "csv") downloadBlob("qualicode_matrice.csv", new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
+    else downloadBlob("script_analyse.R", new Blob([script], { type: "text/plain;charset=utf-8" }));
+    toast(t("export_done"));
+  };
+  body.querySelector("#asCsv").onclick = () => doExport("csv");
+  body.querySelector("#asR").onclick = () => doExport("r");
+}
+
+// Un code + ses descendants (aide locale pour le croisement)
+function codeWithDescendantsLocal(codeId) {
+  const out = [codeId];
+  const walk = id => { for (const c of state.project.codes) if (c.parentId === id) { out.push(c.id); walk(c.id); } };
+  walk(codeId);
+  return out;
+}
+
+/* ================================================================
+   Palette de commandes (Ctrl+K) et aide clavier (F1)
+================================================================ */
+function openPalette() {
+  if (document.getElementById("qcPalette")) return;
+  const actions = [];
+  document.querySelectorAll(".ribbon-pane").forEach(pane => {
+    pane.querySelectorAll(".rbtn").forEach(btn => {
+      const label = btn.textContent.trim();
+      if (label) actions.push({ label, run: () => btn.click() });
+    });
+  });
+  document.querySelectorAll("#ribbonTabs button").forEach(tab => {
+    actions.push({ label: "→ " + t("palette_goto") + " " + tab.textContent.trim(), run: () => tab.click() });
+  });
+
+  const ov = document.createElement("div");
+  ov.id = "qcPalette";
+  ov.className = "palette-overlay";
+  ov.innerHTML = `<div class="palette">
+    <input type="text" id="palInput" placeholder="${esc(t("palette_ph"))}" autocomplete="off">
+    <div class="palette-list" id="palList"></div>
+  </div>`;
+  document.body.appendChild(ov);
+  const input = ov.querySelector("#palInput");
+  const list = ov.querySelector("#palList");
+  let selected = 0, shown = [];
+
+  const render = () => {
+    const q = input.value.trim().toLowerCase();
+    shown = actions.filter(a => a.label.toLowerCase().includes(q)).slice(0, 12);
+    selected = Math.min(selected, Math.max(0, shown.length - 1));
+    list.innerHTML = shown.map((a, i) =>
+      `<div class="palette-item ${i === selected ? "sel" : ""}" data-i="${i}">${esc(a.label)}</div>`).join("")
+      || `<div class="palette-item">${esc(t("palette_none"))}</div>`;
+    list.querySelectorAll("[data-i]").forEach(el => {
+      el.onmouseenter = () => { selected = Number(el.dataset.i); render(); };
+      el.onmousedown = e => { e.preventDefault(); pick(Number(el.dataset.i)); };
+    });
+  };
+  const close = () => ov.remove();
+  const pick = i => { const a = shown[i]; close(); if (a) a.run(); };
+
+  input.addEventListener("input", () => { selected = 0; render(); });
+  input.addEventListener("keydown", e => {
+    if (e.key === "Escape") { e.preventDefault(); close(); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); selected = Math.min(selected + 1, shown.length - 1); render(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); selected = Math.max(selected - 1, 0); render(); }
+    else if (e.key === "Enter") { e.preventDefault(); pick(selected); }
+  });
+  ov.addEventListener("mousedown", e => { if (e.target === ov) close(); });
+  render();
+  input.focus();
+}
+
+function openShortcutsHelp() {
+  const rows = [
+    ["Ctrl+K", t("hk_palette")], ["Ctrl+S", t("hk_save")], ["Ctrl+F", t("hk_search")],
+    ["Ctrl+Z / Ctrl+Y", t("hk_undo")], ["Alt+C", t("hk_code")], ["F1", t("hk_help")],
+    ["Ctrl+Espace", t("hk_playpause")], ["Ctrl+B", t("hk_back5")], ["Ctrl+T", t("hk_ts")],
+  ];
+  openModal({
+    title: "⌨️ " + t("hk_title"),
+    bodyHtml: `<table class="data-table"><tbody>${rows.map(([k, d]) =>
+      `<tr><td style="white-space:nowrap"><kbd>${esc(k)}</kbd></td><td>${esc(d)}</td></tr>`).join("")}</tbody></table>`,
+    footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+  });
 }
 
 /* ================================================================
