@@ -1,5 +1,5 @@
 // QualiCode — application d'analyse qualitative de données (MVP du cahier des charges)
-import { t, setLang, getLang, applyStaticTranslations } from "./i18n.js";
+import { t, setLang, getLang, applyStaticTranslations, LANGS } from "./i18n.js";
 import {
   state, emptyProject, normalizeProject, uid, CODE_COLORS,
   scheduleSave, persistNow, loadPersisted, setOnSaved, savePrefs, loadPrefs,
@@ -206,12 +206,23 @@ function bindRibbon() {
     document.querySelectorAll(".ribbon-pane").forEach(p => p.classList.toggle("active", p.dataset.pane === btn.dataset.tab));
   });
 
+  // Sélecteur de langue : menu des 12 langues de l'interface
   $("#btnLang").onclick = () => {
-    state.ui.lang = getLang() === "fr" ? "en" : "fr";
-    setLang(state.ui.lang);
-    $("#langLabel").textContent = getLang().toUpperCase();
-    savePrefs();
-    renderAll();
+    openModal({
+      title: "🌐 " + t("lang_title"),
+      bodyHtml: `<p style="font-size:12px;color:var(--text-soft);margin-top:0">${esc(t("lang_hint"))}</p>
+        <div class="lang-grid">${LANGS.map(l =>
+          `<button class="btn lang-item ${l.code === getLang() ? "primary" : ""}" data-lang="${l.code}"
+             ${l.rtl ? 'dir="rtl"' : ""}>${esc(l.label)}</button>`).join("")}</div>`,
+      footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+    }).body.querySelectorAll("[data-lang]").forEach(b => b.onclick = () => {
+      state.ui.lang = b.dataset.lang;
+      setLang(state.ui.lang);
+      $("#langLabel").textContent = getLang().toUpperCase();
+      savePrefs();
+      document.querySelector(".modal-overlay")?.remove();
+      renderAll();
+    });
   };
   $("#btnTheme").onclick = () => {
     state.ui.theme = state.ui.theme === "dark" ? "light" : "dark";

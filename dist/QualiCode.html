@@ -375,6 +375,14 @@ kbd {
   * { transition: none !important; animation: none !important; }
 }
 
+/* Sélecteur de langue */
+.lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.lang-item { text-align: center; }
+
+/* Écriture droite→gauche (arabe) : les volets et le ruban suivent dir=rtl */
+[dir="rtl"] .rlabel { text-align: right; }
+[dir="rtl"] .seg-card-head { direction: rtl; }
+
 </style>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
 </head>
@@ -646,9 +654,452 @@ kbd {
 
 <script>
 var __QC = {};
+__QC["langs"] = (function () {
+"use strict";
+// js/langs.js — Langues supplémentaires de l'interface.
+// Chaque dictionnaire couvre les clés essentielles (onglets, boutons, volets) ;
+// toute clé manquante retombe automatiquement sur le français (voir i18n.js).
+// ⚠️ Les traductions kinyarwanda, lingala, kiswahili de l'Est (RDC) et wolof
+// gagneraient à être relues par des locuteurs natifs avant commercialisation.
+
+const extraLangs = {
+
+  /* ---------- Kinyarwanda (Rwanda) ---------- */
+  rw: {
+    tab_home: "Ahabanza", tab_import: "Kwinjiza", tab_codes: "Kode", tab_memos: "Inyandiko",
+    tab_variables: "Impinduka", tab_analysis: "Isesengura", tab_visual: "Amashusho", tab_reports: "Raporo",
+    my_projects: "Imishinga yanjye", new_project: "Umushinga mushya", open_project: "Fungura (.projx)",
+    save_project: "Bika (.projx)", sample_project: "Umushinga w'urugero", grp_project: "Umushinga",
+    protect: "Ijambo ry'ibanga", merge_project: "Guhuza (.projx)", shared_folder: "Idosiye isangiwe",
+    rt_btn: "Igihe nyacyo (seriveri)", grp_team: "Itsinda",
+    search: "Gushakisha", grp_search: "Gushakisha",
+    undo: "Gusubiza inyuma", redo: "Gusubiramo", grp_edit: "Guhindura",
+    trash: "Agatebo", grp_tools: "Ibikoresho",
+    import_files: "Dosiye (DOCX, PDF, TXT, amashusho)", import_csv: "Ubushakashatsi CSV",
+    paste_doc: "Komeka umwandiko", structured_text: "Umwandiko utunganyije",
+    transcribe: "Kwandika amajwi/videwo", social_import: "Imbuga nkoranyambaga",
+    biblio: "Ibitabo (RIS/BibTeX)", grp_import: "Kwinjiza",
+    new_group: "Itsinda rishya", grp_organize: "Gutunganya",
+    new_code: "Kode nshya", code_selection: "Gushyira kode ku byahiswemo", in_vivo: "Kode in vivo",
+    grp_coding: "Gushyira kode", autocode: "Kode yikora", grp_autocode: "Gushakisha amagambo",
+    ai_suggest: "Ibyifuzo bya AI", grp_ai: "Ubufasha bwa AI",
+    show_highlights: "Erekana ibyashyizweho kode", grp_display: "Kwerekana",
+    project_memo: "Inyandiko y'umushinga", memo_manager: "Gucunga inyandiko", grp_memos: "Inyandiko",
+    edit_variables: "Urutonde rw'impinduka", data_editor: "Guhindura amakuru", grp_docvars: "Impinduka z'inyandiko",
+    code_matrix: "Imbonerahamwe ya kode", cooc_matrix: "Kugaragara hamwe", group_compare: "Kugereranya amatsinda",
+    grp_matrices: "Imbonerahamwe", word_freq: "Inshuro z'amagambo", kwic: "Amagambo mu nyandiko",
+    grp_lexical: "Isesengura ry'amagambo", stats: "Imibare", adv_stats: "Imibare ihanitse (χ², R)",
+    grp_stats: "Ibisobanura", kappa: "Ubwumvikane bw'abashyiraho kode (κ)", saved_queries: "Ibibazo byabitswe",
+    grp_queries: "Ibibazo",
+    doc_portrait: "Ishusho y'inyandiko", word_cloud: "Igicu cy'amagambo", bar_chart: "Inshuro za kode",
+    grp_visuals: "Amashusho", concept_map: "Ikarita y'ibitekerezo", grp_concept_maps: "Gushushanya",
+    export_segments: "Ibice (CSV)", export_docx: "Raporo Word (.docx)", export_report: "Raporo icapwa",
+    export_codes: "Urutonde rwa kode", export_matrix: "Imbonerahamwe (CSV)", export_refi: "REFI-QDA (.qdpx)",
+    grp_exports: "Kohereza",
+    panel_docs: "📄 Inyandiko", panel_codes: "🏷️ Kode", panel_browser: "📖 Gusoma inyandiko",
+    panel_retrieved: "🧲 Ibice byabonetse",
+    apply_code: "Shyiraho kode:", hint_no_doc: "Hitamo inyandiko ibumoso, cyangwa winjize amakuru.",
+    open: "Fungura", close: "Funga", cancel: "Kureka", ok: "Yego", delete: "Gusiba",
+    rename: "Guhindura izina", confirm: "Kwemeza",
+    autosaved: "Byabitswe", doc_filter_ph: "Shungura…",
+    segments_lbl: "ibice", docs: "inyandiko", codes_lbl: "kode",
+  },
+
+  /* ---------- Kiswahili sanifu (Kenya / Tanzanie) ---------- */
+  sw: {
+    tab_home: "Mwanzo", tab_import: "Ingiza", tab_codes: "Kodi", tab_memos: "Kumbukumbu",
+    tab_variables: "Vigezo", tab_analysis: "Uchambuzi", tab_visual: "Michoro", tab_reports: "Ripoti",
+    my_projects: "Miradi yangu", new_project: "Mradi mpya", open_project: "Fungua (.projx)",
+    save_project: "Hifadhi (.projx)", sample_project: "Mradi wa mfano", grp_project: "Mradi",
+    protect: "Nenosiri", merge_project: "Unganisha (.projx)", shared_folder: "Folda ya pamoja",
+    rt_btn: "Wakati halisi (seva)", grp_team: "Timu",
+    search: "Tafuta", grp_search: "Utafutaji",
+    undo: "Tengua", redo: "Rudia", grp_edit: "Hariri",
+    trash: "Tupio", grp_tools: "Zana",
+    import_files: "Faili (DOCX, PDF, TXT, picha)", import_csv: "Utafiti CSV",
+    paste_doc: "Bandika maandishi", structured_text: "Maandishi yaliyopangwa",
+    transcribe: "Nakili sauti/video", social_import: "Mitandao ya kijamii",
+    biblio: "Marejeleo (RIS/BibTeX)", grp_import: "Uingizaji",
+    new_group: "Kikundi kipya", grp_organize: "Mpangilio",
+    new_code: "Kodi mpya", code_selection: "Weka kodi kwa sehemu teule", in_vivo: "Kodi in vivo",
+    grp_coding: "Uwekaji kodi", autocode: "Kodi otomatiki", grp_autocode: "Utafutaji wa maneno",
+    ai_suggest: "Mapendekezo ya AI", grp_ai: "Msaada wa AI",
+    show_highlights: "Onyesha sehemu zenye kodi", grp_display: "Onyesho",
+    project_memo: "Kumbukumbu ya mradi", memo_manager: "Msimamizi wa kumbukumbu", grp_memos: "Kumbukumbu",
+    edit_variables: "Orodha ya vigezo", data_editor: "Kihariri cha data", grp_docvars: "Vigezo vya hati",
+    code_matrix: "Jedwali la kodi", cooc_matrix: "Utokeaji pamoja", group_compare: "Ulinganisho wa vikundi",
+    grp_matrices: "Majedwali", word_freq: "Marudio ya maneno", kwic: "Maneno katika muktadha",
+    grp_lexical: "Uchambuzi wa maneno", stats: "Takwimu", adv_stats: "Takwimu za juu (χ², R)",
+    grp_stats: "Maelezo", kappa: "Makubaliano ya waweka-kodi (κ)", saved_queries: "Maswali yaliyohifadhiwa",
+    grp_queries: "Maswali",
+    doc_portrait: "Picha ya hati", word_cloud: "Wingu la maneno", bar_chart: "Marudio ya kodi",
+    grp_visuals: "Michoro", concept_map: "Ramani ya dhana", grp_concept_maps: "Uchoraji",
+    export_segments: "Sehemu (CSV)", export_docx: "Ripoti Word (.docx)", export_report: "Ripoti ya kuchapisha",
+    export_codes: "Mfumo wa kodi", export_matrix: "Jedwali (CSV)", export_refi: "REFI-QDA (.qdpx)",
+    grp_exports: "Uhamishaji",
+    panel_docs: "📄 Mfumo wa hati", panel_codes: "🏷️ Mfumo wa kodi", panel_browser: "📖 Kisomaji cha hati",
+    panel_retrieved: "🧲 Sehemu zilizopatikana",
+    apply_code: "Weka kodi:", hint_no_doc: "Chagua hati upande wa kushoto, au ingiza data.",
+    open: "Fungua", close: "Funga", cancel: "Ghairi", ok: "Sawa", delete: "Futa",
+    rename: "Badilisha jina", confirm: "Thibitisha",
+    autosaved: "Imehifadhiwa", doc_filter_ph: "Chuja…",
+    segments_lbl: "sehemu", docs: "hati", codes_lbl: "kodi",
+  },
+
+  /* ---------- Kiswahili ya Mashariki mwa DRC (Congo) ---------- */
+  swc: {
+    tab_home: "Mwanzo", tab_import: "Kuingiza", tab_codes: "Kodi", tab_memos: "Manoti",
+    tab_variables: "Vigezo", tab_analysis: "Uchambuzi", tab_visual: "Bapicha", tab_reports: "Rapoo",
+    my_projects: "Miradi yangu", new_project: "Mradi mupya", open_project: "Kufungula (.projx)",
+    save_project: "Kubika (.projx)", sample_project: "Mradi ya mfano", grp_project: "Mradi",
+    protect: "Neno ya siri", merge_project: "Kuunganisha (.projx)", shared_folder: "Dosiye ya pamoja",
+    rt_btn: "Wakati kamili (severi)", grp_team: "Ekipe",
+    search: "Kutafuta", grp_search: "Utafutaji",
+    undo: "Kurudisha nyuma", redo: "Kurudia", grp_edit: "Kubadilisha",
+    trash: "Poubelle", grp_tools: "Vifaa",
+    import_files: "Bafile (DOCX, PDF, TXT, bapicha)", import_csv: "Enquête CSV",
+    paste_doc: "Kukopea maandiko", structured_text: "Maandiko ya mpangilio",
+    transcribe: "Kuandika sauti/video", social_import: "Réseaux sociaux",
+    biblio: "Marejeo (RIS/BibTeX)", grp_import: "Kuingiza",
+    new_group: "Kikundi kipya", grp_organize: "Mpangilio",
+    new_code: "Kodi mupya", code_selection: "Kutia kodi", in_vivo: "Kodi in vivo",
+    grp_coding: "Kutia kodi", autocode: "Kodi automatique", grp_autocode: "Kutafuta maneno",
+    ai_suggest: "Mapendekezo ya AI", grp_ai: "Musaada wa AI",
+    show_highlights: "Kuonyesha sehemu zenye kodi", grp_display: "Kuonyesha",
+    project_memo: "Noti ya mradi", memo_manager: "Kuangalia manoti", grp_memos: "Manoti",
+    edit_variables: "Liste ya vigezo", data_editor: "Kubadilisha ba données", grp_docvars: "Vigezo vya hati",
+    code_matrix: "Tableau ya kodi", cooc_matrix: "Kutokea pamoja", group_compare: "Kulinganisha bikundi",
+    grp_matrices: "Batableau", word_freq: "Mara ngapi maneno", kwic: "Maneno ndani ya maandiko",
+    grp_lexical: "Uchambuzi wa maneno", stats: "Statistiques", adv_stats: "Statistiques za juu (χ², R)",
+    grp_stats: "Maelezo", kappa: "Makubaliano ya bacodeur (κ)", saved_queries: "Maswali yaliyobikwa",
+    grp_queries: "Maswali",
+    doc_portrait: "Picha ya hati", word_cloud: "Wingu la maneno", bar_chart: "Mara ngapi kodi",
+    grp_visuals: "Bapicha", concept_map: "Carte ya mawazo", grp_concept_maps: "Kuchora",
+    export_segments: "Sehemu (CSV)", export_docx: "Rapoo Word (.docx)", export_report: "Rapoo ya kuprinta",
+    export_codes: "Mfumo wa kodi", export_matrix: "Tableau (CSV)", export_refi: "REFI-QDA (.qdpx)",
+    grp_exports: "Kutosha",
+    panel_docs: "📄 Bahati (documents)", panel_codes: "🏷️ Bakodi", panel_browser: "📖 Kusoma hati",
+    panel_retrieved: "🧲 Sehemu zilizopatikana",
+    apply_code: "Tia kodi:", hint_no_doc: "Chagua hati upande wa kushoto, ao ingiza ba données.",
+    open: "Kufungula", close: "Kufunga", cancel: "Kuacha", ok: "Sawa", delete: "Kufuta",
+    rename: "Kubadilisha jina", confirm: "Kuhakikisha",
+    autosaved: "Imebikwa", doc_filter_ph: "Kuchuja…",
+    segments_lbl: "sehemu", docs: "bahati", codes_lbl: "bakodi",
+  },
+
+  /* ---------- Lingála (RDC / Congo) ---------- */
+  ln: {
+    tab_home: "Ebandeli", tab_import: "Kokɔtisa", tab_codes: "Bakode", tab_memos: "Mikanda",
+    tab_variables: "Bavariable", tab_analysis: "Botali malamu", tab_visual: "Bilili", tab_reports: "Barapo",
+    my_projects: "Misala na ngai", new_project: "Mosala ya sika", open_project: "Kofungola (.projx)",
+    save_project: "Kobomba (.projx)", sample_project: "Mosala ya ndakisa", grp_project: "Mosala",
+    protect: "Liloba ya sekele", merge_project: "Kosangisa (.projx)", shared_folder: "Dosiye ya lisanga",
+    rt_btn: "Ntango ya solo (serveur)", grp_team: "Ekipi",
+    search: "Koluka", grp_search: "Boluki",
+    undo: "Kozongisa", redo: "Kozongela", grp_edit: "Kobongola",
+    trash: "Poubelle", grp_tools: "Bisaleli",
+    import_files: "Bafisye (DOCX, PDF, TXT, bilili)", import_csv: "Enquête CSV",
+    paste_doc: "Kokangisa makomi", structured_text: "Makomi ebongisami",
+    transcribe: "Kokoma mongongo/video", social_import: "Réseaux sociaux",
+    biblio: "Babuku (RIS/BibTeX)", grp_import: "Bokɔtisi",
+    new_group: "Lisanga ya sika", grp_organize: "Bobongisi",
+    new_code: "Kode ya sika", code_selection: "Kotia kode na eteni eponami", in_vivo: "Kode in vivo",
+    grp_coding: "Kotia kode", autocode: "Kode ya automatique", grp_autocode: "Koluka maloba",
+    ai_suggest: "Makanisi ya AI", grp_ai: "Lisalisi ya AI",
+    show_highlights: "Kolakisa biteni na kode", grp_display: "Bolakisi",
+    project_memo: "Mokanda ya mosala", memo_manager: "Kotala mikanda", grp_memos: "Mikanda",
+    edit_variables: "Liste ya bavariable", data_editor: "Kobongola ba données", grp_docvars: "Bavariable ya mokanda",
+    code_matrix: "Tableau ya bakode", cooc_matrix: "Komonana esika moko", group_compare: "Kokokanisa masanga",
+    grp_matrices: "Batableau", word_freq: "Mbala boni maloba", kwic: "Maloba na kati ya makomi",
+    grp_lexical: "Botali maloba", stats: "Statistiques", adv_stats: "Statistiques ya likolo (χ², R)",
+    grp_stats: "Bandimbola", kappa: "Boyokani ya bato ya kode (κ)", saved_queries: "Mituna ebombami",
+    grp_queries: "Mituna",
+    doc_portrait: "Elili ya mokanda", word_cloud: "Lipata ya maloba", bar_chart: "Mbala boni bakode",
+    grp_visuals: "Bilili", concept_map: "Karte ya makanisi", grp_concept_maps: "Bokomi bilili",
+    export_segments: "Biteni (CSV)", export_docx: "Rapo Word (.docx)", export_report: "Rapo ya konyata",
+    export_codes: "Molongo ya bakode", export_matrix: "Tableau (CSV)", export_refi: "REFI-QDA (.qdpx)",
+    grp_exports: "Kobimisa",
+    panel_docs: "📄 Mikanda", panel_codes: "🏷️ Bakode", panel_browser: "📖 Botangi mokanda",
+    panel_retrieved: "🧲 Biteni ezwami",
+    apply_code: "Tia kode:", hint_no_doc: "Pona mokanda na ngambo ya mwasi, to kɔtisa ba données.",
+    open: "Kofungola", close: "Kokanga", cancel: "Kotika", ok: "Malamu", delete: "Kolongola",
+    rename: "Kobongola nkombo", confirm: "Kondima",
+    autosaved: "Ebombami", doc_filter_ph: "Kopona…",
+    segments_lbl: "biteni", docs: "mikanda", codes_lbl: "bakode",
+  },
+
+  /* ---------- Wolof (Sénégal / Afrique de l'Ouest) ---------- */
+  wo: {
+    tab_home: "Njëlbéen", tab_import: "Dugal", tab_codes: "Kod yi", tab_memos: "Karne yi",
+    tab_variables: "Soppiku yi", tab_analysis: "Saytu", tab_visual: "Nataal yi", tab_reports: "Rapoor yi",
+    my_projects: "Samay proze", new_project: "Proze bu bees", open_project: "Ubbi (.projx)",
+    save_project: "Denc (.projx)", sample_project: "Proze royukaay", grp_project: "Proze",
+    protect: "Baatu jàll", merge_project: "Boole (.projx)", shared_folder: "Dosye bu bokk",
+    rt_btn: "Ci saa si (serwër)", grp_team: "Ekib",
+    search: "Seet", grp_search: "Seet",
+    undo: "Delloo", redo: "Defaat", grp_edit: "Soppi",
+    trash: "Poubelle", grp_tools: "Jumtukaay",
+    import_files: "Fiise (DOCX, PDF, TXT, nataal)", import_csv: "Enquête CSV",
+    paste_doc: "Takk mbind", structured_text: "Mbind mu tegtal",
+    transcribe: "Bind baat/wideo", social_import: "Réseaux sociaux",
+    biblio: "Téere yi (RIS/BibTeX)", grp_import: "Dugal",
+    new_group: "Kurel bu bees", grp_organize: "Tegtal",
+    new_code: "Kod bu bees", code_selection: "Teg kod ci li nga tann", in_vivo: "Kod in vivo",
+    grp_coding: "Teg kod", autocode: "Kod otomatik", grp_autocode: "Seet baat yi",
+    ai_suggest: "Xalaat yu AI", grp_ai: "Ndimbal AI",
+    show_highlights: "Won cëri yi am kod", grp_display: "Wone",
+    project_memo: "Karneb proze", memo_manager: "Saytukaayu karne", grp_memos: "Karne yi",
+    edit_variables: "Limu soppiku yi", data_editor: "Soppi xibaar yi", grp_docvars: "Soppikuy dokimaa",
+    code_matrix: "Taabalu kod yi", cooc_matrix: "Feeñ ànd", group_compare: "Mengale kurel yi",
+    grp_matrices: "Taabal yi", word_freq: "Ñaata yoon baat yi", kwic: "Baat ci biir mbind",
+    grp_lexical: "Saytu baat yi", stats: "Statistik", adv_stats: "Statistik yu kawe (χ², R)",
+    grp_stats: "Leeral", kappa: "Déggoo ci kodëkat yi (κ)", saved_queries: "Laaj yu ñu denc",
+    grp_queries: "Laaj yi",
+    doc_portrait: "Nataalu dokimaa", word_cloud: "Niiru baat yi", bar_chart: "Ñaata yoon kod yi",
+    grp_visuals: "Nataal yi", concept_map: "Kartu xalaat", grp_concept_maps: "Nataal",
+    export_segments: "Cëri (CSV)", export_docx: "Rapoor Word (.docx)", export_report: "Rapoor bu ñu móol",
+    export_codes: "Sistemu kod yi", export_matrix: "Taabal (CSV)", export_refi: "REFI-QDA (.qdpx)",
+    grp_exports: "Génne",
+    panel_docs: "📄 Dokimaa yi", panel_codes: "🏷️ Kod yi", panel_browser: "📖 Jàngukaayu dokimaa",
+    panel_retrieved: "🧲 Cëri yi ñu gis",
+    apply_code: "Teg kod:", hint_no_doc: "Tannal dokimaa ci càmmooñ, walla nga dugal xibaar.",
+    open: "Ubbi", close: "Tëj", cancel: "Bàyyi", ok: "Waaw", delete: "Far",
+    rename: "Soppi tur", confirm: "Dëggal",
+    autosaved: "Dencees na", doc_filter_ph: "Tann…",
+    segments_lbl: "cëri", docs: "dokimaa", codes_lbl: "kod",
+  },
+
+  /* ---------- Español ---------- */
+  es: {
+    tab_home: "Inicio", tab_import: "Importar", tab_codes: "Códigos", tab_memos: "Memos",
+    tab_variables: "Variables", tab_analysis: "Análisis", tab_visual: "Visualización", tab_reports: "Informes",
+    my_projects: "Mis proyectos", new_project: "Nuevo proyecto", open_project: "Abrir (.projx)",
+    save_project: "Guardar (.projx)", sample_project: "Proyecto de ejemplo", grp_project: "Proyecto",
+    protect: "Contraseña", merge_project: "Fusionar (.projx)", shared_folder: "Carpeta compartida",
+    rt_btn: "Tiempo real (servidor)", grp_team: "Equipo",
+    search: "Buscar", grp_search: "Búsqueda", search_ph: "Búsqueda de texto completo (Y, O, \"frase\")…",
+    undo: "Deshacer", redo: "Rehacer", grp_edit: "Edición",
+    trash: "Papelera", grp_tools: "Herramientas",
+    import_files: "Archivos (DOCX, PDF, TXT, imágenes)", import_csv: "Encuesta CSV",
+    paste_doc: "Pegar texto", structured_text: "Texto estructurado",
+    transcribe: "Transcribir audio/vídeo", social_import: "Redes sociales (export)",
+    biblio: "Bibliografía (RIS/BibTeX)", grp_import: "Importación",
+    new_group: "Nuevo grupo", grp_organize: "Organización",
+    new_code: "Nuevo código", code_selection: "Codificar la selección", in_vivo: "Codificación in vivo",
+    grp_coding: "Codificación", autocode: "Codificación automática", grp_autocode: "Búsqueda léxica",
+    ai_suggest: "Sugerencias de IA", grp_ai: "Asistencia de IA",
+    show_highlights: "Mostrar los resaltados", grp_display: "Visualización",
+    project_memo: "Memo del proyecto", memo_manager: "Gestor de memos", grp_memos: "Memos",
+    edit_variables: "Lista de variables", data_editor: "Editor de datos", grp_docvars: "Variables del documento",
+    code_matrix: "Matriz de códigos", cooc_matrix: "Coocurrencias", group_compare: "Comparación de grupos",
+    grp_matrices: "Matrices", word_freq: "Frecuencias de palabras", kwic: "Palabras en contexto (KWIC)",
+    grp_lexical: "Análisis léxico", stats: "Estadísticas", adv_stats: "Estadísticas avanzadas (χ², R)",
+    grp_stats: "Descriptivas", kappa: "Acuerdo entre codificadores (κ)", saved_queries: "Consultas guardadas",
+    grp_queries: "Consultas",
+    doc_portrait: "Retrato del documento", word_cloud: "Nube de palabras", bar_chart: "Frecuencias de códigos",
+    grp_visuals: "Visualizaciones", concept_map: "Mapa conceptual", grp_concept_maps: "Modelización",
+    export_segments: "Segmentos (CSV)", export_docx: "Informe Word (.docx)", export_report: "Informe imprimible",
+    export_codes: "Sistema de códigos", export_matrix: "Matriz (CSV)", export_refi: "REFI-QDA (.qdpx)",
+    grp_exports: "Exportaciones",
+    panel_docs: "📄 Sistema de documentos", panel_codes: "🏷️ Sistema de códigos",
+    panel_browser: "📖 Navegador de documentos", panel_retrieved: "🧲 Segmentos recuperados",
+    apply_code: "Aplicar un código:", hint_no_doc: "Seleccione un documento a la izquierda o importe datos.",
+    open: "Abrir", close: "Cerrar", cancel: "Cancelar", ok: "Aceptar", delete: "Eliminar",
+    rename: "Renombrar", confirm: "Confirmar",
+    autosaved: "Guardado automático", doc_filter_ph: "Filtrar…",
+    segments_lbl: "segmentos", docs: "documentos", codes_lbl: "códigos",
+  },
+
+  /* ---------- Português ---------- */
+  pt: {
+    tab_home: "Início", tab_import: "Importar", tab_codes: "Códigos", tab_memos: "Memos",
+    tab_variables: "Variáveis", tab_analysis: "Análise", tab_visual: "Visualização", tab_reports: "Relatórios",
+    my_projects: "Meus projetos", new_project: "Novo projeto", open_project: "Abrir (.projx)",
+    save_project: "Guardar (.projx)", sample_project: "Projeto de exemplo", grp_project: "Projeto",
+    protect: "Palavra-passe", merge_project: "Fundir (.projx)", shared_folder: "Pasta partilhada",
+    rt_btn: "Tempo real (servidor)", grp_team: "Equipa",
+    search: "Pesquisar", grp_search: "Pesquisa", search_ph: "Pesquisa de texto completo (E, OU, \"frase\")…",
+    undo: "Anular", redo: "Refazer", grp_edit: "Edição",
+    trash: "Lixo", grp_tools: "Ferramentas",
+    import_files: "Ficheiros (DOCX, PDF, TXT, imagens)", import_csv: "Inquérito CSV",
+    paste_doc: "Colar texto", structured_text: "Texto estruturado",
+    transcribe: "Transcrever áudio/vídeo", social_import: "Redes sociais (export)",
+    biblio: "Bibliografia (RIS/BibTeX)", grp_import: "Importação",
+    new_group: "Novo grupo", grp_organize: "Organização",
+    new_code: "Novo código", code_selection: "Codificar a seleção", in_vivo: "Codificação in vivo",
+    grp_coding: "Codificação", autocode: "Codificação automática", grp_autocode: "Pesquisa lexical",
+    ai_suggest: "Sugestões de IA", grp_ai: "Assistência de IA",
+    show_highlights: "Mostrar os destaques", grp_display: "Apresentação",
+    project_memo: "Memo do projeto", memo_manager: "Gestor de memos", grp_memos: "Memos",
+    edit_variables: "Lista de variáveis", data_editor: "Editor de dados", grp_docvars: "Variáveis do documento",
+    code_matrix: "Matriz de códigos", cooc_matrix: "Coocorrências", group_compare: "Comparação de grupos",
+    grp_matrices: "Matrizes", word_freq: "Frequências de palavras", kwic: "Palavras em contexto (KWIC)",
+    grp_lexical: "Análise lexical", stats: "Estatísticas", adv_stats: "Estatísticas avançadas (χ², R)",
+    grp_stats: "Descritivas", kappa: "Acordo entre codificadores (κ)", saved_queries: "Consultas guardadas",
+    grp_queries: "Consultas",
+    doc_portrait: "Retrato do documento", word_cloud: "Nuvem de palavras", bar_chart: "Frequências dos códigos",
+    grp_visuals: "Visualizações", concept_map: "Mapa conceptual", grp_concept_maps: "Modelação",
+    export_segments: "Segmentos (CSV)", export_docx: "Relatório Word (.docx)", export_report: "Relatório imprimível",
+    export_codes: "Sistema de códigos", export_matrix: "Matriz (CSV)", export_refi: "REFI-QDA (.qdpx)",
+    grp_exports: "Exportações",
+    panel_docs: "📄 Sistema de documentos", panel_codes: "🏷️ Sistema de códigos",
+    panel_browser: "📖 Navegador de documentos", panel_retrieved: "🧲 Segmentos recuperados",
+    apply_code: "Aplicar um código:", hint_no_doc: "Selecione um documento à esquerda ou importe dados.",
+    open: "Abrir", close: "Fechar", cancel: "Cancelar", ok: "OK", delete: "Eliminar",
+    rename: "Mudar o nome", confirm: "Confirmar",
+    autosaved: "Guardado automático", doc_filter_ph: "Filtrar…",
+    segments_lbl: "segmentos", docs: "documentos", codes_lbl: "códigos",
+  },
+
+  /* ---------- 中文（普通话） ---------- */
+  zh: {
+    tab_home: "主页", tab_import: "导入", tab_codes: "编码", tab_memos: "备忘录",
+    tab_variables: "变量", tab_analysis: "分析", tab_visual: "可视化", tab_reports: "报告",
+    my_projects: "我的项目", new_project: "新建项目", open_project: "打开 (.projx)",
+    save_project: "保存 (.projx)", sample_project: "示例项目", grp_project: "项目",
+    protect: "密码", merge_project: "合并 (.projx)", shared_folder: "共享文件夹",
+    rt_btn: "实时协作（服务器）", grp_team: "团队",
+    search: "搜索", grp_search: "搜索", search_ph: "全文搜索（与、或、\"短语\"）…",
+    undo: "撤销", redo: "重做", grp_edit: "编辑",
+    trash: "回收站", grp_tools: "工具",
+    import_files: "文件（DOCX、PDF、TXT、图片）", import_csv: "CSV 调查",
+    paste_doc: "粘贴文本", structured_text: "结构化文本",
+    transcribe: "转录音频/视频", social_import: "社交媒体（导出文件）",
+    biblio: "参考文献（RIS/BibTeX）", grp_import: "导入",
+    new_group: "新建分组", grp_organize: "组织",
+    new_code: "新建编码", code_selection: "对所选内容编码", in_vivo: "实境编码",
+    grp_coding: "编码", autocode: "自动编码", grp_autocode: "词汇搜索",
+    ai_suggest: "AI 建议", grp_ai: "AI 辅助",
+    show_highlights: "显示高亮", grp_display: "显示",
+    project_memo: "项目备忘录", memo_manager: "备忘录管理器", grp_memos: "备忘录",
+    edit_variables: "变量列表", data_editor: "数据编辑器", grp_docvars: "文档变量",
+    code_matrix: "编码矩阵", cooc_matrix: "共现矩阵", group_compare: "组间比较",
+    grp_matrices: "矩阵", word_freq: "词频", kwic: "语境关键词 (KWIC)",
+    grp_lexical: "词汇分析", stats: "统计", adv_stats: "高级统计（χ²、R）",
+    grp_stats: "描述性", kappa: "编码者间一致性 (κ)", saved_queries: "已保存的查询",
+    grp_queries: "查询",
+    doc_portrait: "文档画像", word_cloud: "词云", bar_chart: "编码频率",
+    grp_visuals: "可视化", concept_map: "概念图", grp_concept_maps: "建模",
+    export_segments: "片段 (CSV)", export_docx: "Word 报告 (.docx)", export_report: "可打印报告",
+    export_codes: "编码系统", export_matrix: "矩阵 (CSV)", export_refi: "REFI-QDA (.qdpx)",
+    grp_exports: "导出",
+    panel_docs: "📄 文档系统", panel_codes: "🏷️ 编码系统",
+    panel_browser: "📖 文档浏览器", panel_retrieved: "🧲 检索到的片段",
+    apply_code: "应用编码：", hint_no_doc: "请在左侧选择一个文档，或导入数据。",
+    open: "打开", close: "关闭", cancel: "取消", ok: "确定", delete: "删除",
+    rename: "重命名", confirm: "确认",
+    autosaved: "已自动保存", doc_filter_ph: "筛选…",
+    segments_lbl: "个片段", docs: "个文档", codes_lbl: "个编码",
+  },
+
+  /* ---------- हिन्दी (Inde) ---------- */
+  hi: {
+    tab_home: "होम", tab_import: "आयात", tab_codes: "कोड", tab_memos: "मेमो",
+    tab_variables: "चर", tab_analysis: "विश्लेषण", tab_visual: "दृश्य", tab_reports: "रिपोर्ट",
+    my_projects: "मेरी परियोजनाएँ", new_project: "नई परियोजना", open_project: "खोलें (.projx)",
+    save_project: "सहेजें (.projx)", sample_project: "उदाहरण परियोजना", grp_project: "परियोजना",
+    protect: "पासवर्ड", merge_project: "विलय (.projx)", shared_folder: "साझा फ़ोल्डर",
+    rt_btn: "वास्तविक समय (सर्वर)", grp_team: "टीम",
+    search: "खोजें", grp_search: "खोज", search_ph: "पूर्ण-पाठ खोज (और, या, \"वाक्यांश\")…",
+    undo: "पूर्ववत करें", redo: "फिर करें", grp_edit: "संपादन",
+    trash: "रीसायकल बिन", grp_tools: "उपकरण",
+    import_files: "फ़ाइलें (DOCX, PDF, TXT, चित्र)", import_csv: "CSV सर्वेक्षण",
+    paste_doc: "पाठ चिपकाएँ", structured_text: "संरचित पाठ",
+    transcribe: "ऑडियो/वीडियो लिप्यंतरण", social_import: "सोशल मीडिया (निर्यात)",
+    biblio: "संदर्भ सूची (RIS/BibTeX)", grp_import: "आयात",
+    new_group: "नया समूह", grp_organize: "संगठन",
+    new_code: "नया कोड", code_selection: "चयन को कोड करें", in_vivo: "इन-विवो कोडिंग",
+    grp_coding: "कोडिंग", autocode: "स्वचालित कोडिंग", grp_autocode: "शाब्दिक खोज",
+    ai_suggest: "AI सुझाव", grp_ai: "AI सहायता",
+    show_highlights: "हाइलाइट दिखाएँ", grp_display: "प्रदर्शन",
+    project_memo: "परियोजना मेमो", memo_manager: "मेमो प्रबंधक", grp_memos: "मेमो",
+    edit_variables: "चरों की सूची", data_editor: "डेटा संपादक", grp_docvars: "दस्तावेज़ के चर",
+    code_matrix: "कोड मैट्रिक्स", cooc_matrix: "सह-घटना", group_compare: "समूह तुलना",
+    grp_matrices: "मैट्रिक्स", word_freq: "शब्द आवृत्तियाँ", kwic: "संदर्भ में शब्द (KWIC)",
+    grp_lexical: "शाब्दिक विश्लेषण", stats: "आँकड़े", adv_stats: "उन्नत आँकड़े (χ², R)",
+    grp_stats: "वर्णनात्मक", kappa: "कोडर सहमति (κ)", saved_queries: "सहेजी गई क्वेरी",
+    grp_queries: "क्वेरी",
+    doc_portrait: "दस्तावेज़ चित्र", word_cloud: "शब्द बादल", bar_chart: "कोड आवृत्तियाँ",
+    grp_visuals: "दृश्य", concept_map: "अवधारणा मानचित्र", grp_concept_maps: "मॉडलिंग",
+    export_segments: "खंड (CSV)", export_docx: "Word रिपोर्ट (.docx)", export_report: "मुद्रण योग्य रिपोर्ट",
+    export_codes: "कोड प्रणाली", export_matrix: "मैट्रिक्स (CSV)", export_refi: "REFI-QDA (.qdpx)",
+    grp_exports: "निर्यात",
+    panel_docs: "📄 दस्तावेज़ प्रणाली", panel_codes: "🏷️ कोड प्रणाली",
+    panel_browser: "📖 दस्तावेज़ ब्राउज़र", panel_retrieved: "🧲 प्राप्त खंड",
+    apply_code: "कोड लागू करें:", hint_no_doc: "बाईं ओर एक दस्तावेज़ चुनें, या डेटा आयात करें।",
+    open: "खोलें", close: "बंद करें", cancel: "रद्द करें", ok: "ठीक है", delete: "हटाएँ",
+    rename: "नाम बदलें", confirm: "पुष्टि करें",
+    autosaved: "स्वतः सहेजा गया", doc_filter_ph: "फ़िल्टर…",
+    segments_lbl: "खंड", docs: "दस्तावेज़", codes_lbl: "कोड",
+  },
+
+  /* ---------- العربية (RTL) ---------- */
+  ar: {
+    tab_home: "الرئيسية", tab_import: "استيراد", tab_codes: "الرموز", tab_memos: "المذكرات",
+    tab_variables: "المتغيرات", tab_analysis: "التحليل", tab_visual: "العرض المرئي", tab_reports: "التقارير",
+    my_projects: "مشاريعي", new_project: "مشروع جديد", open_project: "فتح (.projx)",
+    save_project: "حفظ (.projx)", sample_project: "مشروع نموذجي", grp_project: "المشروع",
+    protect: "كلمة المرور", merge_project: "دمج (.projx)", shared_folder: "مجلد مشترك",
+    rt_btn: "الوقت الفعلي (خادم)", grp_team: "الفريق",
+    search: "بحث", grp_search: "البحث", search_ph: "بحث في النص الكامل (و، أو، \"عبارة\")…",
+    undo: "تراجع", redo: "إعادة", grp_edit: "تحرير",
+    trash: "سلة المهملات", grp_tools: "أدوات",
+    import_files: "ملفات (DOCX، PDF، TXT، صور)", import_csv: "استبيان CSV",
+    paste_doc: "لصق نص", structured_text: "نص منظم",
+    transcribe: "تفريغ صوت/فيديو", social_import: "وسائل التواصل (تصدير)",
+    biblio: "المراجع (RIS/BibTeX)", grp_import: "الاستيراد",
+    new_group: "مجموعة جديدة", grp_organize: "التنظيم",
+    new_code: "رمز جديد", code_selection: "ترميز التحديد", in_vivo: "ترميز حرفي",
+    grp_coding: "الترميز", autocode: "ترميز تلقائي", grp_autocode: "بحث معجمي",
+    ai_suggest: "اقتراحات الذكاء الاصطناعي", grp_ai: "مساعدة الذكاء الاصطناعي",
+    show_highlights: "إظهار التظليل", grp_display: "العرض",
+    project_memo: "مذكرة المشروع", memo_manager: "مدير المذكرات", grp_memos: "المذكرات",
+    edit_variables: "قائمة المتغيرات", data_editor: "محرر البيانات", grp_docvars: "متغيرات المستند",
+    code_matrix: "مصفوفة الرموز", cooc_matrix: "التواجد المشترك", group_compare: "مقارنة المجموعات",
+    grp_matrices: "المصفوفات", word_freq: "تكرار الكلمات", kwic: "كلمات في السياق (KWIC)",
+    grp_lexical: "التحليل المعجمي", stats: "إحصاءات", adv_stats: "إحصاءات متقدمة (χ²، R)",
+    grp_stats: "وصفية", kappa: "اتفاق المرمّزين (κ)", saved_queries: "استعلامات محفوظة",
+    grp_queries: "الاستعلامات",
+    doc_portrait: "صورة المستند", word_cloud: "سحابة الكلمات", bar_chart: "تكرار الرموز",
+    grp_visuals: "عروض مرئية", concept_map: "خريطة مفاهيم", grp_concept_maps: "النمذجة",
+    export_segments: "مقاطع (CSV)", export_docx: "تقرير Word (.docx)", export_report: "تقرير للطباعة",
+    export_codes: "نظام الرموز", export_matrix: "مصفوفة (CSV)", export_refi: "REFI-QDA (.qdpx)",
+    grp_exports: "التصدير",
+    panel_docs: "📄 نظام المستندات", panel_codes: "🏷️ نظام الرموز",
+    panel_browser: "📖 متصفح المستندات", panel_retrieved: "🧲 المقاطع المسترجعة",
+    apply_code: "تطبيق رمز:", hint_no_doc: "اختر مستندًا من اليسار، أو استورد بيانات.",
+    open: "فتح", close: "إغلاق", cancel: "إلغاء", ok: "موافق", delete: "حذف",
+    rename: "إعادة تسمية", confirm: "تأكيد",
+    autosaved: "حُفظ تلقائيًا", doc_filter_ph: "تصفية…",
+    segments_lbl: "مقاطع", docs: "مستندات", codes_lbl: "رموز",
+  },
+};
+
+return { extraLangs };
+})();
+
 __QC["i18n"] = (function () {
 "use strict";
-// Internationalisation FR / EN — extensible (§3.1 du cahier des charges)
+// Internationalisation multilingue (§3.1 du cahier des charges)
+// FR et EN sont complets ; les autres langues (js/langs.js) couvrent les clés
+// essentielles et retombent sur le français pour le reste.
+const { extraLangs } = __QC["langs"];
+
+const LANGS = [
+  { code: "fr", label: "Français" },
+  { code: "en", label: "English" },
+  { code: "rw", label: "Kinyarwanda" },
+  { code: "sw", label: "Kiswahili (Kenya/Tanzania)" },
+  { code: "swc", label: "Kiswahili (RDC – Mashariki)" },
+  { code: "ln", label: "Lingála" },
+  { code: "wo", label: "Wolof" },
+  { code: "ar", label: "العربية", rtl: true },
+  { code: "es", label: "Español" },
+  { code: "pt", label: "Português" },
+  { code: "zh", label: "中文（普通话）" },
+  { code: "hi", label: "हिन्दी" },
+];
+
 const translations = {
   fr: {
     tab_home: "Accueil", tab_import: "Importer", tab_codes: "Codes", tab_memos: "Mémos",
@@ -772,6 +1223,7 @@ const translations = {
     export_refi: "REFI-QDA (.qdpx)", refi_desc: "Format d'échange standard — importable dans MAXQDA, NVivo, ATLAS.ti",
     pdf_import_fail: "Impossible de lire ce PDF. Il est peut-être scanné (image) ou protégé.",
     recode_done: "Segment recodé vers", drag_to_recode: "Glissez cette carte sur un code (volet Codes) pour recoder le segment",
+    lang_title: "Langue de l'interface", lang_hint: "FR et EN sont complets ; les autres langues couvrent l'essentiel et complètent en français. Les textes longs restent en français.",
     undo: "Annuler", redo: "Rétablir", grp_edit: "Édition",
     undo_done: "Action annulée", redo_done: "Action rétablie",
     nothing_to_undo: "Rien à annuler", nothing_to_redo: "Rien à rétablir",
@@ -986,6 +1438,7 @@ const translations = {
     export_refi: "REFI-QDA (.qdpx)", refi_desc: "Standard exchange format — importable in MAXQDA, NVivo, ATLAS.ti",
     pdf_import_fail: "Unable to read this PDF. It may be scanned (image-based) or protected.",
     recode_done: "Segment recoded to", drag_to_recode: "Drag this card onto a code (Codes panel) to recode the segment",
+    lang_title: "Interface language", lang_hint: "FR and EN are complete; other languages cover the essentials and fall back to French for long texts.",
     undo: "Undo", redo: "Redo", grp_edit: "Edit",
     undo_done: "Action undone", redo_done: "Action redone",
     nothing_to_undo: "Nothing to undo", nothing_to_redo: "Nothing to redo",
@@ -1077,9 +1530,17 @@ const translations = {
   }
 };
 
+// Fusionne les langues supplémentaires (clés essentielles + repli sur FR)
+Object.assign(translations, extraLangs);
+
 let lang = "fr";
 
-function setLang(l) { lang = translations[l] ? l : "fr"; }
+function setLang(l) {
+  lang = translations[l] ? l : "fr";
+  // Sens d'écriture : droite→gauche pour l'arabe
+  const meta = LANGS.find(x => x.code === lang);
+  document.documentElement.dir = meta && meta.rtl ? "rtl" : "ltr";
+}
 function getLang() { return lang; }
 function t(key) {
   return (translations[lang] && translations[lang][key]) ?? translations.fr[key] ?? key;
@@ -1093,7 +1554,7 @@ function applyStaticTranslations() {
   document.documentElement.lang = lang;
 }
 
-return { setLang, getLang, t, applyStaticTranslations, translations };
+return { setLang, getLang, t, applyStaticTranslations, LANGS, translations };
 })();
 
 __QC["state"] = (function () {
@@ -4518,7 +4979,7 @@ return { setRtHandlers, rtStatus, rtConnect, rtDisconnect, rtBroadcast };
 __QC["app"] = (function () {
 "use strict";
 // QualiCode — application d'analyse qualitative de données (MVP du cahier des charges)
-const { t, setLang, getLang, applyStaticTranslations } = __QC["i18n"];
+const { t, setLang, getLang, applyStaticTranslations, LANGS } = __QC["i18n"];
 const {
   state, emptyProject, normalizeProject, uid, CODE_COLORS,
   scheduleSave, persistNow, loadPersisted, setOnSaved, savePrefs, loadPrefs,
@@ -4725,12 +5186,23 @@ function bindRibbon() {
     document.querySelectorAll(".ribbon-pane").forEach(p => p.classList.toggle("active", p.dataset.pane === btn.dataset.tab));
   });
 
+  // Sélecteur de langue : menu des 12 langues de l'interface
   $("#btnLang").onclick = () => {
-    state.ui.lang = getLang() === "fr" ? "en" : "fr";
-    setLang(state.ui.lang);
-    $("#langLabel").textContent = getLang().toUpperCase();
-    savePrefs();
-    renderAll();
+    openModal({
+      title: "🌐 " + t("lang_title"),
+      bodyHtml: `<p style="font-size:12px;color:var(--text-soft);margin-top:0">${esc(t("lang_hint"))}</p>
+        <div class="lang-grid">${LANGS.map(l =>
+          `<button class="btn lang-item ${l.code === getLang() ? "primary" : ""}" data-lang="${l.code}"
+             ${l.rtl ? 'dir="rtl"' : ""}>${esc(l.label)}</button>`).join("")}</div>`,
+      footer: [{ label: t("close"), primary: true, onClick: (o, c) => c() }],
+    }).body.querySelectorAll("[data-lang]").forEach(b => b.onclick = () => {
+      state.ui.lang = b.dataset.lang;
+      setLang(state.ui.lang);
+      $("#langLabel").textContent = getLang().toUpperCase();
+      savePrefs();
+      document.querySelector(".modal-overlay")?.remove();
+      renderAll();
+    });
   };
   $("#btnTheme").onclick = () => {
     state.ui.theme = state.ui.theme === "dark" ? "light" : "dark";

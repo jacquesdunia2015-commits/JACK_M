@@ -367,3 +367,11 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* Sélecteur de langue */
+.lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.lang-item { text-align: center; }
+
+/* Écriture droite→gauche (arabe) : les volets et le ruban suivent dir=rtl */
+[dir="rtl"] .rlabel { text-align: right; }
+[dir="rtl"] .seg-card-head { direction: rtl; }

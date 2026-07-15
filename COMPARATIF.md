@@ -109,7 +109,7 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Collaboration par dossier partagé (Drive/Dropbox, détection des nouveautés) | ✅ | 🔶 | 🔶 | 🔶 |
 | Collaboration temps réel multi-utilisateurs | ✅ serveur fourni | ✅ 💰 serveur | ✅ 💰 serveur | ✅ 💰 web |
 | Palette de commandes (Ctrl+K, toutes les actions au clavier) | ✅ | ❌ | ❌ | ❌ |
-| Interface FR + EN | ✅ | ✅ | 🔶 | 🔶 |
+| Interface multilingue | ✅ 12 langues (dont kinyarwanda, kiswahili, lingála, wolof, arabe RTL) | 🔶 ~5 langues | 🔶 | 🔶 |
 | Corpus de plusieurs milliers de documents (IndexedDB + filtre) | ✅ | ✅ | ✅ | ✅ |
 | **Prix** | **Gratuit, libre** | ≈ 630 €/licence | ≈ 1 200 €/licence | ≈ 700 €/licence |
 

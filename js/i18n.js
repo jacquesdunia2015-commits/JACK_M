@@ -1,4 +1,23 @@
-// Internationalisation FR / EN — extensible (§3.1 du cahier des charges)
+// Internationalisation multilingue (§3.1 du cahier des charges)
+// FR et EN sont complets ; les autres langues (js/langs.js) couvrent les clés
+// essentielles et retombent sur le français pour le reste.
+import { extraLangs } from "./langs.js";
+
+export const LANGS = [
+  { code: "fr", label: "Français" },
+  { code: "en", label: "English" },
+  { code: "rw", label: "Kinyarwanda" },
+  { code: "sw", label: "Kiswahili (Kenya/Tanzania)" },
+  { code: "swc", label: "Kiswahili (RDC – Mashariki)" },
+  { code: "ln", label: "Lingála" },
+  { code: "wo", label: "Wolof" },
+  { code: "ar", label: "العربية", rtl: true },
+  { code: "es", label: "Español" },
+  { code: "pt", label: "Português" },
+  { code: "zh", label: "中文（普通话）" },
+  { code: "hi", label: "हिन्दी" },
+];
+
 export const translations = {
   fr: {
     tab_home: "Accueil", tab_import: "Importer", tab_codes: "Codes", tab_memos: "Mémos",
@@ -122,6 +141,7 @@ export const translations = {
     export_refi: "REFI-QDA (.qdpx)", refi_desc: "Format d'échange standard — importable dans MAXQDA, NVivo, ATLAS.ti",
     pdf_import_fail: "Impossible de lire ce PDF. Il est peut-être scanné (image) ou protégé.",
     recode_done: "Segment recodé vers", drag_to_recode: "Glissez cette carte sur un code (volet Codes) pour recoder le segment",
+    lang_title: "Langue de l'interface", lang_hint: "FR et EN sont complets ; les autres langues couvrent l'essentiel et complètent en français. Les textes longs restent en français.",
     undo: "Annuler", redo: "Rétablir", grp_edit: "Édition",
     undo_done: "Action annulée", redo_done: "Action rétablie",
     nothing_to_undo: "Rien à annuler", nothing_to_redo: "Rien à rétablir",
@@ -336,6 +356,7 @@ export const translations = {
     export_refi: "REFI-QDA (.qdpx)", refi_desc: "Standard exchange format — importable in MAXQDA, NVivo, ATLAS.ti",
     pdf_import_fail: "Unable to read this PDF. It may be scanned (image-based) or protected.",
     recode_done: "Segment recoded to", drag_to_recode: "Drag this card onto a code (Codes panel) to recode the segment",
+    lang_title: "Interface language", lang_hint: "FR and EN are complete; other languages cover the essentials and fall back to French for long texts.",
     undo: "Undo", redo: "Redo", grp_edit: "Edit",
     undo_done: "Action undone", redo_done: "Action redone",
     nothing_to_undo: "Nothing to undo", nothing_to_redo: "Nothing to redo",
@@ -427,9 +448,17 @@ export const translations = {
   }
 };
 
+// Fusionne les langues supplémentaires (clés essentielles + repli sur FR)
+Object.assign(translations, extraLangs);
+
 let lang = "fr";
 
-export function setLang(l) { lang = translations[l] ? l : "fr"; }
+export function setLang(l) {
+  lang = translations[l] ? l : "fr";
+  // Sens d'écriture : droite→gauche pour l'arabe
+  const meta = LANGS.find(x => x.code === lang);
+  document.documentElement.dir = meta && meta.rtl ? "rtl" : "ltr";
+}
 export function getLang() { return lang; }
 export function t(key) {
   return (translations[lang] && translations[lang][key]) ?? translations.fr[key] ?? key;

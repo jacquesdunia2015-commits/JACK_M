@@ -39,7 +39,12 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 
 - **4 volets redimensionnables** : système de documents, système de codes, navigateur de document, segments récupérés.
 - **Ruban d'onglets** par domaine fonctionnel : Accueil, Importer, Codes, Mémos, Variables, Analyse, Visualisation, Rapports.
-- **Thèmes clair / sombre** (bouton 🌓) et **interface bilingue FR / EN** (bouton 🌐), extensible.
+- **Thèmes clair / sombre** (bouton 🌓) et **interface en 12 langues** (bouton 🌐) : français, anglais,
+  kinyarwanda, kiswahili (Kenya/Tanzanie), kiswahili de l'Est de la RDC, lingála, wolof, arabe (écriture
+  droite→gauche prise en charge), espagnol, portugais, chinois (mandarin), hindi. FR/EN sont complets ;
+  les autres langues couvrent l'essentiel de l'interface avec repli automatique sur le français.
+  *Les traductions kinyarwanda, lingála, kiswahili-RDC et wolof mériteront une relecture par des
+  locuteurs natifs avant commercialisation.*
 - Numérotation des paragraphes, détection des locuteurs dans les transcriptions (`Nom :` en début de ligne).
 
 ## ✨ Fonctionnalités livrées
@@ -87,7 +92,8 @@ index.html          Structure : ruban + 4 volets + modales
 css/style.css       Thèmes clair/sombre (variables CSS), mise en page en grille
 js/app.js           Contrôleur principal : interface, codage, récupération, modales
 js/state.js         Modèle de données du projet + persistance (autosave)
-js/i18n.js          Internationalisation FR/EN (extensible)
+js/i18n.js          Internationalisation (12 langues, repli sur FR, RTL arabe)
+js/langs.js         Dictionnaires des 10 langues supplémentaires
 js/analysis.js      Recherche booléenne, lexicométrie, matrices
 js/export.js        Exports CSV, rapport imprimable, conteneur .projx
 js/docx.js          Import DOCX natif (lecture ZIP + WordprocessingML)
