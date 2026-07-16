@@ -1,4 +1,6 @@
-# 🔍 QualiCode — Logiciel d'analyse qualitative de données (QDA)
+<p align="center"><img src="assets/logo/qualicode-logo.svg" alt="QualiCode — L'analyse qualitative, simple et hors ligne" width="560"></p>
+
+# QualiCode — Logiciel d'analyse qualitative de données (QDA)
 
 Application web d'analyse qualitative et de méthodes mixtes, inspirée de MAXQDA / NVivo / ATLAS.ti,
 développée à partir du **cahier des charges « Logiciel d'analyse qualitative de données (QDA) » v1.0 (juillet 2026)**.

@@ -412,3 +412,6 @@ body.dark .pay-table th, body.dark .pay-table td { border-color: #46586a; }
 .pay-channels code { user-select: all; }
 body.dark .lock-card { background: #202b36; color: #e4ecf4; }
 body.dark .lock-form input { background: #16202a; color: #e4ecf4; border-color: #46586a; }
+
+/* Logo de marque dans l'en-tête */
+.brand-logo { width: 20px; height: 20px; vertical-align: -4px; border-radius: 4px; }

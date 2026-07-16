@@ -11,6 +11,15 @@ d'encaissement).*
 > les langues africaines, qui marche sans internet et sans installation, au
 > prix d'un forfait téléphonique — là où MAXQDA et NVivo coûtent 700 à 1 250 $.**
 
+**Identité visuelle** : le logo (dossier `assets/logo/`) montre une loupe en
+forme de **Q** posée sur des lignes de texte surlignées en couleur — la
+recherche + le codage qualitatif en un seul symbole. Fichiers fournis :
+`qualicode-icon.svg` (icône carrée, réseaux sociaux/app), `qualicode-logo.svg`
+(horizontal fond clair), `qualicode-logo-dark.svg` (fond sombre) + rendus PNG
+(512/1024 px) prêts pour WhatsApp, affiches et diaporamas. Couleurs de marque :
+bleu profond `#17334f`, bleu `#3a7ca5`, ambre `#f6b93b`, sarcelle `#2ec4b6`,
+corail `#ee6352`.
+
 Vos 5 arguments massue (uniques sur le marché) :
 1. **Prix** : 3 à 40× moins cher, avec des formules jour/semaine inédites.
 2. **Hors ligne total** : fonctionne sans connexion, un simple fichier HTML —
