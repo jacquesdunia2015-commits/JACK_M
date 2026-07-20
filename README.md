@@ -123,7 +123,7 @@ js/helpdocs.js      Manuels PDF embarqués (généré par tools/embarquer_docs.p
 server/sync-server.mjs  Serveur de relais WebSocket (RFC 6455, zéro dépendance)
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)
-js/sample.js        Projet exemple (étude sur le télétravail)
+js/sample.js        Projet exemple : analyse TERMINÉE de bout en bout (codage pondéré et commenté, mémos, requêtes sauvegardées, carte conceptuelle, bibliographie)
 ```
 
 **Modèle de données** (`.projx`, JSON) : `documents`, `documentGroups`, `codes` (hiérarchie par `parentId`),

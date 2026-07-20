@@ -32,7 +32,7 @@ Vos données restent **sur votre ordinateur**. Rien n'est envoyé sur internet.
 
 *Autre possibilité (sources)* : téléchargez le dossier du projet, ouvrez un terminal dedans, tapez `python3 -m http.server 8080` puis allez sur **http://localhost:8080**.
 
-Au premier lancement, un **projet exemple** s'ouvre (une étude sur le télétravail, déjà partiellement codée). C'est parfait pour s'entraîner sans risque.
+Au premier lancement, un **projet exemple** s'ouvre : une étude sur le télétravail **entièrement terminée** — 3 entretiens + 1 focus group codés de bout en bout (32 segments pondérés et commentés), mémos de définition des codes, mémo de résultats du projet, 4 requêtes sauvegardées, une carte conceptuelle « Modèle des résultats » et une bibliographie APA. Explorez-le pour voir à quoi ressemble une analyse complète, puis réinitialisez-le à tout moment (Accueil → Projet exemple).
 
 > 💡 En haut à droite : le bouton **🌐** change la langue (français/anglais) et le bouton **🌓** passe en mode sombre.
 
