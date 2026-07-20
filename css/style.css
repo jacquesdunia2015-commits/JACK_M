@@ -53,9 +53,9 @@ button { font-family: inherit; color: inherit; }
 .ribbon-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .ribbon-top { display: flex; align-items: center; gap: 12px; padding: 4px 10px 0; }
 .app-brand {
-  font-size: 17px; white-space: nowrap;
+  font-size: 15px; white-space: nowrap;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 6px; padding: 8px 16px; border-right: 1px solid var(--border);
+  gap: 5px; padding: 6px 14px; border-right: 1px solid var(--border);
 }
 .ribbon-tabs { display: flex; gap: 2px; flex: 1; overflow-x: auto; }
 .ribbon-tabs button {
@@ -419,5 +419,5 @@ body.dark .lock-card { background: #202b36; color: #e4ecf4; }
 body.dark .lock-form input { background: #16202a; color: #e4ecf4; border-color: #46586a; }
 
 /* Logo de marque dans l'en-tête */
-/* Logo agrandi (6 × 20 px = 120 px), colonne de marque sur toute la hauteur du ruban */
-.brand-logo { width: 120px; height: 120px; border-radius: 26px; box-shadow: 0 2px 8px rgba(0, 0, 0, .18); }
+/* Logo en taille intermédiaire (80 px), colonne de marque sur toute la hauteur du ruban */
+.brand-logo { width: 80px; height: 80px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0, 0, 0, .18); }
