@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 # Ordre de concaténation = ordre des dépendances (aucun cycle)
-MODULES = ["langs", "i18n", "state", "analysis", "docx", "docxout", "crypto", "applock", "payments", "license", "merge", "sample", "export", "pdf", "refi", "conceptmap", "audio", "social", "ai", "sync", "imagecode", "ocr", "biblio", "stats", "realtime", "app"]
+MODULES = ["langs", "i18n", "state", "analysis", "docx", "docxout", "crypto", "applock", "payments", "license", "merge", "sample", "export", "helpdocs", "pdf", "refi", "conceptmap", "audio", "social", "ai", "sync", "imagecode", "ocr", "biblio", "stats", "realtime", "app"]
 
 
 def transform_module(name: str, src: str) -> str:

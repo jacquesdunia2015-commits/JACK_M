@@ -40,6 +40,7 @@ import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from 
 import { hasAppLock, setAppLock, removeAppLock, verifyAppLock, applockGate, showLockScreen } from "./applock.js";
 import { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS } from "./license.js";
 import { buildPaymentsHtml } from "./payments.js";
+import { downloadGuidePdf, downloadManuelPdf } from "./helpdocs.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
 const $ = sel => document.querySelector(sel);
@@ -318,6 +319,8 @@ function bindRibbon() {
   $("#btnSearch").onclick = runSearch;
   $("#searchInput").addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
   $("#btnTrash").onclick = openTrash;
+  $("#btnGuidePdf").onclick = () => { downloadGuidePdf(); toast("📖 " + t("doc_downloaded")); };
+  $("#btnManuelPdf").onclick = () => { downloadManuelPdf(); toast("🎓 " + t("doc_downloaded")); };
 
   // --- Importer ---
   $("#btnImportFiles").onclick = () => $("#fileInput").click();

@@ -11,6 +11,7 @@ fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicale
 
 📖 **Nouveau sur QualiCode ?** Lisez le **[Guide d'utilisation](GUIDE_UTILISATION.md)** — pas à pas, en français simple.
 🎓 **Jamais fait d'analyse qualitative ?** Le **[Manuel du débutant complet (A → Z)](MANUEL_DEBUTANT.md)** explique tout, concepts compris.
+📥 Les deux manuels sont aussi **téléchargeables en PDF depuis l'application** (Accueil → groupe « Documentation ») — versions PDF dans [docs/](docs/), régénérables via `tools/embarquer_docs.py`.
 💰 **Commercialisation** : [PRICING.md](PRICING.md) (tarifs, licences, paiements) · [MARKETING.md](MARKETING.md) (cibles, canaux, modèle économique).
 
 ## 🚀 Lancement
@@ -118,6 +119,7 @@ js/realtime.js      Client temps réel WebSocket (contribution par codeur)
 js/applock.js       Verrou d'application (mot de passe à l'ouverture, PBKDF2)
 js/license.js       Essai 5 jours + clés d'abonnement HMAC vérifiées hors ligne
 js/payments.js      Grille tarifaire USD + canaux de paiement configurables
+js/helpdocs.js      Manuels PDF embarqués (généré par tools/embarquer_docs.py)
 server/sync-server.mjs  Serveur de relais WebSocket (RFC 6455, zéro dépendance)
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)

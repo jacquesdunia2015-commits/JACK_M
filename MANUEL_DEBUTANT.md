@@ -5,6 +5,11 @@ n'a jamais utilisé un logiciel comme celui-ci. Lisez dans l'ordre : chaque
 chapitre s'appuie sur le précédent. Temps de lecture : environ 1 heure.
 Temps pour tout essayer en même temps : une demi-journée.*
 
+> 💡 Ce manuel est **téléchargeable en PDF depuis l'application** : onglet
+> **Accueil → groupe « Documentation » → 🎓 Manuel débutant (PDF)**. Le
+> **Guide d'utilisation** (plus court, orienté « comment faire ») est
+> disponible au même endroit : 📖 Guide (PDF).
+
 ---
 
 ## Chapitre 1 — Comprendre AVANT de cliquer : c'est quoi l'analyse qualitative ?

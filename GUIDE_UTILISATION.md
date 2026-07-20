@@ -2,6 +2,12 @@
 
 *Un guide simple, pas à pas, pour analyser vos entretiens et vos textes de recherche.*
 
+> 💡 Ce guide est aussi **téléchargeable en PDF depuis l'application** :
+> onglet **Accueil → groupe « Documentation » → 📖 Guide (PDF)**.
+> Si vous n'avez **jamais** fait d'analyse qualitative, commencez plutôt par le
+> **Manuel du débutant complet (A → Z)** — mêmes boutons, 🎓 Manuel débutant
+> (PDF) — qui explique aussi les concepts (codage, segments, mémos…).
+
 ---
 
 ## 1. C'est quoi, QualiCode ?
