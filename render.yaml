@@ -1,0 +1,16 @@
+# Déploiement en un clic sur Render (https://render.com) — offre gratuite.
+# Bouton : https://render.com/deploy?repo=https://github.com/jacquesdunia2015-commits/JACK_M/tree/medilab-saas
+#
+# Note : sur l'offre gratuite, le disque est éphémère — la base de
+# démonstration (data/db.json) est réinitialisée à chaque redéploiement.
+# Pour des données durables, ajouter un disque persistant et pointer
+# MEDILAB_DATA vers son chemin de montage.
+services:
+  - type: web
+    name: medilab-saas
+    runtime: node
+    plan: free
+    branch: medilab-saas
+    buildCommand: ""
+    startCommand: node server.mjs
+    healthCheckPath: /
