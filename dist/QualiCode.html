@@ -57,9 +57,14 @@ body {
 button { font-family: inherit; color: inherit; }
 
 /* ============ Ruban ============ */
-#ribbon { background: var(--bg-ribbon); border-bottom: 1px solid var(--border); flex: none; }
+#ribbon { background: var(--bg-ribbon); border-bottom: 1px solid var(--border); flex: none; display: flex; align-items: stretch; }
+.ribbon-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .ribbon-top { display: flex; align-items: center; gap: 12px; padding: 4px 10px 0; }
-.app-brand { font-size: 15px; white-space: nowrap; }
+.app-brand {
+  font-size: 17px; white-space: nowrap;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 8px 16px; border-right: 1px solid var(--border);
+}
 .ribbon-tabs { display: flex; gap: 2px; flex: 1; overflow-x: auto; }
 .ribbon-tabs button {
   border: none; background: transparent; padding: 7px 13px; cursor: pointer;
@@ -422,15 +427,17 @@ body.dark .lock-card { background: #202b36; color: #e4ecf4; }
 body.dark .lock-form input { background: #16202a; color: #e4ecf4; border-color: #46586a; }
 
 /* Logo de marque dans l'en-tête */
-.brand-logo { width: 20px; height: 20px; vertical-align: -4px; border-radius: 4px; }
+/* Logo agrandi (6 × 20 px = 120 px), colonne de marque sur toute la hauteur du ruban */
+.brand-logo { width: 120px; height: 120px; border-radius: 26px; box-shadow: 0 2px 8px rgba(0, 0, 0, .18); }
 
 </style></head>
 <body>
 
 <!-- ===================== RUBAN ===================== -->
 <header id="ribbon">
+  <div class="app-brand"><svg class="brand-logo" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#26567d"/><circle cx="250" cy="240" r="140" fill="none" stroke="#fff" stroke-width="30"/><rect x="165" y="177" width="88" height="26" rx="13" fill="#2ec4b6"/><rect x="261" y="177" width="74" height="26" rx="13" fill="#fff" opacity="0.85"/><rect x="150" y="227" width="70" height="26" rx="13" fill="#fff" opacity="0.85"/><rect x="228" y="227" width="96" height="26" rx="13" fill="#ee6352"/><rect x="165" y="277" width="70" height="26" rx="13" fill="#f6b93b"/><rect x="243" y="277" width="92" height="26" rx="13" fill="#fff" opacity="0.85"/><line x1="345" y1="335" x2="425" y2="415" stroke="#f6b93b" stroke-width="38" stroke-linecap="round"/></svg><strong>QualiCode</strong></div>
+  <div class="ribbon-main">
   <div class="ribbon-top">
-    <div class="app-brand"><svg class="brand-logo" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#26567d"/><circle cx="250" cy="240" r="140" fill="none" stroke="#fff" stroke-width="30"/><rect x="165" y="177" width="88" height="26" rx="13" fill="#2ec4b6"/><rect x="261" y="177" width="74" height="26" rx="13" fill="#fff" opacity="0.85"/><rect x="150" y="227" width="70" height="26" rx="13" fill="#fff" opacity="0.85"/><rect x="228" y="227" width="96" height="26" rx="13" fill="#ee6352"/><rect x="165" y="277" width="70" height="26" rx="13" fill="#f6b93b"/><rect x="243" y="277" width="92" height="26" rx="13" fill="#fff" opacity="0.85"/><line x1="345" y1="335" x2="425" y2="415" stroke="#f6b93b" stroke-width="38" stroke-linecap="round"/></svg> <strong>QualiCode</strong></div>
     <nav class="ribbon-tabs" id="ribbonTabs">
       <button data-tab="home" class="active" data-i18n="tab_home">Accueil</button>
       <button data-tab="import" data-i18n="tab_import">Importer</button>
@@ -606,6 +613,7 @@ body.dark .lock-form input { background: #16202a; color: #e4ecf4; border-color: 
         <div class="rlabel" data-i18n="grp_exports">Exports</div>
       </div>
     </div>
+  </div>
   </div>
 </header>
 
