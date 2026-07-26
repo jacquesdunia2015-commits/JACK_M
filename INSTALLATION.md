@@ -7,6 +7,16 @@ Ce document répond à **deux situations précises** :
 
 ---
 
+## 0. Le schéma en un coup d'œil
+
+![Installer QualiCode sur téléphone en 3 étapes](assets/schemas/installation-telephone.png)
+
+*Image partageable (WhatsApp, impression, formation) :
+`assets/schemas/installation-telephone.png`. Pour la régénérer avec votre propre
+adresse : `QC_URL="https://mon-site.netlify.app/" node tools/faire_schema.js`.*
+
+---
+
 ## 1. Comprendre : pourquoi une adresse web est nécessaire
 
 Une application web ne peut s'installer (icône sur l'écran d'accueil) **que si

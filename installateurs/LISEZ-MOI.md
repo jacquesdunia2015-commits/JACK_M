@@ -1,5 +1,8 @@
 # 📲 Installer QualiCode en un clic
 
+> 🖼️ **Pressé ?** Le schéma en 3 étapes pour téléphone :
+> [`assets/schemas/installation-telephone.png`](../assets/schemas/installation-telephone.png)
+
 QualiCode s'installe **comme une vraie application** — une icône sur l'écran
 d'accueil du téléphone ou sur le bureau de l'ordinateur, un clic pour ouvrir,
 et **ça marche sans internet**. Choisissez la ligne qui vous correspond.
