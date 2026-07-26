@@ -381,6 +381,27 @@ seul dès que l'écran est étroit.
 > confortable. Le même projet passe de l'un à l'autre avec 💾 Enregistrer
 > (.projx) puis 📂 Ouvrir (.projx).
 
+## 20. Les formats de fichiers utilisés par QualiCode
+
+Vous croiserez ces extensions dans les fenêtres « Ouvrir » et « Enregistrer » :
+
+| Extension | À quoi elle sert |
+|---|---|
+| **`.projx`** | **Votre projet QualiCode** : documents, codes, segments, mémos, requêtes, cartes — tout dans un seul fichier. C'est LE fichier à sauvegarder et à transporter. |
+| `.qdpx` | **REFI-QDA**, le format d'échange standard : permet d'envoyer votre projet vers MAXQDA, NVivo ou ATLAS.ti — et d'importer les leurs. |
+| `.docx` | Documents Word à importer (transcriptions d'entretiens). |
+| `.pdf` | Documents PDF à importer (et manuels téléchargés depuis l'application). |
+| `.txt` / `.md` | Textes simples, exports WhatsApp. |
+| `.csv` | Enquêtes (une ligne = une personne) et exports de tableaux vers Excel. |
+| `.json` | Exports de réseaux sociaux (commentaires, publications). |
+| `.ris` / `.bib` | Références bibliographiques venant de Zotero, EndNote ou Mendeley. |
+| `.svg` | Cartes conceptuelles exportées en image. |
+| audio/vidéo (`.mp3`, `.m4a`, `.wav`, `.mp4`, `.webm`…) | Enregistrements d'entretiens à transcrire ou à coder. |
+
+> 💡 Quand QualiCode est **installé** sur un ordinateur, double-cliquer un
+> fichier `.projx` ou `.qdpx` l'ouvre directement dans l'application : c'est ce
+> que le navigateur demande d'autoriser lors de l'installation.
+
 ---
 
 *Bonne analyse ! 🔍*

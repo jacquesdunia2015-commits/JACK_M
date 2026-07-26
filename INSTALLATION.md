@@ -108,6 +108,31 @@ il indique laquelle des conditions n'est pas remplie et ce qu'il faut faire.
 
 ---
 
+## 4 ter. Selon VOTRE navigateur (la cause n° 1 des échecs)
+
+Tous les navigateurs de téléphone ne savent pas installer, et ceux qui savent
+ne le font pas au même endroit. QualiCode **reconnaît le vôtre** et affiche la
+bonne marche à suivre (bouton 📲).
+
+| Navigateur | Peut installer ? | Où cliquer |
+|---|:---:|---|
+| **Navigateur intégré de WhatsApp / Facebook / Messenger** | ❌ **jamais** | Bouton **« 🌐 Ouvrir dans Chrome »** de QualiCode, ou menu ⋮ de la fenêtre → « Ouvrir dans Chrome » |
+| **Chrome** (Android) | ✅ | Menu **⋮** → « Installer l'application » |
+| **Samsung Internet** | ✅ | Menu **☰** (en bas à droite) → « Ajouter la page à » → « Écran d'accueil » |
+| **Firefox** (Android) | ✅ | Menu **⋮** → « Installer » |
+| **Opera** (Android) | ✅ | Menu **⋮ / ≡** → « Ajouter à… » → « Écran d'accueil » |
+| **Edge** (Android) | ✅ | Menu **≡** (en bas) → « Ajouter à l'écran d'accueil » |
+| **UC Browser** | ❌ peu fiable | Ouvrez plutôt dans Chrome |
+| **Chrome ou Firefox sur iPhone** | ❌ **jamais** (règle d'Apple) | Ouvrez l'adresse **dans Safari** |
+| **Safari** (iPhone/iPad) | ✅ | **Partager ⬆️** (barre du bas) → « Sur l'écran d'accueil » |
+
+> 💡 **Le piège le plus courant** : on reçoit le lien par WhatsApp, on le touche,
+> et WhatsApp l'ouvre dans son **mini-navigateur intégré**, qui ne peut rien
+> installer. QualiCode le détecte et affiche un bouton **« Ouvrir dans Chrome »**
+> qui règle le problème en un toucher.
+
+---
+
 ## 4 bis. « Ça ne s'installe toujours pas sur le téléphone »
 
 Ouvrez QualiCode depuis l'adresse web, puis touchez le bouton **📲** en haut de

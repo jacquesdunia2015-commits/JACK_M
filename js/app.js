@@ -43,7 +43,8 @@ import { buildPaymentsHtml } from "./payments.js";
 import { downloadGuidePdf, downloadManuelPdf } from "./helpdocs.js";
 import { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerServiceWorker,
          promptInstall, isInstalled, isIosSafari, canInstallNatively,
-         initInstallBanner, initFileHandler, installDiagnostic, runInstallCheck } from "./mobile.js";
+         initInstallBanner, initFileHandler, installDiagnostic, runInstallCheck,
+         detectBrowser, cannotInstallHere, openInRealBrowser } from "./mobile.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
 const $ = sel => document.querySelector(sel);
@@ -2962,9 +2963,22 @@ async function openInstallModal() {
       <p class="hint">${esc(t("m_site_down"))}</p>`);
     if (d.platform === "desktop") rows.push(`<p class="hint">${esc(t("m_fix_desktop_scripts"))}</p>`);
   } else {
-    const steps = d.platform === "android" ? "m_steps_android"
-      : d.platform === "ios" ? "m_steps_ios" : "m_steps_desktop";
-    rows.push(`<p class="hint">${esc(t(steps))}</p>`);
+    // Consigne adaptée au navigateur réellement utilisé (ils diffèrent tous)
+    const br = detectBrowser();
+    // Les consignes « m_br_* » visent les téléphones ; sur ordinateur, la voie
+    // d'installation est l'icône de la barre d'adresse, quel que soit le navigateur.
+    const brKey = (d.platform === "desktop" && br !== "inapp" && br !== "webview")
+      ? "m_steps_desktop" : "m_br_" + br;
+    const brText = t(brKey);
+    rows.push(`<h3>${esc(t("m_br_title"))}</h3>`);
+    if (brText !== brKey) {
+      const bloquant = br === "inapp" || br === "webview";
+      rows.push(`<p class="${bloquant ? "diag-block" : "hint"}">${esc(brText)}</p>`);
+    } else {
+      const steps = d.platform === "android" ? "m_steps_android"
+        : d.platform === "ios" ? "m_steps_ios" : "m_steps_desktop";
+      rows.push(`<p class="hint">${esc(t(steps))}</p>`);
+    }
     if (!d.nativePrompt && d.chromiumLike) rows.push(`<p class="hint">${esc(t("m_no_native_hint"))}</p>`);
     if (!d.chromiumLike && !d.iosSafari) rows.push(`<p class="hint">${esc(t("m_install_firefox"))}</p>`);
     // Ordinateur sans invite d'installation : le raccourci de bureau reste possible
@@ -2984,6 +2998,10 @@ async function openInstallModal() {
       ...(d.context === "web" ? [{
         label: t("m_check_run"),
         onClick: async (o) => runLiveInstallCheck(o),
+      }] : []),
+      ...(d.context === "web" && cannotInstallHere() ? [{
+        label: "🌐 " + t("m_open_chrome"),
+        onClick: () => { if (!openInRealBrowser()) toast(t("m_open_chrome_fail")); },
       }] : []),
       ...(d.context !== "web" ? [{
         label: "📋 " + t("m_copy_addr"),

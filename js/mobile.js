@@ -206,6 +206,56 @@ export function isIosSafari() {
   return /iPad|iPhone|iPod/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
 }
 
+/**
+ * Identifie le navigateur, car la marche à suivre pour installer diffère
+ * complètement de l'un à l'autre — et certains ne savent pas installer du tout.
+ * Cas critique en Afrique : le navigateur INTÉGRÉ de WhatsApp/Facebook, par
+ * lequel arrivent la plupart des liens, ne peut rien installer.
+ * L'ordre des tests compte : presque tous ces navigateurs contiennent
+ * « Chrome » ou « Safari » dans leur signature.
+ */
+export function detectBrowser() {
+  const ua = navigator.userAgent;
+  if (/FBAN|FBAV|FB_IAB|Instagram|Line\/|MicroMessenger|Twitter/i.test(ua)) return "inapp";
+  if (/; wv\)/.test(ua)) return "webview";           // WebView Android (WhatsApp…)
+  if (/SamsungBrowser/.test(ua)) return "samsung";
+  if (/OPR\/|OPT\/|Opera Mini|OPiOS/.test(ua)) return "opera";
+  if (/Edg(A|iOS)?\//.test(ua)) return "edge";
+  if (/FxiOS/.test(ua)) return "firefox_ios";
+  if (/Firefox\//.test(ua)) return "firefox";
+  if (/CriOS/.test(ua)) return "chrome_ios";
+  if (/UCBrowser|UCWEB/.test(ua)) return "uc";
+  if (/Chrome|Chromium|HeadlessChrome/.test(ua)) return "chrome";
+  if (/iPad|iPhone|iPod/.test(ua) && /Safari/.test(ua)) return "safari_ios";
+  if (/Safari/.test(ua)) return "safari";
+  return "other";
+}
+
+/** Navigateurs qui ne peuvent PAS installer : il faut d'abord en changer. */
+export function cannotInstallHere() {
+  return ["inapp", "webview", "chrome_ios", "firefox_ios", "uc", "opera_mini", "other"]
+    .includes(detectBrowser());
+}
+
+/**
+ * Rouvre la page dans le vrai navigateur du téléphone.
+ * Android : lien « intent:// » qui vise Chrome (puis repli sur le navigateur
+ * par défaut si Chrome est absent). iOS : impossible par programme, on affiche
+ * les instructions à la place.
+ */
+export function openInRealBrowser() {
+  const url = location.href.replace(/^https?:\/\//, "");
+  if (/Android/.test(navigator.userAgent)) {
+    const scheme = location.protocol === "https:" ? "https" : "http";
+    // package= vise Chrome ; S.browser_fallback_url ouvre le navigateur par défaut
+    const fallback = encodeURIComponent(location.href);
+    location.href = `intent://${url}#Intent;scheme=${scheme};` +
+      `package=com.android.chrome;S.browser_fallback_url=${fallback};end`;
+    return true;
+  }
+  return false;
+}
+
 function snoozed() {
   const until = Number(localStorage.getItem(BANNER_SNOOZE_KEY) || 0);
   return Date.now() < until;
@@ -383,8 +433,11 @@ export async function installDiagnostic() {
     context: isFile ? "file" : (secure ? "web" : "insecure"),
     platform: /Android/.test(ua) ? "android" : (/iPad|iPhone|iPod/.test(ua) ? "ios" : "desktop"),
     iosSafari: isIosSafari(),
-    // Chrome/Edge/Samsung Internet savent installer ; Firefox et Safari macOS non
-    chromiumLike: /Chrome|CriOS|Chromium|Edg|SamsungBrowser/.test(ua),
+    browser: detectBrowser(),
+    // Vrai seulement si CE navigateur sait installer : les mini-navigateurs
+    // intégrés (WhatsApp, Facebook) et Chrome sur iPhone ne le peuvent pas.
+    chromiumLike: !cannotInstallHere() &&
+      (/Chrome|Chromium|Edg|SamsungBrowser|Firefox|OPR/.test(ua) || isIosSafari()),
     hasManifest: !!document.querySelector("link[rel=manifest]"),
     secure, swReady,
     nativePrompt: !!installPrompt,
