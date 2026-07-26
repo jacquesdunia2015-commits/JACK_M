@@ -248,7 +248,22 @@ c'est 80 % de ce qu'on met dans un chapitre Résultats de mémoire.
 ## Chapitre 11 — Les fonctions IA (optionnelles, jamais obligatoires)
 
 Suggestions de codes et OCR de PDF scannés utilisent l'API d'Anthropic avec
-**votre propre clé** (console.anthropic.com). Points essentiels :
+**votre propre clé** (console.anthropic.com).
+
+**Obtenir la clé** : compte sur console.anthropic.com → ajoutez 5 $ de crédit →
+API Keys → Create Key → copiez la clé (`sk-ant-…`). Elle ne s'affiche qu'une
+fois.
+
+**L'utiliser** : ouvrez un document → Codes → 🤖 Suggestions IA → collez la clé
+→ cochez le consentement → 🔎 Analyser → décochez les propositions que vous
+refusez → ✅ Appliquer.
+
+**La revoir plus tard** : dans la même fenêtre, le bouton **👁 Afficher** révèle
+la clé enregistrée (elle est masquée par défaut) ; **🗑 Oublier cette clé**
+l'efface de l'appareil. La clé reste sur votre appareil et n'est jamais mise
+dans le fichier projet.
+
+Points essentiels :
 - QualiCode vous demande un **consentement explicite** avant tout envoi.
 - L'IA **propose**, vous **validez** chaque suggestion une par une.
 - Ne soumettez jamais de données nominatives : anonymisez à la transcription

@@ -2470,8 +2470,13 @@ function openAiSuggest() {
     bodyHtml: `
       <p class="trans-hint">${esc(t("ai_how"))}</p>
       <div class="form-row"><label>${esc(t("ai_key"))}</label>
-        <input type="password" id="aiKey" value="${esc(cfg.key || "")}" placeholder="sk-ant-…" autocomplete="off"></div>
-      <p style="font-size:11.5px;color:var(--text-soft);margin:2px 0 8px">${esc(t("ai_key_hint"))}</p>
+        <div class="key-row">
+          <input type="password" id="aiKey" value="${esc(cfg.key || "")}" placeholder="sk-ant-…" autocomplete="off">
+          <button type="button" class="btn" id="aiKeyShow">👁 ${esc(t("ai_key_show"))}</button>
+          ${cfg.key ? `<button type="button" class="btn" id="aiKeyForget">🗑 ${esc(t("ai_key_forget"))}</button>` : ""}
+        </div></div>
+      <p style="font-size:11.5px;color:var(--text-soft);margin:2px 0 8px">${esc(t("ai_key_hint"))}
+        ${cfg.savedAt ? `<br>🕒 ${esc(t("ai_key_saved"))} ${esc(new Date(cfg.savedAt).toLocaleDateString())}` : ""}</p>
       <div class="form-row"><label>${esc(t("ai_model"))}</label>
         <select id="aiModel">${AI_MODELS.map(mo =>
           `<option value="${mo.id}" ${mo.id === cfg.model ? "selected" : ""}>${esc(mo.label)}</option>`).join("")}</select></div>
@@ -2486,13 +2491,26 @@ function openAiSuggest() {
     ],
   });
 
+  // Relire ou effacer la clé enregistrée sur cet appareil
+  const champCle = m.overlay.querySelector("#aiKey");
+  m.overlay.querySelector("#aiKeyShow").onclick = e => {
+    const visible = champCle.type === "text";
+    champCle.type = visible ? "password" : "text";
+    e.target.textContent = (visible ? "👁 " + t("ai_key_show") : "🙈 " + t("ai_key_hide"));
+  };
+  m.overlay.querySelector("#aiKeyForget")?.addEventListener("click", () => {
+    saveAiConfig({ model: cfg.model });
+    champCle.value = "";
+    toast("🗑 " + t("ai_key_forgotten"));
+  });
+
   async function runAnalysis(o) {
     const key = o.querySelector("#aiKey").value.trim();
     const model = o.querySelector("#aiModel").value;
     const status = o.querySelector("#aiStatus");
     if (!key) { status.textContent = t("ai_need_key"); return; }
     if (!o.querySelector("#aiConsent").checked) { status.textContent = t("ai_need_consent"); return; }
-    saveAiConfig({ key, model }); // clé gardée sur CET ordinateur uniquement
+    saveAiConfig({ key, model, savedAt: Date.now() }); // clé gardée sur CET appareil uniquement
 
     const paragraphs = docParagraphs(doc.text);
     const codes = flatCodes().map(c => ({ name: c.name, definition: getMemo("code", c.id)?.text || "" }));

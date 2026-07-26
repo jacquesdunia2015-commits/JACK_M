@@ -331,6 +331,66 @@ Si vous changez de téléphone ou d'ordinateur, ou si vous effacez les données 
 votre navigateur, votre code change : demandez simplement une nouvelle clé au
 vendeur en lui donnant le nouveau code — c'est gratuit et immédiat.
 
+## 18 bis. La clé API pour le codage par IA 🤖
+
+Les **suggestions de codage par IA** et l'**OCR des PDF scannés** utilisent
+votre propre compte Anthropic. La clé n'est PAS fournie avec QualiCode : vous la
+créez vous-même, et elle vous appartient.
+
+### Obtenir une clé (une seule fois, 5 minutes)
+
+1. Allez sur **console.anthropic.com** et créez un compte.
+2. Ajoutez du crédit (**5 $ suffisent pour des centaines d'entretiens**).
+3. Menu **API Keys** → **Create Key** → copiez la clé, qui commence par `sk-ant-`.
+   ⚠️ Elle ne s'affiche **qu'une seule fois** : collez-la tout de suite dans
+   QualiCode ou notez-la en lieu sûr.
+
+### La saisir, la revoir, l'effacer
+
+Onglet **Codes → 🤖 Suggestions IA** (ouvrez d'abord un document) :
+
+- **Saisir** : collez la clé dans le champ « Clé API Anthropic ».
+- **La revoir** : bouton **👁 Afficher** — le champ est masqué par défaut, ce
+  bouton révèle la clé pour vérifier qu'elle est complète (une clé tronquée est
+  la cause n° 1 des erreurs). Le bouton devient **🙈 Masquer**.
+- **L'effacer** : bouton **🗑 Oublier cette clé** — utile sur un ordinateur
+  partagé ou avant de prêter votre machine.
+- La date d'enregistrement est rappelée sous le champ.
+
+La clé est conservée **sur cet appareil uniquement** : elle n'est jamais
+enregistrée dans le fichier `.projx` qui circule entre codeurs. Sur un autre
+appareil, il faudra la saisir de nouveau.
+
+### Pratiquer le codage par IA (pas à pas)
+
+1. Ouvrez un document (un entretien transcrit).
+2. **Codes → 🤖 Suggestions IA**.
+3. Vérifiez la clé (👁 Afficher si vous avez un doute) et choisissez le modèle.
+4. **Cochez la case de consentement** : elle confirme que ce document peut être
+   envoyé à un service externe. ⚠️ N'envoyez jamais de texte nominatif —
+   anonymisez au moment de la transcription (P01, P02…).
+5. Cliquez **🔎 Analyser**. Après quelques secondes, l'IA propose une liste de
+   passages avec le code suggéré et **la raison** de sa proposition.
+6. **Décochez ce qui ne vous convient pas** (c'est vous qui décidez), puis
+   **✅ Appliquer** : les segments sont créés, les nouveaux codes ajoutés.
+7. Relisez toujours : l'IA propose, le chercheur valide. Les segments créés
+   restent modifiables et annulables (`Ctrl+Z`).
+
+### Si un message d'erreur apparaît
+
+| Message | Que faire |
+|---|---|
+| Clé invalide | Vérifiez avec 👁 Afficher qu'elle est complète et commence par `sk-ant-` |
+| Quota / crédit épuisé | Rechargez votre compte sur console.anthropic.com |
+| Réponse illisible | Réessayez ; si cela persiste, choisissez un autre modèle |
+| Rien ne se passe | Vérifiez votre connexion internet : c'est la seule fonction de QualiCode qui en a besoin |
+
+**Combien ça coûte ?** Quelques centimes par entretien. Vous payez Anthropic
+directement, à l'usage — QualiCode ne prend aucune commission et ne voit jamais
+votre clé.
+
+---
+
 ## 19. Utiliser QualiCode sur téléphone 📱
 
 QualiCode fonctionne sur téléphone Android et iPhone : l'affichage s'adapte tout

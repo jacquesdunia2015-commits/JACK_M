@@ -597,3 +597,8 @@ body.dark .diag-block { background: #3a2f1e; }
   margin: 4px 0 8px; font-family: "DejaVu Sans Mono", Consolas, monospace; user-select: all;
 }
 .device-box .hint { margin-top: 8px; font-size: 12.5px; }
+
+/* Champ de clé API : afficher / masquer / oublier */
+.key-row { display: flex; gap: 6px; align-items: center; flex: 1; flex-wrap: wrap; }
+.key-row input { flex: 1; min-width: 180px; }
+.key-row .btn { white-space: nowrap; }
