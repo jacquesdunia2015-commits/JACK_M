@@ -47,14 +47,27 @@ for ICONE in "$ICI/../assets/logo/qualicode-icon-512.png" "$ICI/qualicode-icon-5
 done
 echo "  Copie dans : $DEST"
 
-# 3. Créer le lanceur
+# 3. Créer le lanceur — en « mode application » si Chrome/Chromium est présent
+#    (fenêtre propre sans barre d'adresse, comme un logiciel installé)
+NAVIGATEUR=""
+for CANDIDAT in google-chrome google-chrome-stable chromium chromium-browser microsoft-edge brave-browser; do
+  command -v "$CANDIDAT" >/dev/null && { NAVIGATEUR="$CANDIDAT"; break; }
+done
+if [[ -n "$NAVIGATEUR" ]]; then
+  EXEC="$NAVIGATEUR --app=file://$DEST/QualiCode.html"
+  echo "  Navigateur détecté : $NAVIGATEUR (fenêtre d'application)"
+else
+  EXEC="xdg-open \"$DEST/QualiCode.html\""
+  echo "  Chrome/Chromium non détecté : ouverture dans le navigateur par défaut."
+fi
+
 cat > "$RACCOURCI" <<EOF
 [Desktop Entry]
 Type=Application
 Name=QualiCode
 GenericName=Analyse qualitative de données
 Comment=Analyser des entretiens et des textes de recherche (hors ligne)
-Exec=xdg-open "$DEST/QualiCode.html"
+Exec=$EXEC
 Icon=$DEST/qualicode.png
 Terminal=false
 Categories=Office;Education;Science;

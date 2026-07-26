@@ -15,6 +15,10 @@ et **ça marche sans internet**. Choisissez la ligne qui vous correspond.
 >
 > L'application vous le dit d'elle-même : bouton **📲** en haut de l'écran →
 > elle affiche ce qui manque et l'adresse à ouvrir.
+>
+> **Si l'adresse ne répond pas** (« ce site est inaccessible ») : votre réseau
+> la bloque. Voir **[INSTALLATION.md](../INSTALLATION.md)** — on y explique
+> comment publier QualiCode ailleurs en 2 minutes, gratuitement.
 
 | Vous êtes sur… | Faites ceci |
 |---|---|
@@ -32,7 +36,9 @@ dans votre dossier personnel et créent les raccourcis.
 Placez le fichier `QualiCode.html` **à côté du script**, puis :
 
 - **Windows** : double-cliquez `Windows-Installer-QualiCode.bat`
-  → icône sur le Bureau + entrée dans le menu Démarrer.
+  → icône sur le Bureau + entrée dans le menu Démarrer. Si Chrome ou Edge est
+  présent, l'icône ouvre QualiCode **en fenêtre d'application** (sans barre
+  d'adresse), comme un logiciel installé.
   *(Si Windows affiche un avertissement « Windows a protégé votre
   ordinateur », cliquez « Informations complémentaires » → « Exécuter quand
   même » : le script n'est pas signé, mais son contenu est lisible dans un

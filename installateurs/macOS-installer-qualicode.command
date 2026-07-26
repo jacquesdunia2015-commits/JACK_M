@@ -46,10 +46,20 @@ cat > "$BUREAU/QualiCode.webloc" <<EOF
 </plist>
 EOF
 
+# Si Chrome est installé, créer aussi un lanceur « mode application »
+CHROME="/Applications/Google Chrome.app"
+if [[ -d "$CHROME" ]]; then
+  LANCEUR="$BUREAU/QualiCode (application).command"
+  cat > "$LANCEUR" <<EOF
+#!/bin/bash
+open -na "Google Chrome" --args --app="file://$DEST/QualiCode.html"
+EOF
+  chmod +x "$LANCEUR"
+  echo "  Lanceur « fenêtre d'application » créé (Chrome détecté)."
+fi
+
 echo "  Icône QualiCode placée sur le Bureau."
 echo
 echo "  Terminé : double-cliquez « QualiCode » sur le Bureau."
-echo "  Astuce : dans Chrome ou Edge, menu ⋮ → Enregistrer et partager →"
-echo "  « Installer QualiCode » ajoute l'application au Launchpad."
 echo
 read -n 1 -s -r -p "  Appuyez sur une touche pour fermer."

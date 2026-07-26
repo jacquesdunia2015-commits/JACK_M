@@ -12,6 +12,7 @@ fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicale
 📖 **Nouveau sur QualiCode ?** Lisez le **[Guide d'utilisation](GUIDE_UTILISATION.md)** — pas à pas, en français simple.
 🎓 **Jamais fait d'analyse qualitative ?** Le **[Manuel du débutant complet (A → Z)](MANUEL_DEBUTANT.md)** explique tout, concepts compris.
 📥 Les deux manuels sont aussi **téléchargeables en PDF depuis l'application** (Accueil → groupe « Documentation ») — versions PDF dans [docs/](docs/), régénérables via `tools/embarquer_docs.py`.
+🆘 **Le site ne répond pas / l'installation échoue ?** → [INSTALLATION.md](INSTALLATION.md) (dépannage complet, hébergement alternatif, installation hors ligne).
 📲 **Installer QualiCode** (icône sur le téléphone ou l'ordinateur, ouverture en un clic) : [installateurs/LISEZ-MOI.md](installateurs/LISEZ-MOI.md).
 💰 **Commercialisation** : [PRICING.md](PRICING.md) (tarifs, licences, paiements) · [MARKETING.md](MARKETING.md) (cibles, canaux, modèle économique).
 
@@ -122,11 +123,12 @@ js/realtime.js      Client temps réel WebSocket (contribution par codeur)
 js/applock.js       Verrou d'application (mot de passe à l'ouverture, PBKDF2)
 js/license.js       Essai 5 jours + clés d'abonnement HMAC vérifiées hors ligne
 js/payments.js      Grille tarifaire USD + canaux de paiement configurables
-js/helpdocs.js      Manuels PDF embarqués (généré par tools/embarquer_docs.py)
+js/helpdocs.js      Manuels PDF : chargés à la demande en ligne, embarqués hors ligne
 js/mobile.js        Adaptation téléphone (volet unique, codage tactile, PWA)
 manifest.webmanifest  Manifeste d'installation (icône, plein écran)
 sw.js               Service worker (fonctionnement hors ligne, mise en cache)
 installateurs/      Scripts d'installation hors ligne (Windows, Linux, macOS) + icône .ico
+tools/faire_paquet_web.py  Fabrique dist/QualiCode_site.zip (site prêt à héberger)
 server/sync-server.mjs  Serveur de relais WebSocket (RFC 6455, zéro dépendance)
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)

@@ -2958,7 +2958,8 @@ async function openInstallModal() {
   // 3. La marche à suivre, adaptée à l'appareil réellement utilisé
   if (d.context !== "web") {
     rows.push(`<p><b>${esc(t("m_fix_open_site"))}</b></p>
-      <p class="site-url"><a href="${esc(d.siteUrl)}" target="_blank" rel="noopener">${esc(d.siteUrl)}</a></p>`);
+      <p class="site-url"><a href="${esc(d.siteUrl)}" target="_blank" rel="noopener">${esc(d.siteUrl)}</a></p>
+      <p class="hint">${esc(t("m_site_down"))}</p>`);
     if (d.platform === "desktop") rows.push(`<p class="hint">${esc(t("m_fix_desktop_scripts"))}</p>`);
   } else {
     const steps = d.platform === "android" ? "m_steps_android"

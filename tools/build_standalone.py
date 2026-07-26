@@ -50,9 +50,15 @@ def main() -> None:
     # Fichier unique : pas de manifeste ni d'icône externes (aucune requête réseau)
     html = re.sub(r'\s*<link rel="manifest"[^>]*>', "", html)
     html = re.sub(r'\s*<link rel="apple-touch-icon"[^>]*>', "", html)
+    # Manuels PDF embarqués : indispensables hors ligne, jamais servis au site
+    pdfs = ROOT / "assets" / "helpdocs_data.js"
+    pdf_script = f"<script>\n{pdfs.read_text(encoding='utf-8')}\n</script>\n" if pdfs.exists() else ""
+    if not pdf_script:
+        print("⚠️  assets/helpdocs_data.js absent : lancez tools/embarquer_docs.py "
+              "(les manuels PDF ne seront pas disponibles hors ligne).")
     html = html.replace(
         '<script type="module" src="js/app.js"></script>',
-        f"<script>\n{js}\n</script>",
+        f"{pdf_script}<script>\n{js}\n</script>",
     )
     assert "<style>" in html and "var __QC" in html, "Substitutions manquées"
 
