@@ -38,7 +38,7 @@ import {
 } from "./sync.js";
 import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from "./crypto.js";
 import { hasAppLock, setAppLock, removeAppLock, verifyAppLock, applockGate, showLockScreen } from "./applock.js";
-import { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS } from "./license.js";
+import { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS, deviceCode } from "./license.js";
 import { buildPaymentsHtml } from "./payments.js";
 import { downloadGuidePdf, downloadManuelPdf } from "./helpdocs.js";
 import { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerServiceWorker,
@@ -3133,10 +3133,16 @@ async function openLicenseModal() {
   } else {
     stateLine = `⛔ <b>${esc(t("lic_state_expired"))}</b>`;
   }
-  openModal({
+  const modalLic = openModal({
     title: "💳 " + t("lic_title"), wide: true,
     bodyHtml: `
       <p class="lic-state">${stateLine}</p>
+      <div class="device-box">
+        <div class="device-label">${esc(t("lic_device"))}</div>
+        <div class="device-code" id="devCode">${esc(deviceCode())}</div>
+        <button type="button" class="btn" id="btnCopyDevice">📋 ${esc(t("lic_device_copy"))}</button>
+        <p class="hint">${esc(t("lic_device_hint"))}</p>
+      </div>
       <div class="form-row"><label>${esc(t("lic_key_label"))}</label>
         <input type="text" id="licKey" placeholder="QC1-…" spellcheck="false"></div>
       <p class="lock-msg" id="licMsg" hidden></p>
@@ -3151,11 +3157,20 @@ async function openLicenseModal() {
           const r = await activateKey(o.querySelector("#licKey").value);
           const msg = o.querySelector("#licMsg");
           if (r.ok) { close(); toast("✅ " + t("lic_activated")); renderStatus(); }
-          else { msg.textContent = t(r.reason === "expired" ? "lic_key_expired" : "lic_invalid"); msg.hidden = false; }
+          else {
+            msg.textContent = t(r.reason === "expired" ? "lic_key_expired"
+              : r.reason === "device" ? "lic_wrong_device" : "lic_invalid");
+            msg.hidden = false;
+          }
         },
       },
     ],
   });
+  modalLic.overlay.querySelector("#btnCopyDevice").onclick = async () => {
+    try { await navigator.clipboard.writeText(deviceCode()); toast("📋 " + t("lic_device_copied")); }
+    catch { prompt(t("lic_device"), deviceCode()); }
+  };
+  return modalLic;
 }
 
 /* ================================================================

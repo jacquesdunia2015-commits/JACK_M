@@ -305,6 +305,20 @@ l'ordinateur n'est pas disponible.
    système dans le dossier `installateurs` (Windows, Linux ou macOS) : il pose
    l'icône QualiCode sur le bureau, sans rien installer dans le système.
 
+**Sur quels appareils QualiCode s'installe-t-il ?** Sur tous, ou presque :
+
+| Vous avez… | Ce que vous faites |
+|---|---|
+| Un téléphone **Android** | Adresse du site dans **Chrome** → menu ⋮ → « Installer l'application » |
+| Un **iPhone** | Adresse du site dans **Safari** → ⬆️ en bas → « Sur l'écran d'accueil » |
+| Une **tablette** Android ou un **iPad** | Même chose que le téléphone correspondant (sur iPad, le ⬆️ est en haut à droite) |
+| Un **ordinateur** avec Chrome ou Edge | Icône ⊕ dans la barre d'adresse → « Installer » |
+| Un **ordinateur sans internet** | Le script du dossier `installateurs` pose l'icône sur le bureau |
+
+> ⚠️ Un fichier `QualiCode.html` reçu par WhatsApp **fonctionne** parfaitement,
+> mais ne peut pas être **installé** en icône : pour l'icône, il faut ouvrir
+> l'adresse du site. C'est une règle des navigateurs, pas un défaut du logiciel.
+
 **Les cinq onglets du bas** — 📄 Documents, 🏷️ Codes, 📖 Texte, 🧲 Segments et
 ☰ Menu. Un seul volet s'affiche à la fois (l'écran est petit) ; le ☰ Menu donne
 accès à tout le reste (importer, analyser, exporter…).
@@ -326,6 +340,12 @@ Transférez le projet dans les deux sens avec 💾 Enregistrer (.projx) et
    affiché.
 4. Vous recevez une clé `QC1-…` → collez-la dans « 💳 Abonnement » → Activer.
    L'activation fonctionne **hors ligne**.
+
+**Important — le code de votre appareil.** Dans « 💳 Abonnement », un code
+s'affiche en gros (par exemple `K7QP-3M2X`). Donnez-le au vendeur au moment du
+paiement : votre clé sera **réservée à votre appareil**, donc inutilisable par
+quelqu'un d'autre. Si vous changez de téléphone, redemandez une clé avec le
+nouveau code — c'est gratuit.
 
 ---
 

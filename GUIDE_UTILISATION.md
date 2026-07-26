@@ -320,6 +320,17 @@ demandé).
 - Collez la clé dans « 💳 Abonnement » → **Activer**. L'activation fonctionne
   **hors ligne** et la barre du bas affiche votre formule et sa date de fin.
 
+**Le code de votre appareil**
+
+En haut de la fenêtre « 💳 Abonnement », QualiCode affiche un **code d'appareil**
+(par exemple `K7QP-3M2X`). Communiquez-le au vendeur au moment de l'achat :
+votre clé sera **réservée à votre appareil**. C'est une sécurité pour vous
+(personne ne peut utiliser votre licence) et pour le vendeur.
+
+Si vous changez de téléphone ou d'ordinateur, ou si vous effacez les données de
+votre navigateur, votre code change : demandez simplement une nouvelle clé au
+vendeur en lui donnant le nouveau code — c'est gratuit et immédiat.
+
 ## 19. Utiliser QualiCode sur téléphone 📱
 
 QualiCode fonctionne sur téléphone Android et iPhone : l'affichage s'adapte tout
@@ -359,6 +370,22 @@ seul dès que l'écran est étroit.
 - Une fois installé : un **clic droit sur l'icône** propose « Mes projets »,
   « Nouveau projet » et « Manuel du débutant », et **double-cliquer un fichier
   `.projx`** ouvre QualiCode avec le projet déjà chargé.
+
+**Installer sur n'importe quel appareil — le tableau complet**
+
+| Appareil | Comment installer |
+|---|---|
+| **Téléphone Android** (Chrome, Samsung Internet, Firefox, Opera, Edge) | Ouvrez l'adresse du site → menu du navigateur → « Installer l'application » / « Ajouter à l'écran d'accueil » |
+| **iPhone** | Ouvrez l'adresse **dans Safari** → Partager ⬆️ (barre du bas) → « Sur l'écran d'accueil » |
+| **Tablette Android** | Exactement comme un téléphone Android ; l'écran étant plus large, QualiCode affiche automatiquement la mise en page ordinateur (4 volets) si la tablette dépasse 820 px |
+| **iPad** | Comme l'iPhone, mais le bouton Partager ⬆️ est **en haut à droite** |
+| **Ordinateur Windows / Mac / Linux avec Chrome ou Edge** | Ouvrez l'adresse → icône ⊕ dans la barre d'adresse → « Installer » |
+| **Ordinateur sans internet** | Lancez le script de votre système dans le dossier `installateurs` (Windows `.bat`, Linux `.sh`, macOS `.command`) : l'icône arrive sur le bureau |
+| **Ordinateur avec Firefox ou Safari (Mac)** | Ces navigateurs n'installent pas les applications web : utilisez les scripts ci-dessus, ou Chrome/Edge |
+
+> 💡 **Tablette** : tout ce qui est décrit pour le téléphone fonctionne, et le
+> codage au doigt y est encore plus confortable. Sur une tablette large, vous
+> retrouvez les 4 volets de l'ordinateur.
 
 **Se repérer sur petit écran**
 - En bas de l'écran, cinq onglets : **📄 Documents · 🏷️ Codes · 📖 Texte ·

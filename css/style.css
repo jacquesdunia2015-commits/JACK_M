@@ -585,3 +585,15 @@ body.dark .diag-block { background: #3a2f1e; }
 /* Résultat de la vérification d'installation */
 .diag-check { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
 .diag-detail { color: var(--text-soft); font-weight: 400; font-size: 12.5px; }
+
+/* Code appareil (verrouillage des licences) */
+.device-box {
+  background: var(--bg); border: 2px dashed var(--accent); border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 12px; text-align: center;
+}
+.device-label { font-size: 12.5px; color: var(--text-soft); }
+.device-code {
+  font-size: 26px; font-weight: 700; letter-spacing: 3px; color: var(--accent);
+  margin: 4px 0 8px; font-family: "DejaVu Sans Mono", Consolas, monospace; user-select: all;
+}
+.device-box .hint { margin-top: 8px; font-size: 12.5px; }

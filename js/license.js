@@ -40,22 +40,51 @@ async function hmacHex(payload) {
   return [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 20);
 }
 
+/**
+ * CODE APPAREIL — la clé du contrôle commercial.
+ *
+ * Chaque installation reçoit un code court, aléatoire et stable (ex. K7QP-3M2X).
+ * Le client le lit dans « 💳 Abonnement » et le communique à l'achat ; le vendeur
+ * génère alors une clé VERROUILLÉE sur cet appareil, qui ne fonctionnera nulle
+ * part ailleurs. C'est ce qui permet de distribuer librement le fichier
+ * (WhatsApp, e-mail, clé USB) tout en gardant la maîtrise des abonnements :
+ * le fichier circule, mais chaque clé ne sert qu'à un seul appareil.
+ *
+ * Une clé sans code appareil reste acceptée partout (pratique pour un client
+ * qui change de téléphone, ou pour une licence de démonstration).
+ */
+const DEVICE_KEY = "qualicode.device";
+const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans I, O, 0, 1 : dictés sans erreur
+
+export function deviceCode() {
+  let code = localStorage.getItem(DEVICE_KEY);
+  if (!code) {
+    const r = crypto.getRandomValues(new Uint8Array(8));
+    code = [...r].map(b => ALPHABET[b % ALPHABET.length]).join("");
+    code = code.slice(0, 4) + "-" + code.slice(4);
+    localStorage.setItem(DEVICE_KEY, code);
+  }
+  return code;
+}
+
 /** Fabrique une clé (utilisé par les tests ; le vendeur utilise tools/generer_cle.py). */
-export async function makeKey(plan, expIso, licensee) {
-  const payload = `${plan}|${expIso}|${licensee || ""}`;
+export async function makeKey(plan, expIso, licensee, device = "") {
+  const payload = `${plan}|${expIso}|${licensee || ""}|${device}`;
   return `QC1-${b64u(payload)}-${await hmacHex(payload)}`;
 }
 
-/** Vérifie une clé ; retourne { ok, plan, exp, licensee } ou { ok:false, reason }. */
+/** Vérifie une clé ; retourne { ok, plan, exp, licensee, device } ou { ok:false, reason }. */
 export async function verifyKey(key) {
   try {
     const m = /^QC1-([A-Za-z0-9_-]+)-([0-9a-f]{20})$/.exec((key || "").trim());
     if (!m) return { ok: false, reason: "format" };
     const payload = fromB64u(m[1]);
     if ((await hmacHex(payload)) !== m[2]) return { ok: false, reason: "signature" };
-    const [plan, exp, licensee] = payload.split("|");
+    const [plan, exp, licensee, device] = payload.split("|");
     if (!PLAN_LABELS[plan] || !/^\d{4}-\d{2}-\d{2}$/.test(exp)) return { ok: false, reason: "format" };
-    return { ok: true, plan, exp, licensee };
+    // Clé verrouillée sur un appareil : refusée ailleurs
+    if (device && device !== deviceCode()) return { ok: false, reason: "device" };
+    return { ok: true, plan, exp, licensee, device };
   } catch {
     return { ok: false, reason: "format" };
   }

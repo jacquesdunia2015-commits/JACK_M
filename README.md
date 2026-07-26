@@ -16,7 +16,7 @@ fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicale
 🆘 **Le site ne répond pas ?** → [INSTALLATION.md](INSTALLATION.md) (dépannage complet, hébergement alternatif, installation hors ligne).
 🖼️ **Schéma d'installation sur téléphone** (image à partager) : [assets/schemas/installation-telephone.png](assets/schemas/installation-telephone.png)
 📲 **Installer QualiCode** (icône sur le téléphone ou l'ordinateur, ouverture en un clic) : [installateurs/LISEZ-MOI.md](installateurs/LISEZ-MOI.md).
-💰 **Commercialisation** : [PRICING.md](PRICING.md) (tarifs, licences, paiements) · [MARKETING.md](MARKETING.md) (cibles, canaux, modèle économique).
+💰 **Commercialisation** : [COMMERCIALISATION.md](COMMERCIALISATION.md) (les 6 étapes, circuit de vente, contrôle des licences, gestion des clients) · [PRICING.md](PRICING.md) (tarifs, licences, paiements) · [MARKETING.md](MARKETING.md) (cibles, canaux, modèle économique).
 
 ## 🚀 Lancement
 
@@ -131,6 +131,7 @@ manifest.webmanifest  Manifeste d'installation (icône, plein écran)
 sw.js               Service worker (fonctionnement hors ligne, mise en cache)
 installateurs/      Scripts d'installation hors ligne (Windows, Linux, macOS) + icône .ico
 tools/faire_paquet_web.py  Fabrique dist/QualiCode_site.zip (site prêt à héberger)
+tools/gestion_clients.py   Registre des clients, clés verrouillées par appareil, relances
 server/sync-server.mjs  Serveur de relais WebSocket (RFC 6455, zéro dépendance)
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)
