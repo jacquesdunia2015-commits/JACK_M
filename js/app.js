@@ -41,6 +41,7 @@ import { hasAppLock, setAppLock, removeAppLock, verifyAppLock, applockGate, show
 import { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS } from "./license.js";
 import { buildPaymentsHtml } from "./payments.js";
 import { downloadGuidePdf, downloadManuelPdf } from "./helpdocs.js";
+import { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerServiceWorker, promptInstall, isInstalled } from "./mobile.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
 const $ = sel => document.querySelector(sel);
@@ -118,6 +119,18 @@ async function init() {
   bindRibbon();
   bindPanels();
   bindSplitters();
+
+  // Téléphone : volet unique + barre d'onglets, codage tactile, installation PWA
+  initMobile({
+    onSelectionActive: () => { const s = getSelectionOffsets(); if (s) pendingSelection = s; },
+    onCodeSelection: (x, y) => {
+      const sel = captureSelection();
+      if (sel) showCodingPopup(x, y, sel);
+      else toast(t("m_select_first"));
+    },
+  });
+  registerServiceWorker();
+
   applyStaticTranslations();
   renderAll();
 
@@ -319,6 +332,17 @@ function bindRibbon() {
   $("#btnSearch").onclick = runSearch;
   $("#searchInput").addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
   $("#btnTrash").onclick = openTrash;
+  $("#btnInstall").onclick = async () => {
+    const r = await promptInstall();
+    if (r === "installed") toast("📲 " + t("m_installed"));
+    else if (r === "manual") {
+      openModal({
+        title: "📲 " + t("m_install"),
+        bodyHtml: `<p>${esc(t("m_install_hint"))}</p><p class="hint">${esc(t("m_install_ios"))}</p>`,
+        footer: [{ label: t("ok"), primary: true, onClick: (o, close) => close() }],
+      });
+    }
+  };
   $("#btnGuidePdf").onclick = () => { downloadGuidePdf(); toast("📖 " + t("doc_downloaded")); };
   $("#btnManuelPdf").onclick = () => { downloadManuelPdf(); toast("🎓 " + t("doc_downloaded")); };
 
@@ -620,7 +644,11 @@ function renderDocTree() {
       state.ui.activatedDocs.has(doc.id) ? state.ui.activatedDocs.delete(doc.id) : state.ui.activatedDocs.add(doc.id);
       renderDocTree(); renderPanel4();
     };
-    row.onclick = () => { state.ui.currentDocId = doc.id; renderDocTree(); renderBrowser(); };
+    row.onclick = () => {
+      state.ui.currentDocId = doc.id;
+      renderDocTree(); renderBrowser();
+      focusTextPanel(); // sur téléphone : bascule aussitôt sur le texte
+    };
     row.querySelector("[data-act=memo]").onclick = e => { e.stopPropagation(); openMemoEditor("document", doc.id, doc.name); };
     row.querySelector("[data-act=props]").onclick = e => { e.stopPropagation(); openDocProps(doc); };
     row.querySelector("[data-act=del]").onclick = e => {
@@ -1237,6 +1265,7 @@ function renderPanel4() {
 function gotoDocPosition(docId, charPos) {
   state.ui.currentDocId = docId;
   renderDocTree(); renderBrowser();
+  focusTextPanel();
   // Fait défiler jusqu'au paragraphe contenant la position
   const paras = [...$("#docBrowser").querySelectorAll(".para")];
   const target = paras.findLast

@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 # Ordre de concaténation = ordre des dépendances (aucun cycle)
-MODULES = ["langs", "i18n", "state", "analysis", "docx", "docxout", "crypto", "applock", "payments", "license", "merge", "sample", "export", "helpdocs", "pdf", "refi", "conceptmap", "audio", "social", "ai", "sync", "imagecode", "ocr", "biblio", "stats", "realtime", "app"]
+MODULES = ["langs", "i18n", "state", "analysis", "docx", "docxout", "crypto", "applock", "payments", "license", "merge", "sample", "export", "helpdocs", "pdf", "refi", "conceptmap", "audio", "social", "ai", "sync", "imagecode", "ocr", "biblio", "stats", "realtime", "mobile", "app"]
 
 
 def transform_module(name: str, src: str) -> str:
@@ -47,6 +47,9 @@ def main() -> None:
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     css = (ROOT / "css" / "style.css").read_text(encoding="utf-8")
     html = html.replace('<link rel="stylesheet" href="css/style.css">', f"<style>\n{css}\n</style>")
+    # Fichier unique : pas de manifeste ni d'icône externes (aucune requête réseau)
+    html = re.sub(r'\s*<link rel="manifest"[^>]*>', "", html)
+    html = re.sub(r'\s*<link rel="apple-touch-icon"[^>]*>', "", html)
     html = html.replace(
         '<script type="module" src="js/app.js"></script>',
         f"<script>\n{js}\n</script>",

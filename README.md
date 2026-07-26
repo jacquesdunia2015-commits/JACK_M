@@ -44,6 +44,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 
 - **4 volets redimensionnables** : système de documents, système de codes, navigateur de document, segments récupérés.
 - **Ruban d'onglets** par domaine fonctionnel : Accueil, Importer, Codes, Mémos, Variables, Analyse, Visualisation, Rapports.
+- **Téléphone et tablette** : mise en page mobile automatique (volet unique + barre d'onglets en bas), codage au doigt, installable comme application (PWA).
 - **Thèmes clair / sombre** (bouton 🌓) et **interface en 12 langues** (bouton 🌐) : français, anglais,
   kinyarwanda, kiswahili (Kenya/Tanzanie), kiswahili de l'Est de la RDC, lingála, wolof, arabe (écriture
   droite→gauche prise en charge), espagnol, portugais, chinois (mandarin), hindi. FR/EN sont complets ;
@@ -68,6 +69,7 @@ Puis ouvrir <http://localhost:8080>. L'application démarre avec un **projet exe
 | **Visualisation (§2.7)** | Portrait de document (séquence colorée des segments), nuage de mots, diagramme de fréquences des codes, **cartes conceptuelles SVG** (nœuds déplaçables, flèches, plusieurs cartes par projet, export .svg) |
 | **Rapports & exports (§2.8)** | Export CSV des segments (compatible Excel), export du système de codes, export CSV de la matrice, **rapport Word (.docx) natif** (archive ZIP + WordprocessingML générés sans bibliothèque), **export ET import REFI-QDA (.qdpx)** — échange bidirectionnel avec MAXQDA, NVivo et ATLAS.ti (lecture ZIP native deflate, hiérarchie de codes, codages, variables via Cases) —, rapport HTML imprimable (→ PDF via l'impression navigateur), export/import du projet `.projx` |
 | **Sécurité (§2.1, §3.4)** | Protection du projet par mot de passe : fichier `.projx` chiffré en **AES-256-GCM**, clé dérivée par PBKDF2 (310 000 itérations, SHA-256) via l'API Web Crypto native ; **verrou d'application** : mot de passe demandé à chaque ouverture de QualiCode avant tout accès aux données (condensat PBKDF2 salé, jamais le mot de passe en clair), bouton 🔒 de verrouillage manuel de l'écran |
+| **Téléphone (Android / iOS)** | Mise en page **mobile** automatique en dessous de 820 px : un volet à la fois avec **barre d'onglets en bas** (Documents · Codes · Texte · Segments · ☰ Menu), ruban replié en **feuille inférieure** (toutes les fonctions restent accessibles), **codage tactile** (sélection du texte → bouton flottant « Coder la sélection » → liste de codes au doigt), bascule automatique sur le texte à l'ouverture d'un document, cibles tactiles ≥ 44 px, champs à 16 px (pas de zoom iOS), zones sûres iPhone (encoche). **Application installable (PWA)** : manifeste + service worker, icône sur l'écran d'accueil, ouverture en plein écran et **fonctionnement hors ligne** ; bouton « 📲 Installer sur l'écran d'accueil » |
 | **Licence & abonnement** | **Essai gratuit complet de 5 jours**, puis formules jour / semaine / mois / an / à vie activées par **clé de licence signée HMAC-SHA256 vérifiée hors ligne** (générateur vendeur `tools/generer_cle.py`) ; écran d'expiration non punitif (l'export des données reste toujours possible) ; modale « 💳 Abonnement » avec grille tarifaire 2 zones (USD) et canaux de paiement configurables (`js/payments.js`) : mobile money Orange/MTN/Airtel via agrégateur, Visa/Mastercard, Stripe, PayPal, cryptomonnaie — voir [PRICING.md](PRICING.md) et [MARKETING.md](MARKETING.md) |
 | **Équipe (§2.1, §2.9)** | **Fusion de projets** (appariement des documents, codes et mémos ; segments étiquetés par codeur) et **accord inter-codeurs par kappa de Cohen** (unité : le paragraphe, par code + global, interprétation Landis & Koch) — critère d'acceptation n°4 du cahier des charges — et **collaboration par dossier partagé** (File System Access : chaque codeur publie sa copie dans un dossier synchronisé Drive/Dropbox/USB, détection des nouveautés, fusion en un clic, copie chiffrée si le projet est protégé), **collaboration en temps réel** (client WebSocket + serveur de relais fourni `server/sync-server.mjs`, zéro dépendance, aucun stockage serveur : chaque codeur possède ses segments, présence en direct, reconnexion automatique) |
 
@@ -120,6 +122,9 @@ js/applock.js       Verrou d'application (mot de passe à l'ouverture, PBKDF2)
 js/license.js       Essai 5 jours + clés d'abonnement HMAC vérifiées hors ligne
 js/payments.js      Grille tarifaire USD + canaux de paiement configurables
 js/helpdocs.js      Manuels PDF embarqués (généré par tools/embarquer_docs.py)
+js/mobile.js        Adaptation téléphone (volet unique, codage tactile, PWA)
+manifest.webmanifest  Manifeste d'installation (icône, plein écran)
+sw.js               Service worker (fonctionnement hors ligne, mise en cache)
 server/sync-server.mjs  Serveur de relais WebSocket (RFC 6455, zéro dépendance)
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)

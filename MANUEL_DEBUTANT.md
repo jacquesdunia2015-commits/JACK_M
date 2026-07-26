@@ -281,6 +281,32 @@ Suggestions de codes et OCR de PDF scannés utilisent l'API d'Anthropic avec
 
 ---
 
+## Chapitre 13 bis — QualiCode sur votre téléphone 📱
+
+Vous pouvez lire vos entretiens et les coder depuis un téléphone Android ou un
+iPhone — pratique dans le transport, en attente sur le terrain, ou quand
+l'ordinateur n'est pas disponible.
+
+**Installer QualiCode comme une application**
+1. Ouvrez QualiCode dans le navigateur du téléphone (adresse du site, ou le
+   fichier `QualiCode.html` reçu par WhatsApp et ouvert depuis « Fichiers »).
+2. Onglet **Accueil → 📲 Installer sur l'écran d'accueil**.
+   *(iPhone : bouton Partager ⬆️ de Safari → « Sur l'écran d'accueil ».)*
+3. L'icône apparaît sur votre écran d'accueil. Elle s'ouvre en plein écran et
+   **fonctionne sans internet**.
+
+**Les cinq onglets du bas** — 📄 Documents, 🏷️ Codes, 📖 Texte, 🧲 Segments et
+☰ Menu. Un seul volet s'affiche à la fois (l'écran est petit) ; le ☰ Menu donne
+accès à tout le reste (importer, analyser, exporter…).
+
+**Coder avec le doigt** — appui long sur un mot → faites glisser pour
+sélectionner la phrase → touchez **🏷️ Coder la sélection** → choisissez le code.
+
+**Conseil pratique** : le téléphone est idéal pour **relire et coder** ; la
+transcription et la rédaction restent plus confortables sur ordinateur.
+Transférez le projet dans les deux sens avec 💾 Enregistrer (.projx) et
+📂 Ouvrir (.projx).
+
 ## Chapitre 14 — Licence et paiement (après les 5 jours d'essai)
 
 1. Ouvrez « 💳 Abonnement » (ou attendez l'écran de fin d'essai).

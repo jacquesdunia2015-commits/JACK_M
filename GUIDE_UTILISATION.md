@@ -320,6 +320,46 @@ demandé).
 - Collez la clé dans « 💳 Abonnement » → **Activer**. L'activation fonctionne
   **hors ligne** et la barre du bas affiche votre formule et sa date de fin.
 
+## 19. Utiliser QualiCode sur téléphone 📱
+
+QualiCode fonctionne sur téléphone Android et iPhone : l'affichage s'adapte tout
+seul dès que l'écran est étroit.
+
+**Ouvrir l'application sur le téléphone**
+- *Le plus simple* : allez sur l'adresse du site (par exemple
+  https://jacquesdunia2015-commits.github.io/JACK_M/) avec Chrome (Android) ou
+  Safari (iPhone).
+- *Sans internet* : envoyez-vous le fichier `QualiCode.html` (WhatsApp, e-mail,
+  clé USB), enregistrez-le dans « Fichiers » puis ouvrez-le avec le navigateur.
+
+**L'installer comme une vraie application** (recommandé)
+- Onglet **Accueil → 📲 Installer sur l'écran d'accueil**. L'icône QualiCode
+  s'ajoute à côté de vos autres applications, elle s'ouvre en plein écran et
+  **fonctionne ensuite sans connexion**.
+- Sur iPhone/iPad, Safari ne propose pas de bouton automatique : touchez
+  **Partager (⬆️)** en bas de l'écran, puis **« Sur l'écran d'accueil »**.
+
+**Se repérer sur petit écran**
+- En bas de l'écran, cinq onglets : **📄 Documents · 🏷️ Codes · 📖 Texte ·
+  🧲 Segments · ☰ Menu**. On ne voit qu'un volet à la fois, on passe de l'un à
+  l'autre d'un seul appui.
+- **☰ Menu** ouvre le ruban (Accueil, Importer, Analyse…) en bas de l'écran :
+  **toutes** les fonctions de la version ordinateur y sont. On referme avec ✕
+  ou en tapant au-dessus.
+- Quand vous touchez un document dans la liste, QualiCode bascule tout de suite
+  sur le texte.
+
+**Coder au doigt**
+1. Appuyez longuement sur un mot du texte, puis faites glisser les poignées
+   bleues pour sélectionner tout le passage (comme pour copier-coller).
+2. Le bouton **🏷️ Coder la sélection** apparaît en bas de l'écran : touchez-le.
+3. La liste de vos codes s'ouvre en grand : touchez le code voulu. C'est fait.
+
+> 💡 Sur le terrain, la tablette ou le téléphone servent surtout à **relire et
+> coder** ; pour la transcription et la rédaction, l'ordinateur reste plus
+> confortable. Le même projet passe de l'un à l'autre avec 💾 Enregistrer
+> (.projx) puis 📂 Ouvrir (.projx).
+
 ---
 
 *Bonne analyse ! 🔍*
