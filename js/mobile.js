@@ -270,6 +270,98 @@ export function isInstalled() {
 export const SITE_URL = "https://jacquesdunia2015-commits.github.io/JACK_M/";
 
 /**
+ * Vérification RÉELLE des conditions d'installation exigées par Chrome/Android.
+ * Contrairement au diagnostic rapide, cette fonction va chercher le manifeste
+ * et les icônes, contrôle que le service worker pilote bien la page, et demande
+ * au système si l'application est déjà installée. Le résultat est copiable :
+ * en cas de problème, l'utilisateur peut l'envoyer tel quel au support.
+ */
+export async function runInstallCheck() {
+  const steps = [];
+  // `info: true` = renseignement, pas une condition bloquante
+  const add = (key, ok, detail = "", info = false) => steps.push({ key, ok, detail, info });
+
+  // 1. Contexte sécurisé (https ou localhost)
+  const secure = location.protocol === "https:" ||
+    ["localhost", "127.0.0.1"].includes(location.hostname);
+  add("chk_https", secure, location.origin || location.protocol);
+
+  // 2. Manifeste : présent, téléchargeable, lisible
+  let manifest = null;
+  const link = document.querySelector("link[rel=manifest]");
+  if (!link) add("chk_manifest", false, "aucune balise <link rel=manifest>");
+  else {
+    try {
+      const res = await fetch(link.href, { cache: "no-cache" });
+      if (!res.ok) add("chk_manifest", false, "HTTP " + res.status);
+      else {
+        manifest = await res.json();
+        add("chk_manifest", true, manifest.short_name || manifest.name || "");
+      }
+    } catch (e) {
+      add("chk_manifest", false, String(e.message || e));
+    }
+  }
+
+  // 3. Icônes 192 et 512 réellement téléchargeables (exigence de Chrome)
+  if (manifest?.icons?.length) {
+    const needed = ["192", "512"];
+    for (const size of needed) {
+      const icon = manifest.icons.find(i => (i.sizes || "").includes(size));
+      if (!icon) { add("chk_icon" + size, false, "absente du manifeste"); continue; }
+      try {
+        const res = await fetch(new URL(icon.src, link.href), { cache: "no-cache" });
+        add("chk_icon" + size, res.ok, res.ok ? Math.round(Number(res.headers.get("content-length") || 0) / 1024) + " Ko" : "HTTP " + res.status);
+      } catch (e) {
+        add("chk_icon" + size, false, String(e.message || e));
+      }
+    }
+  } else {
+    add("chk_icon192", false, "-");
+    add("chk_icon512", false, "-");
+  }
+
+  // 4. Service worker : enregistré ET pilotant la page (sinon pas d'installation)
+  if (!("serviceWorker" in navigator)) add("chk_sw", false, "non pris en charge");
+  else if (!secure) add("chk_sw", false, "impossible hors https");
+  else {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      const controlled = !!navigator.serviceWorker.controller;
+      add("chk_sw", !!reg && controlled,
+        reg ? (controlled ? "actif" : "enregistré, pas encore actif — rechargez la page") : "non enregistré");
+    } catch (e) {
+      add("chk_sw", false, String(e.message || e));
+    }
+  }
+
+  // 5. Déjà installée ? (Android le sait ; évite de chercher en vain)
+  let already = isInstalled();
+  if (!already && navigator.getInstalledRelatedApps) {
+    try { already = (await navigator.getInstalledRelatedApps()).length > 0; } catch { /* ignoré */ }
+  }
+
+  // 6. Le navigateur a-t-il proposé l'installation ? (facultatif : le menu du
+  //    navigateur permet d'installer même sans cette proposition automatique)
+  add("chk_prompt", !!installPrompt,
+    installPrompt ? "" : "pas encore — passez par le menu du navigateur", true);
+
+  // Le verdict ne tient compte que des conditions réellement bloquantes
+  const ok = steps.filter(s => !s.info).every(s => s.ok);
+  const ua = navigator.userAgent;
+  const rapport = [
+    "QualiCode — vérification d'installation",
+    new Date().toISOString(),
+    "adresse : " + location.href,
+    "appareil : " + ua,
+    ...steps.map(s => `${s.ok ? "OK " : "NON"} ${s.key}${s.detail ? " (" + s.detail + ")" : ""}`),
+    "déjà installée : " + (already ? "oui" : "non"),
+  ].join("\n");
+
+  return { ok, steps, already, rapport };
+}
+
+/**
  * Diagnostic d'installation : dit précisément CE QUI BLOQUE.
  * Les navigateurs n'installent une application que si elle est ouverte depuis
  * une adresse https (ou localhost) : un fichier .html ouvert depuis « Fichiers »

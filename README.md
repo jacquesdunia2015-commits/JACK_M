@@ -12,7 +12,8 @@ fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicale
 📖 **Nouveau sur QualiCode ?** Lisez le **[Guide d'utilisation](GUIDE_UTILISATION.md)** — pas à pas, en français simple.
 🎓 **Jamais fait d'analyse qualitative ?** Le **[Manuel du débutant complet (A → Z)](MANUEL_DEBUTANT.md)** explique tout, concepts compris.
 📥 Les deux manuels sont aussi **téléchargeables en PDF depuis l'application** (Accueil → groupe « Documentation ») — versions PDF dans [docs/](docs/), régénérables via `tools/embarquer_docs.py`.
-🆘 **Le site ne répond pas / l'installation échoue ?** → [INSTALLATION.md](INSTALLATION.md) (dépannage complet, hébergement alternatif, installation hors ligne).
+🆘 **L'installation échoue ?** Bouton **📲 → 🔍 Vérifier maintenant** dans l'application : elle teste réellement chaque condition et affiche ce qui bloque (rapport copiable).
+🆘 **Le site ne répond pas ?** → [INSTALLATION.md](INSTALLATION.md) (dépannage complet, hébergement alternatif, installation hors ligne).
 📲 **Installer QualiCode** (icône sur le téléphone ou l'ordinateur, ouverture en un clic) : [installateurs/LISEZ-MOI.md](installateurs/LISEZ-MOI.md).
 💰 **Commercialisation** : [PRICING.md](PRICING.md) (tarifs, licences, paiements) · [MARKETING.md](MARKETING.md) (cibles, canaux, modèle économique).
 

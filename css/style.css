@@ -581,3 +581,7 @@ body.dark .diag-block { background: #3a2f1e; }
 .diag-line.ko { color: var(--danger); font-weight: 600; }
 .site-url { font-size: 15px; word-break: break-all; text-align: center; margin: 6px 0 12px; }
 .site-url a { color: var(--accent); font-weight: 600; }
+
+/* Résultat de la vérification d'installation */
+.diag-check { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+.diag-detail { color: var(--text-soft); font-weight: 400; font-size: 12.5px; }

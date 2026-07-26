@@ -43,7 +43,7 @@ import { buildPaymentsHtml } from "./payments.js";
 import { downloadGuidePdf, downloadManuelPdf } from "./helpdocs.js";
 import { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerServiceWorker,
          promptInstall, isInstalled, isIosSafari, canInstallNatively,
-         initInstallBanner, initFileHandler, installDiagnostic } from "./mobile.js";
+         initInstallBanner, initFileHandler, installDiagnostic, runInstallCheck } from "./mobile.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
 const $ = sel => document.querySelector(sel);
@@ -2973,11 +2973,18 @@ async function openInstallModal() {
     }
   }
 
-  return openModal({
+  // Zone de vérification en direct (remplie plus bas, une fois la modale ouverte)
+  rows.push(`<div id="installCheck" class="diag-check" hidden></div>`);
+
+  const modal = openModal({
     title: "📲 " + t("m_install"),
     bodyHtml: rows.join(""),
     footer: [
       { label: t("close"), onClick: (o, close) => close() },
+      ...(d.context === "web" ? [{
+        label: t("m_check_run"),
+        onClick: async (o) => runLiveInstallCheck(o),
+      }] : []),
       ...(d.context !== "web" ? [{
         label: "📋 " + t("m_copy_addr"),
         onClick: async () => {
@@ -2995,6 +3002,33 @@ async function openInstallModal() {
       }] : []),
     ],
   });
+  // Sur le web, la vérification réelle démarre tout de suite
+  if (d.context === "web") runLiveInstallCheck(modal.overlay);
+  return modal;
+}
+
+/** Lance la vérification réelle et affiche le résultat dans la modale. */
+async function runLiveInstallCheck(root) {
+  const box = root.querySelector("#installCheck");
+  if (!box) return;
+  box.hidden = false;
+  box.innerHTML = `<p class="hint">${esc(t("m_check_running"))}</p>`;
+  const r = await runInstallCheck();
+  const lines = r.steps.map(s => {
+    const cls = s.ok ? "ok" : (s.info ? "" : "ko");
+    const icon = s.ok ? "✅" : (s.info ? "ℹ️" : "❌");
+    return `<li class="diag-line ${cls}">${icon} ${esc(t(s.key))}` +
+      `${s.detail ? ` <span class="diag-detail">— ${esc(s.detail)}</span>` : ""}</li>`;
+  }).join("");
+  box.innerHTML = `
+    ${r.already ? `<p class="diag-block">${esc(t("m_check_installed"))}</p>` : ""}
+    <ul class="diag-list">${lines}</ul>
+    <p class="${r.ok ? "hint" : "diag-block"}">${esc(t(r.ok ? "m_check_ok" : "m_check_ko"))}</p>
+    <button type="button" class="btn" id="btnCopyCheck">📋 ${esc(t("m_check_copy"))}</button>`;
+  box.querySelector("#btnCopyCheck").onclick = async () => {
+    try { await navigator.clipboard.writeText(r.rapport); toast("📋 " + t("m_check_copied")); }
+    catch { prompt(t("m_check_copy"), r.rapport); }
+  };
 }
 
 /** Ouvre un projet reçu du système (double-clic sur un .projx / .qdpx). */

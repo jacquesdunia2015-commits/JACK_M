@@ -108,6 +108,33 @@ il indique laquelle des conditions n'est pas remplie et ce qu'il faut faire.
 
 ---
 
+## 4 bis. « Ça ne s'installe toujours pas sur le téléphone »
+
+Ouvrez QualiCode depuis l'adresse web, puis touchez le bouton **📲** en haut de
+l'écran, puis **🔍 Vérifier maintenant**. QualiCode teste alors *réellement*, une
+par une, les conditions exigées par Chrome et affiche le résultat :
+
+| Ligne du diagnostic | Si elle est ❌ rouge |
+|---|---|
+| **Adresse sécurisée (https)** | Vous avez ouvert un fichier local, ou une adresse en `http://`. Ouvrez l'adresse `https://…`. |
+| **Fiche d'installation téléchargée** | Le manifeste n'a pas pu être récupéré (réseau coupé, ou site incomplet). Rechargez ; si l'erreur persiste, votre hébergeur ne sert pas tous les fichiers. |
+| **Icône 192 / 512 px accessible** | Une icône manque sur le serveur : republiez le paquet `QualiCode_site.zip` **en entier**. |
+| **Mode hors ligne actif** | Le service worker n'a pas encore pris le contrôle : **rechargez la page une fois** (c'est normal à la toute première visite). |
+| **Proposition d'installation du navigateur** ℹ️ | Ce n'est **pas** bloquant : Chrome ne propose pas toujours l'installation automatiquement. Passez par le **menu ⋮ → « Installer l'application »**. |
+
+Si tout est vert et que le menu ⋮ ne propose toujours rien :
+- vérifiez que **QualiCode n'est pas déjà installé** (le diagnostic vous le dit ;
+  cherchez l'icône dans la liste des applications) ;
+- fermez l'onglet, rouvrez l'adresse, laissez la page se charger **entièrement**,
+  puis rouvrez le menu ⋮ ;
+- assurez-vous d'être dans **Chrome** et non dans le navigateur intégré de
+  WhatsApp/Facebook, qui n'installe rien.
+
+Le bouton **📋 Copier le diagnostic** met tout le rapport dans le presse-papiers :
+vous pouvez l'envoyer tel quel pour obtenir de l'aide.
+
+---
+
 ## 5. Et si rien n'est possible ?
 
 Ce n'est pas grave : **QualiCode fonctionne parfaitement sans être installé.**

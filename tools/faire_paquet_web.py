@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "dist" / "QualiCode_site.zip"
 
 FICHIERS = ["index.html", "manifest.webmanifest", "sw.js", "css/style.css"]
-DOSSIERS = ["js", "assets/logo", "assets/screenshots", "docs"]
+DOSSIERS = ["js", "assets/logo", "docs"]
 EXCLUS = {"assets/helpdocs_data.js"}  # embarqué dans le fichier unique seulement
 
 

@@ -19,22 +19,6 @@
     { "src": "assets/logo/qualicode-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "assets/logo/qualicode-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
-  "screenshots": [
-    {
-      "src": "assets/screenshots/desktop.png",
-      "sizes": "1440x900",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "QualiCode sur ordinateur : quatre volets, codage et analyses"
-    },
-    {
-      "src": "assets/screenshots/mobile.png",
-      "sizes": "412x915",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "QualiCode sur téléphone : lecture et codage au doigt"
-    }
-  ],
   "shortcuts": [
     {
       "name": "Mes projets",
