@@ -287,13 +287,18 @@ Vous pouvez lire vos entretiens et les coder depuis un téléphone Android ou un
 iPhone — pratique dans le transport, en attente sur le terrain, ou quand
 l'ordinateur n'est pas disponible.
 
-**Installer QualiCode comme une application**
-1. Ouvrez QualiCode dans le navigateur du téléphone (adresse du site, ou le
-   fichier `QualiCode.html` reçu par WhatsApp et ouvert depuis « Fichiers »).
-2. Onglet **Accueil → 📲 Installer sur l'écran d'accueil**.
-   *(iPhone : bouton Partager ⬆️ de Safari → « Sur l'écran d'accueil ».)*
-3. L'icône apparaît sur votre écran d'accueil. Elle s'ouvre en plein écran et
-   **fonctionne sans internet**.
+**Installer QualiCode comme une application (téléphone ET ordinateur)**
+1. Ouvrez QualiCode dans le navigateur (adresse du site, ou le fichier
+   `QualiCode.html` reçu par WhatsApp et ouvert depuis « Fichiers »).
+2. Répondez **Installer** au bandeau qui apparaît, ou allez dans
+   **Accueil → 📲 Installer l'application**.
+   *(iPhone : bouton Partager ⬆️ de Safari → « Sur l'écran d'accueil ».
+   Ordinateur avec Chrome/Edge : icône ⊕ à droite de la barre d'adresse.)*
+3. L'icône apparaît sur votre écran d'accueil (ou votre bureau). Elle s'ouvre
+   en plein écran, **en un clic**, et **fonctionne sans internet**.
+4. Sur un ordinateur **sans internet**, lancez le script correspondant à votre
+   système dans le dossier `installateurs` (Windows, Linux ou macOS) : il pose
+   l'icône QualiCode sur le bureau, sans rien installer dans le système.
 
 **Les cinq onglets du bas** — 📄 Documents, 🏷️ Codes, 📖 Texte, 🧲 Segments et
 ☰ Menu. Un seul volet s'affiche à la fois (l'écran est petit) ; le ☰ Menu donne

@@ -554,3 +554,18 @@ body.touch input[type="text"], body.touch input[type="search"],
 body.touch input[type="password"], body.touch select, body.touch textarea {
   font-size: 16px; /* empêche iOS de zoomer automatiquement à la saisie */
 }
+
+/* Bandeau d'installation (téléphone et ordinateur) */
+#installBanner {
+  position: fixed; z-index: 90; left: 50%; transform: translateX(-50%);
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  width: min(560px, calc(100vw - 24px));
+  background: var(--bg-panel); color: var(--text);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 14px; box-shadow: var(--shadow); font-size: 13.5px;
+}
+#installBanner .ib-ico { font-size: 20px; }
+#installBanner .ib-text { flex: 1; min-width: 190px; line-height: 1.35; }
+#installBanner .btn { min-height: 38px; }
+body.mobile #installBanner { bottom: calc(66px + env(safe-area-inset-bottom)); }

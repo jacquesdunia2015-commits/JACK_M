@@ -41,7 +41,9 @@ import { hasAppLock, setAppLock, removeAppLock, verifyAppLock, applockGate, show
 import { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS } from "./license.js";
 import { buildPaymentsHtml } from "./payments.js";
 import { downloadGuidePdf, downloadManuelPdf } from "./helpdocs.js";
-import { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerServiceWorker, promptInstall, isInstalled } from "./mobile.js";
+import { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerServiceWorker,
+         promptInstall, isInstalled, isIosSafari, canInstallNatively,
+         initInstallBanner, initFileHandler } from "./mobile.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
 const $ = sel => document.querySelector(sel);
@@ -130,9 +132,14 @@ async function init() {
     },
   });
   registerServiceWorker();
+  // Installation en un clic : bandeau discret + bouton du ruban
+  initInstallBanner(r => { if (r === "accepted") toast("✅ " + t("m_install_done")); });
+  // Ouverture directe d'un .projx / .qdpx double-cliqué dans le système
+  initFileHandler(files => openProjectFromFile(files[0]));
 
   applyStaticTranslations();
   renderAll();
+  handleLaunchAction();
 
   // Filet de sécurité : sauvegarde immédiate si la page se ferme ou passe en
   // arrière-plan avant l'expiration du délai de sauvegarde automatique
@@ -332,17 +339,7 @@ function bindRibbon() {
   $("#btnSearch").onclick = runSearch;
   $("#searchInput").addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
   $("#btnTrash").onclick = openTrash;
-  $("#btnInstall").onclick = async () => {
-    const r = await promptInstall();
-    if (r === "installed") toast("📲 " + t("m_installed"));
-    else if (r === "manual") {
-      openModal({
-        title: "📲 " + t("m_install"),
-        bodyHtml: `<p>${esc(t("m_install_hint"))}</p><p class="hint">${esc(t("m_install_ios"))}</p>`,
-        footer: [{ label: t("ok"), primary: true, onClick: (o, close) => close() }],
-      });
-    }
-  };
+  $("#btnInstall").onclick = () => openInstallModal();
   $("#btnGuidePdf").onclick = () => { downloadGuidePdf(); toast("📖 " + t("doc_downloaded")); };
   $("#btnManuelPdf").onclick = () => { downloadManuelPdf(); toast("🎓 " + t("doc_downloaded")); };
 
@@ -2929,6 +2926,62 @@ function openTrash() {
     ],
   });
   render(m.body);
+}
+
+/* ================================================================
+   Installation de l'application (téléphone et ordinateur)
+================================================================ */
+async function openInstallModal() {
+  if (isInstalled()) { toast("📲 " + t("m_install_already")); return; }
+  const rows = [`<p>${esc(t("m_install_hint"))}</p>`];
+  if (isIosSafari()) rows.push(`<p class="hint">${esc(t("m_install_ios"))}</p>`);
+  else if (!canInstallNatively()) {
+    rows.push(`<p class="hint">${esc(t("m_install_pc"))}</p>`,
+              `<p class="hint">${esc(t("m_install_firefox"))}</p>`);
+  }
+  const m = openModal({
+    title: "📲 " + t("m_install"),
+    bodyHtml: rows.join(""),
+    footer: [
+      { label: t("close"), onClick: (o, close) => close() },
+      ...(canInstallNatively() ? [{
+        label: t("m_install_yes"), primary: true,
+        onClick: async (o, close) => {
+          close();
+          const r = await promptInstall();
+          if (r === "accepted") toast("✅ " + t("m_install_done"));
+        },
+      }] : []),
+    ],
+  });
+  return m;
+}
+
+/** Ouvre un projet reçu du système (double-clic sur un .projx / .qdpx). */
+async function openProjectFromFile(file) {
+  if (/\.qdpx$/i.test(file.name)) {
+    try {
+      const { project, stats } = await importRefiQdpx(await file.arrayBuffer());
+      switchToProject(normalizeProject(project));
+      toast(t("refi_imported")
+        .replace("{d}", stats.documents).replace("{c}", stats.codes).replace("{s}", stats.segments));
+    } catch { toast(t("refi_import_fail")); }
+    return;
+  }
+  const p = await readProjectFile(file);
+  if (!p) return;
+  switchToProject(p);
+  toast("📂 " + t("m_open_projx") + " « " + file.name + " »");
+}
+
+/** Raccourcis du manifeste : index.html?action=projects|new|manual */
+function handleLaunchAction() {
+  const action = new URLSearchParams(location.search).get("action");
+  if (!action) return;
+  history.replaceState(null, "", location.pathname); // n'agit qu'au lancement
+  if (action === "projects") openMyProjects();
+  else if (action === "new") $("#btnNewProject")?.click();
+  else if (action === "manual") { downloadManuelPdf(); toast("🎓 " + t("doc_downloaded")); }
 }
 
 /* ================================================================

@@ -333,11 +333,22 @@ seul dès que l'écran est étroit.
   clé USB), enregistrez-le dans « Fichiers » puis ouvrez-le avec le navigateur.
 
 **L'installer comme une vraie application** (recommandé)
-- Onglet **Accueil → 📲 Installer sur l'écran d'accueil**. L'icône QualiCode
-  s'ajoute à côté de vos autres applications, elle s'ouvre en plein écran et
-  **fonctionne ensuite sans connexion**.
+- Un bandeau **« Installer QualiCode ? »** apparaît tout seul : touchez
+  **Installer**. (Si vous répondez « Plus tard », il ne revient pas avant
+  deux semaines.) Vous pouvez aussi passer par **Accueil → 📲 Installer
+  l'application**.
+- L'icône QualiCode s'ajoute à côté de vos autres applications, elle s'ouvre
+  en plein écran et **fonctionne ensuite sans connexion**.
 - Sur iPhone/iPad, Safari ne propose pas de bouton automatique : touchez
   **Partager (⬆️)** en bas de l'écran, puis **« Sur l'écran d'accueil »**.
+- **Sur ordinateur aussi** (Windows, Mac, Linux) : avec Chrome ou Edge,
+  cliquez l'icône **⊕ / 💻** à droite de la barre d'adresse → « Installer » :
+  QualiCode arrive sur le bureau et dans le menu Démarrer, comme un logiciel
+  installé. Sans internet, utilisez les scripts du dossier `installateurs`
+  (voir `installateurs/LISEZ-MOI.md`).
+- Une fois installé : un **clic droit sur l'icône** propose « Mes projets »,
+  « Nouveau projet » et « Manuel du débutant », et **double-cliquer un fichier
+  `.projx`** ouvre QualiCode avec le projet déjà chargé.
 
 **Se repérer sur petit écran**
 - En bas de l'écran, cinq onglets : **📄 Documents · 🏷️ Codes · 📖 Texte ·

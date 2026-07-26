@@ -113,6 +113,7 @@ Légende : ✅ présent · 🔶 partiel · ❌ absent · 💰 option payante ou 
 | Palette de commandes (Ctrl+K, toutes les actions au clavier) | ✅ | ❌ | ❌ | ❌ |
 | Utilisable sur téléphone Android / iOS (codage au doigt) | ✅ | ❌ | 🔶 appli de collecte seulement | 🔶 web mobile limité |
 | Installable comme application mobile, hors ligne (PWA) | ✅ | ❌ | ❌ | ❌ |
+| Installable sur le bureau d'un ordinateur en un clic (sans droits admin) | ✅ | 🔶 installation classique, droits admin | 🔶 | 🔶 |
 | Interface multilingue | ✅ 12 langues (dont kinyarwanda, kiswahili, lingála, wolof, arabe RTL) | 🔶 ~5 langues | 🔶 | 🔶 |
 | Corpus de plusieurs milliers de documents (IndexedDB + filtre) | ✅ | ✅ | ✅ | ✅ |
 | **Prix** | **Essai 5 j, puis de $1,50/jour à $199 à vie (tarif Afrique) — voir PRICING.md** | ≈ 630 €/licence | ≈ 1 200 €/licence | ≈ 700 €/licence |

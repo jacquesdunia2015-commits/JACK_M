@@ -176,10 +176,90 @@ export function focusTextPanel() {
   if (isMobileLayout()) showMobilePanel("browser");
 }
 
-// ── Installation sur l'écran d'accueil ──────────────────────────────────────
+// ── Installation sur l'écran d'accueil (téléphone ET ordinateur) ────────────
+// Sur Android/Chrome/Edge, le navigateur signale que l'application peut être
+// installée via « beforeinstallprompt » : on garde l'événement pour proposer
+// l'installation au bon moment (bandeau discret, ou bouton du ruban).
+const BANNER_SNOOZE_KEY = "qualicode.installSnooze";
+const SNOOZE_DAYS = 14;
 let installPrompt = null;
-window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; });
-window.addEventListener("appinstalled", () => { installPrompt = null; });
+
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  installPrompt = e;
+  document.dispatchEvent(new CustomEvent("qc-installable"));
+});
+window.addEventListener("appinstalled", () => {
+  installPrompt = null;
+  document.getElementById("installBanner")?.remove();
+  document.dispatchEvent(new CustomEvent("qc-installed"));
+});
+
+/** Vrai si le navigateur propose l'installation native (Chrome, Edge, Android). */
+export function canInstallNatively() {
+  return !!installPrompt;
+}
+
+/** Vrai sur iPhone/iPad, où l'installation passe par le menu Partager de Safari. */
+export function isIosSafari() {
+  const ua = navigator.userAgent;
+  return /iPad|iPhone|iPod/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+}
+
+function snoozed() {
+  const until = Number(localStorage.getItem(BANNER_SNOOZE_KEY) || 0);
+  return Date.now() < until;
+}
+
+function snooze() {
+  localStorage.setItem(BANNER_SNOOZE_KEY, String(Date.now() + SNOOZE_DAYS * 86400000));
+}
+
+/**
+ * Bandeau discret « Installer QualiCode » : s'affiche quand le navigateur
+ * l'autorise (Android, Chrome/Edge sur ordinateur) ou sur iPhone (instructions).
+ * Refusé une fois, il ne revient pas avant deux semaines.
+ * `onInstall` reçoit le résultat de promptInstall() pour afficher un message.
+ */
+export function initInstallBanner(onInstall) {
+  const build = () => {
+    if (isInstalled() || snoozed() || document.getElementById("installBanner")) return;
+    if (!installPrompt && !isIosSafari()) return; // rien à proposer (Firefox, Safari macOS…)
+    const el = document.createElement("div");
+    el.id = "installBanner";
+    el.innerHTML = `
+      <span class="ib-ico">📲</span>
+      <span class="ib-text">${t("m_install_banner")}</span>
+      <button class="btn primary ib-yes">${t("m_install_yes")}</button>
+      <button class="btn ib-no">${t("m_install_later")}</button>`;
+    document.body.appendChild(el);
+    el.querySelector(".ib-yes").onclick = async () => {
+      el.remove();
+      onInstall?.(await promptInstall());
+    };
+    el.querySelector(".ib-no").onclick = () => { snooze(); el.remove(); };
+  };
+  // Laisse l'utilisateur voir l'application d'abord (bandeau après 12 s)
+  setTimeout(build, 12000);
+  document.addEventListener("qc-installable", () => setTimeout(build, 1500));
+}
+
+/**
+ * Ouverture « en un clic » d'un fichier .projx / .qdpx depuis le système :
+ * quand QualiCode est installé, double-cliquer un projet le lance directement
+ * (API File Handling — Chrome/Edge sur ordinateur et Android).
+ */
+export function initFileHandler(onFiles) {
+  if (!("launchQueue" in window) || !window.launchQueue?.setConsumer) return;
+  window.launchQueue.setConsumer(async params => {
+    if (!params?.files?.length) return;
+    const files = [];
+    for (const handle of params.files) {
+      try { files.push(await handle.getFile()); } catch { /* accès refusé */ }
+    }
+    if (files.length) onFiles(files);
+  });
+}
 
 /** Vrai si l'application tourne déjà en mode « installée » (plein écran). */
 export function isInstalled() {
@@ -188,16 +268,17 @@ export function isInstalled() {
 
 /**
  * Propose l'installation. Retourne :
- *  "installed" (déjà installée), "prompted" (fenêtre native affichée),
- *  "manual" (navigateur sans invite native : iOS/Safari → instructions).
+ *  "installed" (déjà installée), "accepted" / "dismissed" (choix de
+ *  l'utilisateur dans la fenêtre native), "manual" (navigateur sans invite
+ *  native : iOS/Safari, Firefox → instructions à afficher).
  */
 export async function promptInstall() {
   if (isInstalled()) return "installed";
   if (!installPrompt) return "manual";
   installPrompt.prompt();
-  await installPrompt.userChoice.catch(() => {});
+  const choice = await installPrompt.userChoice.catch(() => null);
   installPrompt = null;
-  return "prompted";
+  return choice?.outcome === "accepted" ? "accepted" : "dismissed";
 }
 
 /** Enregistre le service worker (installation « application » + hors ligne). */
