@@ -569,3 +569,15 @@ body.touch input[type="password"], body.touch select, body.touch textarea {
 #installBanner .ib-text { flex: 1; min-width: 190px; line-height: 1.35; }
 #installBanner .btn { min-height: 38px; }
 body.mobile #installBanner { bottom: calc(66px + env(safe-area-inset-bottom)); }
+
+/* Diagnostic d'installation */
+.diag-block {
+  background: #fdf1e6; border-left: 4px solid #e8a33d; border-radius: 0 6px 6px 0;
+  padding: 9px 12px; line-height: 1.45;
+}
+body.dark .diag-block { background: #3a2f1e; }
+.diag-list { list-style: none; padding: 0; margin: 6px 0 12px; }
+.diag-line { padding: 3px 0; font-size: 13.5px; }
+.diag-line.ko { color: var(--danger); font-weight: 600; }
+.site-url { font-size: 15px; word-break: break-all; text-align: center; margin: 6px 0 12px; }
+.site-url a { color: var(--accent); font-weight: 600; }

@@ -266,6 +266,40 @@ export function isInstalled() {
   return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 }
 
+/** Adresse web publique de QualiCode (seule voie possible pour installer). */
+export const SITE_URL = "https://jacquesdunia2015-commits.github.io/JACK_M/";
+
+/**
+ * Diagnostic d'installation : dit précisément CE QUI BLOQUE.
+ * Les navigateurs n'installent une application que si elle est ouverte depuis
+ * une adresse https (ou localhost) : un fichier .html ouvert depuis « Fichiers »
+ * ou WhatsApp ne peut PAS être installé, quel que soit le téléphone.
+ */
+export async function installDiagnostic() {
+  const ua = navigator.userAgent;
+  const secure = location.protocol === "https:" ||
+    ["localhost", "127.0.0.1"].includes(location.hostname);
+  const isFile = !/^https?:$/.test(location.protocol);
+
+  let swReady = false;
+  if ("serviceWorker" in navigator && secure) {
+    try { swReady = !!(await navigator.serviceWorker.getRegistration()); } catch { /* refusé */ }
+  }
+
+  return {
+    installed: isInstalled(),
+    context: isFile ? "file" : (secure ? "web" : "insecure"),
+    platform: /Android/.test(ua) ? "android" : (/iPad|iPhone|iPod/.test(ua) ? "ios" : "desktop"),
+    iosSafari: isIosSafari(),
+    // Chrome/Edge/Samsung Internet savent installer ; Firefox et Safari macOS non
+    chromiumLike: /Chrome|CriOS|Chromium|Edg|SamsungBrowser/.test(ua),
+    hasManifest: !!document.querySelector("link[rel=manifest]"),
+    secure, swReady,
+    nativePrompt: !!installPrompt,
+    siteUrl: SITE_URL,
+  };
+}
+
 /**
  * Propose l'installation. Retourne :
  *  "installed" (déjà installée), "accepted" / "dismissed" (choix de

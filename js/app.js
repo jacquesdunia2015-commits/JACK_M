@@ -43,7 +43,7 @@ import { buildPaymentsHtml } from "./payments.js";
 import { downloadGuidePdf, downloadManuelPdf } from "./helpdocs.js";
 import { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerServiceWorker,
          promptInstall, isInstalled, isIosSafari, canInstallNatively,
-         initInstallBanner, initFileHandler } from "./mobile.js";
+         initInstallBanner, initFileHandler, installDiagnostic } from "./mobile.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 
 const $ = sel => document.querySelector(sel);
@@ -340,6 +340,10 @@ function bindRibbon() {
   $("#searchInput").addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
   $("#btnTrash").onclick = openTrash;
   $("#btnInstall").onclick = () => openInstallModal();
+  // Raccourci toujours visible (surtout sur téléphone, où le ruban est replié)
+  $("#btnInstallTop").onclick = () => openInstallModal();
+  $("#btnInstallTop").hidden = isInstalled();
+  document.addEventListener("qc-installed", () => { $("#btnInstallTop").hidden = true; });
   $("#btnGuidePdf").onclick = () => { downloadGuidePdf(); toast("📖 " + t("doc_downloaded")); };
   $("#btnManuelPdf").onclick = () => { downloadManuelPdf(); toast("🎓 " + t("doc_downloaded")); };
 
@@ -2933,18 +2937,54 @@ function openTrash() {
 ================================================================ */
 async function openInstallModal() {
   if (isInstalled()) { toast("📲 " + t("m_install_already")); return; }
+  const d = await installDiagnostic();
+  const line = (ok, label) =>
+    `<li class="diag-line ${ok ? "ok" : "ko"}">${ok ? "✅" : "❌"} ${esc(label)}</li>`;
+
   const rows = [`<p>${esc(t("m_install_hint"))}</p>`];
-  if (isIosSafari()) rows.push(`<p class="hint">${esc(t("m_install_ios"))}</p>`);
-  else if (!canInstallNatively()) {
-    rows.push(`<p class="hint">${esc(t("m_install_pc"))}</p>`,
-              `<p class="hint">${esc(t("m_install_firefox"))}</p>`);
+
+  // 1. Ce qui bloque, dit franchement et en premier
+  if (d.context === "file") rows.push(`<p class="diag-block">${esc(t("m_blocked_file"))}</p>`);
+  else if (d.context === "insecure") rows.push(`<p class="diag-block">${esc(t("m_blocked_insecure"))}</p>`);
+
+  // 2. La liste des conditions, cochées ou non
+  rows.push(`<h3>${esc(t("m_diag_title"))}</h3><ul class="diag-list">
+    ${line(d.context === "web", t("m_diag_web"))}
+    ${line(d.hasManifest, t("m_diag_manifest"))}
+    ${line(d.swReady, t("m_diag_sw"))}
+    ${line(d.chromiumLike || d.iosSafari, t("m_diag_browser"))}
+  </ul>`);
+
+  // 3. La marche à suivre, adaptée à l'appareil réellement utilisé
+  if (d.context !== "web") {
+    rows.push(`<p><b>${esc(t("m_fix_open_site"))}</b></p>
+      <p class="site-url"><a href="${esc(d.siteUrl)}" target="_blank" rel="noopener">${esc(d.siteUrl)}</a></p>`);
+    if (d.platform === "desktop") rows.push(`<p class="hint">${esc(t("m_fix_desktop_scripts"))}</p>`);
+  } else {
+    const steps = d.platform === "android" ? "m_steps_android"
+      : d.platform === "ios" ? "m_steps_ios" : "m_steps_desktop";
+    rows.push(`<p class="hint">${esc(t(steps))}</p>`);
+    if (!d.nativePrompt && d.chromiumLike) rows.push(`<p class="hint">${esc(t("m_no_native_hint"))}</p>`);
+    if (!d.chromiumLike && !d.iosSafari) rows.push(`<p class="hint">${esc(t("m_install_firefox"))}</p>`);
+    // Ordinateur sans invite d'installation : le raccourci de bureau reste possible
+    if (!d.nativePrompt && d.platform === "desktop") {
+      rows.push(`<p class="hint">${esc(t("m_fix_desktop_scripts"))}</p>`);
+    }
   }
-  const m = openModal({
+
+  return openModal({
     title: "📲 " + t("m_install"),
     bodyHtml: rows.join(""),
     footer: [
       { label: t("close"), onClick: (o, close) => close() },
-      ...(canInstallNatively() ? [{
+      ...(d.context !== "web" ? [{
+        label: "📋 " + t("m_copy_addr"),
+        onClick: async () => {
+          try { await navigator.clipboard.writeText(d.siteUrl); toast("📋 " + t("m_addr_copied")); }
+          catch { prompt(t("m_fix_open_site"), d.siteUrl); }
+        },
+      }] : []),
+      ...(d.nativePrompt ? [{
         label: t("m_install_yes"), primary: true,
         onClick: async (o, close) => {
           close();
@@ -2954,7 +2994,6 @@ async function openInstallModal() {
       }] : []),
     ],
   });
-  return m;
 }
 
 /** Ouvre un projet reçu du système (double-clic sur un .projx / .qdpx). */

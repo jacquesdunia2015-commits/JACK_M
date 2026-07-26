@@ -1,12 +1,17 @@
-# Déploie QualiCode sur GitHub Pages à chaque mise à jour de main.
+# Déploie QualiCode sur GitHub Pages.
 # L'application est 100 % statique : le contenu du dépôt est publié tel quel
 # sur la branche gh-pages (GitHub Pages se configure automatiquement sur
 # cette branche pour les dépôts publics).
+#
+# L'adresse publiée est la SEULE voie possible pour installer QualiCode comme
+# application (icône sur l'écran d'accueil) : les navigateurs refusent
+# d'installer un fichier .html ouvert localement. La branche de développement
+# est donc publiée elle aussi, pour que le site reflète la version courante.
 name: Déploiement GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, claude/app-from-uploads-gimlun]
   workflow_dispatch:
 
 permissions:
@@ -22,6 +27,19 @@ jobs:
     steps:
       - name: Récupération du code
         uses: actions/checkout@v4
+
+      - name: Vérification des fichiers indispensables à l'installation
+        run: |
+          set -e
+          for f in index.html manifest.webmanifest sw.js \
+                   assets/logo/qualicode-icon-192.png \
+                   assets/logo/qualicode-icon-512.png; do
+            test -f "$f" || { echo "::error::Fichier manquant : $f"; exit 1; }
+          done
+          grep -q 'rel="manifest"' index.html \
+            || { echo "::error::index.html ne référence pas le manifeste"; exit 1; }
+          echo "Fichiers d'installation (PWA) présents."
+
       - name: Publication sur la branche gh-pages
         run: |
           git config user.name "github-actions[bot]"

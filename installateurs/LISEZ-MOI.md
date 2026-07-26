@@ -4,10 +4,22 @@ QualiCode s'installe **comme une vraie application** — une icône sur l'écran
 d'accueil du téléphone ou sur le bureau de l'ordinateur, un clic pour ouvrir,
 et **ça marche sans internet**. Choisissez la ligne qui vous correspond.
 
+> ⚠️ **À lire d'abord — la règle qui bloque tout le monde.**
+> Un fichier `QualiCode.html` **ouvert depuis « Fichiers », WhatsApp ou une clé
+> USB ne peut PAS être installé** : aucun navigateur, sur aucun téléphone, ne
+> l'autorise (règle de sécurité des navigateurs). Pour obtenir l'icône sur un
+> téléphone, il faut **ouvrir l'adresse web** de QualiCode :
+> **https://jacquesdunia2015-commits.github.io/JACK_M/**
+> Sur ordinateur sans internet, utilisez les scripts plus bas : ils créent
+> l'icône sans passer par le navigateur.
+>
+> L'application vous le dit d'elle-même : bouton **📲** en haut de l'écran →
+> elle affiche ce qui manque et l'adresse à ouvrir.
+
 | Vous êtes sur… | Faites ceci |
 |---|---|
-| **Téléphone Android** (Chrome) | Ouvrez l'adresse de QualiCode → répondez « Installer » au bandeau, ou menu ⋮ → « Installer l'application ». |
-| **iPhone / iPad** (Safari) | Ouvrez l'adresse → bouton **Partager ⬆️** en bas → **« Sur l'écran d'accueil »**. |
+| **Téléphone Android** (Chrome) | Ouvrez **l'adresse web** → répondez « Installer » au bandeau, ou **menu ⋮** en haut à droite → « Installer l'application » / « Ajouter à l'écran d'accueil ». ⚠️ Sur Android il n'y a **pas** de bouton ⬆️ : ce bouton n'existe que sur iPhone. |
+| **iPhone / iPad** (Safari) | Ouvrez **l'adresse web** dans **Safari** (pas Chrome, pas le navigateur de WhatsApp) → bouton **Partager ⬆️** dans la barre du **bas** de Safari (en haut à droite sur iPad) → faites défiler → **« Sur l'écran d'accueil »**. |
 | **Ordinateur avec Chrome ou Edge** (Windows, Mac, Linux) | Ouvrez l'adresse → cliquez l'icône **⊕ / 💻** à droite de la barre d'adresse → « Installer ». Ou, dans QualiCode : **Accueil → 📲 Installer l'application**. |
 | **Ordinateur sans internet** (fichier reçu par clé USB ou WhatsApp) | Utilisez les scripts ci-dessous : ils créent l'icône sur le bureau. |
 

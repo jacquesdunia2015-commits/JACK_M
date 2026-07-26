@@ -292,8 +292,13 @@ l'ordinateur n'est pas disponible.
    `QualiCode.html` reçu par WhatsApp et ouvert depuis « Fichiers »).
 2. Répondez **Installer** au bandeau qui apparaît, ou allez dans
    **Accueil → 📲 Installer l'application**.
-   *(iPhone : bouton Partager ⬆️ de Safari → « Sur l'écran d'accueil ».
-   Ordinateur avec Chrome/Edge : icône ⊕ à droite de la barre d'adresse.)*
+   *(Android : menu ⋮ → « Installer l'application ». iPhone : ouvrez le site
+   dans **Safari** → bouton Partager ⬆️ de la barre du bas → « Sur l'écran
+   d'accueil ». Ordinateur avec Chrome/Edge : icône ⊕ à droite de la barre
+   d'adresse.)*
+   ⚠️ L'installation n'est possible que depuis **l'adresse web** : un fichier
+   ouvert depuis WhatsApp ou « Fichiers » ne peut pas être installé. Le bouton
+   **📲** en haut de QualiCode affiche ce qui manque et l'adresse à ouvrir.
 3. L'icône apparaît sur votre écran d'accueil (ou votre bureau). Elle s'ouvre
    en plein écran, **en un clic**, et **fonctionne sans internet**.
 4. Sur un ordinateur **sans internet**, lancez le script correspondant à votre

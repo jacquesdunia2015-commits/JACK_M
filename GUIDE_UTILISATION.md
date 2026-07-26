@@ -339,8 +339,18 @@ seul dès que l'écran est étroit.
   l'application**.
 - L'icône QualiCode s'ajoute à côté de vos autres applications, elle s'ouvre
   en plein écran et **fonctionne ensuite sans connexion**.
-- Sur iPhone/iPad, Safari ne propose pas de bouton automatique : touchez
-  **Partager (⬆️)** en bas de l'écran, puis **« Sur l'écran d'accueil »**.
+- Sur **Android** (Chrome) : **menu ⋮** en haut à droite → « Installer
+  l'application ». *(Il n'y a pas de bouton ⬆️ sur Android.)*
+- Sur **iPhone/iPad** : ouvrez QualiCode **dans Safari**, touchez
+  **Partager (⬆️)** dans la barre du **bas** de Safari, puis faites défiler
+  jusqu'à **« Sur l'écran d'accueil »**. Ce bouton n'existe pas dans Chrome ni
+  dans le navigateur intégré de WhatsApp.
+
+> ⚠️ **Point essentiel** : on ne peut installer QualiCode que s'il est ouvert
+> depuis une **adresse web** (https). Un fichier `QualiCode.html` ouvert depuis
+> « Fichiers » ou WhatsApp ne peut jamais être installé — c'est une règle de
+> sécurité des navigateurs. Le bouton **📲** de QualiCode vous indique
+> exactement ce qui manque et l'adresse à ouvrir.
 - **Sur ordinateur aussi** (Windows, Mac, Linux) : avec Chrome ou Edge,
   cliquez l'icône **⊕ / 💻** à droite de la barre d'adresse → « Installer » :
   QualiCode arrive sur le bureau et dans le menu Démarrer, comme un logiciel
