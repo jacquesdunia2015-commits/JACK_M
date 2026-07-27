@@ -204,7 +204,8 @@ export function barres(donnees, options = {}) {
 
 export function barresGroupees(categories, series, options = {}) {
   // series : [{ nom, valeurs: [], couleur? }]
-  const c = cadre({ ...options, marges: { droite: 130, ...(options.marges || {}) } });
+  const margeLegende = largeurLegende(series.map(s => s.nom));
+  const c = cadre({ ...options, marges: { droite: margeLegende + 10, ...(options.marges || {}) } });
   const empile = options.empile;
   const totaux = categories.map((_, i) =>
     empile ? series.reduce((a, s) => a + (s.valeurs[i] || 0), 0)
@@ -240,7 +241,7 @@ export function barresGroupees(categories, series, options = {}) {
 
   c.svg.appendChild(legende(series.map((s, j) => ({
     nom: s.nom, couleur: s.couleur || PALETTE[j % PALETTE.length],
-  })), c.largeur - 118, c.m.haut));
+  })), c.largeur - margeLegende, c.m.haut));
   return c.svg;
 }
 
@@ -254,11 +255,20 @@ function legende(entrees, x, y) {
   return g;
 }
 
+// Largeur à réserver à droite pour qu'aucun libellé de série ne soit tronqué.
+// Estimation à 5,6 px par caractère pour une police de 10 px, plus la pastille.
+function largeurLegende(noms) {
+  const plusLong = Math.max(0, ...noms.map(n => String(n).length));
+  return Math.min(220, Math.max(90, 30 + plusLong * 5.6));
+}
+
 /* ===================== Courbes ===================== */
 
 export function lignes(series, options = {}) {
   // series : [{ nom, points: [{x, y}], couleur?, pointille? }]
-  const c = cadre({ ...options, marges: { droite: series.length > 1 ? 130 : 24, ...(options.marges || {}) } });
+  const margeLegende = largeurLegende(series.map(s => s.nom));
+  const c = cadre({ ...options,
+    marges: { droite: series.length > 1 ? margeLegende + 10 : 24, ...(options.marges || {}) } });
   const tousX = series.flatMap(s => s.points.map(p => p.x));
   const tousY = series.flatMap(s => s.points.map(p => p.y));
   const xEch = options.xCategories ? null : echelle(Math.min(...tousX), Math.max(...tousX));
@@ -316,7 +326,7 @@ export function lignes(series, options = {}) {
   if (series.length > 1) {
     c.svg.appendChild(legende(series.map((s, i) => ({
       nom: s.nom, couleur: s.couleur || PALETTE[i % PALETTE.length],
-    })), c.largeur - 118, c.m.haut));
+    })), c.largeur - margeLegende, c.m.haut));
   }
   return c.svg;
 }
@@ -392,7 +402,9 @@ export function secteurs(donnees, options = {}) {
 export function nuage(points, options = {}) {
   // points : [{ x, y, groupe?, label? }]
   const groupes = [...new Set(points.map(p => p.groupe).filter(Boolean))];
-  const c = cadre({ ...options, marges: { droite: groupes.length ? 130 : 24, ...(options.marges || {}) } });
+  const margeLegende = largeurLegende(groupes);
+  const c = cadre({ ...options,
+    marges: { droite: groupes.length ? margeLegende + 10 : 24, ...(options.marges || {}) } });
   const xEch = echelle(Math.min(...points.map(p => p.x)), Math.max(...points.map(p => p.x)));
   const yEch = echelle(Math.min(...points.map(p => p.y)), Math.max(...points.map(p => p.y)));
   const { g, px, py } = axes(c, xEch, yEch, { libelleX: options.libelleX, libelleY: options.libelleY });
@@ -427,7 +439,7 @@ export function nuage(points, options = {}) {
 
   if (groupes.length) {
     c.svg.appendChild(legende(groupes.map((nom, i) => ({ nom, couleur: PALETTE[i % PALETTE.length] })),
-      c.largeur - 118, c.m.haut));
+      c.largeur - margeLegende, c.m.haut));
   }
   return c.svg;
 }
@@ -591,7 +603,9 @@ export function courbeSurvie(courbes, options = {}) {
   // courbes : [{ label, steps, couleur? }]
   const c = cadre({
     ...options, titre: options.titre || "Courbe de survie de Kaplan-Meier",
-    marges: { droite: courbes.length > 1 ? 140 : 24, ...(options.marges || {}) },
+    marges: { droite: courbes.length > 1
+      ? largeurLegende(courbes.map(k => `${k.label} (n = ${k.n ?? "?"})`)) + 10 : 24,
+      ...(options.marges || {}) },
   });
   const maxT = Math.max(...courbes.flatMap(k => k.steps.map(s => s.time)));
   const xEch = echelle(0, maxT);
@@ -653,7 +667,7 @@ export function courbeSurvie(courbes, options = {}) {
   if (courbes.length > 1) {
     c.svg.appendChild(legende(courbes.map((k, i) => ({
       nom: `${k.label} (n = ${k.n ?? "?"})`, couleur: k.couleur || PALETTE[i % PALETTE.length],
-    })), c.largeur - 132, c.m.haut));
+    })), c.largeur - largeurLegende(courbes.map(k => `${k.label} (n = ${k.n ?? "?"})`)), c.m.haut));
   }
   if (options.pLogRank !== undefined && options.pLogRank !== null) {
     c.svg.appendChild(texte(

@@ -54,6 +54,13 @@
 
 * { box-sizing: border-box; }
 
+/* L'attribut HTML `hidden` n'applique `display: none` qu'avec la spécificité
+   la plus faible : toute règle de classe posant un `display` le neutralise.
+   Sans cette déclaration, l'écran de verrouillage — masqué mais toujours en
+   `position: fixed; inset: 0` — intercepte silencieusement tous les clics de
+   l'application. La règle vaut pour l'ensemble des éléments masqués. */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0; padding: 0; height: 100%;
   font-family: var(--police);
