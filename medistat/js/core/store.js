@@ -27,6 +27,10 @@ const MAGASINS = {
   documents: { keyPath: "id", index: ["patientId", "entite", "entiteId", "etablissementId"] },
   factures: { keyPath: "id", index: ["numero", "patientId", "etablissementId", "statut"] },
   notifications: { keyPath: "id", index: ["destinataireId", "etablissementId", "lue", "priorite"] },
+  // File d'envoi vers les patients : SMS et courriels sortants, avec leur
+  // état de remise. Séparée des notifications internes car son cycle de vie
+  // est différent — un message peut échouer, être réessayé, être abandonné.
+  messagesPatients: { keyPath: "id", index: ["patientId", "etablissementId", "statut", "date", "demandeId"] },
   rendezVous: { keyPath: "id", index: ["patientId", "etablissementId", "date", "statut"] },
   audit: { keyPath: "id", index: ["date", "utilisateurId", "entite", "action", "etablissementId"] },
   jeuxDonnees: { keyPath: "id", index: ["etablissementId", "nom"] },   // analyses statistiques
@@ -414,6 +418,7 @@ export const depots = {
   documents: depot("documents", "document", { chiffrer: true }),
   factures: depot("factures", "facture"),
   notifications: depot("notifications", "notification"),
+  messagesPatients: depot("messagesPatients", "notification"),
   rendezVous: depot("rendezVous", "rendezVous"),
 };
 

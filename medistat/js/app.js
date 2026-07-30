@@ -23,6 +23,7 @@ const VUES = {
   "demandes": () => import("./modules/laboratoire.js"),
   "paillasse": () => import("./modules/laboratoire.js"),
   "validation": () => import("./modules/laboratoire.js"),
+  "messages": () => import("./modules/laboratoire.js"),
   "catalogue": () => import("./modules/catalogue.js"),
   "jeux-donnees": () => import("./modules/donnees.js"),
   "statistiques": () => import("./modules/statistiques.js"),
@@ -274,6 +275,13 @@ async function ouvrirApplication() {
   appliquerDroitsNavigation();
   brancherInterface();
   await rafraichirIndicateurs();
+
+  // Reprise de la file de messages aux patients : un message mis en file
+  // hors ligne part de lui-même dès que le réseau revient, sans que personne
+  // ait à rouvrir l'écran des messages.
+  import("./core/notifications.js")
+    .then(n => n.demarrerReprise())
+    .catch(() => { /* module indisponible : la file reste consultable */ });
 
   // Route initiale : celle de l'URL, ou le tableau de bord
   const route = location.hash.replace(/^#\//, "") || "tableau-de-bord";

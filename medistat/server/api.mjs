@@ -14,7 +14,7 @@
 
 import { createServer } from "node:http";
 import { DatabaseSync } from "node:sqlite";
-import { randomBytes, pbkdf2Sync, timingSafeEqual, createHmac, createHash } from "node:crypto";
+import { randomBytes, pbkdf2Sync, timingSafeEqual, createHmac, createHash, randomUUID } from "node:crypto";
 import { readFileSync, existsSync, mkdirSync } from "node:fs";
 import { extname, join, resolve, dirname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -103,6 +103,32 @@ CREATE TABLE IF NOT EXISTS audit (
   empreinte TEXT NOT NULL, empreinte_precedente TEXT NOT NULL
 );
 
+-- Passerelle d'envoi des messages aux patients (article 13).
+-- Cette table ne quitte JAMAIS le serveur en clair : le poste de travail
+-- reçoit uniquement le fournisseur, l'expéditeur affiché et l'existence d'un
+-- secret. Un navigateur compromis ne donne donc pas accès au compte SMS.
+CREATE TABLE IF NOT EXISTS passerelles (
+  etablissement_id TEXT PRIMARY KEY,
+  fournisseur TEXT NOT NULL DEFAULT 'aucune',
+  url TEXT, compte TEXT, jeton TEXT, expediteur TEXT,
+  actif INTEGER NOT NULL DEFAULT 0,
+  date_modification TEXT NOT NULL,
+  modifie_par TEXT
+);
+
+-- Journal des envois : conserve la trace de la remise, jamais le texte du
+-- message. Le contenu vit dans l'enregistrement métier ; le dupliquer ici
+-- multiplierait sans raison les endroits où une donnée de santé peut fuir.
+CREATE TABLE IF NOT EXISTS envois (
+  id TEXT PRIMARY KEY,
+  etablissement_id TEXT NOT NULL,
+  canal TEXT NOT NULL, destinataire TEXT NOT NULL,
+  taille INTEGER NOT NULL, priorite TEXT,
+  statut TEXT NOT NULL, reference TEXT, erreur TEXT,
+  date TEXT NOT NULL, envoye_par TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_envois_ets ON envois (etablissement_id, date);
 CREATE INDEX IF NOT EXISTS idx_enr_entite ON enregistrements (entite, etablissement_id, supprime);
 CREATE INDEX IF NOT EXISTS idx_enr_modif ON enregistrements (etablissement_id, date_modification);
 CREATE INDEX IF NOT EXISTS idx_audit_ets ON audit (etablissement_id, date);
@@ -284,6 +310,130 @@ const ENTITES = {
   notifications: "notification", rendezVous: "rendezVous",
   jeuxDonnees: "analyse", corpus: "analyse",
 };
+
+/* ===================== Passerelle de messages ===================== */
+
+// Appelle l'opérateur choisi. C'est le seul endroit du projet qui manipule
+// les identifiants de la passerelle, et il est côté serveur : le navigateur
+// ne les voit jamais.
+//
+// Le format de chaque opérateur est figé par son API publique. En cas de
+// doute, la passerelle « webhook » permet de brancher n'importe quel service
+// local sans modifier ce fichier.
+async function transmettre(passerelle, message) {
+  const texte = String(message.texte);
+  const vers = String(message.destinataire);
+  const delai = AbortSignal.timeout(15_000);   // un opérateur muet ne bloque pas la file
+
+  const lire = async r => {
+    const corps = await r.text();
+    let json = null;
+    try { json = JSON.parse(corps); } catch { /* certaines passerelles répondent en texte */ }
+    if (!r.ok) throw new Error(`HTTP ${r.status} — ${corps.slice(0, 160)}`);
+    return json || {};
+  };
+
+  switch (passerelle.fournisseur) {
+    case "webhook": {
+      const r = await fetch(passerelle.url, {
+        method: "POST", signal: delai,
+        headers: {
+          "content-type": "application/json",
+          ...(passerelle.jeton ? { authorization: `Bearer ${passerelle.jeton}` } : {}),
+        },
+        body: JSON.stringify({ destinataire: vers, texte, expediteur: passerelle.expediteur,
+          canal: message.canal || "sms", priorite: message.priorite || "normale" }),
+      });
+      const j = await lire(r);
+      return { reference: j.id || j.reference || null };
+    }
+
+    case "twilio": {
+      const url = `https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(passerelle.compte)}/Messages.json`;
+      const r = await fetch(url, {
+        method: "POST", signal: delai,
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          authorization: "Basic " + Buffer.from(`${passerelle.compte}:${passerelle.jeton}`).toString("base64"),
+        },
+        body: new URLSearchParams({ To: vers, From: passerelle.expediteur || "", Body: texte }),
+      });
+      const j = await lire(r);
+      return { reference: j.sid || null };
+    }
+
+    case "africastalking": {
+      const r = await fetch("https://api.africastalking.com/version1/messaging", {
+        method: "POST", signal: delai,
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          accept: "application/json",
+          apiKey: passerelle.jeton,
+        },
+        body: new URLSearchParams({
+          username: passerelle.compte, to: vers, message: texte,
+          ...(passerelle.expediteur ? { from: passerelle.expediteur } : {}),
+        }),
+      });
+      const j = await lire(r);
+      const destinataires = j?.SMSMessageData?.Recipients || [];
+      // L'opérateur répond 200 même quand il refuse le numéro : le statut
+      // réel est dans le corps. Sans ce contrôle, un message jamais parti
+      // serait compté comme remis.
+      const premier = destinataires[0];
+      if (premier && premier.statusCode >= 200 && premier.statusCode !== 101
+          && premier.statusCode !== 102 && premier.statusCode !== 100) {
+        throw new Error(premier.status || `code ${premier.statusCode}`);
+      }
+      return { reference: premier?.messageId || null };
+    }
+
+    case "infobip": {
+      const base = String(passerelle.url).replace(/\/+$/, "");
+      const r = await fetch(`${base}/sms/2/text/advanced`, {
+        method: "POST", signal: delai,
+        headers: {
+          "content-type": "application/json", accept: "application/json",
+          authorization: `App ${passerelle.jeton}`,
+        },
+        body: JSON.stringify({ messages: [{
+          destinations: [{ to: vers.replace(/^\+/, "") }],
+          from: passerelle.expediteur || undefined, text: texte,
+        }] }),
+      });
+      const j = await lire(r);
+      return { reference: j?.messages?.[0]?.messageId || null };
+    }
+
+    case "vonage": {
+      const r = await fetch("https://rest.nexmo.com/sms/json", {
+        method: "POST", signal: delai,
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          api_key: passerelle.compte, api_secret: passerelle.jeton,
+          to: vers.replace(/^\+/, ""), from: passerelle.expediteur || "MediStat", text: texte,
+        }),
+      });
+      const j = await lire(r);
+      const m = j?.messages?.[0];
+      if (m && m.status !== "0") throw new Error(m["error-text"] || `statut ${m.status}`);
+      return { reference: m?.["message-id"] || null };
+    }
+
+    default:
+      throw new Error(`Fournisseur « ${passerelle.fournisseur} » non pris en charge.`);
+  }
+}
+
+function journaliserEnvoi(ctx, message, statut, reference, erreurTexte) {
+  db.prepare(`INSERT INTO envois
+    (id, etablissement_id, canal, destinataire, taille, priorite, statut, reference, erreur, date, envoye_par)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(randomUUID(), ctx.utilisateur.etablissementId, message.canal || "sms",
+      String(message.destinataire), String(message.texte).length, message.priorite || "normale",
+      statut, reference || null, erreurTexte ? String(erreurTexte).slice(0, 300) : null,
+      new Date().toISOString(), ctx.utilisateur.id);
+}
 
 /* ===================== Utilitaires HTTP ===================== */
 
@@ -815,6 +965,91 @@ async function router(req, res, url, ctx) {
     tracer(ctx, "parametrage", "etablissement", ctx.utilisateur.etablissementId,
       `Modification du paramétrage : ${majs.join(", ") || "modules"}`);
     return repondre(res, 200, { message: "Établissement mis à jour." });
+  }
+
+  /* ---- Passerelle d'envoi aux patients (article 13) ---- */
+
+  // Lecture : jamais le secret. Le client a besoin de savoir si un envoi est
+  // possible, pas de quoi envoyer lui-même.
+  if (chemin === "/passerelle" && methode === "GET") {
+    if (!autorise(ctx.utilisateur.role, "etablissement", "lecture")) {
+      return erreur(res, 403, "Droit insuffisant.");
+    }
+    const p = db.prepare("SELECT * FROM passerelles WHERE etablissement_id = ?")
+      .get(ctx.utilisateur.etablissementId);
+    if (!p) return repondre(res, 200, { fournisseur: "aucune", actif: false, secretDefini: false });
+    return repondre(res, 200, {
+      fournisseur: p.fournisseur, url: p.url, compte: p.compte,
+      expediteur: p.expediteur, actif: !!p.actif,
+      secretDefini: Boolean(p.jeton),
+      dateModification: p.date_modification,
+    });
+  }
+
+  if (chemin === "/passerelle" && methode === "PUT") {
+    if (!autorise(ctx.utilisateur.role, "etablissement", "modification")) {
+      return erreur(res, 403, "Droit insuffisant.");
+    }
+    const d = await lireCorps(req);
+    const existante = db.prepare("SELECT jeton FROM passerelles WHERE etablissement_id = ?")
+      .get(ctx.utilisateur.etablissementId);
+    // Un secret déjà enregistré est conservé si le formulaire est renvoyé
+    // sans le champ : l'écran d'administration n'affiche jamais le jeton, il
+    // ne peut donc pas le renvoyer, et l'omettre ne doit pas l'effacer.
+    const jeton = d.jeton !== undefined && d.jeton !== "" ? d.jeton : (existante?.jeton || null);
+    db.prepare(`INSERT INTO passerelles
+      (etablissement_id, fournisseur, url, compte, jeton, expediteur, actif, date_modification, modifie_par)
+      VALUES (?,?,?,?,?,?,?,?,?)
+      ON CONFLICT(etablissement_id) DO UPDATE SET
+        fournisseur = excluded.fournisseur, url = excluded.url, compte = excluded.compte,
+        jeton = excluded.jeton, expediteur = excluded.expediteur, actif = excluded.actif,
+        date_modification = excluded.date_modification, modifie_par = excluded.modifie_par`)
+      .run(ctx.utilisateur.etablissementId, d.fournisseur || "aucune", d.url || null,
+        d.compte || null, jeton, d.expediteur || null, d.actif ? 1 : 0,
+        new Date().toISOString(), ctx.utilisateur.id);
+    // La trace ne reprend pas le secret, seulement le fournisseur choisi.
+    tracer(ctx, "parametrage", "etablissement", ctx.utilisateur.etablissementId,
+      `Passerelle de messages : ${d.fournisseur || "aucune"}, ${d.actif ? "activée" : "désactivée"}`);
+    return repondre(res, 200, { message: "Passerelle enregistrée." });
+  }
+
+  if (chemin === "/messages/envoyer" && methode === "POST") {
+    if (!autorise(ctx.utilisateur.role, "notification", "creation")) {
+      return erreur(res, 403, "Droit insuffisant pour envoyer un message.");
+    }
+    const d = await lireCorps(req);
+    if (!d.destinataire || !d.texte) {
+      return erreur(res, 400, "Destinataire et texte sont obligatoires.");
+    }
+    const p = db.prepare("SELECT * FROM passerelles WHERE etablissement_id = ?")
+      .get(ctx.utilisateur.etablissementId);
+    if (!p || !p.actif || p.fournisseur === "aucune") {
+      return erreur(res, 503, "Aucune passerelle d'envoi n'est configurée pour cet établissement.");
+    }
+
+    let resultat;
+    try {
+      resultat = await transmettre(p, d);
+    } catch (e) {
+      journaliserEnvoi(ctx, d, "echec", null, e.message);
+      tracer(ctx, "notification", "notification", d.id || null,
+        `Échec d'envoi ${d.canal || "sms"} : ${e.message}`);
+      return erreur(res, 502, "L'opérateur a refusé le message : " + e.message);
+    }
+    journaliserEnvoi(ctx, d, "remis", resultat.reference, null);
+    // La trace dit qu'un message est parti et à quel numéro, jamais son texte.
+    tracer(ctx, "notification", "notification", d.id || null,
+      `Message ${d.canal || "sms"} remis à ${d.destinataire}`);
+    return repondre(res, 200, { message: "Message remis à l'opérateur.", reference: resultat.reference });
+  }
+
+  if (chemin === "/messages/journal" && methode === "GET") {
+    if (!autorise(ctx.utilisateur.role, "notification", "lecture")) {
+      return erreur(res, 403, "Droit insuffisant.");
+    }
+    const lignes = db.prepare(`SELECT * FROM envois WHERE etablissement_id = ?
+      ORDER BY date DESC LIMIT 200`).all(ctx.utilisateur.etablissementId);
+    return repondre(res, 200, { nombre: lignes.length, envois: lignes });
   }
 
   /* ---- Statistiques du serveur ---- */

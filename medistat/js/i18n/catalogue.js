@@ -314,6 +314,27 @@ export const CATALOGUE = {
     af: "Fakturering", so: "Lacag-bixinta", ln: "Kofuta", rw: "Kwishyura", mg: "Fandoavam-bola",
     ht: "Fakti", qu: "Qullqi mañay", mi: "Utu", tpi: "Baim mani",
   },
+  // File d'envoi des messages aux patients : « messages », pas « SMS », car
+  // le canal peut être le courriel selon la configuration de l'établissement.
+  nav_messages: {
+    fr: "Messages aux patients", en: "Patient messages", es: "Mensajes a pacientes",
+    pt: "Mensagens a pacientes", de: "Patientennachrichten", it: "Messaggi ai pazienti",
+    nl: "Patiëntberichten", ru: "Сообщения пациентам", pl: "Wiadomości do pacjentów",
+    uk: "Повідомлення пацієнтам", ro: "Mesaje către pacienți", el: "Μηνύματα ασθενών",
+    cs: "Zprávy pacientům", sv: "Patientmeddelanden", hu: "Betegüzenetek",
+    tr: "Hasta mesajları", ar: "رسائل المرضى", he: "הודעות למטופלים",
+    fa: "پیام‌های بیماران", ur: "مریضوں کے پیغامات", zh: "患者消息", ja: "患者への通知",
+    ko: "환자 메시지", hi: "रोगी संदेश", bn: "রোগীর বার্তা", ta: "நோயாளர் செய்திகள்",
+    te: "రోగి సందేశాలు", mr: "रुग्ण संदेश", vi: "Tin nhắn bệnh nhân",
+    th: "ข้อความถึงผู้ป่วย", id: "Pesan pasien", ms: "Mesej pesakit",
+    fil: "Mensahe sa pasyente", km: "សារទៅអ្នកជំងឺ", ne: "बिरामी सन्देश",
+    sw: "Ujumbe kwa wagonjwa", am: "የታካሚ መልእክቶች", ha: "Saƙonnin marasa lafiya",
+    yo: "Àwọn ìránṣẹ́ aláìsàn", ig: "Ozi ndị ọrịa", zu: "Imilayezo yeziguli",
+    af: "Pasiëntboodskappe", so: "Fariimaha bukaanka", ln: "Mikanda mpo na bato ya bokono",
+    rw: "Ubutumwa ku barwayi", mg: "Hafatra ho an'ny marary", ht: "Mesaj pou pasyan",
+    qu: "Onqoqkunaman willay", mi: "Karere tūroro", tpi: "Ol mesij bilong ol sikman",
+  },
+
   nav_aide: {
     fr: "Aide", en: "Help", es: "Ayuda", pt: "Ajuda", de: "Hilfe", it: "Aiuto",
     nl: "Help", ru: "Справка", pl: "Pomoc", uk: "Довідка", ro: "Ajutor", el: "Βοήθεια",

@@ -14,6 +14,7 @@ import { STATUTS_DEMANDE, STATUTS_RESULTAT, TRANSITIONS, transitionAutorisee,
 import { signerResultat, verifierSignature } from "../core/crypto.js";
 import { COULEURS } from "../core/charts.js";
 import { compteRenduLaboratoire, telecharger } from "../core/export.js";
+import * as notifications from "../core/notifications.js";
 
 /* ===================== Points d'entrée ===================== */
 
@@ -26,6 +27,7 @@ export async function vue_demandes(ctx) {
 
 export async function vue_paillasse(ctx) { return paillasse(ctx); }
 export async function vue_validation(ctx) { return fileValidation(ctx); }
+export async function vue_messages(ctx) { return messagesPatients(ctx); }
 
 /* ===================== Liste des demandes ===================== */
 
@@ -725,7 +727,145 @@ async function validerDemande(demande, resultats, tests, rafraichir) {
   }
   await store.depots.demandes.modifier(demande.id, { statut: "validee" });
   succes(`${signes} résultat(s) validés et signés.`);
+
+  // Article 13 — le patient est prévenu automatiquement que ses résultats
+  // sont prêts. Le message n'énonce aucune valeur : il invite seulement à
+  // venir les retirer. L'envoi est annoncé au biologiste, réussite comme
+  // empêchement : il doit savoir si le patient sera prévenu ou non.
+  await previenirPatient(demande, aValider);
   rafraichir();
+}
+
+async function previenirPatient(demande, resultatsValides) {
+  try {
+    const [patient, etablissement] = await Promise.all([
+      store.depots.patients.obtenir(demande.patientId),
+      store.depots.etablissements.obtenir(utilisateurCourant().etablissementId),
+    ]);
+    if (!patient) return;
+
+    const rapport = await notifications.notifierResultatsPrets({
+      patient, demande, etablissement, resultats: resultatsValides,
+    });
+
+    if (rapport.patient?.envoye) {
+      const m = rapport.patient.message;
+      succes(`Patient prévenu par ${m.canal === "email" ? "courriel" : "SMS"} `
+        + `(${m.destinataire}, langue : ${m.langue}).`, { duree: 7000 });
+    } else if (rapport.patient?.raison) {
+      alerte(`Le patient ne sera pas prévenu automatiquement : ${rapport.patient.raison}.`,
+        { duree: 9000 });
+    }
+  } catch (e) {
+    // Une notification en échec n'invalide pas la validation, qui est
+    // l'acte médical : elle est signalée, pas propagée.
+    console.error("Notification du patient", e);
+    alerte("Les résultats sont validés, mais la notification du patient a échoué : " + e.message,
+      { duree: 9000 });
+  }
+}
+
+/* ===================== Messages aux patients (article 13) ============== */
+
+// Écran de supervision de la file d'envoi. Il existe pour une raison simple :
+// un message qui n'est jamais parti doit être visible. Sans cet écran, un
+// numéro erroné ou une passerelle mal configurée resterait invisible jusqu'à
+// ce qu'un patient se plaigne de n'avoir rien reçu.
+async function messagesPatients({ rafraichir }) {
+  const [bilan, patients] = await Promise.all([
+    notifications.bilanFile(), store.lireTout("patients"),
+  ]);
+  const parId = new Map(patients.map(p => [p.id, p]));
+  const nomPatient = id => {
+    const p = parId.get(id);
+    return p ? `${(p.nom || "").toUpperCase()} ${p.prenom || ""} — ${p.ipp}` : "Patient supprimé";
+  };
+
+  const COULEUR_STATUT = {
+    en_attente: COULEURS.bas, remis: COULEURS.normal, abandonne: COULEURS.critique,
+  };
+  const LIBELLE_STATUT = {
+    en_attente: "En attente", remis: "Remis", abandonne: "Abandonné",
+  };
+
+  return h("div", [
+    h("div.page-entete", [
+      h("div.page-entete__titre", [
+        h("h1", { texte: "Messages aux patients" }),
+        h("p.texte-secondaire", {
+          texte: "Envoi automatique à la validation des résultats. Les messages annoncent "
+            + "la disponibilité du compte rendu et ne contiennent aucune valeur biologique.",
+        }),
+      ]),
+      h("div.page-entete__actions", [
+        h("button.btn.btn--primaire", { texte: "Relancer la file", onclick: async () => {
+          const r = await notifications.viderFile();
+          if (r.tentes === 0) alerte("Aucun message n'est en attente d'envoi.");
+          else succes(`${r.remis} remis, ${r.differes} différés, ${r.abandonnes} abandonnés.`);
+          rafraichir();
+        } }),
+      ]),
+    ]),
+
+    h("div.grille.grille--4", { style: { marginBottom: "18px" } }, [
+      carteStat({ libelle: "Messages", valeur: fmt.nombre(bilan.total), icone: "✉" }),
+      carteStat({ libelle: "En attente", valeur: fmt.nombre(bilan.enAttente), icone: "⏳",
+        couleur: bilan.enAttente ? COULEURS.bas : COULEURS.neutre }),
+      carteStat({ libelle: "Remis", valeur: fmt.nombre(bilan.remis), icone: "✅", couleur: COULEURS.normal }),
+      carteStat({ libelle: "Abandonnés", valeur: fmt.nombre(bilan.abandonnes), icone: "⚠",
+        couleur: bilan.abandonnes ? COULEURS.critique : COULEURS.neutre }),
+    ]),
+
+    bilan.abandonnes ? h("div.avertissement", {
+      texte: `${bilan.abandonnes} message(s) n'ont pas pu être remis après `
+        + `${notifications.TENTATIVES_MAX} tentatives. Vérifiez le numéro au dossier `
+        + "et la configuration de la passerelle, puis relancez-les individuellement.",
+    }) : null,
+
+    h("div.carte", [
+      h("div.carte__entete", [h("h3", { texte: "File d'envoi" })]),
+      bilan.total === 0
+        ? etatVide({ icone: "✉", titre: "Aucun message",
+            texte: "Les messages apparaîtront ici dès la première validation de résultats "
+              + "pour un patient ayant consenti aux notifications." })
+        : tableau([
+            { cle: "date", titre: "Date", valeur: m => fmt.date(m.date, { heure: true }) },
+            { cle: "patientId", titre: "Patient", valeur: m => nomPatient(m.patientId) },
+            { cle: "canal", titre: "Canal", valeur: m => m.canal === "email" ? "Courriel" : "SMS" },
+            { cle: "destinataire", titre: "Destinataire" },
+            { cle: "langue", titre: "Langue" },
+            { cle: "statut", titre: "État", valeur: m => badge(
+                LIBELLE_STATUT[m.statut] || m.statut, COULEUR_STATUT[m.statut] || COULEURS.neutre) },
+            { cle: "tentatives", titre: "Essais", aligne: "droite" },
+            { cle: "actions", titre: "", valeur: m => m.statut === "abandonne"
+                ? h("button.btn.btn--petit", { texte: "Relancer", onclick: async e => {
+                    e.stopPropagation();
+                    await notifications.reprendre(m.id);
+                    await notifications.viderFile();
+                    rafraichir();
+                  } })
+                : null },
+          ], bilan.messages, {
+            parPage: 25,
+            surLigne: m => modale({
+              titre: "Message au patient",
+              largeur: "540px",
+              contenu: h("div", [
+                h("p.texte-secondaire", { texte: nomPatient(m.patientId) }),
+                h("div.carte", { style: { marginTop: "10px" } }, [
+                  h("p", { style: { whiteSpace: "pre-wrap", margin: 0 }, texte: m.texte }),
+                ]),
+                h("p.texte-secondaire", { style: { marginTop: "10px" },
+                  texte: `${m.texte.length} caractères — ${Math.ceil(m.texte.length / 160)} segment(s) SMS` }),
+                m.erreur ? h("div.avertissement", { texte: "Dernière erreur : " + m.erreur }) : null,
+                m.dateRemise ? h("p.texte-secondaire", {
+                  texte: "Remis le " + fmt.date(m.dateRemise, { heure: true }) }) : null,
+              ].filter(Boolean)),
+              actions: [{ libelle: "Fermer", type: "neutre", valeur: null }],
+            }),
+          }),
+    ]),
+  ].filter(Boolean));
 }
 
 /* ===================== Paillasse ===================== */

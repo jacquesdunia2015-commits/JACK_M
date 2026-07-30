@@ -12,6 +12,7 @@ import { COULEURS } from "../core/charts.js";
 import { barres, secteurs, lignes as graphLignes } from "../core/charts.js";
 import { telecharger, versCSV, versXLSX } from "../core/export.js";
 import * as i18n from "../core/i18n.js";
+import * as notifications from "../core/notifications.js";
 
 /* ===================== Utilisateurs ===================== */
 
@@ -392,6 +393,7 @@ export async function vue_etablissement({ rafraichir }) {
     ]),
 
     carteLangue(),
+    await carteNotifications(etablissement, modifiable, rafraichir),
 
     h("div.carte", [
       h("div.carte__entete", [h("h3", { texte: "Stockage local" })]),
@@ -446,6 +448,169 @@ function carteLangue() {
       "Les libellés non traduits s'affichent en anglais, puis en français. "
       + "Aucun écran ne reste vide." }) : null,
   ].filter(Boolean));
+}
+
+// Configuration de la notification automatique du patient (article 13).
+//
+// Deux niveaux, volontairement séparés :
+//   — le comportement (activer, canal, indicatif du pays) vit dans
+//     l'établissement, donc dans la base locale, et fonctionne hors ligne ;
+//   — les identifiants de l'opérateur vivent sur le serveur et n'en sortent
+//     jamais. L'écran affiche « secret enregistré », jamais le secret.
+async function carteNotifications(etablissement, modifiable, rafraichir) {
+  const reglages = etablissement.notifications || {};
+  let passerelle = { fournisseur: "aucune", actif: false, secretDefini: false };
+  let serveurJoignable = true;
+  try {
+    const r = await fetch("/api/passerelle", { headers: entetesAuth() });
+    if (r.ok) passerelle = await r.json();
+    else serveurJoignable = false;
+  } catch { serveurJoignable = false; }
+
+  const form = formulaire([
+    { cle: "active", libelle: "Prévenir automatiquement le patient", type: "checkbox",
+      defaut: reglages.active === true,
+      aide: "À la validation des résultats, un message annonce leur disponibilité. "
+        + "Aucune valeur biologique n'est transmise." },
+    { cle: "canal", libelle: "Canal préféré", type: "select", vide: false,
+      options: [{ valeur: "sms", libelle: "SMS" }, { valeur: "email", libelle: "Courriel" }],
+      aide: "Le courriel n'est utilisé que si le patient en a un au dossier." },
+    { cle: "indicatifPays", libelle: "Indicatif du pays", placeholder: "243",
+      aide: "Sert à compléter les numéros saisis au format national (0812345678 → +243812345678)." },
+  ], { canal: reglages.canal || "sms", indicatifPays: reglages.indicatifPays || "" });
+  form.classList.add("formulaire--grille");
+
+  const descripteur = notifications.PASSERELLES[passerelle.fournisseur] || notifications.PASSERELLES.aucune;
+
+  return h("div.carte", [
+    h("div.carte__entete", [h("h3", { texte: "Notification automatique des patients" })]),
+    h("p.texte-secondaire", {
+      texte: "Article 13. Le message annonce que le compte rendu est prêt et invite le patient "
+        + "à le retirer. Il ne contient jamais de résultat : un SMS n'est pas un canal "
+        + "confidentiel. Un patient n'est prévenu que s'il a explicitement consenti, "
+        + "et le message part dans la langue enregistrée à son dossier.",
+    }),
+    form,
+    modifiable ? h("button.btn.btn--primaire", { texte: "Enregistrer", style: { marginTop: "12px" },
+      onclick: async () => {
+        try {
+          const v = form.valeurs();
+          await store.ecrire("etablissements", { ...etablissement, notifications: {
+            ...reglages, active: !!v.active, canal: v.canal,
+            indicatifPays: String(v.indicatifPays || "").replace(/[^\d]/g, ""),
+          } });
+          await store.tracer("parametrage", "etablissement", etablissement.id,
+            `Notification des patients : ${v.active ? "activée" : "désactivée"} (${v.canal})`);
+          succes("Paramétrage des notifications enregistré.");
+          rafraichir?.();
+        } catch (e) { erreur(e.message); }
+      } }) : null,
+
+    h("div.carte__entete", { style: { marginTop: "20px" } }, [h("h3", { texte: "Passerelle d'envoi" })]),
+    !serveurJoignable
+      ? h("div.avertissement", {
+          texte: "Le serveur n'est pas joignable. Les messages continueront d'être préparés et mis "
+            + "en file sur ce poste ; ils partiront dès la reconnexion. La passerelle se configure "
+            + "sur le serveur, jamais depuis le navigateur : les identifiants de l'opérateur ne "
+            + "transitent pas par ce poste.",
+        })
+      : h("div", [
+          h("div.resultat-test__stat", [
+            h("div.stat-bloc", [h("span.stat-bloc__libelle", { texte: "Fournisseur" }),
+              h("span.stat-bloc__valeur", { texte: descripteur.label })]),
+            h("div.stat-bloc", [h("span.stat-bloc__libelle", { texte: "État" }),
+              h("span.stat-bloc__valeur", { texte: passerelle.actif ? "Active" : "Inactive" })]),
+            h("div.stat-bloc", [h("span.stat-bloc__libelle", { texte: "Identifiants" }),
+              h("span.stat-bloc__valeur", {
+                texte: passerelle.secretDefini ? "Enregistrés sur le serveur" : "Non renseignés" })]),
+          ]),
+          h("p.texte-secondaire", { style: { marginTop: "10px" }, texte: descripteur.description }),
+          modifiable ? h("button.btn", { texte: "Configurer la passerelle", style: { marginTop: "10px" },
+            onclick: () => configurerPasserelle(passerelle, rafraichir) }) : null,
+        ].filter(Boolean)),
+
+    h("p.texte-secondaire", { style: { marginTop: "12px" }, texte:
+      "Passerelles reconnues : " + Object.values(notifications.PASSERELLES)
+        .map(p => p.label).join(", ") + "." }),
+  ].filter(Boolean));
+}
+
+async function configurerPasserelle(actuelle, rafraichir) {
+  const choix = h("select.champ");
+  for (const [cle, p] of Object.entries(notifications.PASSERELLES)) {
+    const o = h("option", { value: cle, texte: p.label });
+    if (cle === actuelle.fournisseur) o.selected = true;
+    choix.appendChild(o);
+  }
+  const zone = h("div");
+  const actif = h("input", { type: "checkbox", checked: !!actuelle.actif });
+
+  const rendreChamps = () => {
+    const p = notifications.PASSERELLES[choix.value];
+    remplacer(zone, h("div", [
+      h("p.texte-secondaire", { texte: p.description }),
+      ...p.champs.map(c => {
+        const champ = h("input.champ", {
+          type: c.secret ? "password" : "text",
+          placeholder: c.placeholder || "",
+          value: c.secret ? "" : (actuelle[c.cle] || ""),
+        });
+        champ.dataset.cle = c.cle;
+        return h("div.champ-groupe", [
+          h("label.champ-libelle", {
+            texte: c.libelle + (c.obligatoire ? " *" : "") }),
+          champ,
+          c.secret ? h("div.champ-aide", {
+            texte: actuelle.secretDefini
+              ? "Un secret est déjà enregistré. Laissez vide pour le conserver."
+              : "Stocké sur le serveur uniquement, jamais renvoyé au navigateur.",
+          }) : null,
+        ].filter(Boolean));
+      }),
+    ]));
+  };
+  choix.onchange = rendreChamps;
+  rendreChamps();
+
+  const ok = await modale({
+    titre: "Passerelle d'envoi des messages",
+    largeur: "560px",
+    contenu: h("div", [
+      h("div.champ-groupe", [h("label.champ-libelle", { texte: "Fournisseur" }), choix]),
+      zone,
+      h("label.champ-groupe.champ-groupe--case", [actif,
+        h("span.champ-libelle", { texte: "Passerelle active" })]),
+      h("div.avertissement", {
+        texte: "Vérifiez le coût par message auprès de votre opérateur avant activation : "
+          + "chaque validation de résultats déclenche un envoi.",
+      }),
+    ]),
+    actions: [{ libelle: "Annuler", type: "neutre", valeur: null },
+      { libelle: "Enregistrer", type: "primaire", valeur: true }],
+  });
+  if (!ok) return;
+
+  const corps = { fournisseur: choix.value, actif: actif.checked };
+  for (const champ of zone.querySelectorAll("input[data-cle]")) {
+    corps[champ.dataset.cle] = champ.value.trim();
+  }
+  try {
+    const r = await fetch("/api/passerelle", {
+      method: "PUT",
+      headers: { "content-type": "application/json", ...entetesAuth() },
+      body: JSON.stringify(corps),
+    });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).erreur || `HTTP ${r.status}`);
+    succes("Passerelle enregistrée sur le serveur.");
+    rafraichir?.();
+  } catch (e) { erreur("Enregistrement impossible : " + e.message); }
+}
+
+function entetesAuth() {
+  try {
+    const jeton = localStorage.getItem("medistat.jeton");
+    return jeton ? { authorization: `Bearer ${jeton}` } : {};
+  } catch { return {}; }
 }
 
 /* ===================== Journal d'audit (article 16) ===================== */
