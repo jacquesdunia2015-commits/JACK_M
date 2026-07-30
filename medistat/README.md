@@ -390,3 +390,28 @@ Dites franchement, pour éviter toute mauvaise surprise :
 Développé d'après le cahier des charges v1.0 du Client. Les dispositions
 juridiques et commerciales relèvent du contrat de prestation associé
 (article 25 du cahier des charges).
+
+## Accès immédiat (MVP)
+
+Une version autonome de MediStat — un seul fichier HTML, sans installation
+ni serveur — est publiée à l'adresse suivante :
+
+    https://claude.ai/code/artifact/d650cf03-0f83-4384-8cf7-36267d0db7f2
+
+Au premier lancement, l'écran de configuration crée l'établissement et son
+compte administrateur. Laissez cochée la case « charger un jeu de données de
+démonstration » pour découvrir la Solution avec 120 patients, un catalogue
+d'analyses et plusieurs centaines de résultats fictifs.
+
+Les données restent dans le navigateur (IndexedDB) et ne partent nulle part.
+Cette version convient à l'évaluation et à la démonstration ; pour un usage
+réel, déployez le serveur (`server/api.mjs`) afin d'obtenir la sauvegarde
+centralisée, le partage entre postes et l'envoi des messages aux patients.
+
+### Reconstruire le fichier autonome
+
+    node outils/construire-autonome.mjs              # document complet
+    node outils/construire-autonome.mjs --fragment   # corps seul, pour intégration
+
+Le premier produit `dist/medistat-autonome.html`, déposable tel quel sur
+n'importe quel hébergement statique ou ouvrable depuis une clé USB.
