@@ -148,6 +148,47 @@ export async function decrypt(envelope, password) {
   }
 }
 
+/* ============ Clé de données de l'établissement (chiffrement enveloppe) ==== */
+
+// Pourquoi une clé d'établissement plutôt qu'une clé par utilisateur.
+//
+// Dériver la clé de chiffrement du mot de passe de chaque utilisateur paraît
+// séduisant : rien à stocker, la clé disparaît à la déconnexion. Mais un
+// dossier médical est écrit par un médecin et relu par un biologiste, un
+// infirmier, un secrétaire. Avec une clé par personne, chacun ne relit que
+// ce qu'il a lui-même saisi ; les champs des autres apparaissent vides.
+// C'est un défaut silencieux — aucune erreur, juste des données manquantes —
+// et donc le pire qui soit dans un dossier de soins : une allergie qui ne
+// s'affiche pas est une allergie qui n'existe pas pour le soignant.
+//
+// La Solution utilise donc une clé de données unique par établissement,
+// tirée au hasard, et enveloppée séparément pour chaque utilisateur avec une
+// clé dérivée de son mot de passe. Conséquences :
+//   — tous les soignants d'un établissement lisent les mêmes dossiers ;
+//   — la clé n'est jamais stockée en clair, nulle part ;
+//   — un changement de mot de passe ré-enveloppe la clé, sans toucher aux
+//     données ;
+//   — deux établissements restent cryptographiquement cloisonnés.
+
+export function genererCleDonnees() {
+  requireCrypto();
+  return bytesToBase64(crypto.getRandomValues(new Uint8Array(32)));
+}
+
+// Clé d'enveloppe dérivée du mot de passe. Le sel est celui de l'empreinte
+// du mot de passe : il est déjà unique par utilisateur et déjà stocké.
+export async function cleEnveloppe(motDePasse, sel) {
+  return sha256(`enveloppe|${motDePasse}|${sel}`);
+}
+
+export async function envelopperCleDonnees(cleDonnees, motDePasse, sel) {
+  return encrypt(cleDonnees, await cleEnveloppe(motDePasse, sel));
+}
+
+export async function ouvrirCleDonnees(enveloppe, motDePasse, sel) {
+  return decrypt(enveloppe, await cleEnveloppe(motDePasse, sel));
+}
+
 export async function encryptObject(obj, password) {
   return encrypt(JSON.stringify(obj), password);
 }

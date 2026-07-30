@@ -67,6 +67,12 @@ t("notifications désactivées : aucun envoi",
   /désactivées/.test(notifications.raisonNonEnvoi(patientOk, { active: false })));
 t("établissement non configuré : aucun envoi",
   notifications.raisonNonEnvoi(patientOk, null) !== null);
+// L'envoi est opt-in des deux côtés. Un établissement qui n'a rien décidé ne
+// doit pas se mettre à écrire à ses patients à la faveur d'une mise à jour.
+t("paramétrage absent : aucun envoi",
+  /désactivées/.test(notifications.raisonNonEnvoi(patientOk, {})));
+t("un indicatif de pays seul ne suffit pas à activer",
+  /désactivées/.test(notifications.raisonNonEnvoi(patientOk, { indicatifPays: "243" })));
 
 /* ===================================================================== */
 section("Composition du message");
@@ -176,6 +182,22 @@ t("la trace identifie le patient par son IPP",
 
 /* ===================================================================== */
 section("Remise et reprise");
+
+// Sans serveur enregistré, aucune requête n'est émise et rien n'est marqué
+// en échec : un poste en local pur n'a pas à voir des « abandonnés » alors
+// qu'aucun envoi n'a jamais été configuré.
+globalThis.fetch = async () => { throw new Error("aucune requête ne devait partir"); };
+const bilanLocal = await notifications.viderFile();
+check("sans serveur, aucune tentative", bilanLocal.tentes, 0);
+t("la raison est explicite", /serveur/.test(bilanLocal.raison || ""), bilanLocal.raison);
+check("aucun message n'est marqué en échec",
+  (await store.depots.messagesPatients.lister()).every(m => m.statut === "en_attente"), true);
+
+// À partir d'ici, un serveur est enregistré : les tentatives ont lieu.
+notifications.definirServeur({ base: "http://serveur-de-controle/api", jeton: "jeton-de-controle" });
+check("le serveur est retenu", notifications.serveurConfigure()?.base, "http://serveur-de-controle/api");
+check("le jeton alimente l'en-tête d'autorisation",
+  notifications.enTetesAuth().authorization, "Bearer jeton-de-controle");
 
 // Sans serveur joignable, la remise échoue : le message doit rester en file
 // et être reprogrammé, jamais être perdu ni marqué remis.

@@ -265,8 +265,16 @@ export function depot(magasin, ressource, { chiffrer = false } = {}) {
       return dechiffrer(o);
     },
 
-    async creer(donnees) {
-      await exiger(ressource, "creation");
+    // `droitRequis` permet à un enregistrement d'être créé au titre d'un autre
+    // droit que celui de sa ressource. Le cas concret : prescrire un examen
+    // crée une ligne de résultat vide par analyse. Cette ligne n'est pas un
+    // résultat au sens médical — elle ne porte aucune valeur —, c'est la
+    // matérialisation de la demande. Exiger « resultat:creation » ici
+    // interdirait au médecin prescripteur, qui ne saisit jamais de résultat,
+    // de prescrire quoi que ce soit.
+    async creer(donnees, { droitRequis = null } = {}) {
+      const [res, act] = droitRequis ? droitRequis.split(":") : [ressource, "creation"];
+      await exiger(res, act);
       const maintenant = new Date().toISOString();
       let objet = {
         ...donnees,

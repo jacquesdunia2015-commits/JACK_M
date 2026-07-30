@@ -460,12 +460,19 @@ function carteLangue() {
 async function carteNotifications(etablissement, modifiable, rafraichir) {
   const reglages = etablissement.notifications || {};
   let passerelle = { fournisseur: "aucune", actif: false, secretDefini: false };
-  let serveurJoignable = true;
-  try {
-    const r = await fetch("/api/passerelle", { headers: entetesAuth() });
-    if (r.ok) passerelle = await r.json();
-    else serveurJoignable = false;
-  } catch { serveurJoignable = false; }
+  // Trois états distincts, qu'il ne faut pas confondre : aucun serveur
+  // enregistré (mode local, légitime), serveur enregistré mais injoignable
+  // (panne), serveur joignable (cas nominal).
+  const serveur = notifications.serveurConfigure();
+  let serveurJoignable = Boolean(serveur);
+  if (serveur) {
+    try {
+      const r = await fetch(`${serveur.base.replace(/\/+$/, "")}/passerelle`,
+        { headers: notifications.enTetesAuth() });
+      if (r.ok) passerelle = await r.json();
+      else serveurJoignable = false;
+    } catch { serveurJoignable = false; }
+  }
 
   const form = formulaire([
     { cle: "active", libelle: "Prévenir automatiquement le patient", type: "checkbox",
@@ -507,13 +514,27 @@ async function carteNotifications(etablissement, modifiable, rafraichir) {
       } }) : null,
 
     h("div.carte__entete", { style: { marginTop: "20px" } }, [h("h3", { texte: "Passerelle d'envoi" })]),
-    !serveurJoignable
-      ? h("div.avertissement", {
-          texte: "Le serveur n'est pas joignable. Les messages continueront d'être préparés et mis "
-            + "en file sur ce poste ; ils partiront dès la reconnexion. La passerelle se configure "
-            + "sur le serveur, jamais depuis le navigateur : les identifiants de l'opérateur ne "
-            + "transitent pas par ce poste.",
-        })
+    !serveur
+      ? h("div", [
+          h("p.texte-secondaire", {
+            texte: "Aucun serveur d'envoi n'est enregistré sur ce poste. MediStat fonctionne "
+              + "alors en local : les messages sont préparés, horodatés et consultables dans "
+              + "l'écran « Messages aux patients », mais rien ne part automatiquement. "
+              + "C'est le mode par défaut — aucun SMS ne peut être envoyé à votre insu.",
+          }),
+          modifiable ? h("button.btn", { texte: "Enregistrer un serveur d'envoi",
+            style: { marginTop: "10px" }, onclick: () => declarerServeur(rafraichir) }) : null,
+        ].filter(Boolean))
+      : !serveurJoignable
+      ? h("div", [
+          h("div.avertissement", {
+            texte: `Le serveur ${serveur.base} n'est pas joignable ou refuse l'authentification. `
+              + "Les messages continuent d'être préparés et mis en file sur ce poste ; ils "
+              + "partiront à la reconnexion.",
+          }),
+          modifiable ? h("button.btn", { texte: "Modifier le serveur", style: { marginTop: "10px" },
+            onclick: () => declarerServeur(rafraichir) }) : null,
+        ].filter(Boolean))
       : h("div", [
           h("div.resultat-test__stat", [
             h("div.stat-bloc", [h("span.stat-bloc__libelle", { texte: "Fournisseur" }),
@@ -533,6 +554,49 @@ async function carteNotifications(etablissement, modifiable, rafraichir) {
       "Passerelles reconnues : " + Object.values(notifications.PASSERELLES)
         .map(p => p.label).join(", ") + "." }),
   ].filter(Boolean));
+}
+
+// Enregistre l'adresse du serveur d'envoi et le jeton d'accès délivré par
+// celui-ci. Le jeton reste sur ce poste ; c'est un droit d'envoi, pas les
+// identifiants de l'opérateur télécom, qui eux ne quittent jamais le serveur.
+async function declarerServeur(rafraichir) {
+  const actuel = notifications.serveurConfigure() || {};
+  const form = formulaire([
+    { cle: "base", libelle: "Adresse de l'API", obligatoire: true, pleineLargeur: true,
+      placeholder: "https://medistat.mon-etablissement.org/api",
+      aide: "Adresse du serveur MediStat, terminée par /api." },
+    { cle: "jeton", libelle: "Jeton d'accès", type: "password", pleineLargeur: true,
+      aide: "Délivré par le serveur à la connexion. Conservé sur ce poste uniquement." },
+  ], { base: actuel.base || "" });
+
+  const ok = await modale({
+    titre: "Serveur d'envoi des messages",
+    largeur: "520px",
+    contenu: h("div", [
+      h("p.texte-secondaire", {
+        texte: "Sans serveur, MediStat reste pleinement utilisable : seuls les envois "
+          + "automatiques sont suspendus.",
+      }),
+      form,
+    ]),
+    actions: [
+      { libelle: "Annuler", type: "neutre", valeur: null },
+      actuel.base ? { libelle: "Retirer le serveur", type: "danger", valeur: "retirer" } : null,
+      { libelle: "Enregistrer", type: "primaire", valeur: "enregistrer" },
+    ].filter(Boolean),
+  });
+  if (!ok) return;
+
+  if (ok === "retirer") {
+    notifications.definirServeur(null);
+    succes("Serveur retiré. Les messages restent en file sur ce poste.");
+    return rafraichir?.();
+  }
+  const v = form.valeurs();
+  if (!v.base) return erreur("L'adresse du serveur est obligatoire.");
+  notifications.definirServeur({ base: v.base.trim(), jeton: (v.jeton || "").trim() });
+  succes("Serveur enregistré.");
+  rafraichir?.();
 }
 
 async function configurerPasserelle(actuelle, rafraichir) {
@@ -595,22 +659,17 @@ async function configurerPasserelle(actuelle, rafraichir) {
     corps[champ.dataset.cle] = champ.value.trim();
   }
   try {
-    const r = await fetch("/api/passerelle", {
+    const serveur = notifications.serveurConfigure();
+    if (!serveur) throw new Error("aucun serveur d'envoi n'est enregistré sur ce poste");
+    const r = await fetch(`${serveur.base.replace(/\/+$/, "")}/passerelle`, {
       method: "PUT",
-      headers: { "content-type": "application/json", ...entetesAuth() },
+      headers: { "content-type": "application/json", ...notifications.enTetesAuth() },
       body: JSON.stringify(corps),
     });
     if (!r.ok) throw new Error((await r.json().catch(() => ({}))).erreur || `HTTP ${r.status}`);
     succes("Passerelle enregistrée sur le serveur.");
     rafraichir?.();
   } catch (e) { erreur("Enregistrement impossible : " + e.message); }
-}
-
-function entetesAuth() {
-  try {
-    const jeton = localStorage.getItem("medistat.jeton");
-    return jeton ? { authorization: `Bearer ${jeton}` } : {};
-  } catch { return {}; }
 }
 
 /* ===================== Journal d'audit (article 16) ===================== */

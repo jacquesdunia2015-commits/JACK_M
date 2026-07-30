@@ -7,6 +7,7 @@
 import {
   hashPassword, verifyPassword, evaluerMotDePasse, genererMotDePasseTemporaire,
   genererSecret, sha256,
+  genererCleDonnees, envelopperCleDonnees, ouvrirCleDonnees,
 } from "./crypto.js";
 import {
   lire, lireTout, ecrire, tracer, definirContexte, reinitialiserContexte,
@@ -84,6 +85,10 @@ export async function initialiser({ etablissement, administrateur }) {
   };
   await ecrire("etablissements", ets);
 
+  // Clé de chiffrement des champs sensibles, propre à l'établissement.
+  // Tirée au hasard, jamais stockée en clair : elle est enveloppée avec une
+  // clé dérivée du mot de passe de chaque utilisateur autorisé.
+  const cleDonnees = genererCleDonnees();
   const empreinte = await hashPassword(administrateur.motDePasse);
   const admin = {
     id: nouvelId("usr"),
@@ -101,6 +106,7 @@ export async function initialiser({ etablissement, administrateur }) {
     actif: true,
     tentativesEchouees: 0,
     dateCreation: new Date().toISOString(),
+    cleEnveloppe: await envelopperCleDonnees(cleDonnees, administrateur.motDePasse, empreinte.salt),
   };
   await ecrire("utilisateurs", admin);
 
@@ -114,6 +120,26 @@ export async function initialiser({ etablissement, administrateur }) {
     `Initialisation de la Solution pour « ${ets.nom} »`);
   reinitialiserContexte();
   return { etablissement: ets, administrateur: admin };
+}
+
+
+// Ouvre la clé de données de l'établissement à partir du mot de passe.
+//
+// Les bases créées avant l'introduction du chiffrement enveloppe ne portent
+// pas d'enveloppe : leurs champs sensibles ont été chiffrés avec une clé
+// propre à l'utilisateur. On la reconstitue à l'identique et on l'adopte
+// comme clé de l'établissement, puis on l'enveloppe. Les dossiers déjà
+// saisis restent lisibles, et les utilisateurs créés ensuite les liront
+// aussi. Ce chemin ne sert qu'une fois par compte.
+async function ouvrirCleDeSession(u, motDePasse) {
+  if (u.cleEnveloppe) {
+    return { cleSession: await ouvrirCleDonnees(u.cleEnveloppe, motDePasse, u.motDePasse.salt) };
+  }
+  const heritee = await sha256(`${motDePasse}|${u.id}|${u.motDePasse.salt}`);
+  return {
+    cleSession: heritee,
+    enveloppeAMettreAJour: await envelopperCleDonnees(heritee, motDePasse, u.motDePasse.salt),
+  };
 }
 
 /* ===================== Ouverture de session ===================== */
@@ -172,13 +198,17 @@ export async function connexion(identifiant, motDePasse, { codeTOTP = null } = {
 
   const etablissement = await lire("etablissements", u.etablissementId);
 
-  // Clé de chiffrement des champs sensibles, dérivée du mot de passe :
-  // elle n'est jamais stockée et disparaît à la fermeture de session.
-  const cleSession = await sha256(`${motDePasse}|${u.id}|${u.motDePasse.salt}`);
+  // La clé de chiffrement des dossiers est celle de l'établissement : elle
+  // est ouverte avec le mot de passe, jamais stockée en clair, et disparaît
+  // à la fermeture de session. C'est ce qui permet à un biologiste de relire
+  // le dossier saisi par un médecin.
+  const { cleSession, enveloppeAMettreAJour } =
+    await ouvrirCleDeSession(u, motDePasse);
 
   await ecrire("utilisateurs", {
     ...u, tentativesEchouees: 0, bloqueJusqua: null,
     derniereConnexion: new Date().toISOString(),
+    ...(enveloppeAMettreAJour ? { cleEnveloppe: enveloppeAMettreAJour } : {}),
   });
 
   session = {
@@ -265,7 +295,7 @@ export async function deverrouiller(motDePasse) {
     await tracer("connexion_echec", "utilisateur", u.id, "Déverrouillage refusé");
     throw new Error("Mot de passe incorrect.");
   }
-  const cleSession = await sha256(`${motDePasse}|${u.id}|${u.motDePasse.salt}`);
+  const { cleSession } = await ouvrirCleDeSession(u, motDePasse);
   session.verrouillee = false;
   session.cleSession = cleSession;
   definirContexte({ utilisateur: session.utilisateur, etablissementId: u.etablissementId, cleSession });
@@ -298,14 +328,21 @@ export async function changerMotDePasse(ancien, nouveau) {
   const empreinte = await hashPassword(nouveau);
   const historique = [empreinte.hash, ...(u.historiqueMotsDePasse || [])]
     .slice(0, POLITIQUE.historiqueMotsDePasse);
+
+  // La clé de chiffrement des dossiers ne change PAS : seule son enveloppe
+  // est refaite avec le nouveau mot de passe. Changer la clé rendrait
+  // illisibles tous les dossiers déjà saisis — un changement de mot de passe
+  // ne doit jamais faire disparaître une allergie d'un dossier.
+  const cleSession = session.cleSession
+    || (await ouvrirCleDeSession(u, ancien)).cleSession;
+
   await ecrire("utilisateurs", {
     ...u, motDePasse: empreinte, historiqueMotsDePasse: historique,
     dateChangementMotDePasse: new Date().toISOString(),
     motDePasseTemporaire: false,
+    cleEnveloppe: await envelopperCleDonnees(cleSession, nouveau, empreinte.salt),
   });
 
-  // La clé de chiffrement dépend du mot de passe : elle doit être renouvelée
-  const cleSession = await sha256(`${nouveau}|${u.id}|${empreinte.salt}`);
   session.cleSession = cleSession;
   definirContexte({ cleSession });
 
@@ -323,16 +360,22 @@ export async function reinitialiserMotDePasse(utilisateurId) {
   if (!u) throw new Error("Utilisateur introuvable.");
   const temporaire = genererMotDePasseTemporaire(12);
   const empreinte = await hashPassword(temporaire);
+  // L'administrateur ré-enveloppe la clé de l'établissement — celle de sa
+  // propre session — avec le mot de passe temporaire. L'utilisateur retrouve
+  // donc l'accès aux dossiers après réinitialisation. Sans cela, oublier son
+  // mot de passe reviendrait à perdre l'accès aux dossiers de l'équipe.
+  if (!session?.cleSession) {
+    throw new Error("Session administrateur incomplète : reconnectez-vous avant de réinitialiser un mot de passe.");
+  }
   await ecrire("utilisateurs", {
     ...u, motDePasse: empreinte, motDePasseTemporaire: true,
     dateChangementMotDePasse: new Date().toISOString(),
     tentativesEchouees: 0, bloqueJusqua: null,
+    cleEnveloppe: await envelopperCleDonnees(session.cleSession, temporaire, empreinte.salt),
   });
   await tracer("changement_droits", "utilisateur", utilisateurId,
     `Réinitialisation du mot de passe de ${u.prenom} ${u.nom}`);
   // Le mot de passe temporaire n'est affiché qu'une fois, à l'administrateur.
-  // Attention : les champs sensibles chiffrés avec l'ancienne clé de cet
-  // utilisateur ne seront plus déchiffrables par lui.
   return {
     motDePasseTemporaire: temporaire,
     avertissement: "Communiquez ce mot de passe à l'utilisateur par un canal sûr. " +
@@ -363,6 +406,12 @@ export async function creerUtilisateur(donnees) {
 
   const temporaire = donnees.motDePasse || genererMotDePasseTemporaire(12);
   const empreinte = await hashPassword(temporaire);
+  // Le nouveau compte reçoit la clé de l'établissement, enveloppée avec son
+  // mot de passe initial. C'est ce qui lui donne accès aux dossiers déjà
+  // saisis par ses collègues — et sans quoi il ouvrirait des dossiers vides.
+  if (!session?.cleSession) {
+    throw new Error("Session incomplète : reconnectez-vous avant de créer un utilisateur.");
+  }
   const u = {
     id: nouvelId("usr"),
     identifiant,
@@ -378,6 +427,7 @@ export async function creerUtilisateur(donnees) {
     actif: true, tentativesEchouees: 0,
     dateCreation: new Date().toISOString(),
     creePar: moi.id,
+    cleEnveloppe: await envelopperCleDonnees(session.cleSession, temporaire, empreinte.salt),
   };
   await ecrire("utilisateurs", u);
   await tracer("creation", "utilisateur", u.id,

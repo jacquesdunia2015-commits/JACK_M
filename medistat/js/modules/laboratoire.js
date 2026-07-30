@@ -225,14 +225,24 @@ async function formulaireDemande(patientId, { naviguer }) {
         statut: "enregistree",
       });
       // Un résultat en attente est créé par analyse : la paillasse sait
-      // immédiatement ce qui reste à saisir.
-      for (const code of selection) {
-        const test = tests.find(t => t.code === code);
-        await store.depots.resultats.creer({
-          demandeId: demande.id, patientId: patientChoisi.id,
-          testCode: code, unite: test?.unite || "",
-          valeur: null, valeurTexte: null, statut: "en_attente", version: 1,
-        });
+      // immédiatement ce qui reste à saisir. Ces lignes sont vides : elles
+      // relèvent du droit de prescrire, pas de celui de rendre un résultat.
+      try {
+        for (const code of selection) {
+          const test = tests.find(t => t.code === code);
+          await store.depots.resultats.creer({
+            demandeId: demande.id, patientId: patientChoisi.id,
+            testCode: code, unite: test?.unite || "",
+            valeur: null, valeurTexte: null, statut: "en_attente", version: 1,
+          }, { droitRequis: "demande:creation" });
+        }
+      } catch (e) {
+        // Une demande sans ses lignes d'analyse est un fantôme : elle
+        // apparaîtrait dans la liste sans jamais pouvoir être honorée à la
+        // paillasse. On la retire plutôt que de laisser cet état incohérent.
+        await store.depots.demandes.supprimer(demande.id,
+          "Annulation : les lignes d'analyse n'ont pas pu être créées").catch(() => {});
+        throw e;
       }
       succes(`Demande ${demande.numero} enregistrée.`);
       naviguer(`demandes/${demande.id}`);
@@ -738,9 +748,14 @@ async function validerDemande(demande, resultats, tests, rafraichir) {
 
 async function previenirPatient(demande, resultatsValides) {
   try {
+    // Le paramétrage de l'établissement est lu sans passer par le dépôt :
+    // consulter le réglage « prévenir les patients » de sa propre structure
+    // n'est pas un acte d'administration. Exiger « etablissement:lecture »
+    // ici ferait échouer la notification pour le biologiste — c'est-à-dire
+    // pour le seul rôle qui la déclenche.
     const [patient, etablissement] = await Promise.all([
       store.depots.patients.obtenir(demande.patientId),
-      store.depots.etablissements.obtenir(utilisateurCourant().etablissementId),
+      store.lire("etablissements", utilisateurCourant().etablissementId),
     ]);
     if (!patient) return;
 

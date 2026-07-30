@@ -137,7 +137,11 @@ export function composerTexte(type, { etablissement, numero, date, langue }) {
 // qu'un simple `false` permet à l'écran de validation de dire au biologiste
 // « ce patient n'a pas de numéro » au lieu de rester muet.
 export function raisonNonEnvoi(patient, reglages) {
-  if (!reglages || reglages.active === false) return "notifications désactivées pour l'établissement";
+  // L'envoi est un consentement double : celui du patient et celui de
+  // l'établissement. Un paramétrage absent vaut refus — un établissement qui
+  // n'a rien décidé ne doit pas se mettre à écrire à ses patients parce que
+  // MediStat a été mis à jour.
+  if (!reglages || reglages.active !== true) return "notifications désactivées pour l'établissement";
   if (!patient) return "patient inconnu";
   if (patient.consentementSMS !== "oui") return "le patient n'a pas consenti aux notifications";
   if (!normaliserTelephone(patient.telephone, reglages.indicatifPays)) {
@@ -191,10 +195,56 @@ export async function mettreEnFile(type, { patient, etablissement, demande, lang
 
 /* ═══════════════════════ Remise ═════════════════════════════════════════ */
 
+// Coordonnées du serveur d'envoi, enregistrées par l'administrateur. Tant
+// qu'elles sont absentes, MediStat fonctionne en local pur : c'est le mode
+// par défaut et il est légitime — un cabinet sans serveur relève ses messages
+// à l'écran et appelle ses patients lui-même.
+// La configuration vit en mémoire ; le stockage local n'est qu'un moyen de
+// la retrouver au prochain démarrage. Cette séparation rend le module
+// utilisable sans navigateur — donc testable — et le fait fonctionner en
+// navigation privée, où l'écriture échoue silencieusement.
+let serveur = null;
+let serveurRelu = false;
+
+export function serveurConfigure() {
+  if (!serveurRelu) {
+    serveurRelu = true;
+    try {
+      const brut = localStorage.getItem("medistat.serveur");
+      if (brut) {
+        const c = JSON.parse(brut);
+        if (c && c.base) serveur = c;
+      }
+    } catch { /* pas de stockage disponible : mode local pur */ }
+  }
+  return serveur;
+}
+
+export function definirServeur(configuration) {
+  serveurRelu = true;
+  serveur = configuration && configuration.base ? configuration : null;
+  try {
+    if (!serveur) localStorage.removeItem("medistat.serveur");
+    else localStorage.setItem("medistat.serveur", JSON.stringify(serveur));
+  } catch { /* la configuration reste valable pour cette session */ }
+  return serveur;
+}
+
 // Tente la remise des messages en attente. Le serveur détient la passerelle ;
 // hors ligne ou sans serveur, les messages restent en file et rien n'est
 // perdu. Renvoie un bilan pour l'écran de supervision.
-export async function viderFile({ base = "/api", limite = 50 } = {}) {
+//
+// Sans serveur enregistré, aucune requête n'est émise : compter cinq échecs
+// puis abandonner des messages alors qu'aucun envoi n'a jamais été configuré
+// serait un faux négatif, et l'écran afficherait des « abandonnés » qui ne
+// veulent rien dire.
+export async function viderFile({ base = null, limite = 50 } = {}) {
+  const cible = serveurConfigure();
+  if (!base && !cible) {
+    return { tentes: 0, remis: 0, differes: 0, abandonnes: 0,
+      raison: "aucun serveur d'envoi n'est enregistré sur ce poste" };
+  }
+  base = base || cible.base.replace(/\/+$/, "");
   const maintenant = Date.now();
   const enAttente = (await store.depots.messagesPatients.lister({
     filtre: m => m.statut === "en_attente"
@@ -243,11 +293,9 @@ export async function viderFile({ base = "/api", limite = 50 } = {}) {
   return bilan;
 }
 
-function enTetesAuth() {
-  try {
-    const jeton = localStorage.getItem("medistat.jeton");
-    return jeton ? { authorization: `Bearer ${jeton}` } : {};
-  } catch { return {}; }
+export function enTetesAuth() {
+  const s = serveurConfigure();
+  return s?.jeton ? { authorization: `Bearer ${s.jeton}` } : {};
 }
 
 // Remet en file un message abandonné, après correction du numéro par exemple.

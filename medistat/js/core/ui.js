@@ -398,6 +398,12 @@ export function formulaire(champs, valeurs = {}) {
         controle.value = valeur;
       } else if (c.type === "checkbox") {
         controle = h("input", { type: "checkbox", id, name: c.cle, checked: !!valeur });
+        // Cette branche rend son propre gabarit et sort par un `return` : elle
+        // doit donc enregistrer le contrôle elle-même. L'oublier ne casse
+        // rien de visible — la case s'affiche et se coche — mais `valeurs()`
+        // ne la retrouve plus et renvoie systématiquement `undefined`, donc
+        // « décoché », quoi que l'utilisateur ait fait.
+        controles[c.cle] = controle;
         return h("label.champ-groupe.champ-groupe--case", [
           controle, h("span.champ-libelle", { texte: c.libelle }),
           c.aide ? h("span.champ-aide", { texte: c.aide }) : null,

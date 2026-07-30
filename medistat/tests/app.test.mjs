@@ -227,6 +227,68 @@ t("patient enregistré", !!patient.id);
 }
 
 /* ===================================================================== */
+section("Le chiffrement ne cloisonne pas l'équipe soignante");
+
+// Le contrôle décisif de cette section. Un dossier est saisi par un
+// utilisateur et relu par un autre : médecin puis biologiste, infirmier puis
+// secrétaire. Si la clé de chiffrement dépendait du mot de passe de chacun,
+// chaque soignant ne relirait que ce qu'il a lui-même écrit et les champs
+// des autres apparaîtraient vides — sans la moindre erreur affichée.
+// Une allergie qui ne s'affiche pas est une allergie qui n'existe pas pour
+// celui qui soigne.
+{
+  const { motDePasseTemporaire } = await auth.creerUtilisateur({
+    identifiant: "bio.controle", nom: "Ilunga", prenom: "Marie", role: "biologiste",
+  });
+  t("un mot de passe temporaire est délivré", Boolean(motDePasseTemporaire));
+
+  await auth.deconnexion();
+  await auth.connexion("bio.controle", motDePasseTemporaire);
+  check("le collègue est bien connecté", auth.utilisateurCourant().identifiant, "bio.controle");
+
+  const vuParLeCollegue = await store.depots.patients.obtenir(patient.id);
+  check("un collègue relit les antécédents", vuParLeCollegue.antecedents, "Diabète de type 2");
+  check("un collègue relit les allergies", vuParLeCollegue.allergies, "Pénicilline");
+  check("un collègue relit le téléphone", vuParLeCollegue.telephone, "+243900000000");
+  t("aucun échec de déchiffrement silencieux", !vuParLeCollegue._erreurDechiffrement);
+
+  // Ce que le collègue écrit doit rester lisible par le premier utilisateur.
+  // Le biologiste ne crée pas de patients — c'est voulu — mais il crée des
+  // résultats, eux aussi chiffrés au repos.
+  const resultatDuCollegue = await store.depots.resultats.creer({
+    patientId: patient.id, testCode: "HB", valeur: 13.4, unite: "g/dL",
+    statut: "saisi", commentaireBiologiste: "Contrôle à trois mois.",
+  });
+
+  // Changer de mot de passe ne doit rien rendre illisible : seule
+  // l'enveloppe de la clé est refaite, la clé elle-même ne bouge pas.
+  await auth.changerMotDePasse(motDePasseTemporaire, "CollegueFort2026!");
+  const apresChangement = await store.depots.patients.obtenir(patient.id);
+  check("les dossiers restent lisibles après changement de mot de passe",
+    apresChangement.allergies, "Pénicilline");
+
+  await auth.deconnexion();
+  await auth.connexion("bio.controle", "CollegueFort2026!");
+  check("reconnexion avec le nouveau mot de passe",
+    (await store.depots.patients.obtenir(patient.id)).allergies, "Pénicilline");
+
+  await auth.deconnexion();
+  await auth.connexion("admin", "AdminFort2026!");
+  const retourAdmin = await store.depots.resultats.obtenir(resultatDuCollegue.id);
+  check("l'auteur initial relit ce qu'a écrit son collègue",
+    retourAdmin.commentaireBiologiste, "Contrôle à trois mois.");
+
+  // La clé n'est jamais stockée en clair : seule son enveloppe l'est.
+  const compteBio = (await store.lireTout("utilisateurs"))
+    .find(u => u.identifiant === "bio.controle");
+  t("chaque compte porte une enveloppe de clé", Boolean(compteBio.cleEnveloppe));
+  t("l'enveloppe ne révèle pas la clé",
+    Boolean(compteBio.cleEnveloppe.donnees) && !compteBio.cleEnveloppe.cle);
+  t("aucune donnée de santé n'est lisible dans le compte",
+    !JSON.stringify(compteBio).includes("Pénicilline"));
+}
+
+/* ===================================================================== */
 section("Contrôle d'accès effectif");
 
 await auth.deconnexion();

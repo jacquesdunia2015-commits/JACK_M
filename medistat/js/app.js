@@ -334,13 +334,18 @@ async function naviguer(vue, remplacerHistorique = false) {
     etat.vueCourante = cible;
     conteneur.focus({ preventScroll: true });
   } catch (e) {
-    console.error(e);
     if (e.name === "ErreurPermission") {
+      // Un refus de droit n'est pas une anomalie technique : il est prévu,
+      // annoncé à l'utilisateur et déjà consigné au journal d'audit. Le
+      // remonter en erreur de console noierait les vraies pannes — un
+      // utilisateur qui ouvre un signet vers un écran qui ne le concerne
+      // plus déclenche ce chemin tous les matins.
       remplacer(conteneur, etatVide({
         icone: "🚫", titre: "Accès refusé",
         message: e.message + " Cette tentative a été consignée dans le journal d'audit.",
       }));
     } else {
+      console.error(e);
       remplacer(conteneur, etatErreur(e.message, () => naviguer(vue, true)));
     }
   }
