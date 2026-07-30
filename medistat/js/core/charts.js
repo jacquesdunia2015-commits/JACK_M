@@ -21,9 +21,9 @@ export const COULEURS = {
   critique: "#dc2626",
   neutre: "#94a3b8",
   accent: "#2b6cb0",
-  grille: "#e2e8f0",
-  texte: "#475569",
-  axe: "#94a3b8",
+  grille: "var(--grille-graphique, #e2e8f0)",
+  texte: "var(--texte-2, #475569)",
+  axe: "var(--texte-3, #94a3b8)",
 };
 
 function el(nom, attributs = {}, enfants = []) {
@@ -64,8 +64,8 @@ function cadre({ largeur = 640, hauteur = 380, marges = {}, titre = null, sousTi
     preserveAspectRatio: "xMidYMid meet",
   });
   if (titre) {
-    svg.appendChild(texte(titre, largeur / 2, 20, { taille: 13, gras: true, couleur: "#1e293b" }));
-    if (sousTitre) svg.appendChild(texte(sousTitre, largeur / 2, 36, { taille: 10, couleur: "#64748b" }));
+    svg.appendChild(texte(titre, largeur / 2, 20, { taille: 13, gras: true, couleur: "var(--texte, #1e293b)" }));
+    if (sousTitre) svg.appendChild(texte(sousTitre, largeur / 2, 36, { taille: 10, couleur: "var(--texte-3, #64748b)" }));
   }
   return {
     svg, m, largeur, hauteur,
@@ -336,7 +336,7 @@ export function lignes(series, options = {}) {
 export function secteurs(donnees, options = {}) {
   const largeur = options.largeur || 520, hauteur = options.hauteur || 320;
   const svg = el("svg", { viewBox: `0 0 ${largeur} ${hauteur}`, class: "graphique", role: "img" });
-  if (options.titre) svg.appendChild(texte(options.titre, largeur / 2, 20, { taille: 13, gras: true, couleur: "#1e293b" }));
+  if (options.titre) svg.appendChild(texte(options.titre, largeur / 2, 20, { taille: 13, gras: true, couleur: "var(--texte, #1e293b)" }));
 
   const total = donnees.reduce((a, d) => a + d.valeur, 0);
   if (!total) return svg;
@@ -379,19 +379,41 @@ export function secteurs(donnees, options = {}) {
   });
 
   if (options.anneau && options.centre) {
-    svg.appendChild(texte(options.centre.valeur, cx, cy - 2, { taille: 22, gras: true, couleur: "#1e293b" }));
+    svg.appendChild(texte(options.centre.valeur, cx, cy - 2, { taille: 22, gras: true, couleur: "var(--texte, #1e293b)" }));
     svg.appendChild(texte(options.centre.libelle, cx, cy + 18, { taille: 10 }));
   }
 
-  // Légende détaillée à droite
+  // Légende détaillée à droite. Le libellé et le chiffre partagent la même
+  // ligne : sans réserve, un libellé long comme « Sérologie / Immunologie »
+  // vient se superposer à son propre effectif et les deux deviennent
+  // illisibles. On calcule la place que prennent les chiffres — la colonne
+  // la plus large commande — et on n'accorde au libellé que ce qui reste.
   const gl = el("g");
+  const valeurs = donnees.map(d => `${nb(d.valeur)} (${nb(d.valeur / total * 100, 1)} %)`);
+  const largeurValeurs = Math.max(0, ...valeurs.map(v => v.length)) * 5.2;
+  const debutLibelle = 320;
+  const placeLibelle = largeur - 20 - largeurValeurs - 10 - debutLibelle;
+  const maxCaracteres = Math.max(6, Math.floor(placeLibelle / 5.8));
+
   donnees.forEach((d, i) => {
     const y = cy - (donnees.length * 22) / 2 + i * 22;
+    const libelle = String(d.label);
+    const abrege = libelle.length > maxCaracteres
+      ? libelle.slice(0, maxCaracteres - 1).trimEnd() + "…"
+      : libelle;
     gl.appendChild(el("rect", { x: 300, y: y - 9, width: 12, height: 12,
       fill: d.couleur || PALETTE[i % PALETTE.length], rx: 2 }));
-    gl.appendChild(texte(`${d.label}`, 320, y + 1, { ancre: "start", taille: 11 }));
-    gl.appendChild(texte(`${nb(d.valeur)} (${nb(d.valeur / total * 100, 1)} %)`,
-      largeur - 20, y + 1, { ancre: "end", taille: 10, couleur: "#64748b" }));
+    const t = texte(abrege, debutLibelle, y + 1, { ancre: "start", taille: 11 });
+    // Le libellé complet reste accessible au survol et aux lecteurs d'écran :
+    // abréger l'affichage ne doit pas faire disparaître l'information.
+    if (abrege !== libelle) {
+      const titre = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      titre.textContent = libelle;
+      t.appendChild(titre);
+    }
+    gl.appendChild(t);
+    gl.appendChild(texte(valeurs[i], largeur - 20, y + 1,
+      { ancre: "end", taille: 10, couleur: "var(--texte-3, #64748b)" }));
   });
   svg.appendChild(gl);
   return svg;
@@ -688,7 +710,7 @@ export function foret(entrees, options = {}) {
   const largeur = options.largeur || 660;
   const mGauche = 210, mDroite = 110;
   const svg = el("svg", { viewBox: `0 0 ${largeur} ${hauteur}`, class: "graphique", role: "img" });
-  if (options.titre) svg.appendChild(texte(options.titre, largeur / 2, 18, { taille: 13, gras: true, couleur: "#1e293b" }));
+  if (options.titre) svg.appendChild(texte(options.titre, largeur / 2, 18, { taille: 13, gras: true, couleur: "var(--texte, #1e293b)" }));
 
   const log = options.echelleLog !== false;
   const tr = v => (log ? Math.log(Math.max(1e-6, v)) : v);
@@ -726,7 +748,7 @@ export function foret(entrees, options = {}) {
     }), `${e.label} : ${nb(e.estimation, 2)} [${nb(e.bas, 2)} ; ${nb(e.haut, 2)}]`));
     // Valeur chiffrée à droite
     svg.appendChild(texte(`${nb(e.estimation, 2)} [${nb(e.bas, 2)} ; ${nb(e.haut, 2)}]`,
-      largeur - 8, y + 4, { ancre: "end", taille: 9, couleur: "#475569" }));
+      largeur - 8, y + 4, { ancre: "end", taille: 9, couleur: "var(--texte-2, #475569)" }));
   });
 
   // Axe gradué
@@ -751,7 +773,7 @@ export function carteChaleur(matrice, libellesLignes, libellesColonnes, options 
   const largeur = mGauche + libellesColonnes.length * taille + 90;
   const hauteur = mHaut + libellesLignes.length * taille + 30;
   const svg = el("svg", { viewBox: `0 0 ${largeur} ${hauteur}`, class: "graphique", role: "img" });
-  if (options.titre) svg.appendChild(texte(options.titre, largeur / 2, 18, { taille: 13, gras: true, couleur: "#1e293b" }));
+  if (options.titre) svg.appendChild(texte(options.titre, largeur / 2, 18, { taille: 13, gras: true, couleur: "var(--texte, #1e293b)" }));
 
   const valeurs = matrice.flat().filter(Number.isFinite);
   const min = options.min ?? Math.min(...valeurs);
@@ -889,7 +911,7 @@ export function jauge(valeur, { min = 0, max = 100, seuils = [], titre = "", uni
   svg.appendChild(el("line", { x1: cx, y1: cy, x2: xa, y2: ya, stroke: "#1e293b", "stroke-width": 3, "stroke-linecap": "round" }));
   svg.appendChild(el("circle", { cx, cy, r: 6, fill: "#1e293b" }));
   svg.appendChild(texte(nb(valeur, 1) + (unite ? " " + unite : ""), cx, cy - 22,
-    { taille: 22, gras: true, couleur: "#1e293b" }));
+    { taille: 22, gras: true, couleur: "var(--texte, #1e293b)" }));
   if (titre) svg.appendChild(texte(titre, cx, hauteur - 8, { taille: 11 }));
   svg.appendChild(texte(nb(min), cx - r, cy + 16, { taille: 9 }));
   svg.appendChild(texte(nb(max), cx + r, cy + 16, { taille: 9 }));

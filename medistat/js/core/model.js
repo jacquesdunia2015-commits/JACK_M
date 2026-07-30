@@ -459,8 +459,16 @@ export function interpreterResultat(valeur, test) {
   if (!Number.isFinite(v) || !test) {
     return { statut: "non_evaluable", horsNorme: false, critique: false, label: "—" };
   }
-  const min = Number(test.valeurRefMin), max = Number(test.valeurRefMax);
-  const cMin = Number(test.seuilCritiqueMin), cMax = Number(test.seuilCritiqueMax);
+  // `Number(null)` et `Number("")` valent 0, et 0 est un nombre fini. Une
+  // borne non renseignée serait donc lue comme un seuil à zéro : tout
+  // résultat positif deviendrait « critique haut », avec la mention « alerte
+  // immédiate au prescripteur requise ». Un laboratoire dont chaque analyse
+  // sonne l'alarme est un laboratoire où plus personne ne l'entend — c'est
+  // ainsi que les vraies valeurs critiques passent inaperçues. Une borne
+  // absente doit rester absente.
+  const borne = x => (x === null || x === undefined || x === "" ? NaN : Number(x));
+  const min = borne(test.valeurRefMin), max = borne(test.valeurRefMax);
+  const cMin = borne(test.seuilCritiqueMin), cMax = borne(test.seuilCritiqueMax);
 
   if (Number.isFinite(cMin) && v <= cMin) {
     return {

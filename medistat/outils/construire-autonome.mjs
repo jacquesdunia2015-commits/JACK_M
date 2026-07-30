@@ -27,9 +27,17 @@ import { dirname, resolve, relative, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const SORTIE = process.argv[2]
-  ? resolve(process.argv[2])
-  : join(RACINE, "dist", "medistat-autonome.html");
+// Deux sorties possibles :
+//   — par défaut, un document HTML complet, à ouvrir ou à héberger tel quel ;
+//   — avec --fragment, le seul contenu du corps, pour les hôtes qui
+//     fournissent eux-mêmes l'ossature <html>/<head>/<body> (visionneuse
+//     d'artefact, intégration dans un portail existant).
+const arguments_ = process.argv.slice(2);
+const FRAGMENT = arguments_.includes("--fragment");
+const chemin = arguments_.find(a => !a.startsWith("--"));
+const SORTIE = chemin
+  ? resolve(chemin)
+  : join(RACINE, "dist", FRAGMENT ? "medistat-fragment.html" : "medistat-autonome.html");
 
 /* ═════════════════════ Lecture du graphe de modules ═════════════════════ */
 
@@ -201,6 +209,16 @@ html = html.replace("</body>",
 
 if (!html.includes("<script type=\"module\">")) {
   throw new Error("Le gabarit index.html n'a pas de balise </body> : insertion impossible.");
+}
+
+if (FRAGMENT) {
+  // On ne conserve que ce qui vit dans le corps, plus le titre, le style et
+  // le script. L'hôte fournit le reste de l'ossature ; laisser un second
+  // <html> ou un second <head> produirait un document invalide.
+  const titre = (html.match(/<title>([\s\S]*?)<\/title>/) || [, "MediStat"])[1];
+  const styles = [...html.matchAll(/<style>[\s\S]*?<\/style>/g)].map(m => m[0]).join("\n");
+  const corpsSeul = (html.match(/<body[^>]*>([\s\S]*)<\/body>/) || [, ""])[1];
+  html = `<title>${titre}</title>\n${styles}\n${corpsSeul}`;
 }
 
 mkdirSync(dirname(SORTIE), { recursive: true });

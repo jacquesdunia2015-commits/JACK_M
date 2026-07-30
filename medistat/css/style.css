@@ -25,6 +25,7 @@
   --texte: #0f172a;
   --texte-2: #475569;
   --texte-3: #7c8ca1;
+  --grille-graphique: #e2e8f0;
 
   --rayon: 10px;
   --rayon-sm: 7px;
@@ -36,7 +37,11 @@
   --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 }
 
-[data-theme="sombre"] {
+/* Le thème sombre répond aussi à `data-theme="dark"` : c'est la valeur que
+   posent les hôtes qui intègrent MediStat dans une page — visionneuse
+   d'artefact, portail interne — et leur bascule doit fonctionner sans que
+   l'utilisateur ait à chercher le sélecteur de la barre haute. */
+[data-theme="sombre"], [data-theme="dark"] {
   --fond: #0b1220;
   --surface: #131c2e;
   --surface-2: #182338;
@@ -46,6 +51,7 @@
   --texte: #e8eef7;
   --texte-2: #a9b7cb;
   --texte-3: #7688a1;
+  --grille-graphique: #24324a;
   --accent: #4a94e0;
   --accent-clair: #38bdf8;
   --ombre: 0 1px 2px rgba(0, 0, 0, .35), 0 4px 14px rgba(0, 0, 0, .3);
@@ -119,7 +125,7 @@ a { color: var(--accent); }
   color: #fff;
   z-index: 40;
 }
-[data-theme="sombre"] .barre-haut { background: #101a2c; border-bottom: 1px solid var(--bordure); }
+[data-theme="sombre"] .barre-haut, [data-theme="dark"] .barre-haut { background: #101a2c; border-bottom: 1px solid var(--bordure); }
 
 .barre-haut__menu { display: none; }
 

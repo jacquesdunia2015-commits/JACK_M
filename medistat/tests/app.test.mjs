@@ -143,6 +143,31 @@ section("Modèle : identifiants et interprétation biologique");
   check("valeur basse", model.interpreterResultat(0.6, test).statut, "bas");
   check("valeur haute", model.interpreterResultat(1.5, test).statut, "haut");
   check("valeur critique haute", model.interpreterResultat(3.5, test).statut, "critique_haut");
+
+  // Une borne non renseignée doit rester absente. Lue comme un zéro — ce que
+  // fait `Number(null)` — elle transformerait chaque résultat positif en
+  // « valeur critique haute » réclamant une alerte immédiate. Un laboratoire
+  // qui sonne l'alarme à chaque analyse est un laboratoire où plus personne
+  // ne l'entend.
+  const sansSeuils = { valeurRefMin: 0.4, valeurRefMax: 4, unite: "mUI/L", type: "numerique" };
+  check("sans seuil critique, une valeur normale reste normale",
+    model.interpreterResultat(1.7, sansSeuils).statut, "normal");
+  t("sans seuil critique, aucune alerte n'est déclenchée",
+    !model.interpreterResultat(1.7, sansSeuils).critique);
+  check("sans seuil critique, une valeur haute reste « haut »",
+    model.interpreterResultat(9, sansSeuils).statut, "haut");
+  check("un seuil vide est traité comme absent",
+    model.interpreterResultat(1.7, { ...sansSeuils, seuilCritiqueMax: "" }).statut, "normal");
+  check("un seuil nul explicite reste un seuil",
+    model.interpreterResultat(-1, { valeurRefMin: -5, valeurRefMax: 5, seuilCritiqueMin: 0 }).statut,
+    "critique_bas");
+  // Une référence basse à zéro est courante (CRP, bilirubine…) : elle ne doit
+  // pas faire basculer toute la colonne en anomalie.
+  const refZero = { valeurRefMin: 0, valeurRefMax: 5, unite: "mg/L", type: "numerique" };
+  check("une borne basse à zéro reste une borne",
+    model.interpreterResultat(1.8, refZero).statut, "normal");
+  t("une borne basse à zéro ne déclenche pas d'anomalie",
+    !model.interpreterResultat(1.8, refZero).horsNorme);
   check("valeur critique basse", model.interpreterResultat(0.3, test).statut, "critique_bas");
   t("alerte critique déclenchée", model.interpreterResultat(3.5, test).critique);
   t("valeur normale sans alerte", !model.interpreterResultat(0.9, test).critique);
