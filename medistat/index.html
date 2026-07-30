@@ -55,12 +55,14 @@
     <div class="barre-haut__recherche">
       <input id="rechercheGlobale" class="champ champ--recherche" type="search"
              placeholder="Rechercher un patient, une demande, un code-barres…"
+             data-i18n-placeholder="act_rechercher"
              aria-label="Recherche globale" autocomplete="off">
       <div id="resultatsRecherche" class="recherche-resultats" hidden></div>
     </div>
 
     <div class="barre-haut__actions">
       <span id="indicateurReseau" class="indicateur" title="État de la connexion"></span>
+      <div id="zoneLangue" class="barre-haut__langue"></div>
       <button id="btnNotifications" class="icone-btn" aria-label="Notifications">
         🔔<span id="compteurNotifications" class="pastille" hidden>0</span>
       </button>
@@ -76,35 +78,35 @@
   <div class="corps">
     <nav id="navigation" class="navigation" aria-label="Navigation principale">
       <div class="navigation__section">
-        <span class="navigation__titre">Soins</span>
-        <a class="nav-lien" href="#/tableau-de-bord" data-vue="tableau-de-bord"><span class="nav-lien__icone">📊</span>Tableau de bord</a>
-        <a class="nav-lien" href="#/patients" data-vue="patients" data-droit="patient:lecture"><span class="nav-lien__icone">🧑‍⚕️</span>Patients</a>
-        <a class="nav-lien" href="#/consultations" data-vue="consultations" data-droit="consultation:lecture"><span class="nav-lien__icone">🩺</span>Consultations</a>
-        <a class="nav-lien" href="#/rendez-vous" data-vue="rendez-vous" data-droit="rendezVous:lecture"><span class="nav-lien__icone">📅</span>Rendez-vous</a>
+        <span class="navigation__titre" data-i18n="grp_soins">Soins</span>
+        <a class="nav-lien" href="#/tableau-de-bord" data-vue="tableau-de-bord"><span class="nav-lien__icone">📊</span><span class="nav-lien__texte" data-i18n="nav_bord">Tableau de bord</span></a>
+        <a class="nav-lien" href="#/patients" data-vue="patients" data-droit="patient:lecture"><span class="nav-lien__icone">🧑‍⚕️</span><span class="nav-lien__texte" data-i18n="nav_patients">Patients</span></a>
+        <a class="nav-lien" href="#/consultations" data-vue="consultations" data-droit="consultation:lecture"><span class="nav-lien__icone">🩺</span><span class="nav-lien__texte" data-i18n="nav_consultations">Consultations</span></a>
+        <a class="nav-lien" href="#/rendez-vous" data-vue="rendez-vous" data-droit="rendezVous:lecture"><span class="nav-lien__icone">📅</span><span class="nav-lien__texte" data-i18n="nav_rdv">Rendez-vous</span></a>
       </div>
       <div class="navigation__section">
-        <span class="navigation__titre">Laboratoire</span>
-        <a class="nav-lien" href="#/demandes" data-vue="demandes" data-droit="demande:lecture"><span class="nav-lien__icone">📋</span>Demandes d'examens</a>
-        <a class="nav-lien" href="#/paillasse" data-vue="paillasse" data-droit="resultat:creation"><span class="nav-lien__icone">🔬</span>Paillasse</a>
-        <a class="nav-lien" href="#/validation" data-vue="validation" data-droit="resultat:validation"><span class="nav-lien__icone">✅</span>Validation<span id="badgeValidation" class="pastille pastille--nav" hidden>0</span></a>
-        <a class="nav-lien" href="#/catalogue" data-vue="catalogue" data-droit="testCatalogue:lecture"><span class="nav-lien__icone">🧪</span>Catalogue des tests</a>
+        <span class="navigation__titre" data-i18n="grp_labo">Laboratoire</span>
+        <a class="nav-lien" href="#/demandes" data-vue="demandes" data-droit="demande:lecture"><span class="nav-lien__icone">📋</span><span class="nav-lien__texte" data-i18n="nav_demandes">Demandes d'examens</span></a>
+        <a class="nav-lien" href="#/paillasse" data-vue="paillasse" data-droit="resultat:creation"><span class="nav-lien__icone">🔬</span><span class="nav-lien__texte" data-i18n="nav_paillasse">Paillasse</span></a>
+        <a class="nav-lien" href="#/validation" data-vue="validation" data-droit="resultat:validation"><span class="nav-lien__icone">✅</span><span class="nav-lien__texte" data-i18n="nav_validation">Validation</span><span id="badgeValidation" class="pastille pastille--nav" hidden>0</span></a>
+        <a class="nav-lien" href="#/catalogue" data-vue="catalogue" data-droit="testCatalogue:lecture"><span class="nav-lien__icone">🧪</span><span class="nav-lien__texte" data-i18n="nav_catalogue">Catalogue des tests</span></a>
       </div>
       <div class="navigation__section">
-        <span class="navigation__titre">Analyse de données</span>
-        <a class="nav-lien" href="#/jeux-donnees" data-vue="jeux-donnees" data-droit="analyse:lecture"><span class="nav-lien__icone">🗃️</span>Jeux de données</a>
-        <a class="nav-lien" href="#/statistiques" data-vue="statistiques" data-droit="analyse:lecture"><span class="nav-lien__icone">📈</span>Statistiques</a>
-        <a class="nav-lien" href="#/qualitatif" data-vue="qualitatif" data-droit="analyse:lecture"><span class="nav-lien__icone">💬</span>Analyse qualitative</a>
-        <a class="nav-lien" href="#/rapports" data-vue="rapports" data-droit="statistiques:lecture"><span class="nav-lien__icone">📄</span>Rapports</a>
+        <span class="navigation__titre" data-i18n="grp_analyse">Analyse de données</span>
+        <a class="nav-lien" href="#/jeux-donnees" data-vue="jeux-donnees" data-droit="analyse:lecture"><span class="nav-lien__icone">🗃️</span><span class="nav-lien__texte" data-i18n="nav_donnees">Jeux de données</span></a>
+        <a class="nav-lien" href="#/statistiques" data-vue="statistiques" data-droit="analyse:lecture"><span class="nav-lien__icone">📈</span><span class="nav-lien__texte" data-i18n="nav_stats">Statistiques</span></a>
+        <a class="nav-lien" href="#/qualitatif" data-vue="qualitatif" data-droit="analyse:lecture"><span class="nav-lien__icone">💬</span><span class="nav-lien__texte" data-i18n="nav_qualitatif">Analyse qualitative</span></a>
+        <a class="nav-lien" href="#/rapports" data-vue="rapports" data-droit="statistiques:lecture"><span class="nav-lien__icone">📄</span><span class="nav-lien__texte" data-i18n="nav_rapports">Rapports</span></a>
       </div>
       <div class="navigation__section">
-        <span class="navigation__titre">Administration</span>
-        <a class="nav-lien" href="#/utilisateurs" data-vue="utilisateurs" data-droit="utilisateur:lecture"><span class="nav-lien__icone">👥</span>Utilisateurs</a>
-        <a class="nav-lien" href="#/etablissement" data-vue="etablissement" data-droit="etablissement:lecture"><span class="nav-lien__icone">🏥</span>Établissement</a>
-        <a class="nav-lien" href="#/audit" data-vue="audit" data-droit="audit:lecture"><span class="nav-lien__icone">🛡️</span>Journal d'audit</a>
-        <a class="nav-lien" href="#/facturation" data-vue="facturation" data-droit="facture:lecture"><span class="nav-lien__icone">💶</span>Facturation</a>
+        <span class="navigation__titre" data-i18n="grp_admin">Administration</span>
+        <a class="nav-lien" href="#/utilisateurs" data-vue="utilisateurs" data-droit="utilisateur:lecture"><span class="nav-lien__icone">👥</span><span class="nav-lien__texte" data-i18n="nav_utilisateurs">Utilisateurs</span></a>
+        <a class="nav-lien" href="#/etablissement" data-vue="etablissement" data-droit="etablissement:lecture"><span class="nav-lien__icone">🏥</span><span class="nav-lien__texte" data-i18n="nav_etablissement">Établissement</span></a>
+        <a class="nav-lien" href="#/audit" data-vue="audit" data-droit="audit:lecture"><span class="nav-lien__icone">🛡️</span><span class="nav-lien__texte" data-i18n="nav_audit">Journal d'audit</span></a>
+        <a class="nav-lien" href="#/facturation" data-vue="facturation" data-droit="facture:lecture"><span class="nav-lien__icone">💶</span><span class="nav-lien__texte" data-i18n="nav_facturation">Facturation</span></a>
       </div>
       <div class="navigation__section navigation__section--bas">
-        <a class="nav-lien" href="#/aide" data-vue="aide"><span class="nav-lien__icone">❓</span>Aide et documentation</a>
+        <a class="nav-lien" href="#/aide" data-vue="aide"><span class="nav-lien__icone">❓</span><span class="nav-lien__texte" data-i18n="nav_aide">Aide et documentation</span></a>
         <button id="btnInstaller" class="nav-lien nav-lien--bouton" hidden><span class="nav-lien__icone">📲</span>Installer l'application</button>
       </div>
     </nav>
@@ -114,10 +116,10 @@
 
   <!-- Barre de navigation mobile -->
   <nav class="barre-mobile" aria-label="Navigation rapide">
-    <a class="barre-mobile__lien" href="#/tableau-de-bord" data-vue="tableau-de-bord"><span>📊</span>Bord</a>
-    <a class="barre-mobile__lien" href="#/patients" data-vue="patients"><span>🧑‍⚕️</span>Patients</a>
-    <a class="barre-mobile__lien" href="#/demandes" data-vue="demandes"><span>📋</span>Demandes</a>
-    <a class="barre-mobile__lien" href="#/statistiques" data-vue="statistiques"><span>📈</span>Analyse</a>
+    <a class="barre-mobile__lien" href="#/tableau-de-bord" data-vue="tableau-de-bord"><span>📊</span><span data-i18n="nav_bord">Bord</span></a>
+    <a class="barre-mobile__lien" href="#/patients" data-vue="patients"><span>🧑‍⚕️</span><span data-i18n="nav_patients">Patients</span></a>
+    <a class="barre-mobile__lien" href="#/demandes" data-vue="demandes"><span>📋</span><span data-i18n="nav_demandes">Demandes</span></a>
+    <a class="barre-mobile__lien" href="#/statistiques" data-vue="statistiques"><span>📈</span><span data-i18n="nav_stats">Analyse</span></a>
     <button class="barre-mobile__lien" id="btnMenuMobile"><span>☰</span>Menu</button>
   </nav>
 </div>
@@ -126,13 +128,13 @@
 <div id="verrou" class="verrou" hidden>
   <div class="verrou__carte">
     <div class="verrou__icone">🔒</div>
-    <h2>Session verrouillée</h2>
+    <h2 data-i18n="ses_verrouille">Session verrouillée</h2>
     <p id="verrouMotif" class="texte-secondaire"></p>
     <p><strong id="verrouUtilisateur"></strong></p>
     <form id="formVerrou" class="formulaire">
-      <input id="verrouMotDePasse" class="champ" type="password" placeholder="Mot de passe"
+      <input id="verrouMotDePasse" class="champ" type="password" placeholder="Mot de passe" data-i18n-placeholder="ses_motdepasse"
              autocomplete="current-password" aria-label="Mot de passe">
-      <button class="btn btn--primaire btn--large" type="submit">Déverrouiller</button>
+      <button class="btn btn--primaire btn--large" type="submit" data-i18n="ses_deverrouiller">Déverrouiller</button>
     </form>
     <button id="btnQuitterSession" class="btn btn--fin">Fermer la session</button>
   </div>

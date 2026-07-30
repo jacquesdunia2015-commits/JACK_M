@@ -11,6 +11,7 @@ import { ROLES, DROITS, describePermissions, ACTIONS_AUDITEES, hasPermission } f
 import { COULEURS } from "../core/charts.js";
 import { barres, secteurs, lignes as graphLignes } from "../core/charts.js";
 import { telecharger, versCSV, versXLSX } from "../core/export.js";
+import * as i18n from "../core/i18n.js";
 
 /* ===================== Utilisateurs ===================== */
 
@@ -390,6 +391,8 @@ export async function vue_etablissement({ rafraichir }) {
       h("div.formulaire", casesModules),
     ]),
 
+    carteLangue(),
+
     h("div.carte", [
       h("div.carte__entete", [h("h3", { texte: "Stockage local" })]),
       h("div.resultat-test__stat", [
@@ -411,6 +414,38 @@ export async function vue_etablissement({ rafraichir }) {
         { compact: true, parPage: 20 }),
     ]),
   ]);
+}
+
+// Le sélecteur de la barre haute disparaît sur petit écran : cette carte est
+// le point d'accès à la langue depuis un téléphone. Elle expose aussi le taux
+// de traduction, qui dit honnêtement ce qui retombera sur l'anglais.
+function carteLangue() {
+  const info = i18n.infoLangueCourante();
+  const taux = i18n.couverture()[info.code];
+  const selecteur = i18n.construireSelecteur(document, { id: "selecteurLangueEtablissement" });
+  selecteur.classList.remove("champ--compact");
+  selecteur.style.maxWidth = "320px";
+
+  return h("div.carte", [
+    h("div.carte__entete", [h("h3", { texte: "Langue de l'interface" })]),
+    h("p.texte-secondaire", {
+      texte: "50 langues sont disponibles, regroupées par continent. Le choix vaut "
+        + "pour ce poste ; chaque utilisateur règle la sienne.",
+    }),
+    selecteur,
+    h("div.resultat-test__stat", { style: { marginTop: "12px" } }, [
+      h("div.stat-bloc", [h("span.stat-bloc__libelle", { texte: "Langue" }),
+        h("span.stat-bloc__valeur", { texte: `${info.nom} (${info.code})` })]),
+      h("div.stat-bloc", [h("span.stat-bloc__libelle", { texte: "Écriture" }),
+        h("span.stat-bloc__valeur", { texte: `${info.script} — ${info.sens}` })]),
+      h("div.stat-bloc", [h("span.stat-bloc__libelle", { texte: "Couverture" }),
+        h("span.stat-bloc__valeur", {
+          texte: `${fmt.nombre(Math.round(taux.taux * 100))} % (${taux.traduites}/${taux.total})` })]),
+    ]),
+    taux.taux < 1 ? h("p.texte-secondaire", { style: { marginTop: "8px" }, texte:
+      "Les libellés non traduits s'affichent en anglais, puis en français. "
+      + "Aucun écran ne reste vide." }) : null,
+  ].filter(Boolean));
 }
 
 /* ===================== Journal d'audit (article 16) ===================== */

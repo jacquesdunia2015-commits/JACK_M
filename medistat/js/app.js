@@ -9,6 +9,7 @@ import * as auth from "./core/auth.js";
 import * as store from "./core/store.js";
 import { ROLES, hasPermission, calculerAge } from "./core/model.js";
 import { evaluerMotDePasse } from "./core/crypto.js";
+import * as i18n from "./core/i18n.js";
 
 /* ===================== Registre des vues ===================== */
 
@@ -47,6 +48,9 @@ async function demarrer() {
   const dire = m => { if (etatDemarrage) etatDemarrage.textContent = m; };
 
   appliquerTheme(localStorage.getItem("medistat-theme") || "clair");
+  // La langue est posée avant tout affichage : l'écran de premier lancement
+  // doit déjà s'ouvrir dans la langue du poste, et non en français par défaut.
+  i18n.initialiserLangue();
 
   try {
     dire("Ouverture de la base locale…");
@@ -343,6 +347,8 @@ window.medistatNaviguer = naviguer;
 function brancherInterface() {
   const nav = $("#navigation");
 
+  brancherLangue();
+
   $("#btnMenu").onclick = () => nav.classList.toggle("navigation--ouverte");
   $("#btnMenuMobile").onclick = () => nav.classList.toggle("navigation--ouverte");
   document.addEventListener("click", e => {
@@ -435,6 +441,27 @@ function brancherInterface() {
     } catch (err) { erreur(err.message); champ.select(); }
   };
   $("#btnQuitterSession").onclick = () => auth.deconnexion();
+}
+
+/* ===================== Langue de l'interface ===================== */
+
+function brancherLangue() {
+  const zone = $("#zoneLangue");
+  if (!zone) return;
+  vider(zone);
+  zone.appendChild(i18n.construireSelecteur(document));
+
+  // Les écrans sont rendus en JavaScript : traduire les attributs data-i18n
+  // ne suffit pas, il faut redessiner la vue en cours. Le routeur sait le
+  // faire ; on lui redemande la même vue plutôt que de recharger la page,
+  // ce qui préserverait mal un formulaire à demi rempli mais garde la
+  // session, la position dans la navigation et l'état hors ligne.
+  i18n.surChangementLangue(() => {
+    i18n.appliquer();
+    if (etat.vueCourante) naviguer(etat.vueCourante, true);
+  });
+
+  i18n.appliquer();
 }
 
 function appliquerTheme(theme) {

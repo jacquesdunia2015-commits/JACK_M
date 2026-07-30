@@ -10,6 +10,7 @@ const suites = [
   ["Moteur statistique", "tests/stats.test.mjs"],
   ["Socle applicatif", "tests/app.test.mjs"],
   ["Exports et interopérabilité", "tests/export.test.mjs"],
+  ["Langues et traduction", "tests/langues.test.mjs"],
   ["Intégrité des modules", "tests/modules.test.mjs"],
   ["Serveur d'API", "tests/serveur.test.mjs"],
 ];

@@ -10,6 +10,7 @@ import { autorise, utilisateurCourant } from "../core/auth.js";
 import { VALIDATEURS, calculerAge, genererIPP, interpreterResultat,
   STATUTS_DEMANDE, CATEGORIES_TESTS } from "../core/model.js";
 import { lignes as graphLignes, COULEURS } from "../core/charts.js";
+import { LANGUES, langue as infoLangue } from "../core/langues.js";
 import { telecharger, versCSV, dossierPatientFHIR, DocumentPDF } from "../core/export.js";
 
 export async function vue_patients({ segments, naviguer, rafraichir }) {
@@ -111,6 +112,19 @@ async function formulairePatient(patient, apres) {
     { cle: "adresse", libelle: "Adresse", pleineLargeur: true },
     { cle: "ville", libelle: "Ville" },
     { cle: "pays", libelle: "Pays" },
+    // La langue du patient n'est pas celle de l'interface : elle détermine
+    // celle des SMS et des comptes rendus qui lui sont destinés.
+    { cle: "langue", libelle: "Langue du patient", type: "select",
+      vide: "— Langue de l'établissement —",
+      options: LANGUES.map(l => ({ valeur: l.code, libelle: `${l.nom} — ${l.nomFr}` })),
+      aide: "Langue des messages et notifications envoyés au patient." },
+    { cle: "consentementSMS", libelle: "Consentement aux notifications", type: "select",
+      vide: false,
+      options: [
+        { valeur: "oui", libelle: "Oui — prévenir par SMS quand un résultat est prêt" },
+        { valeur: "non", libelle: "Non — aucun message automatique" },
+      ],
+      aide: "Article 12 : aucun message n'est envoyé sans consentement explicite." },
     { type: "separateur", libelle: "Données cliniques" },
     { cle: "groupeSanguin", libelle: "Groupe sanguin", type: "select", vide: "— Inconnu —",
       options: ["O+", "O−", "A+", "A−", "B+", "B−", "AB+", "AB−"] },
@@ -195,6 +209,8 @@ async function dossierPatient(id, { naviguer, rafraichir }) {
           patient.groupeSanguin ? badge("🩸 " + patient.groupeSanguin, COULEURS.critique) : null,
           patient.telephone ? badge("📞 " + patient.telephone) : null,
           patient.ville ? badge("📍 " + patient.ville) : null,
+          patient.langue ? badge("🗣 " + (infoLangue(patient.langue)?.nom || patient.langue)) : null,
+          patient.consentementSMS === "oui" ? badge("✉ Notifications acceptées", COULEURS.normal) : null,
           patient.assurance ? badge("🏷 " + patient.assurance) : null,
           patient.archive ? badge("Dossier archivé", COULEURS.neutre) : null,
         ]),

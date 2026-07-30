@@ -25,7 +25,7 @@ export const ENTITIES = {
     description: "Identité et informations administratives et cliniques",
     fields: ["ipp", "nom", "prenom", "dateNaissance", "sexe", "telephone",
       "email", "adresse", "ville", "groupeSanguin", "antecedents", "allergies",
-      "contactUrgence", "assurance", "archive"],
+      "contactUrgence", "assurance", "archive", "langue", "consentementSMS"],
   },
   consultation: {
     label: "Consultation", plural: "Consultations", icon: "🩺",

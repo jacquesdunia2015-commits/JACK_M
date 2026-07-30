@@ -634,3 +634,36 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; accent-
 @media (prefers-contrast: more) {
   :root { --bordure: #94a3b8; --bordure-forte: #64748b; --texte-2: #334155; }
 }
+
+/* ===================== Langue de l'interface ===================== */
+
+.barre-haut__langue { flex: 0 0 auto; }
+.selecteur-langue {
+  max-width: 160px; padding: 5px 8px; font-size: .82rem;
+  background: var(--surface-2); border-color: var(--bordure);
+}
+.selecteur-langue:hover { border-color: var(--bordure-forte); }
+/* Sur téléphone le sélecteur cède la place aux actions essentielles :
+   la langue se change alors depuis l'écran Établissement. */
+@media (max-width: 720px) { .barre-haut__langue { display: none; } }
+
+.nav-lien__texte { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* Écritures droite-à-gauche : arabe, hébreu, persan, ourdou.
+   Seules les asymétries posées en `left`/`right` doivent être retournées ;
+   les propriétés logiques (margin-inline, padding-inline) le sont déjà par
+   le navigateur dès que `dir="rtl"` est posé sur <html>. */
+[dir="rtl"] .nav-lien { text-align: right; }
+[dir="rtl"] .champ--recherche { padding-left: 11px; padding-right: 11px; }
+[dir="rtl"] .pastille--nav { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .chronologie { padding-left: 0; padding-right: 26px; }
+[dir="rtl"] .chronologie::before { left: auto; right: 8px; }
+[dir="rtl"] .chrono-item { padding: 0 4px 18px 0; }
+
+/* Les écritures indiennes, arabes et sud-asiatiques ont des jambages plus
+   hauts que le latin : sans cette respiration, les diacritiques sont rognés. */
+[data-script="devanagari"], [data-script="bengali"], [data-script="tamoul"],
+[data-script="télougou"], [data-script="thaï"], [data-script="khmer"],
+[data-script="arabe"], [data-script="ourdou"], [data-script="guèze"] {
+  line-height: 1.75;
+}
