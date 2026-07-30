@@ -8,7 +8,7 @@
 
 import * as store from "../core/store.js";
 import { LOINC_COURANTS } from "../core/export.js";
-import { nouvelId, genererIPP, genererNumeroDemande, genererCodeBarre,
+import { hasPermission, nouvelId, genererIPP, genererNumeroDemande, genererCodeBarre,
   interpreterResultat } from "../core/model.js";
 import { utilisateurCourant } from "../core/auth.js";
 import { creerUtilisateur } from "../core/auth.js";
@@ -83,10 +83,21 @@ const VERBATIMS = [
 
 /* ===================== Chargement ===================== */
 
+// Le jeu de démonstration est un acte de paramétrage, pas un acte de soin :
+// il fabrique d'un coup des dossiers, des demandes et des résultats déjà
+// validés. L'administrateur qui le charge n'a évidemment pas le droit de
+// saisir un résultat — et il ne doit pas l'avoir. Les écritures se font donc
+// au titre du droit d'administrer l'établissement, une fois ce droit vérifié
+// ici, en un seul point.
+const DROIT_AMORCAGE = { droitRequis: "etablissement:modification" };
+
 export async function chargerDemonstration({ nbPatients = 120 } = {}) {
   graine = 20260719; // réinitialise le générateur pour un résultat identique
   const moi = utilisateurCourant();
   if (!moi) throw new Error("Aucune session ouverte.");
+  if (!hasPermission(moi.role, "etablissement", "modification")) {
+    throw new Error("Seul un administrateur d'établissement peut charger le jeu de démonstration.");
+  }
   const etablissementId = moi.etablissementId;
   const rapport = { utilisateurs: 0, tests: 0, patients: 0, consultations: 0,
     demandes: 0, echantillons: 0, resultats: 0 };
@@ -131,7 +142,7 @@ export async function chargerDemonstration({ nbPatients = 120 } = {}) {
       delaiRenduHeures: t.categorie === "MICROBIO" ? 72 : t.categorie === "SEROLOGIE" ? 24 : 6,
       prix: entier(3, 25) * 1000, methode: "Automate", actif: true,
       etablissementId,
-    });
+    }, DROIT_AMORCAGE);
     catalogue.push(test);
     rapport.tests++;
   }
@@ -167,7 +178,7 @@ export async function chargerDemonstration({ nbPatients = 120 } = {}) {
       contactUrgence: `${parmi(PRENOMS_M)} ${nom} — +243 9${entier(10, 99)} ${entier(100, 999)} ${entier(100, 999)}`,
       archive: false,
       etablissementId,
-    });
+    }, DROIT_AMORCAGE);
     rapport.patients++;
 
     // Chaque patient a de 1 à 4 épisodes de soins, répartis sur 18 mois
@@ -210,7 +221,7 @@ export async function chargerDemonstration({ nbPatients = 120 } = {}) {
         // Verbatim de satisfaction : matière de l'analyse qualitative
         commentairePatient: chance(0.45) ? parmi(VERBATIMS) : "",
         etablissementId,
-      });
+      }, DROIT_AMORCAGE);
       rapport.consultations++;
 
       // Une consultation sur deux donne lieu à une demande d'examens
@@ -237,7 +248,7 @@ export async function chargerDemonstration({ nbPatients = 120 } = {}) {
         tests: testsChoisis.map(t => t.code),
         statut: "rendue",
         etablissementId,
-      });
+      }, DROIT_AMORCAGE);
       rapport.demandes++;
 
       const echantillon = await store.depots.echantillons.creer({
@@ -253,7 +264,7 @@ export async function chargerDemonstration({ nbPatients = 120 } = {}) {
         motifNonConformite: chance(0.96) ? "" : parmi(["Tube hémolysé", "Volume insuffisant", "Identification incomplète"]),
         volume: entier(3, 10),
         etablissementId,
-      });
+      }, DROIT_AMORCAGE);
       rapport.echantillons++;
 
       const laborantin = parmi(laborantins.length ? laborantins : [moi]);
@@ -323,7 +334,7 @@ export async function chargerDemonstration({ nbPatients = 120 } = {}) {
           alerteAcquittee: interpretation.critique,
           version: 1,
           etablissementId,
-        });
+        }, DROIT_AMORCAGE);
         rapport.resultats++;
       }
     }

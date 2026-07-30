@@ -748,11 +748,19 @@ window.medistatRafraichirIndicateurs = rafraichirIndicateurs;
 
 /* ===================== Service worker ===================== */
 
-if ("serviceWorker" in navigator) {
+// Un service worker exige une origine HTTP : depuis un fichier ouvert
+// directement sur le disque, l'enregistrement ne peut qu'échouer et laisse
+// une requête en erreur dans la console. On ne tente donc pas.
+// `MEDISTAT_AUTONOME` est posé par l'assembleur de la version en fichier
+// unique : celle-ci n'a pas de sw.js voisin à enregistrer, et la tentative
+// laisserait une requête en 404 dans la console.
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")
+    && !globalThis.MEDISTAT_AUTONOME) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {
-      // L'enregistrement échoue en file:// : l'application reste utilisable,
-      // simplement sans fonctionnement hors ligne ni installation.
+      // Échec possible en HTTP simple ou sur une origine non sécurisée :
+      // l'application reste utilisable, simplement sans fonctionnement hors
+      // ligne ni installation.
     });
   });
 }

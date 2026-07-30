@@ -7,7 +7,7 @@
 import {
   hashPassword, verifyPassword, evaluerMotDePasse, genererMotDePasseTemporaire,
   genererSecret, sha256,
-  genererCleDonnees, envelopperCleDonnees, ouvrirCleDonnees,
+  genererCleDonnees, envelopperCleDonnees, ouvrirCleDonnees, oublierClesImportees,
 } from "./crypto.js";
 import {
   lire, lireTout, ecrire, tracer, definirContexte, reinitialiserContexte,
@@ -285,6 +285,9 @@ export function verrouiller(motif = "Verrouillage manuel") {
   session.motifVerrouillage = motif;
   // La clé de chiffrement est effacée de la mémoire pendant le verrouillage
   definirContexte({ cleSession: null });
+  // La clé importée ne doit pas survivre à la session : on la retire de la
+  // mémoire en même temps que le contexte.
+  oublierClesImportees();
   notifier("verrouillage");
 }
 

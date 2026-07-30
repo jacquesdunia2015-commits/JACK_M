@@ -210,6 +210,69 @@ export const CHAMPS_SENSIBLES = {
   document: ["contenu"],
 };
 
+/* ═══════════ Chiffrement des champs : clé importée, pas dérivée ═════════ */
+
+// PBKDF2 existe pour compenser la faiblesse d'un mot de passe humain : 250 000
+// itérations rendent une attaque par dictionnaire coûteuse. Appliqué à la clé
+// de données de l'établissement, ce raisonnement ne tient plus — cette clé
+// fait 256 bits tirés au hasard, il n'y a pas de dictionnaire à parcourir.
+// L'étirer n'ajoute donc aucune sécurité, mais coûte environ 38 ms par champ.
+//
+// Ce coût était payé à chaque écriture ET à chaque lecture : afficher une
+// liste de 120 patients demandait plus de 700 dérivations, soit une demi-
+// minute d'attente pour ouvrir un écran. La clé est désormais importée une
+// fois, telle quelle, et conservée en mémoire pour la session.
+const clesImportees = new Map();
+
+async function cleAESDepuis(cleDonnees) {
+  let cle = clesImportees.get(cleDonnees);
+  if (cle) return cle;
+  requireCrypto();
+  // Une clé de données vaut 32 octets en base64. Les bases antérieures
+  // portent une empreinte hexadécimale de 64 caractères : on la convertit
+  // pour obtenir dans les deux cas exactement 256 bits.
+  let octets;
+  if (/^[0-9a-f]{64}$/i.test(cleDonnees)) {
+    octets = new Uint8Array(32);
+    for (let i = 0; i < 32; i++) octets[i] = parseInt(cleDonnees.substr(i * 2, 2), 16);
+  } else {
+    octets = base64ToBytes(cleDonnees);
+    if (octets.length !== 32) octets = await sha256Bytes(enc.encode(cleDonnees));
+  }
+  cle = await subtle.importKey("raw", octets, { name: "AES-GCM", length: 256 },
+    false, ["encrypt", "decrypt"]);
+  clesImportees.set(cleDonnees, cle);
+  return cle;
+}
+
+// Efface les clés importées : appelé à la déconnexion pour ne rien laisser
+// en mémoire une fois la session close.
+export function oublierClesImportees() {
+  clesImportees.clear();
+}
+
+async function chiffrerValeur(clair, cleDonnees) {
+  const cle = await cleAESDepuis(cleDonnees);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const cipher = await subtle.encrypt({ name: "AES-GCM", iv }, cle, enc.encode(clair));
+  return { v: 2, algorithme: "AES-GCM-256", iv: bytesToBase64(iv), donnees: bytesToBase64(cipher) };
+}
+
+async function dechiffrerValeur(enveloppe, cleDonnees) {
+  // Les enveloppes de version 1 étaient dérivées par PBKDF2 : elles restent
+  // lisibles, sans quoi une mise à jour rendrait illisibles les dossiers déjà
+  // saisis. Elles sont réécrites en version 2 à la première modification.
+  if (enveloppe.v !== 2) return decrypt(enveloppe, cleDonnees);
+  const cle = await cleAESDepuis(cleDonnees);
+  try {
+    const clair = await subtle.decrypt(
+      { name: "AES-GCM", iv: base64ToBytes(enveloppe.iv) }, cle, base64ToBytes(enveloppe.donnees));
+    return dec.decode(clair);
+  } catch {
+    throw new Error("Déchiffrement impossible : clé incorrecte ou données altérées.");
+  }
+}
+
 export async function chiffrerChamps(entite, enregistrement, cleSession) {
   const champs = CHAMPS_SENSIBLES[entite];
   if (!champs || !cleSession) return enregistrement;
@@ -218,7 +281,7 @@ export async function chiffrerChamps(entite, enregistrement, cleSession) {
   for (const champ of champs) {
     const v = copie[champ];
     if (v === undefined || v === null || v === "") continue;
-    chiffres[champ] = await encrypt(typeof v === "string" ? v : JSON.stringify(v), cleSession);
+    chiffres[champ] = await chiffrerValeur(typeof v === "string" ? v : JSON.stringify(v), cleSession);
     delete copie[champ];
   }
   if (Object.keys(chiffres).length) {
@@ -233,7 +296,7 @@ export async function dechiffrerChamps(enregistrement, cleSession) {
   const copie = { ...enregistrement };
   for (const [champ, enveloppe] of Object.entries(enregistrement._chiffre)) {
     try {
-      const clair = await decrypt(enveloppe, cleSession);
+      const clair = await dechiffrerValeur(enveloppe, cleSession);
       try { copie[champ] = JSON.parse(clair); } catch { copie[champ] = clair; }
     } catch {
       copie[champ] = null;
