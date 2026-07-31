@@ -491,4 +491,52 @@ Vous croiserez ces extensions dans les fenêtres « Ouvrir » et « Enregistrer 
 
 ---
 
+## 21. Afficher le logo de votre organisation 🏛️
+
+QualiCode peut porter **deux logos côte à côte** : le sien et celui de votre
+organisation (APSA, une université, une ONG, un bureau d'études). Le logo
+apparaît **dans l'en-tête de l'application** et **en tête des rapports
+imprimables** que vous remettez à un commanditaire.
+
+C'est un vrai argument professionnel : ni MAXQDA, ni NVivo, ni ATLAS.ti ne
+laissent une organisation cliente mettre sa propre marque dans le logiciel.
+
+### En 4 clics
+
+1. Onglet **Accueil** → bouton **🏛️ Logo de l'organisation**.
+2. **Choisir une image** : un fichier PNG, JPG, SVG ou WebP. Un logo carré ou
+   horizontal fonctionne bien ; l'image est réduite automatiquement à 320 px,
+   donc inutile d'envoyer un fichier de 5 Mo.
+3. **Nom de l'organisation** (facultatif) : par exemple `APSA`. Il s'affiche à
+   côté du logo dans les rapports.
+4. **OK**. Le logo apparaît immédiatement à droite du logo QualiCode.
+
+Pour l'enlever : rouvrez la même fenêtre et cliquez **Retirer le logo**.
+
+### Ce qu'il faut savoir
+
+| Question | Réponse |
+|---|---|
+| Où le logo est-il conservé ? | Dans le navigateur de **cet appareil** (localStorage), pas dans le fichier projet. |
+| Est-il envoyé avec mon `.projx` ? | **Non.** Un collègue à qui vous envoyez le projet ne verra pas votre logo — chacun met le sien. |
+| Apparaît-il dans les rapports ? | Oui, en haut du **rapport imprimable** (et donc du PDF que vous en tirez). |
+| Sur téléphone ? | Oui, en version réduite à côté du logo QualiCode. |
+| Si je réinstalle QualiCode ? | Le logo est à remettre (4 clics). Gardez le fichier image quelque part. |
+
+### Pour une organisation entière (option avancée)
+
+Si vous déployez QualiCode pour toute une équipe et que vous voulez que le logo
+soit **déjà là au premier lancement**, sans que chacun ait à le charger :
+
+1. Déposez le fichier dans `assets/logo/organisation.png` (dans le dépôt).
+2. Dans `index.html`, décommentez la ligne :
+   `<meta name="qc-org-logo" content="assets/logo/organisation.png">`
+3. Ajustez le nom : `<meta name="qc-org-nom" content="APSA">`
+4. Reconstruisez le fichier unique : `python3 tools/build_standalone.py`
+   (le logo y est alors **embarqué**, il fonctionne donc aussi hors ligne).
+
+Chaque utilisateur reste libre de le remplacer par le sien.
+
+---
+
 *Bonne analyse ! 🔍*

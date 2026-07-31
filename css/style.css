@@ -422,6 +422,23 @@ body.dark .lock-form input { background: #16202a; color: #e4ecf4; border-color: 
 /* Logo en taille intermédiaire (80 px), colonne de marque sur toute la hauteur du ruban */
 .brand-logo { width: 80px; height: 80px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0, 0, 0, .18); }
 
+/* Co-marquage : logo de l'organisation (APSA, université, ONG…) à côté du logo
+   QualiCode. Ajouté/retiré par js/branding.js selon le choix de l'utilisateur. */
+.brand-logos { display: flex; align-items: center; gap: 10px; }
+.org-logo {
+  max-height: 80px; max-width: 120px; object-fit: contain;
+  border-radius: 12px; background: #fff; padding: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+}
+body.mobile .brand-logos { gap: 6px; }
+body.mobile .org-logo { max-height: 30px; max-width: 48px; border-radius: 6px; padding: 1px; }
+/* Aperçu dans la fenêtre de réglage */
+.org-preview {
+  display: flex; align-items: center; gap: 14px; margin: 10px 0;
+  padding: 10px; border: 1px dashed var(--border); border-radius: 8px; min-height: 56px;
+}
+.org-preview img { max-height: 72px; max-width: 160px; object-fit: contain; }
+
 /* ================================================================
    TÉLÉPHONE (Android / iOS) — volet unique + barre d'onglets en bas
    Activé par js/mobile.js (classe .mobile sur <body>) au-dessous de 820 px.

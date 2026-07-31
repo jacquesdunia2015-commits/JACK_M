@@ -377,6 +377,57 @@ nouveau code — c'est gratuit.
 9. **Choisir les codes après avoir vu les résultats espérés** → définissez la logique de codage dans un mémo AVANT.
 10. **Reporter l'analyse à la fin du terrain** → codez chaque entretien dans les 48 h.
 
+## Chapitre 15 bis — Mettre le logo de votre organisation 🏛️
+
+Vous travaillez pour une organisation (APSA, une université, une ONG) ? Vous
+pouvez afficher **son logo à côté de celui de QualiCode**. Cela change tout
+quand vous remettez un rapport à un commanditaire : le document sort aux
+couleurs de votre structure.
+
+**Ce que vous voyez avant :** le logo bleu de QualiCode, tout seul, en haut à
+gauche.
+**Ce que vous voyez après :** votre logo juste à côté, sur la même ligne.
+
+### Faites-le maintenant, cela prend 30 secondes
+
+1. Ayez le fichier de votre logo sur l'ordinateur (une image `PNG` ou `JPG` —
+   celle qui est sur vos papiers à en-tête convient très bien).
+2. Onglet **Accueil**.
+3. Cliquez **🏛️ Logo de l'organisation**.
+4. Cliquez **Choisir une image** et sélectionnez votre fichier.
+   → un aperçu s'affiche tout de suite dans la fenêtre.
+5. Dans **Nom de l'organisation**, tapez par exemple `APSA`.
+6. Cliquez **OK**.
+
+Regardez en haut à gauche : les deux logos sont là. ✅
+
+### Où ce logo va-t-il réapparaître ?
+
+- Dans **l'en-tête de l'application**, à chaque ouverture.
+- **En haut de vos rapports imprimables** (onglet Rapports → *Rapport
+  imprimable*), donc dans le PDF que vous envoyez ou que vous imprimez.
+- Aussi **sur votre téléphone**, en plus petit.
+
+### Trois questions que tout le monde se pose
+
+**« Mon collègue verra-t-il mon logo si je lui envoie mon projet ? »**
+Non. Le logo reste sur **votre** appareil. Le fichier `.projx` ne le transporte
+pas. C'est voulu : votre identité visuelle ne part pas dans la nature.
+
+**« Est-ce que ça alourdit mon projet ? »**
+Non, pas d'un seul octet. L'image est même réduite automatiquement avant d'être
+gardée.
+
+**« Je me suis trompé de logo, comment l'enlever ? »**
+Accueil → 🏛️ Logo de l'organisation → bouton **Retirer le logo**. Puis
+recommencez avec le bon fichier.
+
+> 💡 **Astuce d'usage.** Si vous faites une soutenance ou une présentation à un
+> bailleur, mettez le logo AVANT de générer vos rapports : ils sortiront tous
+> marqués, sans retouche dans Word.
+
+---
+
 ## Chapitre 16 — Petit lexique
 
 | Terme | Définition simple |
@@ -393,6 +444,7 @@ nouveau code — c'est gratuit.
 | Saturation | Moment où de nouveaux entretiens n'apportent plus d'idées nouvelles |
 | REFI-QDA | Format standard d'échange entre logiciels d'analyse qualitative |
 | .projx | Fichier de sauvegarde d'un projet QualiCode |
+| Co-marquage | Afficher le logo de votre organisation à côté de celui de QualiCode |
 
 *Bonne analyse ! Pour l'aide dans l'application : touche F1, ou `Ctrl+K` puis
 tapez ce que vous cherchez.*

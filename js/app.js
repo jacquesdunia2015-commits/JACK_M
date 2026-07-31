@@ -46,6 +46,8 @@ import { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerSe
          initInstallBanner, initFileHandler, installDiagnostic, runInstallCheck,
          detectBrowser, cannotInstallHere, openInRealBrowser } from "./mobile.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
+import { getOrgLogo, getOrgName, setOrgLogo, logoVersDataUrl, appliquerLogoEntete,
+         chargerLogoParDefaut } from "./branding.js";
 
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -137,6 +139,13 @@ async function init() {
   initInstallBanner(r => { if (r === "accepted") toast("✅ " + t("m_install_done")); });
   // Ouverture directe d'un .projx / .qdpx double-cliqué dans le système
   initFileHandler(files => openProjectFromFile(files[0]));
+
+  // Co-marquage : logo de l'organisation à côté de celui de QualiCode.
+  // Si un logo est livré avec l'application (assets/logo/organisation.png), il
+  // est adopté au premier lancement ; sinon on affiche simplement le choix
+  // déjà enregistré sur cet appareil.
+  appliquerLogoEntete();
+  chargerLogoParDefaut(ORG_PAR_DEFAUT);
 
   applyStaticTranslations();
   renderAll();
@@ -341,6 +350,7 @@ function bindRibbon() {
   $("#searchInput").addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
   $("#btnTrash").onclick = openTrash;
   $("#btnInstall").onclick = () => openInstallModal();
+  $("#btnOrgLogo").onclick = () => openOrgLogoModal();
   // Raccourci toujours visible (surtout sur téléphone, où le ruban est replié)
   $("#btnInstallTop").onclick = () => openInstallModal();
   $("#btnInstallTop").hidden = isInstalled();
@@ -3064,6 +3074,65 @@ async function runLiveInstallCheck(root) {
   box.querySelector("#btnCopyCheck").onclick = async () => {
     try { await navigator.clipboard.writeText(r.rapport); toast("📋 " + t("m_check_copied")); }
     catch { prompt(t("m_check_copy"), r.rapport); }
+  };
+}
+
+/* ================================================================
+   Logo de l'organisation (co-marquage)
+================================================================ */
+
+/** Nom proposé quand un logo est livré avec l'application. */
+const ORG_PAR_DEFAUT = "APSA";
+
+function openOrgLogoModal() {
+  const apercu = (src, nom) => src
+    ? `<img src="${src}" alt="${esc(nom || "")}">${nom ? `<strong>${esc(nom)}</strong>` : ""}`
+    : `<span class="hint">${esc(t("org_preview"))} —</span>`;
+
+  const m = openModal({
+    title: t("org_title"),
+    bodyHtml: `
+      <p>${esc(t("org_hint"))}</p>
+      <div class="form-row">
+        <label for="orgFile">${esc(t("org_choose"))}</label>
+        <input type="file" id="orgFile" accept="image/png,image/jpeg,image/svg+xml,image/webp">
+      </div>
+      <div class="form-row">
+        <label for="orgNom">${esc(t("org_name"))}</label>
+        <input type="text" id="orgNom" placeholder="${esc(t("org_name_ph"))}" value="${esc(getOrgName())}">
+      </div>
+      <div class="org-preview" id="orgApercu">${apercu(getOrgLogo(), getOrgName())}</div>
+      <p class="hint">🔒 ${esc(t("org_local"))}</p>`,
+    footer: [
+      { label: t("org_remove"), danger: true, onClick: (o, close) => {
+        setOrgLogo("", "");
+        appliquerLogoEntete();
+        close();
+        toast("🏛️ " + t("org_removed"));
+      } },
+      { label: t("cancel"), onClick: (o, close) => close() },
+      { label: t("ok"), primary: true, onClick: (o, close) => {
+        const src = o.querySelector("#orgApercu img")?.getAttribute("src") || getOrgLogo();
+        if (!src) { close(); return; }
+        setOrgLogo(src, o.querySelector("#orgNom").value.trim());
+        appliquerLogoEntete();
+        close();
+        toast("🏛️ " + t("org_saved"));
+      } },
+    ],
+  });
+
+  // Aperçu immédiat : l'image est redimensionnée avant d'être conservée
+  m.body.querySelector("#orgFile").onchange = async e => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    try {
+      const dataUrl = await logoVersDataUrl(f);
+      const nom = m.body.querySelector("#orgNom").value.trim();
+      m.body.querySelector("#orgApercu").innerHTML = apercu(dataUrl, nom);
+    } catch {
+      toast("⚠️ " + t("org_bad"));
+    }
   };
 }
 

@@ -8,12 +8,15 @@ sur les modules, tout en gardant les sources du dépôt inchangées.
 
 Usage : python3 tools/build_standalone.py
 """
+import base64
+import json
+import os
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 # Ordre de concaténation = ordre des dépendances (aucun cycle)
-MODULES = ["langs", "i18n", "state", "analysis", "docx", "docxout", "crypto", "applock", "payments", "license", "merge", "sample", "export", "helpdocs", "pdf", "refi", "conceptmap", "audio", "social", "ai", "sync", "imagecode", "ocr", "biblio", "stats", "realtime", "mobile", "app"]
+MODULES = ["langs", "i18n", "state", "analysis", "docx", "docxout", "crypto", "applock", "payments", "license", "merge", "sample", "branding", "export", "helpdocs", "pdf", "refi", "conceptmap", "audio", "social", "ai", "sync", "imagecode", "ocr", "biblio", "stats", "realtime", "mobile", "app"]
 
 
 def transform_module(name: str, src: str) -> str:
@@ -56,9 +59,22 @@ def main() -> None:
     if not pdf_script:
         print("⚠️  assets/helpdocs_data.js absent : lancez tools/embarquer_docs.py "
               "(les manuels PDF ne seront pas disponibles hors ligne).")
+    # Logo de l'organisation embarqué : dans le fichier unique, aucune requête
+    # réseau n'est possible, le logo doit donc voyager en base64 dans la page.
+    org_script = ""
+    logo_org = ROOT / "assets" / "logo" / "organisation.png"
+    if logo_org.exists():
+        b64 = base64.b64encode(logo_org.read_bytes()).decode("ascii")
+        nom = os.environ.get("QC_ORG_NOM", "APSA")
+        org_script = (
+            f'<script>window.__QC_ORG_LOGO="data:image/png;base64,{b64}";'
+            f'window.__QC_ORG_NOM={json.dumps(nom)};</script>\n'
+        )
+        print(f"Logo organisation embarqué ({logo_org.stat().st_size / 1024:.0f} Ko, nom : {nom})")
+
     html = html.replace(
         '<script type="module" src="js/app.js"></script>',
-        f"{pdf_script}<script>\n{js}\n</script>",
+        f"{org_script}{pdf_script}<script>\n{js}\n</script>",
     )
     assert "<style>" in html and "var __QC" in html, "Substitutions manquées"
 
