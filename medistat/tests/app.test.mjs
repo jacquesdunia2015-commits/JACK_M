@@ -311,6 +311,22 @@ section("Le chiffrement ne cloisonne pas l'équipe soignante");
     Boolean(compteBio.cleEnveloppe.donnees) && !compteBio.cleEnveloppe.cle);
   t("aucune donnée de santé n'est lisible dans le compte",
     !JSON.stringify(compteBio).includes("Pénicilline"));
+
+  // Témoin de clé. Une clé qui n'ouvre pas les dossiers ne provoque aucune
+  // erreur en soi : chaque champ chiffré devient `null` et l'écran affiche un
+  // dossier aux champs médicaux vides — indiscernable d'un patient sans
+  // allergie connue. La session doit être refusée AVANT que ce dossier ne
+  // s'affiche.
+  const temoin = await store.lire("parametres", "temoinCle");
+  t("un témoin de clé est enregistré", Boolean(temoin?.valeur));
+  t("le témoin s'ouvre avec la bonne clé",
+    await crypto2.verifierTemoinCle(temoin.valeur, auth.sessionCourante().cleSession));
+  t("le témoin résiste à une clé erronée",
+    !(await crypto2.verifierTemoinCle(temoin.valeur, crypto2.genererCleDonnees())));
+  // Une base antérieure au témoin n'en a pas : elle ne doit pas être bloquée,
+  // sans quoi une mise à jour enfermerait les utilisateurs dehors.
+  t("l'absence de témoin ne bloque personne",
+    await crypto2.verifierTemoinCle(null, crypto2.genererCleDonnees()));
 }
 
 /* ===================================================================== */

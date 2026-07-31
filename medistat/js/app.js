@@ -241,12 +241,29 @@ function ecranConnexion() {
     blocTOTP, message, bouton,
   ]);
 
+  // Repère de contexte. La question la plus fréquente devant un écran de
+  // connexion qui refuse n'est pas « quel est mon mot de passe » mais « suis-je
+  // au bon endroit » : les données vivent dans le navigateur, et un compte créé
+  // dans Chrome n'existe pas dans Firefox, ni en navigation privée. Afficher
+  // l'établissement et le nombre de comptes présents sur cet appareil répond
+  // à cette question sans nommer personne.
+  const repere = h("p.texte-secondaire", { style: { fontSize: ".76rem", marginTop: "10px" } });
+  Promise.all([store.lireTout("etablissements"), store.lireTout("utilisateurs")])
+    .then(([ets, utilisateurs]) => {
+      const nom = ets[0]?.nom;
+      if (!nom) return;
+      const n = utilisateurs.filter(u => u.actif !== false).length;
+      repere.textContent = `${nom} · ${n} compte${n > 1 ? "s" : ""} sur cet appareil`;
+    })
+    .catch(() => { /* repère indisponible : sans conséquence */ });
+
   remplacer($("#vue"), h("div", { style: { maxWidth: "380px", margin: "6vh auto" } }, [
     h("div.carte", { style: { textAlign: "center" } }, [
       h("div", { style: { fontSize: "2.4rem", marginBottom: "6px" } }, ["🏥"]),
       h("h1", { texte: "MediStat" }),
       h("p.texte-secondaire", { texte: "Dossiers médicaux, laboratoire et analyse de données" }),
       form,
+      repere,
     ]),
     h("p.texte-secondaire", { style: { textAlign: "center", fontSize: ".8rem" } }, [
       "Vos données restent sur cet appareil, chiffrées. ",

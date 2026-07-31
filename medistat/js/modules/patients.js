@@ -226,6 +226,22 @@ async function dossierPatient(id, { naviguer, rafraichir }) {
         h("button.btn", { texte: "⬇ Dossier", onclick: () => menuExportDossier(patient, demandes, resultats, tests) }),
       ]),
     ]),
+    // Un champ que le chiffrement n'a pas pu rouvrir doit se voir. Affiché
+    // vide, il serait indiscernable d'un champ réellement vide : « pas
+    // d'allergie connue » et « allergie illisible » ne doivent jamais avoir
+    // la même apparence à l'écran.
+    patient._erreurDechiffrement
+      ? h("div", {
+          style: { marginTop: "12px", padding: "10px 13px", borderRadius: "8px",
+            background: "rgba(220,38,38,.14)", border: "2px solid var(--danger)" },
+        }, [
+          h("strong", { texte: "⛔ Dossier partiellement illisible. " }),
+          h("span", { texte: "Certains champs médicaux de ce dossier n'ont pas pu être "
+            + "déchiffrés et s'affichent vides. Ne considérez pas ce dossier comme "
+            + "complet : une allergie peut y figurer sans être visible. Signalez-le "
+            + "à votre administrateur avant toute prescription." }),
+        ])
+      : null,
     // Les allergies sont l'information la plus critique d'un dossier :
     // elles doivent être visibles avant toute prescription.
     patient.allergies

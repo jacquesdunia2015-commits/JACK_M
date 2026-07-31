@@ -273,6 +273,34 @@ async function dechiffrerValeur(enveloppe, cleDonnees) {
   }
 }
 
+/* ═══════════════ Témoin de clé : détecter une clé qui n'ouvre rien ═══════ */
+
+// Une clé erronée ne provoque pas d'erreur visible : `dechiffrerChamps`
+// remplace chaque champ illisible par `null` et pose un drapeau que rien ne
+// lisait. L'utilisateur entrait donc dans l'application, ouvrait un dossier,
+// et voyait un champ « Allergies » vide — indiscernable d'un patient sans
+// allergie connue. En dossier de soins, c'est le pire mode de défaillance
+// possible : silencieux, et du côté dangereux.
+//
+// Le témoin est un texte connu, chiffré une fois avec la clé de
+// l'établissement. Si la clé ouverte à la connexion ne le rouvre pas, la
+// session est refusée avant que le moindre dossier ne s'affiche.
+
+const TEMOIN_CLAIR = "MediStat — témoin de clé de chiffrement v1";
+
+export async function creerTemoinCle(cleDonnees) {
+  return chiffrerValeur(TEMOIN_CLAIR, cleDonnees);
+}
+
+export async function verifierTemoinCle(temoin, cleDonnees) {
+  if (!temoin) return true;   // base antérieure au témoin : rien à vérifier
+  try {
+    return (await dechiffrerValeur(temoin, cleDonnees)) === TEMOIN_CLAIR;
+  } catch {
+    return false;
+  }
+}
+
 export async function chiffrerChamps(entite, enregistrement, cleSession) {
   const champs = CHAMPS_SENSIBLES[entite];
   if (!champs || !cleSession) return enregistrement;

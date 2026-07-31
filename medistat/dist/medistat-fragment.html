@@ -905,6 +905,8 @@ __def("js/core/crypto.js", function (__x, __req) {
   Object.defineProperty(__x, "decryptObject", { get: () => decryptObject, enumerable: true });
   Object.defineProperty(__x, "CHAMPS_SENSIBLES", { get: () => CHAMPS_SENSIBLES, enumerable: true });
   Object.defineProperty(__x, "oublierClesImportees", { get: () => oublierClesImportees, enumerable: true });
+  Object.defineProperty(__x, "creerTemoinCle", { get: () => creerTemoinCle, enumerable: true });
+  Object.defineProperty(__x, "verifierTemoinCle", { get: () => verifierTemoinCle, enumerable: true });
   Object.defineProperty(__x, "chiffrerChamps", { get: () => chiffrerChamps, enumerable: true });
   Object.defineProperty(__x, "dechiffrerChamps", { get: () => dechiffrerChamps, enumerable: true });
   Object.defineProperty(__x, "signerJeton", { get: () => signerJeton, enumerable: true });
@@ -1191,6 +1193,34 @@ async function dechiffrerValeur(enveloppe, cleDonnees) {
     return dec.decode(clair);
   } catch {
     throw new Error("Déchiffrement impossible : clé incorrecte ou données altérées.");
+  }
+}
+
+/* ═══════════════ Témoin de clé : détecter une clé qui n'ouvre rien ═══════ */
+
+// Une clé erronée ne provoque pas d'erreur visible : `dechiffrerChamps`
+// remplace chaque champ illisible par `null` et pose un drapeau que rien ne
+// lisait. L'utilisateur entrait donc dans l'application, ouvrait un dossier,
+// et voyait un champ « Allergies » vide — indiscernable d'un patient sans
+// allergie connue. En dossier de soins, c'est le pire mode de défaillance
+// possible : silencieux, et du côté dangereux.
+//
+// Le témoin est un texte connu, chiffré une fois avec la clé de
+// l'établissement. Si la clé ouverte à la connexion ne le rouvre pas, la
+// session est refusée avant que le moindre dossier ne s'affiche.
+
+const TEMOIN_CLAIR = "MediStat — témoin de clé de chiffrement v1";
+
+async function creerTemoinCle(cleDonnees) {
+  return chiffrerValeur(TEMOIN_CLAIR, cleDonnees);
+}
+
+async function verifierTemoinCle(temoin, cleDonnees) {
+  if (!temoin) return true;   // base antérieure au témoin : rien à vérifier
+  try {
+    return (await dechiffrerValeur(temoin, cleDonnees)) === TEMOIN_CLAIR;
+  } catch {
+    return false;
   }
 }
 
@@ -2699,7 +2729,7 @@ __def("js/core/auth.js", function (__x, __req) {
 // mots de passe, le blocage après échecs répétés et la double authentification
 // par code à usage unique (TOTP).
 
-const { hashPassword, verifyPassword, evaluerMotDePasse, genererMotDePasseTemporaire, genererSecret, sha256, genererCleDonnees, envelopperCleDonnees, ouvrirCleDonnees, oublierClesImportees } = __req("js/core/crypto.js");
+const { hashPassword, verifyPassword, evaluerMotDePasse, genererMotDePasseTemporaire, genererSecret, sha256, genererCleDonnees, envelopperCleDonnees, ouvrirCleDonnees, oublierClesImportees, creerTemoinCle, verifierTemoinCle } = __req("js/core/crypto.js");
 const { lire, lireTout, ecrire, tracer, definirContexte, reinitialiserContexte } = __req("js/core/store.js");
 const { ROLES, hasPermission, nouvelId, VALIDATEURS } = __req("js/core/model.js");
 
@@ -2804,6 +2834,13 @@ async function initialiser({ etablissement, administrateur }) {
     cle: "selAnonymisation", valeur: genererSecret(32), date: new Date().toISOString(),
   });
 
+  // Témoin de clé : un texte connu, chiffré avec la clé de l'établissement.
+  // Il permettra de vérifier, à chaque connexion, que la clé ouverte est bien
+  // celle qui a servi à chiffrer les dossiers.
+  await ecrire("parametres", {
+    cle: "temoinCle", valeur: await creerTemoinCle(cleDonnees), date: new Date().toISOString(),
+  });
+
   definirContexte({ utilisateur: admin, etablissementId: ets.id });
   await tracer("parametrage", "etablissement", ets.id,
     `Initialisation de la Solution pour « ${ets.nom} »`);
@@ -2893,6 +2930,36 @@ async function connexion(identifiant, motDePasse, { codeTOTP = null } = {}) {
   // le dossier saisi par un médecin.
   const { cleSession, enveloppeAMettreAJour } =
     await ouvrirCleDeSession(u, motDePasse);
+
+  // La clé ouvre-t-elle réellement les dossiers ? Une clé erronée ne provoque
+  // aucune erreur en soi : chaque champ chiffré deviendrait simplement `null`
+  // et l'utilisateur verrait des allergies vides, indiscernables d'une absence
+  // d'allergie. On refuse donc la session plutôt que de la laisser s'ouvrir
+  // sur des dossiers muets.
+  const temoin = await lire("parametres", "temoinCle");
+  if (!(await verifierTemoinCle(temoin?.valeur, cleSession))) {
+    definirContexte({ utilisateur: u, etablissementId: u.etablissementId });
+    await tracer("connexion_echec", "utilisateur", u.id,
+      "Clé de chiffrement invalide : la session a été refusée");
+    reinitialiserContexte();
+    throw new Error(
+      "Votre mot de passe est correct, mais il n'ouvre pas les dossiers de cet "
+      + "établissement. La session est refusée : vous verriez sinon des dossiers "
+      + "aux champs médicaux vides, sans le savoir. Causes possibles : le mot de "
+      + "passe a été réinitialisé par un administrateur alors qu'aucune session "
+      + "n'était ouverte, ou la base a été restaurée depuis une autre "
+      + "installation. Contactez votre administrateur, ou restaurez une "
+      + "sauvegarde cohérente.");
+  }
+
+  // Base antérieure au témoin : on le crée maintenant, avec la clé qui vient
+  // d'ouvrir cette session. Les connexions suivantes seront protégées.
+  if (!temoin) {
+    await ecrire("parametres", {
+      cle: "temoinCle", valeur: await creerTemoinCle(cleSession),
+      date: new Date().toISOString(),
+    });
+  }
 
   await ecrire("utilisateurs", {
     ...u, tentativesEchouees: 0, bloqueJusqua: null,
@@ -8444,6 +8511,22 @@ async function dossierPatient(id, { naviguer, rafraichir }) {
         h("button.btn", { texte: "⬇ Dossier", onclick: () => menuExportDossier(patient, demandes, resultats, tests) }),
       ]),
     ]),
+    // Un champ que le chiffrement n'a pas pu rouvrir doit se voir. Affiché
+    // vide, il serait indiscernable d'un champ réellement vide : « pas
+    // d'allergie connue » et « allergie illisible » ne doivent jamais avoir
+    // la même apparence à l'écran.
+    patient._erreurDechiffrement
+      ? h("div", {
+          style: { marginTop: "12px", padding: "10px 13px", borderRadius: "8px",
+            background: "rgba(220,38,38,.14)", border: "2px solid var(--danger)" },
+        }, [
+          h("strong", { texte: "⛔ Dossier partiellement illisible. " }),
+          h("span", { texte: "Certains champs médicaux de ce dossier n'ont pas pu être "
+            + "déchiffrés et s'affichent vides. Ne considérez pas ce dossier comme "
+            + "complet : une allergie peut y figurer sans être visible. Signalez-le "
+            + "à votre administrateur avant toute prescription." }),
+        ])
+      : null,
     // Les allergies sont l'information la plus critique d'un dossier :
     // elles doivent être visibles avant toute prescription.
     patient.allergies
@@ -20956,12 +21039,29 @@ function ecranConnexion() {
     blocTOTP, message, bouton,
   ]);
 
+  // Repère de contexte. La question la plus fréquente devant un écran de
+  // connexion qui refuse n'est pas « quel est mon mot de passe » mais « suis-je
+  // au bon endroit » : les données vivent dans le navigateur, et un compte créé
+  // dans Chrome n'existe pas dans Firefox, ni en navigation privée. Afficher
+  // l'établissement et le nombre de comptes présents sur cet appareil répond
+  // à cette question sans nommer personne.
+  const repere = h("p.texte-secondaire", { style: { fontSize: ".76rem", marginTop: "10px" } });
+  Promise.all([store.lireTout("etablissements"), store.lireTout("utilisateurs")])
+    .then(([ets, utilisateurs]) => {
+      const nom = ets[0]?.nom;
+      if (!nom) return;
+      const n = utilisateurs.filter(u => u.actif !== false).length;
+      repere.textContent = `${nom} · ${n} compte${n > 1 ? "s" : ""} sur cet appareil`;
+    })
+    .catch(() => { /* repère indisponible : sans conséquence */ });
+
   remplacer($("#vue"), h("div", { style: { maxWidth: "380px", margin: "6vh auto" } }, [
     h("div.carte", { style: { textAlign: "center" } }, [
       h("div", { style: { fontSize: "2.4rem", marginBottom: "6px" } }, ["🏥"]),
       h("h1", { texte: "MediStat" }),
       h("p.texte-secondaire", { texte: "Dossiers médicaux, laboratoire et analyse de données" }),
       form,
+      repere,
     ]),
     h("p.texte-secondaire", { style: { textAlign: "center", fontSize: ".8rem" } }, [
       "Vos données restent sur cet appareil, chiffrées. ",

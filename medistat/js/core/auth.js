@@ -8,6 +8,7 @@ import {
   hashPassword, verifyPassword, evaluerMotDePasse, genererMotDePasseTemporaire,
   genererSecret, sha256,
   genererCleDonnees, envelopperCleDonnees, ouvrirCleDonnees, oublierClesImportees,
+  creerTemoinCle, verifierTemoinCle,
 } from "./crypto.js";
 import {
   lire, lireTout, ecrire, tracer, definirContexte, reinitialiserContexte,
@@ -115,6 +116,13 @@ export async function initialiser({ etablissement, administrateur }) {
     cle: "selAnonymisation", valeur: genererSecret(32), date: new Date().toISOString(),
   });
 
+  // Témoin de clé : un texte connu, chiffré avec la clé de l'établissement.
+  // Il permettra de vérifier, à chaque connexion, que la clé ouverte est bien
+  // celle qui a servi à chiffrer les dossiers.
+  await ecrire("parametres", {
+    cle: "temoinCle", valeur: await creerTemoinCle(cleDonnees), date: new Date().toISOString(),
+  });
+
   definirContexte({ utilisateur: admin, etablissementId: ets.id });
   await tracer("parametrage", "etablissement", ets.id,
     `Initialisation de la Solution pour « ${ets.nom} »`);
@@ -204,6 +212,36 @@ export async function connexion(identifiant, motDePasse, { codeTOTP = null } = {
   // le dossier saisi par un médecin.
   const { cleSession, enveloppeAMettreAJour } =
     await ouvrirCleDeSession(u, motDePasse);
+
+  // La clé ouvre-t-elle réellement les dossiers ? Une clé erronée ne provoque
+  // aucune erreur en soi : chaque champ chiffré deviendrait simplement `null`
+  // et l'utilisateur verrait des allergies vides, indiscernables d'une absence
+  // d'allergie. On refuse donc la session plutôt que de la laisser s'ouvrir
+  // sur des dossiers muets.
+  const temoin = await lire("parametres", "temoinCle");
+  if (!(await verifierTemoinCle(temoin?.valeur, cleSession))) {
+    definirContexte({ utilisateur: u, etablissementId: u.etablissementId });
+    await tracer("connexion_echec", "utilisateur", u.id,
+      "Clé de chiffrement invalide : la session a été refusée");
+    reinitialiserContexte();
+    throw new Error(
+      "Votre mot de passe est correct, mais il n'ouvre pas les dossiers de cet "
+      + "établissement. La session est refusée : vous verriez sinon des dossiers "
+      + "aux champs médicaux vides, sans le savoir. Causes possibles : le mot de "
+      + "passe a été réinitialisé par un administrateur alors qu'aucune session "
+      + "n'était ouverte, ou la base a été restaurée depuis une autre "
+      + "installation. Contactez votre administrateur, ou restaurez une "
+      + "sauvegarde cohérente.");
+  }
+
+  // Base antérieure au témoin : on le crée maintenant, avec la clé qui vient
+  // d'ouvrir cette session. Les connexions suivantes seront protégées.
+  if (!temoin) {
+    await ecrire("parametres", {
+      cle: "temoinCle", valeur: await creerTemoinCle(cleSession),
+      date: new Date().toISOString(),
+    });
+  }
 
   await ecrire("utilisateurs", {
     ...u, tentativesEchouees: 0, bloqueJusqua: null,
