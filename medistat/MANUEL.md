@@ -506,6 +506,8 @@ Menu compte → **💾 Sauvegarder**. Produit un fichier chiffré contenant l'in
 
 **Recommandation :** une sauvegarde par semaine au minimum, conservée sur un support distinct du poste de travail.
 
+> **Créez un second compte administrateur dès la mise en service.** La clé de chiffrement des dossiers est enveloppée dans le mot de passe de chaque utilisateur. S'il n'existe qu'un seul compte administrateur et que son mot de passe est perdu, les dossiers chiffrés deviennent définitivement irrécupérables — c'est une conséquence assumée du chiffrement, pas un défaut.
+
 ### Restaurer
 
 Menu compte → **♻️ Restaurer une sauvegarde**. Demande le mot de passe utilisé lors de la sauvegarde.
@@ -556,6 +558,8 @@ L'ensemble de l'interface est utilisable au clavier seul, avec un focus visible.
 | Écran de connexion après rechargement | Comportement voulu sur poste partagé. | Se reconnecter. |
 | Lenteur sur de gros volumes | Base locale très remplie. | Archiver les dossiers anciens ; envisager le serveur. |
 | Champs vides dans un dossier | Base créée avant la version 1.0. | Se reconnecter une fois : la clé est reprise automatiquement. |
+| « Votre mot de passe est correct, mais il n'ouvre pas les dossiers » | La clé de chiffrement ne correspond pas aux données : mot de passe réinitialisé sans session ouverte, ou base restaurée depuis une autre installation. | Se connecter avec un autre compte administrateur, ou restaurer une sauvegarde cohérente. La session est refusée volontairement : elle afficherait des dossiers aux champs médicaux vides. |
+| Bandeau rouge « Dossier partiellement illisible » | Un champ chiffré n'a pas pu être rouvert. | Ne pas prescrire sur ce dossier. Le signaler à l'administrateur et restaurer une sauvegarde. |
 
 ---
 

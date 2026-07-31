@@ -60,6 +60,8 @@ MediStat refuse les mots de passe faciles. Voici comment en trouver un bon :
 
 > **Attention.** Ce mot de passe protège les dossiers des patients. Ne l'écrivez pas sur un papier collé à l'écran. Ne le donnez à personne.
 
+> **Créez tout de suite un deuxième compte administrateur.** S'il n'y a qu'un seul administrateur et que son mot de passe est perdu, les dossiers ne peuvent plus être ouverts. Par personne. Jamais.
+
 ---
 
 ## 4. Se connecter tous les jours
@@ -203,6 +205,8 @@ MediStat vérifie aussi les conditions à respecter et vous prévient si le test
 | Le problème | Ce qu'il faut faire |
 |---|---|
 | J'ai oublié mon mot de passe | Demandez à votre administrateur. Il vous en donne un nouveau, provisoire. |
+| Je vois « Bienvenue dans MediStat » alors que j'avais déjà un compte | Vos données sont dans un **autre navigateur**, un autre appareil, ou vous êtes en navigation privée. MediStat garde tout dans le navigateur. | Rouvrez avec le navigateur d'origine. |
+| Un bandeau rouge dit que le dossier est « partiellement illisible » | Un champ n'a pas pu être déchiffré. **Une allergie peut y figurer sans être visible.** | Ne prescrivez pas. Prévenez l'administrateur. |
 | Mon compte est bloqué | Attendez 15 minutes, ou demandez à l'administrateur. |
 | Je ne vois pas un menu | Votre métier n'y donne pas accès. C'est normal. |
 | « Accès refusé » s'affiche | Même raison. La tentative est notée dans le journal. |

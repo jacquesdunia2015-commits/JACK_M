@@ -426,6 +426,17 @@ n'importe quel hébergement statique ou ouvrable depuis une clé USB.
 | [`INSTALLATION.md`](INSTALLATION.md) | Équipe technique | Déploiement du serveur, PWA, installateurs. |
 | [`CONFORMITE.md`](CONFORMITE.md) | Maîtrise d'ouvrage | Conformité article par article au cahier des charges. |
 
+### Contrôles
+
+    node tests/tous.mjs                        # les 8 suites, quelques secondes
+    node tests/migration-ancienne-base.mjs     # reprise d'une base antérieure (lent)
+
+Le second n'est pas dans `tous.mjs` : il enchaîne une dizaine de dérivations
+PBKDF2 à 250 000 itérations et demande plusieurs minutes. Il vérifie qu'une
+base créée avant le chiffrement enveloppe reste lisible après mise à jour —
+un chemin qui ne sert qu'une fois par base, donc exactement le genre de code
+que personne ne teste et qui casse au pire moment.
+
 Le comparatif est écrit par l'équipe du produit : sa section « Là où les
 autres sont meilleurs » est aussi détaillée que les autres, et ses limites
 sont énoncées sans détour. Vérifiez néanmoins les caractéristiques des
