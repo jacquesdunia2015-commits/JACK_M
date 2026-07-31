@@ -241,6 +241,13 @@ function ecranConnexion() {
     blocTOTP, message, bouton,
   ]);
 
+  const lienDepannage = h("button.btn.btn--fin", {
+    type: "button",
+    style: { marginTop: "10px", fontSize: ".8rem" },
+    texte: "Je n'arrive pas à me connecter",
+    onclick: () => ecranDepannage(),
+  });
+
   // Repère de contexte. La question la plus fréquente devant un écran de
   // connexion qui refuse n'est pas « quel est mon mot de passe » mais « suis-je
   // au bon endroit » : les données vivent dans le navigateur, et un compte créé
@@ -263,6 +270,7 @@ function ecranConnexion() {
       h("h1", { texte: "MediStat" }),
       h("p.texte-secondaire", { texte: "Dossiers médicaux, laboratoire et analyse de données" }),
       form,
+      lienDepannage,
       repere,
     ]),
     h("p.texte-secondaire", { style: { textAlign: "center", fontSize: ".8rem" } }, [
@@ -272,6 +280,167 @@ function ecranConnexion() {
     piedAPSA(),
   ]));
   setTimeout(() => identifiant.focus(), 100);
+}
+
+/* ===================== Dépannage de la connexion ===================== */
+
+// Accessible SANS être connecté, et c'est délibéré.
+//
+// Un utilisateur bloqué devant l'écran de connexion n'a aucun moyen de savoir
+// laquelle des causes possibles le concerne : mauvais identifiant, compte
+// bloqué, ou simplement mauvais navigateur — les données vivant dans le
+// navigateur, un compte créé dans Chrome n'existe pas dans Firefox. Lui
+// demander de deviner, ou de décrire son écran à un tiers, ne mène nulle part.
+//
+// Sur ce qui est montré ici : les identifiants, les rôles et les états de
+// blocage sont affichés en clair. Cela ne divulgue rien, car quiconque atteint
+// cet écran possède déjà la base locale entière — les identifiants n'y sont
+// pas chiffrés, seules les données de santé le sont. La protection contre
+// l'énumération de comptes garde tout son sens face à un serveur distant ;
+// elle n'en a aucun face à une base que l'on a déjà entre les mains, et elle
+// coûterait ici tout espoir de se dépanner soi-même.
+async function ecranDepannage() {
+  let etablissements = [], utilisateurs = [], diagnostic = null;
+  try {
+    [etablissements, utilisateurs, diagnostic] = await Promise.all([
+      store.lireTout("etablissements"), store.lireTout("utilisateurs"),
+      store.diagnosticStockage(),
+    ]);
+  } catch (e) {
+    return modale({
+      titre: "Dépannage de la connexion",
+      contenu: h("div.avertissement", {
+        texte: "La base locale est illisible : " + e.message
+          + " Le navigateur bloque peut-être le stockage (navigation privée, "
+          + "cookies refusés, ou mode restreint).",
+      }),
+      actions: [{ libelle: "Fermer", type: "neutre" }],
+    });
+  }
+
+  const maintenant = Date.now();
+  const etatCompte = u => {
+    if (u.actif === false) return { texte: "désactivé", couleur: COULEURS_DEPANNAGE.gris };
+    if (u.bloqueJusqua && new Date(u.bloqueJusqua).getTime() > maintenant) {
+      const reste = Math.ceil((new Date(u.bloqueJusqua).getTime() - maintenant) / 60000);
+      return { texte: `bloqué encore ${reste} min`, couleur: COULEURS_DEPANNAGE.rouge };
+    }
+    if (u.motDePasseTemporaire) return { texte: "mot de passe provisoire", couleur: COULEURS_DEPANNAGE.orange };
+    return { texte: "actif", couleur: COULEURS_DEPANNAGE.vert };
+  };
+
+  const contenu = h("div", [
+    utilisateurs.length === 0
+      ? h("div.avertissement", {
+          texte: "Aucun compte n'existe sur cet appareil. Vos données se trouvent dans "
+            + "un autre navigateur, sur un autre appareil, ou vous naviguez en mode privé. "
+            + "MediStat conserve tout dans le navigateur : rien n'est envoyé ailleurs.",
+        })
+      : h("div", [
+          h("p", { texte: etablissements[0]?.nom
+            ? `Établissement enregistré sur cet appareil : ${etablissements[0].nom}.`
+            : "Des comptes existent, mais aucun établissement n'est enregistré." }),
+          h("p.texte-secondaire", {
+            texte: "Voici les identifiants réellement présents. Si le vôtre n'y figure pas, "
+              + "c'est l'identifiant qui est en cause, pas le mot de passe.",
+          }),
+          h("div.tableau-defilement", { style: { margin: "10px 0" } }, [
+            h("table.tableau.tableau--compact", [
+              h("thead", [h("tr", [
+                h("th", "Identifiant"), h("th", "Nom"), h("th", "Rôle"), h("th", "État"),
+              ])]),
+              h("tbody", utilisateurs.map(u => {
+                const e = etatCompte(u);
+                return h("tr", [
+                  h("td", [h("code.texte-mono", { texte: u.identifiant })]),
+                  h("td", { texte: `${u.prenom || ""} ${u.nom || ""}`.trim() || "—" }),
+                  h("td", { texte: ROLES[u.role]?.label || u.role || "—" }),
+                  h("td", [h("span", { texte: e.texte, style: { color: e.couleur, fontWeight: "600" } })]),
+                ]);
+              })),
+            ]),
+          ]),
+        ]),
+
+    h("h3", { style: { marginTop: "16px" }, texte: "Stockage" }),
+    h("p.texte-secondaire", {
+      texte: `Moteur : ${diagnostic.moteur} · ${diagnostic.total} enregistrement(s).`,
+    }),
+    diagnostic.avertissement ? h("div.avertissement", { texte: diagnostic.avertissement }) : null,
+
+    h("h3", { style: { marginTop: "16px" }, texte: "Que faire" }),
+    h("ul", [
+      h("li", { texte: "Votre identifiant ne figure pas dans la liste : vous vous connectez avec le mauvais nom. Utilisez celui du tableau." }),
+      h("li", { texte: "Le compte est « bloqué » : attendez la durée indiquée, puis un seul essai soigneux." }),
+      h("li", { texte: "La liste est vide : rouvrez MediStat depuis le navigateur où vous aviez créé l'établissement. Un compte créé dans un navigateur n'existe pas dans un autre, ni en navigation privée." }),
+      h("li", { texte: "L'identifiant est bon, le compte actif, et le mot de passe refusé : vérifiez les majuscules et l'absence d'espace en fin de champ." }),
+    ]),
+
+    utilisateurs.length
+      ? h("div.avertissement", { style: { marginTop: "14px" }, texte:
+          "Si le mot de passe du seul compte administrateur est réellement perdu, les "
+          + "dossiers chiffrés sont irrécupérables : la clé est enveloppée dans ce mot de "
+          + "passe et n'existe nulle part ailleurs. Le seul recours est de repartir d'une "
+          + "base vide, ce qui efface tout ce qui est enregistré sur cet appareil." })
+      : null,
+  ].filter(Boolean));
+
+  const action = await modale({
+    titre: "Dépannage de la connexion",
+    largeur: "620px",
+    contenu,
+    actions: [
+      { libelle: "Fermer", type: "neutre", valeur: null },
+      utilisateurs.length
+        ? { libelle: "Repartir d'une base vide", type: "danger", valeur: "reinitialiser" }
+        : null,
+    ].filter(Boolean),
+  });
+
+  if (action === "reinitialiser") return reinitialiserBaseLocale(utilisateurs, etablissements);
+}
+
+const COULEURS_DEPANNAGE = { vert: "#16a34a", orange: "#d97706", rouge: "#dc2626", gris: "#94a3b8" };
+
+// Effacement complet de la base locale. Irréversible, et donc protégé par une
+// confirmation qui demande d'écrire un mot : un bouton « Confirmer » se clique
+// par réflexe, une phrase à recopier ne s'écrit pas par accident.
+async function reinitialiserBaseLocale(utilisateurs, etablissements) {
+  const saisie = h("input.champ", { placeholder: "EFFACER" });
+  const ok = await modale({
+    titre: "Effacer toutes les données de cet appareil",
+    largeur: "520px",
+    contenu: h("div", [
+      h("div.avertissement", {
+        texte: `Cette action supprime définitivement l'établissement `
+          + `« ${etablissements[0]?.nom || "sans nom"} », ses ${utilisateurs.length} compte(s) `
+          + "et l'intégralité des dossiers patients enregistrés dans ce navigateur. "
+          + "Elle est irréversible et ne peut pas être annulée.",
+      }),
+      h("p", { texte: "Si vous disposez d'une sauvegarde, fermez cette fenêtre et restaurez-la "
+        + "plutôt que d'effacer." }),
+      h("div.champ-groupe", [
+        h("label.champ-libelle", { texte: "Pour confirmer, écrivez EFFACER en majuscules" }),
+        saisie,
+      ]),
+    ]),
+    actions: [
+      { libelle: "Annuler", type: "neutre", valeur: null },
+      { libelle: "Effacer définitivement", type: "danger",
+        action: () => saisie.value.trim() === "EFFACER"
+          ? true
+          : (erreur("Écrivez EFFACER pour confirmer."), false) },
+    ],
+  });
+  if (!ok) return;
+
+  try {
+    await store.effacerTout();
+    succes("Base effacée. MediStat va redémarrer sur une configuration neuve.");
+    setTimeout(() => location.reload(), 1200);
+  } catch (e) {
+    erreur("Effacement impossible : " + e.message);
+  }
 }
 
 // Signature de l'organisation porteuse, reprise sur les écrans où la barre

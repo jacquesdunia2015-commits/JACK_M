@@ -204,6 +204,7 @@ MediStat vérifie aussi les conditions à respecter et vous prévient si le test
 
 | Le problème | Ce qu'il faut faire |
 |---|---|
+| **Mon mot de passe ne marche pas** | Cliquez sur **« Je n'arrive pas à me connecter »**, sous le bouton. MediStat vous montre les identifiants réellement enregistrés sur cet appareil. Neuf fois sur dix, c'est l'identifiant qui est faux, pas le mot de passe. |
 | J'ai oublié mon mot de passe | Demandez à votre administrateur. Il vous en donne un nouveau, provisoire. |
 | Je vois « Bienvenue dans MediStat » alors que j'avais déjà un compte | Vos données sont dans un **autre navigateur**, un autre appareil, ou vous êtes en navigation privée. MediStat garde tout dans le navigateur. | Rouvrez avec le navigateur d'origine. |
 | Un bandeau rouge dit que le dossier est « partiellement illisible » | Un champ n'a pas pu être déchiffré. **Une allergie peut y figurer sans être visible.** | Ne prescrivez pas. Prévenez l'administrateur. |

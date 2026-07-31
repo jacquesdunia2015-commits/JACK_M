@@ -501,6 +501,29 @@ export async function reinitialiserBase() {
 
 /* ===================== Diagnostic de stockage ===================== */
 
+// Efface intégralement la base locale. Sans filet : c'est précisément à cela
+// qu'elle sert — repartir de zéro quand le mot de passe du seul compte
+// administrateur est perdu et que les dossiers chiffrés sont, par
+// construction, irrécupérables. L'appelant est responsable de la
+// confirmation ; le magasin ne fait qu'exécuter.
+export async function effacerTout() {
+  const db = await ouvrir().catch(() => null);
+  if (db) {
+    await new Promise((ok, ko) => {
+      const tx = db.transaction(Object.keys(MAGASINS), "readwrite");
+      for (const m of Object.keys(MAGASINS)) tx.objectStore(m).clear();
+      tx.oncomplete = ok;
+      tx.onerror = () => ko(tx.error);
+    });
+  }
+  for (const m of Object.keys(MAGASINS)) memoire.set(m, new Map());
+  try {
+    localStorage.removeItem("medistat.serveur");
+    localStorage.removeItem("medistat.navigationRepliee");
+  } catch { /* stockage indisponible : sans conséquence */ }
+  return true;
+}
+
 export async function diagnosticStockage() {
   const compteurs = {};
   for (const m of Object.keys(MAGASINS)) compteurs[m] = (await lireTout(m)).length;

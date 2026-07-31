@@ -161,6 +161,19 @@ MediStat utilise un **chiffrement enveloppe** :
 
 **Ce que cela change :** tous les soignants d'un établissement lisent les mêmes dossiers. Changer son mot de passe ré-enveloppe la clé sans toucher aux données. Deux établissements restent cryptographiquement cloisonnés.
 
+### Dépannage de la connexion
+
+Sous le bouton de connexion, **« Je n'arrive pas à me connecter »** ouvre un écran accessible sans être connecté. Il affiche :
+
+- l'établissement enregistré sur cet appareil ;
+- les identifiants réellement présents, avec leur rôle et leur état — actif, bloqué et pour combien de temps, mot de passe provisoire, désactivé ;
+- le moteur de stockage et le nombre d'enregistrements ;
+- la conduite à tenir selon le cas.
+
+> **Pourquoi ces informations sont visibles sans mot de passe.** Masquer les identifiants protège d'une énumération de comptes **face à un serveur distant**. Face à une base locale que l'on a déjà entre les mains, cela ne protège de rien — les identifiants n'y sont pas chiffrés, seules les données de santé le sont — et cela prive l'utilisateur de tout moyen de se dépanner. En déploiement serveur, cet écran ne montre que ce que contient la base locale du poste.
+
+En dernier recours, un bouton permet de **repartir d'une base vide**. Il efface définitivement tout ce qui est enregistré dans ce navigateur et exige d'écrire `EFFACER` pour confirmer. Il n'existe que pour le cas où le mot de passe du seul compte administrateur est réellement perdu : les dossiers chiffrés sont alors irrécupérables, par construction.
+
 ### Verrouiller sa session
 
 `Ctrl + L`, ou le cadenas 🔒 en haut à droite. Prenez-en l'habitude en quittant votre poste.
@@ -549,6 +562,7 @@ L'ensemble de l'interface est utilisable au clavier seul, avec un focus visible.
 
 | Symptôme | Cause probable | Solution |
 |---|---|---|
+| Mot de passe refusé alors qu'il est correct | Le plus souvent, l'identifiant ne correspond pas. | **« Je n'arrive pas à me connecter »** sous le bouton de connexion : l'écran liste les identifiants réellement enregistrés, l'état de chaque compte et celui du stockage. |
 | « Accès refusé » | Votre rôle n'a pas ce droit. | Normal. La tentative est tracée. |
 | Compte bloqué | 5 échecs de connexion. | Attendre 15 minutes ou demander une réinitialisation. |
 | Un menu manque | Votre rôle, ou un module désactivé. | Vérifier dans **Établissement**. |
