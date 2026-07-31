@@ -171,12 +171,36 @@ __def(${JSON.stringify(cle)}, function (__x, __req) {
 ${modules.get(cle)}
 });`).join("\n");
 
-const script = `${registre}\n${corps}\n\n__req("js/app.js");`;
+// Les images référencées par un chemin relatif — dans le gabarit HTML comme
+// dans le code — sont intégrées sous forme de données. Dans un fichier
+// unique, « assets/apsa.svg » ne pointe sur rien : le logo de l'organisation
+// porteuse doit s'afficher même sans réseau et sans dossier voisin.
+const donneesImages = new Map();
+function integrerImages(texte) {
+  return texte.replace(/(["'])(assets\/[\w.-]+\.svg)\1/g, (tout, guillemet, relatif) => {
+    if (!donneesImages.has(relatif)) {
+      try {
+        const contenu = readFileSync(join(RACINE, relatif), "utf8");
+        donneesImages.set(relatif,
+          `data:image/svg+xml;base64,${Buffer.from(contenu, "utf8").toString("base64")}`);
+      } catch {
+        // Ressource absente : on laisse le chemin d'origine plutôt que
+        // d'interrompre l'assemblage pour une image décorative.
+        donneesImages.set(relatif, null);
+      }
+    }
+    const donnees = donneesImages.get(relatif);
+    return donnees ? `${guillemet}${donnees}${guillemet}` : tout;
+  });
+}
+
+const script = integrerImages(`${registre}\n${corps}\n\n__req("js/app.js");`);
 
 /* ── Insertion dans le gabarit HTML ─────────────────────────────────────── */
 
 let html = readFileSync(join(RACINE, "index.html"), "utf8");
 const css = readFileSync(join(RACINE, "css", "style.css"), "utf8");
+html = integrerImages(html);
 
 // Attention : `String.replace` interprète `$$`, `$&` et `$1` dans une chaîne
 // de remplacement. Le code de la Solution contient `$` et `$$` — ce sont les

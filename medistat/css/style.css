@@ -127,7 +127,13 @@ a { color: var(--accent); }
 }
 [data-theme="sombre"] .barre-haut, [data-theme="dark"] .barre-haut { background: #101a2c; border-bottom: 1px solid var(--bordure); }
 
-.barre-haut__menu { display: none; }
+/* Ce bouton était déclaré `display: none`, mais `.icone-btn` — défini plus
+   bas, à spécificité égale — rétablissait `inline-flex` et le laissait
+   visible sur ordinateur, où il ne faisait rien : la classe qu'il bascule
+   n'avait d'effet que dans la requête média des petits écrans. Le bouton est
+   désormais visible partout et utile partout : il ouvre le menu sur
+   téléphone, il replie la barre latérale sur ordinateur. */
+.barre-haut__menu { display: inline-flex; }
 
 .marque { display: flex; align-items: center; gap: 9px; flex: 0 0 auto; }
 .marque__logo { width: 32px; height: 32px; border-radius: 8px; }
@@ -205,7 +211,17 @@ a { color: var(--accent); }
   overflow-y: auto;
   background: var(--surface);
   border-right: 1px solid var(--bordure);
+  transition: flex-basis .18s ease-out, width .18s ease-out;
 }
+
+/* Barre latérale repliée (ordinateur). On réduit la largeur à zéro plutôt
+   que de poser `display: none` : la transition reste fluide et l'état est
+   réversible sans reconstruire la navigation. */
+.navigation--repliee {
+  flex-basis: 0; width: 0; padding-left: 0; padding-right: 0;
+  overflow: hidden; border-right-color: transparent;
+}
+@media (prefers-reduced-motion: reduce) { .navigation { transition: none; } }
 .navigation__section { display: flex; flex-direction: column; gap: 1px; margin-bottom: 14px; }
 .navigation__section--bas { margin-top: auto; margin-bottom: 0; }
 .navigation__titre {
@@ -673,3 +689,31 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; accent-
 [data-script="arabe"], [data-script="ourdou"], [data-script="guèze"] {
   line-height: 1.75;
 }
+
+/* ===================== Organisation porteuse ===================== */
+
+/* Le logo APSA se place sous celui de MediStat, en tête de la barre
+   latérale. Il identifie l'organisation sans entrer en concurrence avec la
+   navigation : teinte discrète au repos, contraste plein au survol. */
+.marque-apsa {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 8px 12px; margin-bottom: 6px;
+  border-bottom: 1px solid var(--bordure);
+  color: var(--texte-2); text-decoration: none;
+  border-radius: var(--rayon-sm);
+}
+.marque-apsa:hover { background: var(--surface-2); color: var(--texte); }
+.marque-apsa:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.marque-apsa__logo { flex: 0 0 auto; border-radius: 50%; background: #fff; }
+.marque-apsa__texte { display: flex; flex-direction: column; min-width: 0; }
+.marque-apsa__texte strong { font-size: .84rem; letter-spacing: .4px; color: var(--texte); }
+.marque-apsa__texte span { font-size: .66rem; line-height: 1.3; color: var(--texte-3); }
+
+/* Sur l'écran de connexion, la barre latérale est masquée : le logo y est
+   repris sous le formulaire pour rester présent dès la première seconde. */
+.apsa-pied {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  margin-top: 22px; text-align: center;
+}
+.apsa-pied img { border-radius: 50%; background: #fff; }
+.apsa-pied span { font-size: .72rem; color: var(--texte-3); }

@@ -145,6 +145,7 @@ async function ecranInitialisation() {
         "Toutes les données restent sur cet appareil tant que vous ne connectez pas de serveur.",
     }),
     form, jauge, h("div", { style: { marginTop: "16px" } }, [bouton]),
+    piedAPSA(),
   ]));
 
   bouton.addEventListener("click", async () => {
@@ -251,8 +252,19 @@ function ecranConnexion() {
       "Vos données restent sur cet appareil, chiffrées. ",
       h("a", { href: "#/aide", texte: "En savoir plus", onclick: e => e.preventDefault() }),
     ]),
+    piedAPSA(),
   ]));
   setTimeout(() => identifiant.focus(), 100);
+}
+
+// Signature de l'organisation porteuse, reprise sur les écrans où la barre
+// latérale n'existe pas encore : première configuration et connexion.
+function piedAPSA() {
+  return h("div.apsa-pied", [
+    h("img", { src: "assets/apsa.svg", width: 44, height: 44,
+      alt: "APSA — Actions pour la Promotion de la Santé en Afrique" }),
+    h("span", { texte: "Une initiative APSA — Actions pour la Promotion de la Santé en Afrique" }),
+  ]);
 }
 
 /* ===================== Ouverture de l'application ===================== */
@@ -362,8 +374,63 @@ function brancherInterface() {
 
   brancherLangue();
 
-  $("#btnMenu").onclick = () => nav.classList.toggle("navigation--ouverte");
-  $("#btnMenuMobile").onclick = () => nav.classList.toggle("navigation--ouverte");
+  // Le bouton à trois traits ne fait pas la même chose selon la place
+  // disponible. Sur téléphone, la barre latérale est hors écran : il la fait
+  // entrer. Sur ordinateur, elle est déjà là : la faire « entrer » n'aurait
+  // aucun effet visible — c'est ce qui donnait un bouton mort. Il la replie
+  // donc, ce qui rend l'écran entier aux tableaux et aux graphiques.
+  const surPetitEcran = () => window.innerWidth <= 1000;
+  const CLE_REPLI = "medistat.navigationRepliee";
+
+  function basculerMenu() {
+    if (surPetitEcran()) {
+      nav.classList.toggle("navigation--ouverte");
+    } else {
+      const repliee = nav.classList.toggle("navigation--repliee");
+      try { localStorage.setItem(CLE_REPLI, repliee ? "1" : "0"); } catch { /* mode privé */ }
+    }
+    majEtatMenu();
+  }
+
+  function majEtatMenu() {
+    const ouvert = surPetitEcran()
+      ? nav.classList.contains("navigation--ouverte")
+      : !nav.classList.contains("navigation--repliee");
+    for (const b of [$("#btnMenu"), $("#btnMenuMobile")]) {
+      if (!b) continue;
+      b.setAttribute("aria-expanded", String(ouvert));
+      b.setAttribute("aria-controls", "navigation");
+      b.setAttribute("title", ouvert ? "Replier le menu" : "Afficher le menu");
+      b.setAttribute("aria-label", ouvert ? "Replier le menu" : "Afficher le menu");
+    }
+  }
+
+  $("#btnMenu").onclick = basculerMenu;
+  $("#btnMenuMobile").onclick = basculerMenu;
+
+  // Le choix de replier est mémorisé : un utilisateur qui travaille sur des
+  // tableaux larges ne doit pas le refaire à chaque connexion.
+  try {
+    if (localStorage.getItem(CLE_REPLI) === "1") nav.classList.add("navigation--repliee");
+  } catch { /* mode privé */ }
+
+  // Passer d'un format à l'autre — rotation d'une tablette, fenêtre
+  // redimensionnée — ne doit pas laisser la navigation dans un état hybride.
+  window.addEventListener("resize", () => {
+    if (surPetitEcran()) {
+      // Repliée n'a pas de sens sur petit écran : la barre y est déjà hors
+      // champ. On retire la classe sans effacer la préférence, qui sera
+      // rétablie au retour sur grand écran.
+      nav.classList.remove("navigation--repliee");
+    } else {
+      nav.classList.remove("navigation--ouverte");
+      let repliee = false;
+      try { repliee = localStorage.getItem(CLE_REPLI) === "1"; } catch { /* mode privé */ }
+      nav.classList.toggle("navigation--repliee", repliee);
+    }
+    majEtatMenu();
+  });
+  majEtatMenu();
   document.addEventListener("click", e => {
     if (window.innerWidth <= 1000 && nav.classList.contains("navigation--ouverte") &&
         !nav.contains(e.target) && !e.target.closest("#btnMenu, #btnMenuMobile")) {

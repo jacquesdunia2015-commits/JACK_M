@@ -26,6 +26,7 @@ export async function vue_aide({ naviguer, rafraichir }) {
     ]),
     onglets([
       { libelle: "Prise en main", contenu: () => priseEnMain(naviguer) },
+      { libelle: "Manuels", contenu: manuels },
       { libelle: "Analyse de données", contenu: guideAnalyse },
       { libelle: "Rôles et droits", contenu: guideRoles },
       { libelle: "Sécurité", contenu: guideSecurite },
@@ -218,6 +219,67 @@ function guideAnalyse() {
           "pour savoir si un thème caractérise un service, un sexe ou un diagnostic particulier.",
       }),
     ]),
+  ]);
+}
+
+/* ===================== Manuels ===================== */
+
+// Les manuels sont livrés en Markdown à la racine du projet plutôt que
+// recopiés dans l'interface : un document long se lit, s'imprime et se
+// diffuse mieux hors de l'application, et le dupliquer ici garantirait
+// qu'une des deux versions finisse par être fausse.
+function manuels() {
+  const DOCUMENTS = [
+    { fichier: "GUIDE-DEBUTANT.md", icone: "🌱", titre: "Guide du débutant",
+      pour: "Toute personne qui découvre MediStat",
+      duree: "environ 30 minutes",
+      resume: "Français simple, sans jargon. Les mots à connaître, la première "
+        + "connexion, créer un patient, demander une analyse, saisir un résultat, "
+        + "faire une statistique. Les six règles à retenir." },
+    { fichier: "MANUEL.md", icone: "📘", titre: "Manuel d'utilisation",
+      pour: "Utilisateurs confirmés et administrateurs",
+      duree: "à consulter par chapitre",
+      resume: "Chaque écran, chaque rôle, chaque procédure. Sécurité, circuit du "
+        + "laboratoire, notification des patients, analyses statistiques, audit, "
+        + "sauvegarde, diagnostic des incidents et limites connues." },
+    { fichier: "COMPARATIF.md", icone: "⚖️", titre: "Comparatif",
+      pour: "Décideurs et comités de sélection",
+      duree: "environ 15 minutes",
+      resume: "MediStat face à OpenMRS, DHIS2, OpenELIS, OpenEMR, SPSS et aux "
+        + "suites hospitalières propriétaires. Comprend une section « là où les "
+        + "autres sont meilleurs » et la liste des limites, sans détour." },
+    { fichier: "INSTALLATION.md", icone: "🛠️", titre: "Guide d'installation",
+      pour: "Équipe technique",
+      duree: "selon le mode de déploiement",
+      resume: "Serveur, application installable, fichier autonome, sauvegardes." },
+    { fichier: "CONFORMITE.md", icone: "📋", titre: "Matrice de conformité",
+      pour: "Maîtrise d'ouvrage",
+      duree: "document de référence",
+      resume: "Conformité article par article au cahier des charges, avec les "
+        + "points partiellement couverts énoncés comme tels." },
+  ];
+
+  return h("div", [
+    h("p.texte-secondaire", {
+      texte: "Ces documents accompagnent la Solution. Ils se trouvent à la racine du "
+        + "projet et peuvent être imprimés ou diffusés indépendamment de l'application.",
+    }),
+    h("div.grille.grille--2", { style: { marginTop: "14px" } },
+      DOCUMENTS.map(d => h("div.carte", [
+        h("div.carte__entete", [
+          h("h3", { texte: `${d.icone}  ${d.titre}` }),
+        ]),
+        h("div", { style: { display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" } }, [
+          badge(d.pour), badge(d.duree, COULEURS.neutre),
+        ]),
+        h("p", { texte: d.resume }),
+        h("code.texte-mono", { texte: d.fichier, style: { fontSize: ".78rem" } }),
+      ]))),
+    h("div.avertissement", { style: { marginTop: "14px" }, texte:
+      "Le comparatif est rédigé par l'équipe du produit. Vérifiez les "
+      + "caractéristiques des solutions tierces auprès de leurs éditeurs avant "
+      + "toute décision : elles évoluent vite, et aucune ligne de ce tableau "
+      + "n'engage leurs auteurs." }),
   ]);
 }
 

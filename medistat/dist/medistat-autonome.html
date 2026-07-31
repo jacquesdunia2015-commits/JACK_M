@@ -142,7 +142,13 @@ a { color: var(--accent); }
 }
 [data-theme="sombre"] .barre-haut, [data-theme="dark"] .barre-haut { background: #101a2c; border-bottom: 1px solid var(--bordure); }
 
-.barre-haut__menu { display: none; }
+/* Ce bouton était déclaré `display: none`, mais `.icone-btn` — défini plus
+   bas, à spécificité égale — rétablissait `inline-flex` et le laissait
+   visible sur ordinateur, où il ne faisait rien : la classe qu'il bascule
+   n'avait d'effet que dans la requête média des petits écrans. Le bouton est
+   désormais visible partout et utile partout : il ouvre le menu sur
+   téléphone, il replie la barre latérale sur ordinateur. */
+.barre-haut__menu { display: inline-flex; }
 
 .marque { display: flex; align-items: center; gap: 9px; flex: 0 0 auto; }
 .marque__logo { width: 32px; height: 32px; border-radius: 8px; }
@@ -220,7 +226,17 @@ a { color: var(--accent); }
   overflow-y: auto;
   background: var(--surface);
   border-right: 1px solid var(--bordure);
+  transition: flex-basis .18s ease-out, width .18s ease-out;
 }
+
+/* Barre latérale repliée (ordinateur). On réduit la largeur à zéro plutôt
+   que de poser `display: none` : la transition reste fluide et l'état est
+   réversible sans reconstruire la navigation. */
+.navigation--repliee {
+  flex-basis: 0; width: 0; padding-left: 0; padding-right: 0;
+  overflow: hidden; border-right-color: transparent;
+}
+@media (prefers-reduced-motion: reduce) { .navigation { transition: none; } }
 .navigation__section { display: flex; flex-direction: column; gap: 1px; margin-bottom: 14px; }
 .navigation__section--bas { margin-top: auto; margin-bottom: 0; }
 .navigation__titre {
@@ -689,6 +705,34 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; accent-
   line-height: 1.75;
 }
 
+/* ===================== Organisation porteuse ===================== */
+
+/* Le logo APSA se place sous celui de MediStat, en tête de la barre
+   latérale. Il identifie l'organisation sans entrer en concurrence avec la
+   navigation : teinte discrète au repos, contraste plein au survol. */
+.marque-apsa {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 8px 12px; margin-bottom: 6px;
+  border-bottom: 1px solid var(--bordure);
+  color: var(--texte-2); text-decoration: none;
+  border-radius: var(--rayon-sm);
+}
+.marque-apsa:hover { background: var(--surface-2); color: var(--texte); }
+.marque-apsa:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.marque-apsa__logo { flex: 0 0 auto; border-radius: 50%; background: #fff; }
+.marque-apsa__texte { display: flex; flex-direction: column; min-width: 0; }
+.marque-apsa__texte strong { font-size: .84rem; letter-spacing: .4px; color: var(--texte); }
+.marque-apsa__texte span { font-size: .66rem; line-height: 1.3; color: var(--texte-3); }
+
+/* Sur l'écran de connexion, la barre latérale est masquée : le logo y est
+   repris sous le formulaire pour rester présent dès la première seconde. */
+.apsa-pied {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  margin-top: 22px; text-align: center;
+}
+.apsa-pied img { border-radius: 50%; background: #fff; }
+.apsa-pied span { font-size: .72rem; color: var(--texte-3); }
+
 </style>
 </head>
 <body>
@@ -751,6 +795,18 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; accent-
 
   <div class="corps">
     <nav id="navigation" class="navigation" aria-label="Navigation principale">
+      <!-- Organisation porteuse, sous la marque du logiciel : le logo APSA se
+           lit juste en dessous de celui de MediStat, sans concurrencer la
+           navigation qui suit. -->
+      <a class="marque-apsa" href="https://www.apsa.org" target="_blank" rel="noopener noreferrer">
+        <img class="marque-apsa__logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiByb2xlPSJpbWciCiAgICAgYXJpYS1sYWJlbD0iQVBTQSDigJQgQWN0aW9ucyBwb3VyIGxhIFByb21vdGlvbiBkZSBsYSBTYW50w6kgZW4gQWZyaXF1ZSI+CiAgPHRpdGxlPkFQU0Eg4oCUIEFjdGlvbnMgcG91ciBsYSBQcm9tb3Rpb24gZGUgbGEgU2FudMOpIGVuIEFmcmlxdWU8L3RpdGxlPgoKICA8IS0tCiAgICBFbWJsw6htZSBBUFNBIHJlZGVzc2luw6kgZW4gU1ZHIMOgIHBhcnRpciBkdSBsb2dvIGZvdXJuaSA6IGFubmVhdSB2ZXJ0LAogICAgc2lsaG91ZXR0ZSBkZSBsJ0FmcmlxdWUsIGNyb2l4IG3DqWRpY2FsZSwgdHJvaXMgc2lsaG91ZXR0ZXMgZm9ybWFudCB1bgogICAgY8WTdXIsIHNpZ2xlIGV0IGJhbmRlYXUgZGUgZGV2aXNlLgoKICAgIExlIHRyYWPDqSBlc3QgdmVjdG9yaWVsIHBsdXTDtHQgcXUndW5lIGltYWdlIG1hdHJpY2llbGxlIDogaWwgcmVzdGUgbmV0IMOgCiAgICB0b3V0ZXMgbGVzIHRhaWxsZXMsIGR1IGZhdmljb24gMTYgcHggw6AgbCdpbXByZXNzaW9uIGQndW4gY29tcHRlIHJlbmR1LCBldAogICAgaWwgcMOoc2UgcXVlbHF1ZXMga2lsby1vY3RldHMgYXUgbGlldSBkZSBwbHVzaWV1cnMgY2VudGFpbmVzLgoKICAgIFBvdXIgaW5zdGFsbGVyIGxlIGxvZ28gb2ZmaWNpZWwgw6AgbGEgcGxhY2UgZGUgY2V0dGUgdmVyc2lvbiA6IGTDqXBvc2V6IGxlCiAgICBmaWNoaWVyIGZvdXJuaSBwYXIgQVBTQSBzb3VzIGFzc2V0cy9hcHNhLnN2ZyAob3UgLnBuZyBlbiBhZGFwdGFudAogICAgbCdleHRlbnNpb24gZGFucyBpbmRleC5odG1sKS4gUmllbiBkJ2F1dHJlIG4nZXN0IMOgIG1vZGlmaWVyLgogIC0tPgoKICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYXBzYUFmcmlxdWUiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzRjYWYzZiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM4ZGQzNWYiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgoKICA8Y2lyY2xlIGN4PSIxMjgiIGN5PSIxMjgiIHI9IjEyMiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjNWNiNTMxIiBzdHJva2Utd2lkdGg9IjYiLz4KCiAgPCEtLSBTaWxob3VldHRlIHNjaMOpbWF0aXF1ZSBkdSBjb250aW5lbnQgYWZyaWNhaW4gLS0+CiAgPHBhdGggZmlsbD0idXJsKCNhcHNhQWZyaXF1ZSkiIG9wYWNpdHk9Ii45MiIgZD0iCiAgICBNMTE4IDM0YzE0LTQgMzAtMiA0MiA2IDkgNiAxMiAxNyAxMCAyNy0yIDEyLTkgMjItMTEgMzQtMiAxMyAzIDI2IDEgMzkKICAgIC0yIDE0LTExIDI2LTIwIDM2LTYgNy0xMyAxNC0yMiAxNi04IDItMTYtMy0xOS0xMC00LTEwLTMtMjEtNy0zMQogICAgLTUtMTItMTUtMjEtMjAtMzMtNS0xMy00LTI4IDMtNDAgOC0xNCAyMy0yMyAzOS0yNyAxIDAgMy0xIDQtMXoiLz4KCiAgPCEtLSBDcm9peCBtw6lkaWNhbGUgLS0+CiAgPHBhdGggZmlsbD0iIzE3M2E2ZCIgZD0iTTEyMCA2MGgxNnYxNmgxNnYxNmgtMTZ2MTZoLTE2VjkyaC0xNlY3NmgxNnoiLz4KCiAgPCEtLSBUcm9pcyBzaWxob3VldHRlcyByw6l1bmllcyA6IGxhIGNvbW11bmF1dMOpIGF1IGNlbnRyZSBkZSBsJ2FjdGlvbiAtLT4KICA8ZyBmaWxsPSIjMTczYTZkIj4KICAgIDxjaXJjbGUgY3g9Ijk2IiBjeT0iMTMyIiByPSIxMCIvPgogICAgPHBhdGggZD0iTTk2IDE0NmMtMTQgMC0yNCAxMC0yNiAyNC0xIDcgNCAxMyAxMSAxM2gzMGM3IDAgMTItNiAxMS0xMy0yLTE0LTEyLTI0LTI2LTI0eiIvPgogIDwvZz4KICA8ZyBmaWxsPSIjNWNiNTMxIj4KICAgIDxjaXJjbGUgY3g9IjEyOCIgY3k9IjEyMiIgcj0iMTEiLz4KICAgIDxwYXRoIGQ9Ik0xMjggMTM3Yy0xNSAwLTI2IDExLTI4IDI2LTEgOCA1IDE0IDEyIDE0aDMyYzcgMCAxMy02IDEyLTE0LTItMTUtMTMtMjYtMjgtMjZ6Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiNmNWE2MjMiPgogICAgPGNpcmNsZSBjeD0iMTYwIiBjeT0iMTMyIiByPSIxMCIvPgogICAgPHBhdGggZD0iTTE2MCAxNDZjLTE0IDAtMjQgMTAtMjYgMjQtMSA3IDQgMTMgMTEgMTNoMzBjNyAwIDEyLTYgMTEtMTMtMi0xNC0xMi0yNC0yNi0yNHoiLz4KICA8L2c+CgogIDwhLS0gU2lnbGUgLS0+CiAgPHRleHQgeD0iMTI4IiB5PSIyMTIiIHRleHQtYW5jaG9yPSJtaWRkbGUiCiAgICAgICAgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgJ1NlZ29lIFVJJywgQXJpYWwsIHNhbnMtc2VyaWYiCiAgICAgICAgZm9udC1zaXplPSI1MiIgZm9udC13ZWlnaHQ9IjgwMCIgZmlsbD0iIzE3M2E2ZCIgbGV0dGVyLXNwYWNpbmc9IjEiPkFQU0E8L3RleHQ+CiAgPGxpbmUgeDE9IjYwIiB5MT0iMjIwIiB4Mj0iMTk2IiB5Mj0iMjIwIiBzdHJva2U9IiM1Y2I1MzEiIHN0cm9rZS13aWR0aD0iMyIvPgo8L3N2Zz4K" width="46" height="46"
+             alt="APSA — Actions pour la Promotion de la Santé en Afrique">
+        <span class="marque-apsa__texte">
+          <strong>APSA</strong>
+          <span>Actions pour la Promotion<br>de la Santé en Afrique</span>
+        </span>
+      </a>
+
       <div class="navigation__section">
         <span class="navigation__titre" data-i18n="grp_soins">Soins</span>
         <a class="nav-lien" href="#/tableau-de-bord" data-vue="tableau-de-bord"><span class="nav-lien__icone">📊</span><span class="nav-lien__texte" data-i18n="nav_bord">Tableau de bord</span></a>
@@ -20014,6 +20070,7 @@ async function vue_aide({ naviguer, rafraichir }) {
     ]),
     onglets([
       { libelle: "Prise en main", contenu: () => priseEnMain(naviguer) },
+      { libelle: "Manuels", contenu: manuels },
       { libelle: "Analyse de données", contenu: guideAnalyse },
       { libelle: "Rôles et droits", contenu: guideRoles },
       { libelle: "Sécurité", contenu: guideSecurite },
@@ -20206,6 +20263,67 @@ function guideAnalyse() {
           "pour savoir si un thème caractérise un service, un sexe ou un diagnostic particulier.",
       }),
     ]),
+  ]);
+}
+
+/* ===================== Manuels ===================== */
+
+// Les manuels sont livrés en Markdown à la racine du projet plutôt que
+// recopiés dans l'interface : un document long se lit, s'imprime et se
+// diffuse mieux hors de l'application, et le dupliquer ici garantirait
+// qu'une des deux versions finisse par être fausse.
+function manuels() {
+  const DOCUMENTS = [
+    { fichier: "GUIDE-DEBUTANT.md", icone: "🌱", titre: "Guide du débutant",
+      pour: "Toute personne qui découvre MediStat",
+      duree: "environ 30 minutes",
+      resume: "Français simple, sans jargon. Les mots à connaître, la première "
+        + "connexion, créer un patient, demander une analyse, saisir un résultat, "
+        + "faire une statistique. Les six règles à retenir." },
+    { fichier: "MANUEL.md", icone: "📘", titre: "Manuel d'utilisation",
+      pour: "Utilisateurs confirmés et administrateurs",
+      duree: "à consulter par chapitre",
+      resume: "Chaque écran, chaque rôle, chaque procédure. Sécurité, circuit du "
+        + "laboratoire, notification des patients, analyses statistiques, audit, "
+        + "sauvegarde, diagnostic des incidents et limites connues." },
+    { fichier: "COMPARATIF.md", icone: "⚖️", titre: "Comparatif",
+      pour: "Décideurs et comités de sélection",
+      duree: "environ 15 minutes",
+      resume: "MediStat face à OpenMRS, DHIS2, OpenELIS, OpenEMR, SPSS et aux "
+        + "suites hospitalières propriétaires. Comprend une section « là où les "
+        + "autres sont meilleurs » et la liste des limites, sans détour." },
+    { fichier: "INSTALLATION.md", icone: "🛠️", titre: "Guide d'installation",
+      pour: "Équipe technique",
+      duree: "selon le mode de déploiement",
+      resume: "Serveur, application installable, fichier autonome, sauvegardes." },
+    { fichier: "CONFORMITE.md", icone: "📋", titre: "Matrice de conformité",
+      pour: "Maîtrise d'ouvrage",
+      duree: "document de référence",
+      resume: "Conformité article par article au cahier des charges, avec les "
+        + "points partiellement couverts énoncés comme tels." },
+  ];
+
+  return h("div", [
+    h("p.texte-secondaire", {
+      texte: "Ces documents accompagnent la Solution. Ils se trouvent à la racine du "
+        + "projet et peuvent être imprimés ou diffusés indépendamment de l'application.",
+    }),
+    h("div.grille.grille--2", { style: { marginTop: "14px" } },
+      DOCUMENTS.map(d => h("div.carte", [
+        h("div.carte__entete", [
+          h("h3", { texte: `${d.icone}  ${d.titre}` }),
+        ]),
+        h("div", { style: { display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" } }, [
+          badge(d.pour), badge(d.duree, COULEURS.neutre),
+        ]),
+        h("p", { texte: d.resume }),
+        h("code.texte-mono", { texte: d.fichier, style: { fontSize: ".78rem" } }),
+      ]))),
+    h("div.avertissement", { style: { marginTop: "14px" }, texte:
+      "Le comparatif est rédigé par l'équipe du produit. Vérifiez les "
+      + "caractéristiques des solutions tierces auprès de leurs éditeurs avant "
+      + "toute décision : elles évoluent vite, et aucune ligne de ce tableau "
+      + "n'engage leurs auteurs." }),
   ]);
 }
 
@@ -20756,6 +20874,7 @@ async function ecranInitialisation() {
         "Toutes les données restent sur cet appareil tant que vous ne connectez pas de serveur.",
     }),
     form, jauge, h("div", { style: { marginTop: "16px" } }, [bouton]),
+    piedAPSA(),
   ]));
 
   bouton.addEventListener("click", async () => {
@@ -20862,8 +20981,19 @@ function ecranConnexion() {
       "Vos données restent sur cet appareil, chiffrées. ",
       h("a", { href: "#/aide", texte: "En savoir plus", onclick: e => e.preventDefault() }),
     ]),
+    piedAPSA(),
   ]));
   setTimeout(() => identifiant.focus(), 100);
+}
+
+// Signature de l'organisation porteuse, reprise sur les écrans où la barre
+// latérale n'existe pas encore : première configuration et connexion.
+function piedAPSA() {
+  return h("div.apsa-pied", [
+    h("img", { src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiByb2xlPSJpbWciCiAgICAgYXJpYS1sYWJlbD0iQVBTQSDigJQgQWN0aW9ucyBwb3VyIGxhIFByb21vdGlvbiBkZSBsYSBTYW50w6kgZW4gQWZyaXF1ZSI+CiAgPHRpdGxlPkFQU0Eg4oCUIEFjdGlvbnMgcG91ciBsYSBQcm9tb3Rpb24gZGUgbGEgU2FudMOpIGVuIEFmcmlxdWU8L3RpdGxlPgoKICA8IS0tCiAgICBFbWJsw6htZSBBUFNBIHJlZGVzc2luw6kgZW4gU1ZHIMOgIHBhcnRpciBkdSBsb2dvIGZvdXJuaSA6IGFubmVhdSB2ZXJ0LAogICAgc2lsaG91ZXR0ZSBkZSBsJ0FmcmlxdWUsIGNyb2l4IG3DqWRpY2FsZSwgdHJvaXMgc2lsaG91ZXR0ZXMgZm9ybWFudCB1bgogICAgY8WTdXIsIHNpZ2xlIGV0IGJhbmRlYXUgZGUgZGV2aXNlLgoKICAgIExlIHRyYWPDqSBlc3QgdmVjdG9yaWVsIHBsdXTDtHQgcXUndW5lIGltYWdlIG1hdHJpY2llbGxlIDogaWwgcmVzdGUgbmV0IMOgCiAgICB0b3V0ZXMgbGVzIHRhaWxsZXMsIGR1IGZhdmljb24gMTYgcHggw6AgbCdpbXByZXNzaW9uIGQndW4gY29tcHRlIHJlbmR1LCBldAogICAgaWwgcMOoc2UgcXVlbHF1ZXMga2lsby1vY3RldHMgYXUgbGlldSBkZSBwbHVzaWV1cnMgY2VudGFpbmVzLgoKICAgIFBvdXIgaW5zdGFsbGVyIGxlIGxvZ28gb2ZmaWNpZWwgw6AgbGEgcGxhY2UgZGUgY2V0dGUgdmVyc2lvbiA6IGTDqXBvc2V6IGxlCiAgICBmaWNoaWVyIGZvdXJuaSBwYXIgQVBTQSBzb3VzIGFzc2V0cy9hcHNhLnN2ZyAob3UgLnBuZyBlbiBhZGFwdGFudAogICAgbCdleHRlbnNpb24gZGFucyBpbmRleC5odG1sKS4gUmllbiBkJ2F1dHJlIG4nZXN0IMOgIG1vZGlmaWVyLgogIC0tPgoKICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYXBzYUFmcmlxdWUiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzRjYWYzZiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM4ZGQzNWYiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgoKICA8Y2lyY2xlIGN4PSIxMjgiIGN5PSIxMjgiIHI9IjEyMiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjNWNiNTMxIiBzdHJva2Utd2lkdGg9IjYiLz4KCiAgPCEtLSBTaWxob3VldHRlIHNjaMOpbWF0aXF1ZSBkdSBjb250aW5lbnQgYWZyaWNhaW4gLS0+CiAgPHBhdGggZmlsbD0idXJsKCNhcHNhQWZyaXF1ZSkiIG9wYWNpdHk9Ii45MiIgZD0iCiAgICBNMTE4IDM0YzE0LTQgMzAtMiA0MiA2IDkgNiAxMiAxNyAxMCAyNy0yIDEyLTkgMjItMTEgMzQtMiAxMyAzIDI2IDEgMzkKICAgIC0yIDE0LTExIDI2LTIwIDM2LTYgNy0xMyAxNC0yMiAxNi04IDItMTYtMy0xOS0xMC00LTEwLTMtMjEtNy0zMQogICAgLTUtMTItMTUtMjEtMjAtMzMtNS0xMy00LTI4IDMtNDAgOC0xNCAyMy0yMyAzOS0yNyAxIDAgMy0xIDQtMXoiLz4KCiAgPCEtLSBDcm9peCBtw6lkaWNhbGUgLS0+CiAgPHBhdGggZmlsbD0iIzE3M2E2ZCIgZD0iTTEyMCA2MGgxNnYxNmgxNnYxNmgtMTZ2MTZoLTE2VjkyaC0xNlY3NmgxNnoiLz4KCiAgPCEtLSBUcm9pcyBzaWxob3VldHRlcyByw6l1bmllcyA6IGxhIGNvbW11bmF1dMOpIGF1IGNlbnRyZSBkZSBsJ2FjdGlvbiAtLT4KICA8ZyBmaWxsPSIjMTczYTZkIj4KICAgIDxjaXJjbGUgY3g9Ijk2IiBjeT0iMTMyIiByPSIxMCIvPgogICAgPHBhdGggZD0iTTk2IDE0NmMtMTQgMC0yNCAxMC0yNiAyNC0xIDcgNCAxMyAxMSAxM2gzMGM3IDAgMTItNiAxMS0xMy0yLTE0LTEyLTI0LTI2LTI0eiIvPgogIDwvZz4KICA8ZyBmaWxsPSIjNWNiNTMxIj4KICAgIDxjaXJjbGUgY3g9IjEyOCIgY3k9IjEyMiIgcj0iMTEiLz4KICAgIDxwYXRoIGQ9Ik0xMjggMTM3Yy0xNSAwLTI2IDExLTI4IDI2LTEgOCA1IDE0IDEyIDE0aDMyYzcgMCAxMy02IDEyLTE0LTItMTUtMTMtMjYtMjgtMjZ6Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiNmNWE2MjMiPgogICAgPGNpcmNsZSBjeD0iMTYwIiBjeT0iMTMyIiByPSIxMCIvPgogICAgPHBhdGggZD0iTTE2MCAxNDZjLTE0IDAtMjQgMTAtMjYgMjQtMSA3IDQgMTMgMTEgMTNoMzBjNyAwIDEyLTYgMTEtMTMtMi0xNC0xMi0yNC0yNi0yNHoiLz4KICA8L2c+CgogIDwhLS0gU2lnbGUgLS0+CiAgPHRleHQgeD0iMTI4IiB5PSIyMTIiIHRleHQtYW5jaG9yPSJtaWRkbGUiCiAgICAgICAgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgJ1NlZ29lIFVJJywgQXJpYWwsIHNhbnMtc2VyaWYiCiAgICAgICAgZm9udC1zaXplPSI1MiIgZm9udC13ZWlnaHQ9IjgwMCIgZmlsbD0iIzE3M2E2ZCIgbGV0dGVyLXNwYWNpbmc9IjEiPkFQU0E8L3RleHQ+CiAgPGxpbmUgeDE9IjYwIiB5MT0iMjIwIiB4Mj0iMTk2IiB5Mj0iMjIwIiBzdHJva2U9IiM1Y2I1MzEiIHN0cm9rZS13aWR0aD0iMyIvPgo8L3N2Zz4K", width: 44, height: 44,
+      alt: "APSA — Actions pour la Promotion de la Santé en Afrique" }),
+    h("span", { texte: "Une initiative APSA — Actions pour la Promotion de la Santé en Afrique" }),
+  ]);
 }
 
 /* ===================== Ouverture de l'application ===================== */
@@ -20973,8 +21103,63 @@ function brancherInterface() {
 
   brancherLangue();
 
-  $("#btnMenu").onclick = () => nav.classList.toggle("navigation--ouverte");
-  $("#btnMenuMobile").onclick = () => nav.classList.toggle("navigation--ouverte");
+  // Le bouton à trois traits ne fait pas la même chose selon la place
+  // disponible. Sur téléphone, la barre latérale est hors écran : il la fait
+  // entrer. Sur ordinateur, elle est déjà là : la faire « entrer » n'aurait
+  // aucun effet visible — c'est ce qui donnait un bouton mort. Il la replie
+  // donc, ce qui rend l'écran entier aux tableaux et aux graphiques.
+  const surPetitEcran = () => window.innerWidth <= 1000;
+  const CLE_REPLI = "medistat.navigationRepliee";
+
+  function basculerMenu() {
+    if (surPetitEcran()) {
+      nav.classList.toggle("navigation--ouverte");
+    } else {
+      const repliee = nav.classList.toggle("navigation--repliee");
+      try { localStorage.setItem(CLE_REPLI, repliee ? "1" : "0"); } catch { /* mode privé */ }
+    }
+    majEtatMenu();
+  }
+
+  function majEtatMenu() {
+    const ouvert = surPetitEcran()
+      ? nav.classList.contains("navigation--ouverte")
+      : !nav.classList.contains("navigation--repliee");
+    for (const b of [$("#btnMenu"), $("#btnMenuMobile")]) {
+      if (!b) continue;
+      b.setAttribute("aria-expanded", String(ouvert));
+      b.setAttribute("aria-controls", "navigation");
+      b.setAttribute("title", ouvert ? "Replier le menu" : "Afficher le menu");
+      b.setAttribute("aria-label", ouvert ? "Replier le menu" : "Afficher le menu");
+    }
+  }
+
+  $("#btnMenu").onclick = basculerMenu;
+  $("#btnMenuMobile").onclick = basculerMenu;
+
+  // Le choix de replier est mémorisé : un utilisateur qui travaille sur des
+  // tableaux larges ne doit pas le refaire à chaque connexion.
+  try {
+    if (localStorage.getItem(CLE_REPLI) === "1") nav.classList.add("navigation--repliee");
+  } catch { /* mode privé */ }
+
+  // Passer d'un format à l'autre — rotation d'une tablette, fenêtre
+  // redimensionnée — ne doit pas laisser la navigation dans un état hybride.
+  window.addEventListener("resize", () => {
+    if (surPetitEcran()) {
+      // Repliée n'a pas de sens sur petit écran : la barre y est déjà hors
+      // champ. On retire la classe sans effacer la préférence, qui sera
+      // rétablie au retour sur grand écran.
+      nav.classList.remove("navigation--repliee");
+    } else {
+      nav.classList.remove("navigation--ouverte");
+      let repliee = false;
+      try { repliee = localStorage.getItem(CLE_REPLI) === "1"; } catch { /* mode privé */ }
+      nav.classList.toggle("navigation--repliee", repliee);
+    }
+    majEtatMenu();
+  });
+  majEtatMenu();
   document.addEventListener("click", e => {
     if (window.innerWidth <= 1000 && nav.classList.contains("navigation--ouverte") &&
         !nav.contains(e.target) && !e.target.closest("#btnMenu, #btnMenuMobile")) {

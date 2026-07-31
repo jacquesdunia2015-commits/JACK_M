@@ -415,3 +415,18 @@ centralisée, le partage entre postes et l'envoi des messages aux patients.
 
 Le premier produit `dist/medistat-autonome.html`, déposable tel quel sur
 n'importe quel hébergement statique ou ouvrable depuis une clé USB.
+
+## Documentation
+
+| Document | Pour qui | Contenu |
+|---|---|---|
+| [`GUIDE-DEBUTANT.md`](GUIDE-DEBUTANT.md) | Toute personne découvrant MediStat | Français simple, 30 minutes. Les gestes de tous les jours, sans jargon. |
+| [`MANUEL.md`](MANUEL.md) | Utilisateurs confirmés, administrateurs | Manuel complet : chaque écran, chaque rôle, chaque procédure, diagnostic des incidents. |
+| [`COMPARATIF.md`](COMPARATIF.md) | Décideurs, comités de sélection | MediStat face à OpenMRS, DHIS2, OpenELIS, SPSS et aux suites propriétaires — limites comprises. |
+| [`INSTALLATION.md`](INSTALLATION.md) | Équipe technique | Déploiement du serveur, PWA, installateurs. |
+| [`CONFORMITE.md`](CONFORMITE.md) | Maîtrise d'ouvrage | Conformité article par article au cahier des charges. |
+
+Le comparatif est écrit par l'équipe du produit : sa section « Là où les
+autres sont meilleurs » est aussi détaillée que les autres, et ses limites
+sont énoncées sans détour. Vérifiez néanmoins les caractéristiques des
+produits tiers auprès de leurs éditeurs avant toute décision.

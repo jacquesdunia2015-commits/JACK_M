@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img"
+     aria-label="APSA — Actions pour la Promotion de la Santé en Afrique">
+  <title>APSA — Actions pour la Promotion de la Santé en Afrique</title>
+
+  <!--
+    Emblème APSA redessiné en SVG à partir du logo fourni : anneau vert,
+    silhouette de l'Afrique, croix médicale, trois silhouettes formant un
+    cœur, sigle et bandeau de devise.
+
+    Le tracé est vectoriel plutôt qu'une image matricielle : il reste net à
+    toutes les tailles, du favicon 16 px à l'impression d'un compte rendu, et
+    il pèse quelques kilo-octets au lieu de plusieurs centaines.
+
+    Pour installer le logo officiel à la place de cette version : déposez le
+    fichier fourni par APSA sous assets/apsa.svg (ou .png en adaptant
+    l'extension dans index.html). Rien d'autre n'est à modifier.
+  -->
+
+  <defs>
+    <linearGradient id="apsaAfrique" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4caf3f"/>
+      <stop offset="100%" stop-color="#8dd35f"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="128" cy="128" r="122" fill="#ffffff" stroke="#5cb531" stroke-width="6"/>
+
+  <!-- Silhouette schématique du continent africain -->
+  <path fill="url(#apsaAfrique)" opacity=".92" d="
+    M118 34c14-4 30-2 42 6 9 6 12 17 10 27-2 12-9 22-11 34-2 13 3 26 1 39
+    -2 14-11 26-20 36-6 7-13 14-22 16-8 2-16-3-19-10-4-10-3-21-7-31
+    -5-12-15-21-20-33-5-13-4-28 3-40 8-14 23-23 39-27 1 0 3-1 4-1z"/>
+
+  <!-- Croix médicale -->
+  <path fill="#173a6d" d="M120 60h16v16h16v16h-16v16h-16V92h-16V76h16z"/>
+
+  <!-- Trois silhouettes réunies : la communauté au centre de l'action -->
+  <g fill="#173a6d">
+    <circle cx="96" cy="132" r="10"/>
+    <path d="M96 146c-14 0-24 10-26 24-1 7 4 13 11 13h30c7 0 12-6 11-13-2-14-12-24-26-24z"/>
+  </g>
+  <g fill="#5cb531">
+    <circle cx="128" cy="122" r="11"/>
+    <path d="M128 137c-15 0-26 11-28 26-1 8 5 14 12 14h32c7 0 13-6 12-14-2-15-13-26-28-26z"/>
+  </g>
+  <g fill="#f5a623">
+    <circle cx="160" cy="132" r="10"/>
+    <path d="M160 146c-14 0-24 10-26 24-1 7 4 13 11 13h30c7 0 12-6 11-13-2-14-12-24-26-24z"/>
+  </g>
+
+  <!-- Sigle -->
+  <text x="128" y="212" text-anchor="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif"
+        font-size="52" font-weight="800" fill="#173a6d" letter-spacing="1">APSA</text>
+  <line x1="60" y1="220" x2="196" y2="220" stroke="#5cb531" stroke-width="3"/>
+</svg>
