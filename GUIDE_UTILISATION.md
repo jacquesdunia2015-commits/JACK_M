@@ -491,51 +491,64 @@ Vous croiserez ces extensions dans les fenêtres « Ouvrir » et « Enregistrer 
 
 ---
 
-## 21. Afficher le logo de votre organisation 🏛️
+## 21. Afficher le logo de votre organisation et votre drapeau 🏛️🇨🇩
 
-QualiCode peut porter **deux logos côte à côte** : le sien et celui de votre
-organisation (APSA, une université, une ONG, un bureau d'études). Le logo
-apparaît **dans l'en-tête de l'application** et **en tête des rapports
-imprimables** que vous remettez à un commanditaire.
+QualiCode peut porter **trois marques côte à côte** dans son en-tête : son
+propre logo, celui de votre organisation (APSA, une université, une ONG, un
+bureau d'études) et **votre drapeau national**. Les mêmes marques apparaissent
+**en tête des rapports imprimables** que vous remettez à un commanditaire.
 
 C'est un vrai argument professionnel : ni MAXQDA, ni NVivo, ni ATLAS.ti ne
 laissent une organisation cliente mettre sa propre marque dans le logiciel.
 
-### En 4 clics
+### En quelques clics
 
 1. Onglet **Accueil** → bouton **🏛️ Logo de l'organisation**.
-2. **Choisir une image** : un fichier PNG, JPG, SVG ou WebP. Un logo carré ou
-   horizontal fonctionne bien ; l'image est réduite automatiquement à 320 px,
-   donc inutile d'envoyer un fichier de 5 Mo.
-3. **Nom de l'organisation** (facultatif) : par exemple `APSA`. Il s'affiche à
-   côté du logo dans les rapports.
-4. **OK**. Le logo apparaît immédiatement à droite du logo QualiCode.
+2. **Nom de l'organisation** : par exemple `APSA`. Tant que vous n'avez pas
+   chargé d'image, une **vignette portant le sigle** est affichée à la place du
+   logo — c'est un repère provisoire, pas le logo officiel.
+3. **Choisir une image** : un fichier PNG, JPG, SVG ou WebP. L'image est réduite
+   automatiquement à 320 px, inutile d'envoyer un fichier de 5 Mo.
+4. **Drapeau national** : cliquez sur une vignette — 🇨🇩 République démocratique
+   du Congo, 🇷🇼 Rwanda, 🇧🇯 Bénin, ou *Aucun*.
+5. **OK**. Tout apparaît immédiatement à droite du logo QualiCode.
 
-Pour l'enlever : rouvrez la même fenêtre et cliquez **Retirer le logo**.
+Pour tout enlever : rouvrez la même fenêtre et cliquez **Tout retirer**.
 
 ### Ce qu'il faut savoir
 
 | Question | Réponse |
 |---|---|
-| Où le logo est-il conservé ? | Dans le navigateur de **cet appareil** (localStorage), pas dans le fichier projet. |
-| Est-il envoyé avec mon `.projx` ? | **Non.** Un collègue à qui vous envoyez le projet ne verra pas votre logo — chacun met le sien. |
-| Apparaît-il dans les rapports ? | Oui, en haut du **rapport imprimable** (et donc du PDF que vous en tirez). |
-| Sur téléphone ? | Oui, en version réduite à côté du logo QualiCode. |
-| Si je réinstalle QualiCode ? | Le logo est à remettre (4 clics). Gardez le fichier image quelque part. |
+| Où ces réglages sont-ils conservés ? | Dans le navigateur de **cet appareil**, pas dans le fichier projet. |
+| Sont-ils envoyés avec mon `.projx` ? | **Non.** Un collègue à qui vous envoyez le projet ne verra pas vos marques — chacun met les siennes. |
+| Apparaissent-ils dans les rapports ? | Oui, en haut du **rapport imprimable** (et donc du PDF que vous en tirez) : logo et nom à gauche, drapeau à droite. |
+| Sur téléphone ? | Oui, en version réduite, sur la même ligne que le logo QualiCode. |
+| Le drapeau pèse-t-il lourd ? | Non : il est dessiné en SVG dans l'application (quelques centaines d'octets) et fonctionne **hors ligne**, sans aucune requête réseau. |
+| Si je réinstalle QualiCode ? | Les réglages sont à refaire (quelques clics). Gardez le fichier image quelque part. |
 
 ### Pour une organisation entière (option avancée)
 
-Si vous déployez QualiCode pour toute une équipe et que vous voulez que le logo
-soit **déjà là au premier lancement**, sans que chacun ait à le charger :
+Si vous déployez QualiCode pour toute une équipe et que vous voulez que les
+marques soient **déjà en place au premier lancement**, sans que chacun ait à les
+choisir, tout se règle dans les balises `<meta>` de `index.html` :
 
-1. Déposez le fichier dans `assets/logo/organisation.png` (dans le dépôt).
-2. Dans `index.html`, décommentez la ligne :
-   `<meta name="qc-org-logo" content="assets/logo/organisation.png">`
-3. Ajustez le nom : `<meta name="qc-org-nom" content="APSA">`
-4. Reconstruisez le fichier unique : `python3 tools/build_standalone.py`
-   (le logo y est alors **embarqué**, il fonctionne donc aussi hors ligne).
+```html
+<meta name="qc-org-nom" content="APSA">
+<meta name="qc-org-drapeau" content="cd">   <!-- cd, rw, bj, ou vide -->
+<meta name="qc-org-logo" content="assets/logo/organisation.png">
+```
 
-Chaque utilisateur reste libre de le remplacer par le sien.
+1. Le **nom** et le **drapeau** fonctionnent immédiatement, sans aucun fichier.
+2. Pour le **logo officiel**, déposez le fichier dans
+   `assets/logo/organisation.png` puis décommentez la troisième ligne.
+3. Reconstruisez les paquets :
+   `python3 tools/build_standalone.py` (le logo est alors embarqué dans le
+   fichier unique, donc disponible hors ligne) puis
+   `python3 tools/faire_paquet_web.py`.
+
+Chaque utilisateur reste libre de remplacer ces marques par les siennes, ou de
+les retirer. Un client qui achète QualiCode change simplement ces deux lignes
+pour son propre nom et son propre drapeau.
 
 ---
 

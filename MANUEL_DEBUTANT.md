@@ -377,54 +377,72 @@ nouveau code — c'est gratuit.
 9. **Choisir les codes après avoir vu les résultats espérés** → définissez la logique de codage dans un mémo AVANT.
 10. **Reporter l'analyse à la fin du terrain** → codez chaque entretien dans les 48 h.
 
-## Chapitre 15 bis — Mettre le logo de votre organisation 🏛️
+## Chapitre 15 bis — Mettre le logo de votre organisation et votre drapeau 🏛️🇨🇩
 
 Vous travaillez pour une organisation (APSA, une université, une ONG) ? Vous
-pouvez afficher **son logo à côté de celui de QualiCode**. Cela change tout
-quand vous remettez un rapport à un commanditaire : le document sort aux
-couleurs de votre structure.
+pouvez afficher **son logo et votre drapeau national à côté de celui de
+QualiCode**. Cela change tout quand vous remettez un rapport à un
+commanditaire : le document sort aux couleurs de votre structure et de votre
+pays.
 
 **Ce que vous voyez avant :** le logo bleu de QualiCode, tout seul, en haut à
 gauche.
-**Ce que vous voyez après :** votre logo juste à côté, sur la même ligne.
+**Ce que vous voyez après :** votre logo puis votre drapeau juste à côté, sur la
+même ligne.
 
 ### Faites-le maintenant, cela prend 30 secondes
 
-1. Ayez le fichier de votre logo sur l'ordinateur (une image `PNG` ou `JPG` —
-   celle qui est sur vos papiers à en-tête convient très bien).
-2. Onglet **Accueil**.
-3. Cliquez **🏛️ Logo de l'organisation**.
-4. Cliquez **Choisir une image** et sélectionnez votre fichier.
-   → un aperçu s'affiche tout de suite dans la fenêtre.
-5. Dans **Nom de l'organisation**, tapez par exemple `APSA`.
-6. Cliquez **OK**.
+1. Onglet **Accueil**.
+2. Cliquez **🏛️ Logo de l'organisation**.
+3. Dans **Nom de l'organisation**, tapez par exemple `APSA`.
+   → une vignette bleue portant le sigle **APSA** apparaît tout de suite dans
+   l'aperçu.
+4. Sous **Drapeau national**, cliquez sur **République démocratique du Congo**.
+   → le drapeau apparaît à côté.
+5. Cliquez **OK**.
 
-Regardez en haut à gauche : les deux logos sont là. ✅
+Regardez en haut à gauche : les trois marques sont là. ✅
 
-### Où ce logo va-t-il réapparaître ?
+### Et le vrai logo de l'organisation ?
+
+La vignette bleue « APSA » n'est **qu'un repère provisoire** — ce n'est pas le
+logo officiel de votre organisation. Dès que vous avez le fichier image :
+
+1. Accueil → **🏛️ Logo de l'organisation**
+2. **Choisir une image** → sélectionnez le fichier (PNG ou JPG ; celui qui est
+   sur vos papiers à en-tête convient très bien)
+3. **OK** — le vrai logo remplace la vignette.
+
+### Où ces marques réapparaissent-elles ?
 
 - Dans **l'en-tête de l'application**, à chaque ouverture.
 - **En haut de vos rapports imprimables** (onglet Rapports → *Rapport
-  imprimable*), donc dans le PDF que vous envoyez ou que vous imprimez.
+  imprimable*), donc dans le PDF que vous envoyez ou que vous imprimez : logo et
+  nom à gauche, drapeau à droite.
 - Aussi **sur votre téléphone**, en plus petit.
 
-### Trois questions que tout le monde se pose
+### Quatre questions que tout le monde se pose
 
-**« Mon collègue verra-t-il mon logo si je lui envoie mon projet ? »**
-Non. Le logo reste sur **votre** appareil. Le fichier `.projx` ne le transporte
+**« Mon collègue verra-t-il mes marques si je lui envoie mon projet ? »**
+Non. Elles restent sur **votre** appareil. Le fichier `.projx` ne les transporte
 pas. C'est voulu : votre identité visuelle ne part pas dans la nature.
 
 **« Est-ce que ça alourdit mon projet ? »**
 Non, pas d'un seul octet. L'image est même réduite automatiquement avant d'être
-gardée.
+gardée, et le drapeau est **dessiné par l'application** (il fonctionne donc hors
+ligne, sans internet).
 
-**« Je me suis trompé de logo, comment l'enlever ? »**
-Accueil → 🏛️ Logo de l'organisation → bouton **Retirer le logo**. Puis
-recommencez avec le bon fichier.
+**« Mon pays n'est pas dans la liste. »**
+Choisissez *Aucun* pour le drapeau, et chargez simplement l'image du drapeau à
+la place du logo si vous y tenez. Vous pouvez aussi demander l'ajout de votre
+pays à la liste.
+
+**« Je me suis trompé, comment enlever tout ça ? »**
+Accueil → 🏛️ Logo de l'organisation → bouton **Tout retirer**. Puis recommencez.
 
 > 💡 **Astuce d'usage.** Si vous faites une soutenance ou une présentation à un
-> bailleur, mettez le logo AVANT de générer vos rapports : ils sortiront tous
-> marqués, sans retouche dans Word.
+> bailleur, réglez ces marques AVANT de générer vos rapports : ils sortiront
+> tous marqués, sans retouche dans Word.
 
 ---
 
@@ -444,7 +462,7 @@ recommencez avec le bon fichier.
 | Saturation | Moment où de nouveaux entretiens n'apportent plus d'idées nouvelles |
 | REFI-QDA | Format standard d'échange entre logiciels d'analyse qualitative |
 | .projx | Fichier de sauvegarde d'un projet QualiCode |
-| Co-marquage | Afficher le logo de votre organisation à côté de celui de QualiCode |
+| Co-marquage | Afficher le logo de votre organisation et votre drapeau à côté de celui de QualiCode |
 
 *Bonne analyse ! Pour l'aide dans l'application : touche F1, ou `Ctrl+K` puis
 tapez ce que vous cherchez.*

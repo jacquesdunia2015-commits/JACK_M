@@ -47,7 +47,8 @@ import { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerSe
          detectBrowser, cannotInstallHere, openInRealBrowser } from "./mobile.js";
 import { mergeProjects, coderLabels, interCoderAgreement, kappaInterpretation } from "./merge.js";
 import { getOrgLogo, getOrgName, setOrgLogo, logoVersDataUrl, appliquerLogoEntete,
-         chargerLogoParDefaut } from "./branding.js";
+         chargerLogoParDefaut, listeDrapeaux, getOrgFlag, setOrgFlag, drapeauSrc,
+         badgeOrg } from "./branding.js";
 
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -3085,36 +3086,52 @@ async function runLiveInstallCheck(root) {
 const ORG_PAR_DEFAUT = "APSA";
 
 function openOrgLogoModal() {
-  const apercu = (src, nom) => src
-    ? `<img src="${src}" alt="${esc(nom || "")}">${nom ? `<strong>${esc(nom)}</strong>` : ""}`
-    : `<span class="hint">${esc(t("org_preview"))} —</span>`;
+  // État de travail : rien n'est enregistré tant que l'utilisateur n'a pas
+  // validé, ce qui permet d'annuler proprement.
+  let logo = getOrgLogo();
+  let drapeau = getOrgFlag();
+
+  const choixDrapeaux = [
+    { code: "", nom: t("org_flag_none") },
+    ...listeDrapeaux(),
+  ];
 
   const m = openModal({
     title: t("org_title"),
     bodyHtml: `
       <p>${esc(t("org_hint"))}</p>
       <div class="form-row">
-        <label for="orgFile">${esc(t("org_choose"))}</label>
-        <input type="file" id="orgFile" accept="image/png,image/jpeg,image/svg+xml,image/webp">
-      </div>
-      <div class="form-row">
         <label for="orgNom">${esc(t("org_name"))}</label>
         <input type="text" id="orgNom" placeholder="${esc(t("org_name_ph"))}" value="${esc(getOrgName())}">
       </div>
-      <div class="org-preview" id="orgApercu">${apercu(getOrgLogo(), getOrgName())}</div>
+      <div class="form-row">
+        <label for="orgFile">${esc(t("org_choose"))}</label>
+        <input type="file" id="orgFile" accept="image/png,image/jpeg,image/svg+xml,image/webp">
+      </div>
+      <p class="hint">${esc(t("org_badge_hint"))}</p>
+      <h3>${esc(t("org_flag"))}</h3>
+      <div class="flag-choices" id="orgFlags">
+        ${choixDrapeaux.map(d => `
+          <button type="button" class="flag-choice" data-code="${esc(d.code)}">
+            ${d.src ? `<img src="${d.src}" alt="${esc(d.nom)}">` : `<span class="flag-none">—</span>`}
+            <span>${esc(d.nom)}</span>
+          </button>`).join("")}
+      </div>
+      <h3>${esc(t("org_preview"))}</h3>
+      <div class="org-preview" id="orgApercu"></div>
       <p class="hint">🔒 ${esc(t("org_local"))}</p>`,
     footer: [
       { label: t("org_remove"), danger: true, onClick: (o, close) => {
         setOrgLogo("", "");
+        setOrgFlag("");
         appliquerLogoEntete();
         close();
         toast("🏛️ " + t("org_removed"));
       } },
       { label: t("cancel"), onClick: (o, close) => close() },
       { label: t("ok"), primary: true, onClick: (o, close) => {
-        const src = o.querySelector("#orgApercu img")?.getAttribute("src") || getOrgLogo();
-        if (!src) { close(); return; }
-        setOrgLogo(src, o.querySelector("#orgNom").value.trim());
+        setOrgLogo(logo, m.body.querySelector("#orgNom").value.trim());
+        setOrgFlag(drapeau);
         appliquerLogoEntete();
         close();
         toast("🏛️ " + t("org_saved"));
@@ -3122,18 +3139,39 @@ function openOrgLogoModal() {
     ],
   });
 
+  const majApercu = () => {
+    const nom = m.body.querySelector("#orgNom").value.trim();
+    const srcLogo = logo || (nom ? badgeOrg(nom) : "");
+    const srcDrapeau = drapeau ? (drapeau.startsWith("data:") ? drapeau : drapeauSrc(drapeau)) : "";
+    m.body.querySelector("#orgApercu").innerHTML =
+      (srcLogo || srcDrapeau)
+        ? `${srcLogo ? `<img src="${srcLogo}" alt="${esc(nom)}">` : ""}
+           ${nom ? `<strong>${esc(nom)}</strong>` : ""}
+           ${srcDrapeau ? `<img class="apercu-drapeau" src="${srcDrapeau}" alt="">` : ""}`
+        : `<span class="hint">—</span>`;
+    m.body.querySelectorAll(".flag-choice").forEach(b =>
+      b.classList.toggle("selected", b.dataset.code === drapeau));
+  };
+
   // Aperçu immédiat : l'image est redimensionnée avant d'être conservée
   m.body.querySelector("#orgFile").onchange = async e => {
     const f = e.target.files?.[0];
     if (!f) return;
     try {
-      const dataUrl = await logoVersDataUrl(f);
-      const nom = m.body.querySelector("#orgNom").value.trim();
-      m.body.querySelector("#orgApercu").innerHTML = apercu(dataUrl, nom);
+      logo = await logoVersDataUrl(f);
+      majApercu();
     } catch {
       toast("⚠️ " + t("org_bad"));
     }
   };
+  m.body.querySelector("#orgNom").addEventListener("input", majApercu);
+  m.body.querySelector("#orgFlags").addEventListener("click", e => {
+    const b = e.target.closest(".flag-choice");
+    if (!b) return;
+    drapeau = b.dataset.code;
+    majApercu();
+  });
+  majApercu();
 }
 
 /** Ouvre un projet reçu du système (double-clic sur un .projx / .qdpx). */
