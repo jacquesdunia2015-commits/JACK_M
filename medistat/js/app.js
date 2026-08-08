@@ -1,0 +1,1021 @@
+// medistat/js/app.js
+// Coquille applicative : démarrage, authentification, routage, navigation,
+// recherche globale, notifications et installation.
+
+import { h, $, $$, remplacer, vider, fmt, notifier, succes, erreur, alerte, critique,
+  modale, confirmer, chargement, etatVide, etatErreur, initiales, couleurDepuisTexte,
+  antirebond, formulaire } from "./core/ui.js";
+import * as auth from "./core/auth.js";
+import * as store from "./core/store.js";
+import { ROLES, hasPermission, calculerAge } from "./core/model.js";
+import { evaluerMotDePasse } from "./core/crypto.js";
+import * as i18n from "./core/i18n.js";
+
+/* ===================== Registre des vues ===================== */
+
+// Les vues sont chargées à la demande : le démarrage reste rapide même sur un
+// téléphone d'entrée de gamme, et seul le code réellement utilisé est évalué.
+const VUES = {
+  "tableau-de-bord": () => import("./modules/tableau-bord.js"),
+  "patients": () => import("./modules/patients.js"),
+  "consultations": () => import("./modules/consultations.js"),
+  "rendez-vous": () => import("./modules/consultations.js"),
+  "demandes": () => import("./modules/laboratoire.js"),
+  "paillasse": () => import("./modules/laboratoire.js"),
+  "validation": () => import("./modules/laboratoire.js"),
+  "messages": () => import("./modules/laboratoire.js"),
+  "catalogue": () => import("./modules/catalogue.js"),
+  "jeux-donnees": () => import("./modules/donnees.js"),
+  "statistiques": () => import("./modules/statistiques.js"),
+  "qualitatif": () => import("./modules/qualitatif.js"),
+  "rapports": () => import("./modules/rapports.js"),
+  "utilisateurs": () => import("./modules/administration.js"),
+  "etablissement": () => import("./modules/administration.js"),
+  "audit": () => import("./modules/administration.js"),
+  "facturation": () => import("./modules/administration.js"),
+  "aide": () => import("./modules/aide.js"),
+};
+
+const etat = {
+  vueCourante: null,
+  parametres: {},
+  invitationInstallation: null,
+};
+
+/* ===================== Démarrage ===================== */
+
+async function demarrer() {
+  const etatDemarrage = $("#demarrageEtat");
+  const dire = m => { if (etatDemarrage) etatDemarrage.textContent = m; };
+
+  appliquerTheme(localStorage.getItem("medistat-theme") || "clair");
+  // La langue est posée avant tout affichage : l'écran de premier lancement
+  // doit déjà s'ouvrir dans la langue du poste, et non en français par défaut.
+  i18n.initialiserLangue();
+
+  try {
+    dire("Ouverture de la base locale…");
+    const diagnostic = await store.diagnosticStockage();
+    if (diagnostic.avertissement) {
+      setTimeout(() => alerte(diagnostic.avertissement, { duree: 12000 }), 1200);
+    }
+
+    dire("Vérification de la configuration…");
+    if (await auth.besoinInitialisation()) {
+      masquerDemarrage();
+      return ecranInitialisation();
+    }
+
+    masquerDemarrage();
+    ecranConnexion();
+  } catch (e) {
+    console.error(e);
+    dire("Le démarrage a échoué : " + e.message);
+  }
+}
+
+function masquerDemarrage() {
+  const d = $("#demarrage");
+  if (d) d.remove();
+}
+
+/* ===================== Premier lancement ===================== */
+
+async function ecranInitialisation() {
+  const app = $("#application");
+  app.hidden = false;
+  $("#navigation").hidden = true;
+  $(".barre-haut__actions").hidden = true;
+  $(".barre-haut__recherche").hidden = true;
+
+  const form = formulaire([
+    { type: "separateur", libelle: "Établissement" },
+    { cle: "nom", libelle: "Nom de l'établissement", obligatoire: true, pleineLargeur: true,
+      placeholder: "Centre hospitalier universitaire de…" },
+    { cle: "code", libelle: "Code court", obligatoire: true, placeholder: "CHU",
+      aide: "3 à 4 lettres, utilisées dans les numéros de dossier." },
+    { cle: "type", libelle: "Type", type: "select", vide: false,
+      options: [
+        { valeur: "hopital", libelle: "Hôpital" },
+        { valeur: "clinique", libelle: "Clinique" },
+        { valeur: "centre", libelle: "Centre de santé" },
+        { valeur: "laboratoire", libelle: "Laboratoire indépendant" },
+      ] },
+    { cle: "ville", libelle: "Ville" },
+    { cle: "pays", libelle: "Pays" },
+    { type: "separateur", libelle: "Compte administrateur" },
+    { cle: "prenom", libelle: "Prénom", obligatoire: true },
+    { cle: "nomAdmin", libelle: "Nom", obligatoire: true },
+    { cle: "identifiant", libelle: "Identifiant de connexion", obligatoire: true,
+      placeholder: "admin", aide: "Sans espace ni accent." },
+    { cle: "email", libelle: "Adresse électronique", type: "email" },
+    { cle: "motDePasse", libelle: "Mot de passe", type: "password", obligatoire: true,
+      aide: "12 caractères minimum recommandés, avec majuscules, minuscules et chiffres." },
+    { cle: "motDePasse2", libelle: "Confirmation du mot de passe", type: "password", obligatoire: true },
+    { type: "separateur", libelle: "Modules à activer" },
+    { cle: "facturation", libelle: "Module de facturation", type: "checkbox",
+      aide: "Activez-le si votre structure facture les actes." },
+    { cle: "portailPatient", libelle: "Portail patient", type: "checkbox", defaut: true,
+      aide: "Permet aux patients de consulter leurs résultats." },
+    { cle: "demonstration", libelle: "Charger un jeu de données de démonstration", type: "checkbox", defaut: true,
+      aide: "Patients, examens et résultats fictifs, pour découvrir la Solution. Supprimables à tout moment." },
+  ]);
+  form.classList.add("formulaire--grille");
+
+  const jauge = h("div");
+  form.controles.motDePasse.addEventListener("input", e => {
+    const f = evaluerMotDePasse(e.target.value);
+    remplacer(jauge, h("div", [
+      h("div.progression", [h("div.progression__barre", {
+        style: {
+          width: Math.min(100, (f.entropie / 100) * 100) + "%",
+          backgroundColor: f.acceptable ? "var(--succes)" : "var(--alerte)",
+        },
+      })]),
+      h("span.champ-aide", { texte: `Robustesse : ${f.niveau}. ${f.conseil}` }),
+    ]));
+  });
+
+  const bouton = h("button.btn.btn--primaire.btn--large", { texte: "Créer l'établissement et démarrer" });
+
+  remplacer($("#vue"), h("div.carte", { style: { maxWidth: "860px", margin: "24px auto" } }, [
+    h("h1", { texte: "Bienvenue dans MediStat" }),
+    h("p.texte-secondaire", {
+      texte: "Cette première configuration crée votre établissement et son compte administrateur. " +
+        "Toutes les données restent sur cet appareil tant que vous ne connectez pas de serveur.",
+    }),
+    form, jauge, h("div", { style: { marginTop: "16px" } }, [bouton]),
+    piedAPSA(),
+  ]));
+
+  bouton.addEventListener("click", async () => {
+    const v = form.valeurs();
+    const manquants = ["nom", "code", "prenom", "nomAdmin", "identifiant", "motDePasse"]
+      .filter(c => !v[c]);
+    if (manquants.length) {
+      form.marquerErreurs(manquants);
+      return erreur("Veuillez renseigner tous les champs obligatoires.");
+    }
+    if (v.motDePasse !== v.motDePasse2) {
+      form.marquerErreurs(["motDePasse2"]);
+      return erreur("Les deux mots de passe ne correspondent pas.");
+    }
+    bouton.disabled = true;
+    bouton.textContent = "Création en cours…";
+    try {
+      await auth.initialiser({
+        etablissement: {
+          nom: v.nom, code: v.code, type: v.type, ville: v.ville, pays: v.pays,
+          facturation: v.facturation, portailPatient: v.portailPatient,
+        },
+        administrateur: {
+          identifiant: v.identifiant, nom: v.nomAdmin, prenom: v.prenom,
+          email: v.email, motDePasse: v.motDePasse,
+        },
+      });
+      await auth.connexion(v.identifiant, v.motDePasse);
+      if (v.demonstration) {
+        const demo = await import("./modules/demonstration.js");
+        await demo.chargerDemonstration();
+      }
+      succes("Établissement créé. Bienvenue !");
+      await ouvrirApplication();
+    } catch (e) {
+      bouton.disabled = false;
+      bouton.textContent = "Créer l'établissement et démarrer";
+      erreur(e.message);
+    }
+  });
+}
+
+/* ===================== Connexion ===================== */
+
+function ecranConnexion() {
+  const app = $("#application");
+  app.hidden = false;
+  $("#navigation").hidden = true;
+  $(".barre-haut__actions").hidden = true;
+  $(".barre-haut__recherche").hidden = true;
+
+  const identifiant = h("input.champ", { type: "text", placeholder: "Identifiant",
+    autocomplete: "username", autocapitalize: "none" });
+  const motDePasse = h("input.champ", { type: "password", placeholder: "Mot de passe",
+    autocomplete: "current-password" });
+  const champTOTP = h("input.champ", { type: "text", placeholder: "Code à 6 chiffres",
+    inputmode: "numeric", maxlength: 6, autocomplete: "one-time-code" });
+  const blocTOTP = h("div.champ-groupe", { hidden: true }, [
+    h("span.champ-libelle", { texte: "Code de vérification" }), champTOTP,
+  ]);
+  const bouton = h("button.btn.btn--primaire.btn--large", { type: "submit", texte: "Se connecter" });
+  const message = h("div");
+
+  const connecter = async ev => {
+    ev?.preventDefault();
+    if (!identifiant.value.trim() || !motDePasse.value) {
+      return erreur("Renseignez votre identifiant et votre mot de passe.");
+    }
+    bouton.disabled = true;
+    bouton.textContent = "Connexion…";
+    try {
+      const r = await auth.connexion(identifiant.value, motDePasse.value, {
+        codeTOTP: blocTOTP.hidden ? null : champTOTP.value,
+      });
+      for (const a of r.avertissements) alerte(a, { duree: 9000 });
+      await ouvrirApplication();
+    } catch (e) {
+      if (e.code === "TOTP_REQUIS") {
+        blocTOTP.hidden = false;
+        champTOTP.focus();
+        remplacer(message, h("p.champ-aide", { texte: "Saisissez le code affiché par votre application d'authentification." }));
+      } else {
+        remplacer(message, h("div.avertissement", { texte: e.message }));
+      }
+      bouton.disabled = false;
+      bouton.textContent = "Se connecter";
+    }
+  };
+
+  const form = h("form.formulaire", { onsubmit: connecter }, [
+    h("div.champ-groupe", [h("label.champ-libelle", { texte: "Identifiant" }), identifiant]),
+    h("div.champ-groupe", [h("label.champ-libelle", { texte: "Mot de passe" }), motDePasse]),
+    blocTOTP, message, bouton,
+  ]);
+
+  const lienDepannage = h("button.btn.btn--fin", {
+    type: "button",
+    style: { marginTop: "10px", fontSize: ".8rem" },
+    texte: "Je n'arrive pas à me connecter",
+    onclick: () => ecranDepannage(),
+  });
+
+  // Repère de contexte. La question la plus fréquente devant un écran de
+  // connexion qui refuse n'est pas « quel est mon mot de passe » mais « suis-je
+  // au bon endroit » : les données vivent dans le navigateur, et un compte créé
+  // dans Chrome n'existe pas dans Firefox, ni en navigation privée. Afficher
+  // l'établissement et le nombre de comptes présents sur cet appareil répond
+  // à cette question sans nommer personne.
+  const repere = h("p.texte-secondaire", { style: { fontSize: ".76rem", marginTop: "10px" } });
+  Promise.all([store.lireTout("etablissements"), store.lireTout("utilisateurs")])
+    .then(([ets, utilisateurs]) => {
+      const nom = ets[0]?.nom;
+      if (!nom) return;
+      const n = utilisateurs.filter(u => u.actif !== false).length;
+      repere.textContent = `${nom} · ${n} compte${n > 1 ? "s" : ""} sur cet appareil`;
+    })
+    .catch(() => { /* repère indisponible : sans conséquence */ });
+
+  remplacer($("#vue"), h("div", { style: { maxWidth: "380px", margin: "6vh auto" } }, [
+    h("div.carte", { style: { textAlign: "center" } }, [
+      h("div", { style: { fontSize: "2.4rem", marginBottom: "6px" } }, ["🏥"]),
+      h("h1", { texte: "MediStat" }),
+      h("p.texte-secondaire", { texte: "Dossiers médicaux, laboratoire et analyse de données" }),
+      form,
+      lienDepannage,
+      repere,
+    ]),
+    h("p.texte-secondaire", { style: { textAlign: "center", fontSize: ".8rem" } }, [
+      "Vos données restent sur cet appareil, chiffrées. ",
+      h("a", { href: "#/aide", texte: "En savoir plus", onclick: e => e.preventDefault() }),
+    ]),
+    piedAPSA(),
+  ]));
+  setTimeout(() => identifiant.focus(), 100);
+}
+
+/* ===================== Dépannage de la connexion ===================== */
+
+// Accessible SANS être connecté, et c'est délibéré.
+//
+// Un utilisateur bloqué devant l'écran de connexion n'a aucun moyen de savoir
+// laquelle des causes possibles le concerne : mauvais identifiant, compte
+// bloqué, ou simplement mauvais navigateur — les données vivant dans le
+// navigateur, un compte créé dans Chrome n'existe pas dans Firefox. Lui
+// demander de deviner, ou de décrire son écran à un tiers, ne mène nulle part.
+//
+// Sur ce qui est montré ici : les identifiants, les rôles et les états de
+// blocage sont affichés en clair. Cela ne divulgue rien, car quiconque atteint
+// cet écran possède déjà la base locale entière — les identifiants n'y sont
+// pas chiffrés, seules les données de santé le sont. La protection contre
+// l'énumération de comptes garde tout son sens face à un serveur distant ;
+// elle n'en a aucun face à une base que l'on a déjà entre les mains, et elle
+// coûterait ici tout espoir de se dépanner soi-même.
+async function ecranDepannage() {
+  let etablissements = [], utilisateurs = [], diagnostic = null;
+  try {
+    [etablissements, utilisateurs, diagnostic] = await Promise.all([
+      store.lireTout("etablissements"), store.lireTout("utilisateurs"),
+      store.diagnosticStockage(),
+    ]);
+  } catch (e) {
+    return modale({
+      titre: "Dépannage de la connexion",
+      contenu: h("div.avertissement", {
+        texte: "La base locale est illisible : " + e.message
+          + " Le navigateur bloque peut-être le stockage (navigation privée, "
+          + "cookies refusés, ou mode restreint).",
+      }),
+      actions: [{ libelle: "Fermer", type: "neutre" }],
+    });
+  }
+
+  const maintenant = Date.now();
+  const etatCompte = u => {
+    if (u.actif === false) return { texte: "désactivé", couleur: COULEURS_DEPANNAGE.gris };
+    if (u.bloqueJusqua && new Date(u.bloqueJusqua).getTime() > maintenant) {
+      const reste = Math.ceil((new Date(u.bloqueJusqua).getTime() - maintenant) / 60000);
+      return { texte: `bloqué encore ${reste} min`, couleur: COULEURS_DEPANNAGE.rouge };
+    }
+    if (u.motDePasseTemporaire) return { texte: "mot de passe provisoire", couleur: COULEURS_DEPANNAGE.orange };
+    return { texte: "actif", couleur: COULEURS_DEPANNAGE.vert };
+  };
+
+  const contenu = h("div", [
+    utilisateurs.length === 0
+      ? h("div.avertissement", {
+          texte: "Aucun compte n'existe sur cet appareil. Vos données se trouvent dans "
+            + "un autre navigateur, sur un autre appareil, ou vous naviguez en mode privé. "
+            + "MediStat conserve tout dans le navigateur : rien n'est envoyé ailleurs.",
+        })
+      : h("div", [
+          h("p", { texte: etablissements[0]?.nom
+            ? `Établissement enregistré sur cet appareil : ${etablissements[0].nom}.`
+            : "Des comptes existent, mais aucun établissement n'est enregistré." }),
+          h("p.texte-secondaire", {
+            texte: "Voici les identifiants réellement présents. Si le vôtre n'y figure pas, "
+              + "c'est l'identifiant qui est en cause, pas le mot de passe.",
+          }),
+          h("div.tableau-defilement", { style: { margin: "10px 0" } }, [
+            h("table.tableau.tableau--compact", [
+              h("thead", [h("tr", [
+                h("th", "Identifiant"), h("th", "Nom"), h("th", "Rôle"), h("th", "État"),
+              ])]),
+              h("tbody", utilisateurs.map(u => {
+                const e = etatCompte(u);
+                return h("tr", [
+                  h("td", [h("code.texte-mono", { texte: u.identifiant })]),
+                  h("td", { texte: `${u.prenom || ""} ${u.nom || ""}`.trim() || "—" }),
+                  h("td", { texte: ROLES[u.role]?.label || u.role || "—" }),
+                  h("td", [h("span", { texte: e.texte, style: { color: e.couleur, fontWeight: "600" } })]),
+                ]);
+              })),
+            ]),
+          ]),
+        ]),
+
+    h("h3", { style: { marginTop: "16px" }, texte: "Stockage" }),
+    h("p.texte-secondaire", {
+      texte: `Moteur : ${diagnostic.moteur} · ${diagnostic.total} enregistrement(s).`,
+    }),
+    diagnostic.avertissement ? h("div.avertissement", { texte: diagnostic.avertissement }) : null,
+
+    h("h3", { style: { marginTop: "16px" }, texte: "Que faire" }),
+    h("ul", [
+      h("li", { texte: "Votre identifiant ne figure pas dans la liste : vous vous connectez avec le mauvais nom. Utilisez celui du tableau." }),
+      h("li", { texte: "Le compte est « bloqué » : attendez la durée indiquée, puis un seul essai soigneux." }),
+      h("li", { texte: "La liste est vide : rouvrez MediStat depuis le navigateur où vous aviez créé l'établissement. Un compte créé dans un navigateur n'existe pas dans un autre, ni en navigation privée." }),
+      h("li", { texte: "L'identifiant est bon, le compte actif, et le mot de passe refusé : vérifiez les majuscules et l'absence d'espace en fin de champ." }),
+    ]),
+
+    utilisateurs.length
+      ? h("div.avertissement", { style: { marginTop: "14px" }, texte:
+          "Si le mot de passe du seul compte administrateur est réellement perdu, les "
+          + "dossiers chiffrés sont irrécupérables : la clé est enveloppée dans ce mot de "
+          + "passe et n'existe nulle part ailleurs. Le seul recours est de repartir d'une "
+          + "base vide, ce qui efface tout ce qui est enregistré sur cet appareil." })
+      : null,
+  ].filter(Boolean));
+
+  const action = await modale({
+    titre: "Dépannage de la connexion",
+    largeur: "620px",
+    contenu,
+    actions: [
+      { libelle: "Fermer", type: "neutre", valeur: null },
+      utilisateurs.length
+        ? { libelle: "Repartir d'une base vide", type: "danger", valeur: "reinitialiser" }
+        : null,
+    ].filter(Boolean),
+  });
+
+  if (action === "reinitialiser") return reinitialiserBaseLocale(utilisateurs, etablissements);
+}
+
+const COULEURS_DEPANNAGE = { vert: "#16a34a", orange: "#d97706", rouge: "#dc2626", gris: "#94a3b8" };
+
+// Effacement complet de la base locale. Irréversible, et donc protégé par une
+// confirmation qui demande d'écrire un mot : un bouton « Confirmer » se clique
+// par réflexe, une phrase à recopier ne s'écrit pas par accident.
+async function reinitialiserBaseLocale(utilisateurs, etablissements) {
+  const saisie = h("input.champ", { placeholder: "EFFACER" });
+  const ok = await modale({
+    titre: "Effacer toutes les données de cet appareil",
+    largeur: "520px",
+    contenu: h("div", [
+      h("div.avertissement", {
+        texte: `Cette action supprime définitivement l'établissement `
+          + `« ${etablissements[0]?.nom || "sans nom"} », ses ${utilisateurs.length} compte(s) `
+          + "et l'intégralité des dossiers patients enregistrés dans ce navigateur. "
+          + "Elle est irréversible et ne peut pas être annulée.",
+      }),
+      h("p", { texte: "Si vous disposez d'une sauvegarde, fermez cette fenêtre et restaurez-la "
+        + "plutôt que d'effacer." }),
+      h("div.champ-groupe", [
+        h("label.champ-libelle", { texte: "Pour confirmer, écrivez EFFACER en majuscules" }),
+        saisie,
+      ]),
+    ]),
+    actions: [
+      { libelle: "Annuler", type: "neutre", valeur: null },
+      { libelle: "Effacer définitivement", type: "danger",
+        action: () => saisie.value.trim() === "EFFACER"
+          ? true
+          : (erreur("Écrivez EFFACER pour confirmer."), false) },
+    ],
+  });
+  if (!ok) return;
+
+  try {
+    await store.effacerTout();
+    succes("Base effacée. MediStat va redémarrer sur une configuration neuve.");
+    setTimeout(() => location.reload(), 1200);
+  } catch (e) {
+    erreur("Effacement impossible : " + e.message);
+  }
+}
+
+// Signature de l'organisation porteuse, reprise sur les écrans où la barre
+// latérale n'existe pas encore : première configuration et connexion.
+function piedAPSA() {
+  return h("div.apsa-pied", [
+    h("img", { src: "assets/apsa.svg", width: 44, height: 44,
+      alt: "APSA — Actions pour la Promotion de la Santé en Afrique" }),
+    h("span", { texte: "Une initiative APSA — Actions pour la Promotion de la Santé en Afrique" }),
+  ]);
+}
+
+/* ===================== Ouverture de l'application ===================== */
+
+async function ouvrirApplication() {
+  const session = auth.sessionCourante();
+  if (!session) return ecranConnexion();
+
+  $("#navigation").hidden = false;
+  $(".barre-haut__actions").hidden = false;
+  $(".barre-haut__recherche").hidden = false;
+
+  const u = session.utilisateur;
+  $("#nomEtablissement").textContent = session.etablissement?.nom || "";
+  $("#nomCompte").textContent = `${u.prenom} ${u.nom}`.trim();
+  const avatar = $("#avatarCompte");
+  avatar.textContent = initiales(u.nom, u.prenom);
+  avatar.style.backgroundColor = couleurDepuisTexte(u.id);
+
+  appliquerDroitsNavigation();
+  brancherInterface();
+  await rafraichirIndicateurs();
+
+  // Reprise de la file de messages aux patients : un message mis en file
+  // hors ligne part de lui-même dès que le réseau revient, sans que personne
+  // ait à rouvrir l'écran des messages.
+  import("./core/notifications.js")
+    .then(n => n.demarrerReprise())
+    .catch(() => { /* module indisponible : la file reste consultable */ });
+
+  // Route initiale : celle de l'URL, ou le tableau de bord
+  const route = location.hash.replace(/^#\//, "") || "tableau-de-bord";
+  naviguer(route, true);
+}
+
+// Masque les entrées de menu auxquelles le rôle n'a pas accès (article 10) :
+// l'utilisateur ne voit que ce qu'il peut réellement faire.
+function appliquerDroitsNavigation() {
+  const u = auth.utilisateurCourant();
+  if (!u) return;
+  const modules = auth.sessionCourante()?.etablissement?.modules || {};
+  for (const lien of $$(".nav-lien[data-droit]")) {
+    const [ressource, droit] = lien.dataset.droit.split(":");
+    let visible = hasPermission(u.role, ressource, droit);
+    // Les modules désactivés au niveau de l'établissement disparaissent aussi
+    if (lien.dataset.vue === "facturation" && !modules.facturation) visible = false;
+    lien.hidden = !visible;
+  }
+}
+
+/* ===================== Routage ===================== */
+
+async function naviguer(vue, remplacerHistorique = false) {
+  const [nom, ...reste] = String(vue).split("/");
+  const cible = VUES[nom] ? nom : "tableau-de-bord";
+  etat.parametres = { segments: reste, requete: new URLSearchParams(location.search) };
+
+  const url = `#/${vue}`;
+  if (remplacerHistorique) history.replaceState(null, "", url);
+  else if (location.hash !== url) history.pushState(null, "", url);
+
+  for (const lien of $$(".nav-lien[data-vue], .barre-mobile__lien[data-vue]")) {
+    const actif = lien.dataset.vue === cible;
+    lien.classList.toggle("nav-lien--actif", actif && lien.classList.contains("nav-lien"));
+    lien.classList.toggle("barre-mobile__lien--actif", actif && lien.classList.contains("barre-mobile__lien"));
+  }
+  $("#navigation").classList.remove("navigation--ouverte");
+
+  const conteneur = $("#vue");
+  remplacer(conteneur, chargement());
+  conteneur.scrollTop = 0;
+
+  try {
+    const module = await VUES[cible]();
+    const rendu = module[`vue_${cible.replace(/-/g, "_")}`] || module.vue || module.default;
+    if (typeof rendu !== "function") throw new Error(`La vue « ${cible} » est indisponible.`);
+    const contenu = await rendu({ ...etat.parametres, naviguer, rafraichir: () => naviguer(vue, true) });
+    remplacer(conteneur, contenu);
+    etat.vueCourante = cible;
+    conteneur.focus({ preventScroll: true });
+  } catch (e) {
+    if (e.name === "ErreurPermission") {
+      // Un refus de droit n'est pas une anomalie technique : il est prévu,
+      // annoncé à l'utilisateur et déjà consigné au journal d'audit. Le
+      // remonter en erreur de console noierait les vraies pannes — un
+      // utilisateur qui ouvre un signet vers un écran qui ne le concerne
+      // plus déclenche ce chemin tous les matins.
+      remplacer(conteneur, etatVide({
+        icone: "🚫", titre: "Accès refusé",
+        message: e.message + " Cette tentative a été consignée dans le journal d'audit.",
+      }));
+    } else {
+      console.error(e);
+      remplacer(conteneur, etatErreur(e.message, () => naviguer(vue, true)));
+    }
+  }
+  await rafraichirIndicateurs();
+}
+
+// Exposé aux modules pour la navigation interne
+window.medistatNaviguer = naviguer;
+
+/* ===================== Interface ===================== */
+
+function brancherInterface() {
+  const nav = $("#navigation");
+
+  brancherLangue();
+
+  // Le bouton à trois traits ne fait pas la même chose selon la place
+  // disponible. Sur téléphone, la barre latérale est hors écran : il la fait
+  // entrer. Sur ordinateur, elle est déjà là : la faire « entrer » n'aurait
+  // aucun effet visible — c'est ce qui donnait un bouton mort. Il la replie
+  // donc, ce qui rend l'écran entier aux tableaux et aux graphiques.
+  const surPetitEcran = () => window.innerWidth <= 1000;
+  const CLE_REPLI = "medistat.navigationRepliee";
+
+  function basculerMenu() {
+    if (surPetitEcran()) {
+      nav.classList.toggle("navigation--ouverte");
+    } else {
+      const repliee = nav.classList.toggle("navigation--repliee");
+      try { localStorage.setItem(CLE_REPLI, repliee ? "1" : "0"); } catch { /* mode privé */ }
+    }
+    majEtatMenu();
+  }
+
+  function majEtatMenu() {
+    const ouvert = surPetitEcran()
+      ? nav.classList.contains("navigation--ouverte")
+      : !nav.classList.contains("navigation--repliee");
+    for (const b of [$("#btnMenu"), $("#btnMenuMobile")]) {
+      if (!b) continue;
+      b.setAttribute("aria-expanded", String(ouvert));
+      b.setAttribute("aria-controls", "navigation");
+      b.setAttribute("title", ouvert ? "Replier le menu" : "Afficher le menu");
+      b.setAttribute("aria-label", ouvert ? "Replier le menu" : "Afficher le menu");
+    }
+  }
+
+  $("#btnMenu").onclick = basculerMenu;
+  $("#btnMenuMobile").onclick = basculerMenu;
+
+  // Le choix de replier est mémorisé : un utilisateur qui travaille sur des
+  // tableaux larges ne doit pas le refaire à chaque connexion.
+  try {
+    if (localStorage.getItem(CLE_REPLI) === "1") nav.classList.add("navigation--repliee");
+  } catch { /* mode privé */ }
+
+  // Passer d'un format à l'autre — rotation d'une tablette, fenêtre
+  // redimensionnée — ne doit pas laisser la navigation dans un état hybride.
+  window.addEventListener("resize", () => {
+    if (surPetitEcran()) {
+      // Repliée n'a pas de sens sur petit écran : la barre y est déjà hors
+      // champ. On retire la classe sans effacer la préférence, qui sera
+      // rétablie au retour sur grand écran.
+      nav.classList.remove("navigation--repliee");
+    } else {
+      nav.classList.remove("navigation--ouverte");
+      let repliee = false;
+      try { repliee = localStorage.getItem(CLE_REPLI) === "1"; } catch { /* mode privé */ }
+      nav.classList.toggle("navigation--repliee", repliee);
+    }
+    majEtatMenu();
+  });
+  majEtatMenu();
+  document.addEventListener("click", e => {
+    if (window.innerWidth <= 1000 && nav.classList.contains("navigation--ouverte") &&
+        !nav.contains(e.target) && !e.target.closest("#btnMenu, #btnMenuMobile")) {
+      nav.classList.remove("navigation--ouverte");
+    }
+  });
+
+  for (const lien of $$('a[href^="#/"]')) {
+    lien.addEventListener("click", e => {
+      e.preventDefault();
+      naviguer(lien.getAttribute("href").replace(/^#\//, ""));
+    });
+  }
+  window.addEventListener("popstate", () => {
+    naviguer(location.hash.replace(/^#\//, "") || "tableau-de-bord", true);
+  });
+
+  $("#btnTheme").onclick = () => {
+    const nouveau = document.documentElement.dataset.theme === "sombre" ? "clair" : "sombre";
+    appliquerTheme(nouveau);
+    localStorage.setItem("medistat-theme", nouveau);
+  };
+
+  $("#btnVerrouiller").onclick = () => auth.verrouiller("Verrouillage demandé par l'utilisateur");
+  $("#btnCompte").onclick = menuCompte;
+  $("#btnNotifications").onclick = panneauNotifications;
+
+  // Recherche globale
+  const recherche = $("#rechercheGlobale");
+  recherche.addEventListener("input", antirebond(() => rechercherPartout(recherche.value), 260));
+  recherche.addEventListener("focus", () => { if (recherche.value) rechercherPartout(recherche.value); });
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".barre-haut__recherche")) $("#resultatsRecherche").hidden = true;
+  });
+
+  // Verrouillage automatique : toute activité repousse l'échéance
+  for (const ev of ["click", "keydown", "touchstart", "mousemove"]) {
+    document.addEventListener(ev, auth.signalerActivite, { passive: true });
+  }
+  auth.surChangementSession(evenement => {
+    if (evenement === "verrouillage") afficherVerrou();
+    if (evenement === "deverrouillage") $("#verrou").hidden = true;
+    if (evenement === "deconnexion") location.reload();
+  });
+
+  // Raccourcis clavier
+  document.addEventListener("keydown", e => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === "k") { e.preventDefault(); recherche.focus(); recherche.select(); }
+      if (e.key === "l") { e.preventDefault(); auth.verrouiller("Raccourci clavier"); }
+    }
+    if (e.key === "Escape") $("#resultatsRecherche").hidden = true;
+  });
+
+  // État du réseau
+  const majReseau = () => {
+    const ind = $("#indicateurReseau");
+    ind.classList.toggle("indicateur--hors-ligne", !navigator.onLine);
+    ind.title = navigator.onLine
+      ? "En ligne — les données se synchronisent"
+      : "Hors ligne — les modifications seront envoyées au retour du réseau";
+  };
+  window.addEventListener("online", () => { majReseau(); succes("Connexion rétablie."); });
+  window.addEventListener("offline", () => { majReseau(); alerte("Mode hors ligne : vous pouvez continuer à travailler."); });
+  majReseau();
+
+  // Installation sur l'appareil
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault();
+    etat.invitationInstallation = e;
+    const btn = $("#btnInstaller");
+    btn.hidden = false;
+    btn.onclick = async () => {
+      etat.invitationInstallation.prompt();
+      const { outcome } = await etat.invitationInstallation.userChoice;
+      if (outcome === "accepted") { succes("MediStat est installé sur cet appareil."); btn.hidden = true; }
+      etat.invitationInstallation = null;
+    };
+  });
+
+  // Verrou : formulaire de déverrouillage
+  $("#formVerrou").onsubmit = async e => {
+    e.preventDefault();
+    const champ = $("#verrouMotDePasse");
+    try {
+      await auth.deverrouiller(champ.value);
+      champ.value = "";
+    } catch (err) { erreur(err.message); champ.select(); }
+  };
+  $("#btnQuitterSession").onclick = () => auth.deconnexion();
+}
+
+/* ===================== Langue de l'interface ===================== */
+
+function brancherLangue() {
+  const zone = $("#zoneLangue");
+  if (!zone) return;
+  vider(zone);
+  zone.appendChild(i18n.construireSelecteur(document));
+
+  // Les écrans sont rendus en JavaScript : traduire les attributs data-i18n
+  // ne suffit pas, il faut redessiner la vue en cours. Le routeur sait le
+  // faire ; on lui redemande la même vue plutôt que de recharger la page,
+  // ce qui préserverait mal un formulaire à demi rempli mais garde la
+  // session, la position dans la navigation et l'état hors ligne.
+  i18n.surChangementLangue(() => {
+    i18n.appliquer();
+    if (etat.vueCourante) naviguer(etat.vueCourante, true);
+  });
+
+  i18n.appliquer();
+}
+
+function appliquerTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = theme === "sombre" ? "#101a2c" : "#17334f";
+}
+
+function afficherVerrou() {
+  const s = auth.sessionCourante();
+  $("#verrou").hidden = false;
+  $("#verrouMotif").textContent = s?.motifVerrouillage || "";
+  $("#verrouUtilisateur").textContent = s ? `${s.utilisateur.prenom} ${s.utilisateur.nom}` : "";
+  setTimeout(() => $("#verrouMotDePasse").focus(), 100);
+}
+
+/* ===================== Recherche globale ===================== */
+
+async function rechercherPartout(requete) {
+  const boite = $("#resultatsRecherche");
+  const q = String(requete || "").trim();
+  if (q.length < 2) { boite.hidden = true; return; }
+
+  const groupes = [];
+  try {
+    if (auth.autorise("patient", "lecture")) {
+      const patients = await store.depots.patients.rechercher(q, ["nom", "prenom", "ipp", "telephone"]);
+      if (patients.length) {
+        groupes.push({ titre: "Patients", elements: patients.slice(0, 6).map(p => ({
+          icone: "🧑‍⚕️",
+          titre: `${p.nom.toUpperCase()} ${p.prenom}`,
+          detail: `${p.ipp} — ${calculerAge(p.dateNaissance)?.label || ""}`,
+          aller: () => naviguer(`patients/${p.id}`),
+        })) });
+      }
+    }
+    if (auth.autorise("demande", "lecture")) {
+      const demandes = await store.depots.demandes.rechercher(q, ["numero"]);
+      if (demandes.length) {
+        groupes.push({ titre: "Demandes d'examens", elements: demandes.slice(0, 5).map(d => ({
+          icone: "📋", titre: d.numero, detail: fmt.date(d.date, { heure: true }),
+          aller: () => naviguer(`demandes/${d.id}`),
+        })) });
+      }
+      const echantillons = await store.depots.echantillons.rechercher(q, ["codeBarre"]);
+      if (echantillons.length) {
+        groupes.push({ titre: "Échantillons", elements: echantillons.slice(0, 5).map(e => ({
+          icone: "🩸", titre: e.codeBarre, detail: e.type,
+          aller: () => naviguer(`demandes/${e.demandeId}`),
+        })) });
+      }
+    }
+  } catch (e) { console.warn(e); }
+
+  if (!groupes.length) {
+    remplacer(boite, h("div.recherche-resultat", { texte: `Aucun résultat pour « ${q} ».` }));
+    boite.hidden = false;
+    return;
+  }
+
+  remplacer(boite, groupes.flatMap(g => [
+    h("div.recherche-groupe", { texte: g.titre }),
+    ...g.elements.map(el => h("div.recherche-resultat", {
+      onclick: () => { boite.hidden = true; $("#rechercheGlobale").value = ""; el.aller(); },
+    }, [
+      h("span", { texte: el.icone }),
+      h("div", [h("div", { texte: el.titre }), h("div.texte-secondaire", { texte: el.detail })]),
+    ])),
+  ]));
+  boite.hidden = false;
+}
+
+/* ===================== Menu du compte ===================== */
+
+async function menuCompte() {
+  const s = auth.sessionCourante();
+  const u = s.utilisateur;
+  const diagnostic = await store.diagnosticStockage();
+
+  await modale({
+    titre: "Mon compte",
+    largeur: "460px",
+    contenu: h("div", [
+      h("div", { style: { display: "flex", gap: "13px", alignItems: "center", marginBottom: "16px" } }, [
+        h("span.avatar", { texte: initiales(u.nom, u.prenom),
+          style: { width: "48px", height: "48px", fontSize: "1.05rem",
+            backgroundColor: couleurDepuisTexte(u.id) } }),
+        h("div", [
+          h("strong", { texte: `${u.prenom} ${u.nom}` }),
+          h("div.texte-secondaire", { texte: ROLES[u.role]?.label || u.role }),
+          h("div.texte-secondaire", { texte: u.email || u.identifiant }),
+        ]),
+      ]),
+      h("div.texte-secondaire", { style: { marginBottom: "14px" } }, [
+        h("div", { texte: `Établissement : ${s.etablissement?.nom || "—"}` }),
+        h("div", { texte: `Session ouverte ${fmt.relatif(s.debut)}` }),
+        h("div", { texte: `Stockage : ${diagnostic.moteur}, ${diagnostic.total} enregistrements` }),
+      ]),
+      h("div", { style: { display: "flex", flexDirection: "column", gap: "8px" } }, [
+        h("button.btn", { texte: "🔑  Changer mon mot de passe", onclick: changerMotDePasse }),
+        h("button.btn", { texte: "🛡️  Double authentification", onclick: configurerTOTP }),
+        h("button.btn", { texte: "💾  Sauvegarder les données", onclick: sauvegarder }),
+        h("button.btn", { texte: "♻️  Restaurer une sauvegarde", onclick: restaurer }),
+        h("button.btn.btn--danger", { texte: "↩️  Fermer la session", onclick: () => auth.deconnexion() }),
+      ]),
+    ]),
+    actions: [{ libelle: "Fermer", type: "neutre" }],
+  });
+}
+
+async function changerMotDePasse() {
+  const form = formulaire([
+    { cle: "ancien", libelle: "Mot de passe actuel", type: "password", obligatoire: true },
+    { cle: "nouveau", libelle: "Nouveau mot de passe", type: "password", obligatoire: true },
+    { cle: "confirmation", libelle: "Confirmation", type: "password", obligatoire: true },
+  ]);
+  const r = await modale({
+    titre: "Changer mon mot de passe",
+    contenu: form,
+    largeur: "420px",
+    actions: [
+      { libelle: "Annuler", type: "neutre", valeur: null },
+      { libelle: "Enregistrer", type: "primaire", action: async () => {
+        const v = form.valeurs();
+        if (v.nouveau !== v.confirmation) { erreur("Les deux saisies diffèrent."); return false; }
+        try {
+          await auth.changerMotDePasse(v.ancien, v.nouveau);
+          return true;
+        } catch (e) { erreur(e.message); return false; }
+      } },
+    ],
+  });
+  if (r) succes("Mot de passe modifié.");
+}
+
+async function configurerTOTP() {
+  const secret = auth.genererSecretTOTP();
+  const s = auth.sessionCourante();
+  const url = auth.urlTOTP(secret, s.utilisateur.identifiant, s.etablissement?.nom);
+  const champ = h("input.champ", { placeholder: "Code à 6 chiffres", inputmode: "numeric", maxlength: 6 });
+
+  const r = await modale({
+    titre: "Double authentification",
+    largeur: "460px",
+    contenu: h("div", [
+      h("p", { texte: "Ajoutez ce compte dans votre application d'authentification " +
+        "(Google Authenticator, FreeOTP, Aegis), puis saisissez le code affiché." }),
+      h("div.carte", { style: { background: "var(--surface-2)", wordBreak: "break-all" } }, [
+        h("div.champ-libelle", { texte: "Clé de configuration" }),
+        h("code.texte-mono", { texte: secret }),
+      ]),
+      h("details", [
+        h("summary", { texte: "Adresse d'appairage complète" }),
+        h("code.texte-mono", { style: { wordBreak: "break-all", fontSize: ".72rem" }, texte: url }),
+      ]),
+      h("div.champ-groupe", [h("span.champ-libelle", { texte: "Code de vérification" }), champ]),
+    ]),
+    actions: [
+      { libelle: "Annuler", type: "neutre", valeur: null },
+      { libelle: "Activer", type: "primaire", action: async () => {
+        try { await auth.activerTOTP(champ.value, secret); return true; }
+        catch (e) { erreur(e.message); return false; }
+      } },
+    ],
+  });
+  if (r) succes("Double authentification activée. Conservez la clé en lieu sûr.");
+}
+
+async function sauvegarder() {
+  try {
+    const sauvegarde = await store.exporterBase();
+    const { telecharger } = await import("./core/export.js");
+    const nom = `medistat-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`;
+    telecharger(JSON.stringify(sauvegarde, null, 1), nom, "application/json");
+    succes(`Sauvegarde produite : ${Object.values(sauvegarde.statistiques).reduce((a, b) => a + b, 0)} enregistrements.`);
+  } catch (e) { erreur(e.message); }
+}
+
+async function restaurer() {
+  const input = h("input", { type: "file", accept: ".json", hidden: true });
+  document.body.appendChild(input);
+  input.click();
+  input.onchange = async () => {
+    const fichier = input.files[0];
+    input.remove();
+    if (!fichier) return;
+    if (!(await confirmer(
+      "La restauration ajoutera les enregistrements de cette sauvegarde à la base actuelle.",
+      { titre: "Restaurer une sauvegarde", detail: "Les enregistrements portant le même identifiant seront remplacés." }
+    ))) return;
+    try {
+      const rapport = await store.restaurerBase(JSON.parse(await fichier.text()));
+      succes(`Restauration : ${Object.values(rapport).reduce((a, b) => a + b, 0)} enregistrements.`);
+      naviguer(etat.vueCourante || "tableau-de-bord", true);
+    } catch (e) { erreur("Restauration impossible : " + e.message); }
+  };
+}
+
+/* ===================== Notifications ===================== */
+
+async function panneauNotifications() {
+  let liste = [];
+  try {
+    liste = await store.depots.notifications.lister({
+      filtre: n => !n._supprime && n.destinataireId === auth.utilisateurCourant()?.id,
+      tri: (a, b) => (a.date < b.date ? 1 : -1),
+      limite: 40,
+    });
+  } catch { /* le rôle n'a pas accès aux notifications */ }
+
+  await modale({
+    titre: "Notifications",
+    largeur: "520px",
+    contenu: liste.length
+      ? h("div", liste.map(n => h("div.carte", {
+          style: { marginBottom: "8px", padding: "11px",
+            borderLeft: `3px solid ${n.priorite === "critique" ? "var(--critique)" : "var(--accent)"}` },
+        }, [
+          h("div", { style: { display: "flex", justifyContent: "space-between", gap: "10px" } }, [
+            h("strong", { texte: n.sujet }),
+            h("span.texte-secondaire", { texte: fmt.relatif(n.date) }),
+          ]),
+          h("div.texte-secondaire", { texte: n.message }),
+        ])))
+      : etatVide({ icone: "🔕", titre: "Aucune notification", message: "Vous êtes à jour." }),
+    actions: [{ libelle: "Fermer", type: "neutre" }],
+  });
+
+  for (const n of liste.filter(x => !x.lue)) {
+    try { await store.depots.notifications.modifier(n.id, { lue: true, dateLecture: new Date().toISOString() }); }
+    catch { /* sans conséquence */ }
+  }
+  await rafraichirIndicateurs();
+}
+
+// Compteurs affichés dans la barre et la navigation
+async function rafraichirIndicateurs() {
+  const u = auth.utilisateurCourant();
+  if (!u) return;
+  try {
+    const notifs = (await store.lireTout("notifications"))
+      .filter(n => n.destinataireId === u.id && !n.lue && !n._supprime);
+    const compteur = $("#compteurNotifications");
+    compteur.textContent = String(notifs.length);
+    compteur.hidden = notifs.length === 0;
+
+    if (hasPermission(u.role, "resultat", "validation")) {
+      const attente = (await store.lireTout("resultats"))
+        .filter(r => r.statut === "saisi" && !r._supprime &&
+          (!r.etablissementId || r.etablissementId === u.etablissementId));
+      const badge = $("#badgeValidation");
+      badge.textContent = String(attente.length);
+      badge.hidden = attente.length === 0;
+    }
+
+    // Alerte immédiate sur les valeurs critiques non acquittées (article 13)
+    const critiques = (await store.lireTout("resultats")).filter(r =>
+      r.critique && !r.alerteAcquittee && !r._supprime &&
+      (r.statut === "valide" || r.statut === "rendu") &&
+      (!r.etablissementId || r.etablissementId === u.etablissementId));
+    if (critiques.length && !etat.alerteCritiqueAffichee) {
+      etat.alerteCritiqueAffichee = true;
+      critique(
+        `${critiques.length} résultat(s) à valeur critique nécessitent une alerte au prescripteur.`,
+        { action: { libelle: "Voir les résultats", action: () => naviguer("demandes?critiques=1") } });
+    }
+  } catch { /* droits insuffisants : les compteurs restent masqués */ }
+}
+
+window.medistatRafraichirIndicateurs = rafraichirIndicateurs;
+
+/* ===================== Service worker ===================== */
+
+// Un service worker exige une origine HTTP : depuis un fichier ouvert
+// directement sur le disque, l'enregistrement ne peut qu'échouer et laisse
+// une requête en erreur dans la console. On ne tente donc pas.
+// `MEDISTAT_AUTONOME` est posé par l'assembleur de la version en fichier
+// unique : celle-ci n'a pas de sw.js voisin à enregistrer, et la tentative
+// laisserait une requête en 404 dans la console.
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")
+    && !globalThis.MEDISTAT_AUTONOME) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {
+      // Échec possible en HTTP simple ou sur une origine non sécurisée :
+      // l'application reste utilisable, simplement sans fonctionnement hors
+      // ligne ni installation.
+    });
+  });
+}
+
+demarrer();
