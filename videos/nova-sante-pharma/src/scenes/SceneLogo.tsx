@@ -27,19 +27,19 @@ export const SceneLogo: React.FC = () => {
       <Interactive.Div
         name="Brand mark wrapper"
         style={{
-          scale: interpolate(frame, [0, 0.7 * fps], [0.6, 1], {
+          scale: interpolate(frame, [0, 0.35 * fps], [0.6, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
             easing: Easing.spring({ damping: 200 }),
             output: "perceptual-scale",
           }),
-          opacity: interpolate(frame, [0, 0.5 * fps], [0, 1], {
+          opacity: interpolate(frame, [0, 0.25 * fps], [0, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           }),
         }}
       >
-        <BrandMark size={190} />
+        <BrandMark size={170} />
       </Interactive.Div>
 
       <Interactive.Div
@@ -47,11 +47,11 @@ export const SceneLogo: React.FC = () => {
         style={{
           fontFamily: brandFont,
           fontWeight: 400,
-          fontSize: 38,
+          fontSize: 34,
           letterSpacing: 3,
           color: "#5b6b78",
-          marginTop: 34,
-          opacity: interpolate(frame, [0.7 * fps, 1.3 * fps], [0, 1], {
+          marginTop: 28,
+          opacity: interpolate(frame, [0.3 * fps, 0.65 * fps], [0, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
             easing: Easing.bezier(0.16, 1, 0.3, 1),
@@ -67,14 +67,14 @@ export const SceneLogo: React.FC = () => {
           display: "flex",
           flexDirection: "row",
           alignItems: "baseline",
-          gap: 22,
-          marginTop: 8,
-          opacity: interpolate(frame, [1 * fps, 1.6 * fps], [0, 1], {
+          gap: 20,
+          marginTop: 6,
+          opacity: interpolate(frame, [0.55 * fps, 0.95 * fps], [0, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
             easing: Easing.bezier(0.16, 1, 0.3, 1),
           }),
-          scale: interpolate(frame, [1 * fps, 1.6 * fps], [0.94, 1], {
+          scale: interpolate(frame, [0.55 * fps, 0.95 * fps], [0.94, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
             easing: Easing.bezier(0.16, 1, 0.3, 1),
@@ -87,7 +87,7 @@ export const SceneLogo: React.FC = () => {
           style={{
             fontFamily: brandFont,
             fontWeight: 700,
-            fontSize: 118,
+            fontSize: 110,
             color: "#0d3b66",
           }}
         >
@@ -98,7 +98,7 @@ export const SceneLogo: React.FC = () => {
           style={{
             fontFamily: brandFont,
             fontWeight: 700,
-            fontSize: 118,
+            fontSize: 110,
             color: "#1f9d55",
           }}
         >
@@ -110,11 +110,11 @@ export const SceneLogo: React.FC = () => {
         style={{
           fontFamily: brandFont,
           fontWeight: 600,
-          fontSize: 46,
+          fontSize: 42,
           letterSpacing: 14,
           color: "#0d3b66",
           marginTop: 4,
-          opacity: interpolate(frame, [1.4 * fps, 2 * fps], [0, 1], {
+          opacity: interpolate(frame, [0.85 * fps, 1.2 * fps], [0, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
             easing: Easing.bezier(0.16, 1, 0.3, 1),
@@ -122,24 +122,6 @@ export const SceneLogo: React.FC = () => {
         }}
       >
         PHARMA
-      </Interactive.Div>
-      <Interactive.Div
-        name="Tagline"
-        style={{
-          fontFamily: brandFont,
-          fontWeight: 400,
-          fontStyle: "italic",
-          fontSize: 36,
-          color: "#1f9d55",
-          marginTop: 26,
-          opacity: interpolate(frame, [2 * fps, 2.7 * fps], [0, 1], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-            easing: Easing.bezier(0.16, 1, 0.3, 1),
-          }),
-        }}
-      >
-        Votre santé, notre priorité.
       </Interactive.Div>
     </AbsoluteFill>
   );

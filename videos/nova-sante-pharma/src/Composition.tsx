@@ -1,6 +1,11 @@
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
-import { CalculateMetadataFunction, Composition } from "remotion";
+import {
+  Audio,
+  CalculateMetadataFunction,
+  Composition,
+  staticFile,
+} from "remotion";
 import { SceneIntro } from "./scenes/SceneIntro";
 import { SceneLogo } from "./scenes/SceneLogo";
 import { SceneFeatures } from "./scenes/SceneFeatures";
@@ -13,41 +18,47 @@ const calculateMetadata: CalculateMetadataFunction<Props> = () => {
   return {};
 };
 
+// Durées calées sur la voix off réelle (26,75 s, ElevenLabs) répartie au
+// prorata du nombre de mots de chaque phrase du script, + 15 images de
+// recouvrement par transition en fondu, + une courte tenue finale.
 export const NovaPresentation: React.FC<Props> = () => {
   return (
-    <TransitionSeries>
-      <TransitionSeries.Sequence durationInFrames={170} name="Intro">
-        <SceneIntro />
-      </TransitionSeries.Sequence>
-      <TransitionSeries.Transition
-        presentation={fade()}
-        timing={linearTiming({ durationInFrames: 15 })}
-      />
-      <TransitionSeries.Sequence durationInFrames={160} name="Logo">
-        <SceneLogo />
-      </TransitionSeries.Sequence>
-      <TransitionSeries.Transition
-        presentation={fade()}
-        timing={linearTiming({ durationInFrames: 15 })}
-      />
-      <TransitionSeries.Sequence durationInFrames={300} name="Features">
-        <SceneFeatures />
-      </TransitionSeries.Sequence>
-      <TransitionSeries.Transition
-        presentation={fade()}
-        timing={linearTiming({ durationInFrames: 15 })}
-      />
-      <TransitionSeries.Sequence durationInFrames={170} name="Engagement">
-        <SceneEngagement />
-      </TransitionSeries.Sequence>
-      <TransitionSeries.Transition
-        presentation={fade()}
-        timing={linearTiming({ durationInFrames: 15 })}
-      />
-      <TransitionSeries.Sequence durationInFrames={170} name="EndCard">
-        <SceneEndCard />
-      </TransitionSeries.Sequence>
-    </TransitionSeries>
+    <>
+      <Audio src={staticFile("audio/voiceover.mp3")} />
+      <TransitionSeries>
+        <TransitionSeries.Sequence durationInFrames={222} name="Intro">
+          <SceneIntro />
+        </TransitionSeries.Sequence>
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: 15 })}
+        />
+        <TransitionSeries.Sequence durationInFrames={80} name="Logo">
+          <SceneLogo />
+        </TransitionSeries.Sequence>
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: 15 })}
+        />
+        <TransitionSeries.Sequence durationInFrames={235} name="Features">
+          <SceneFeatures />
+        </TransitionSeries.Sequence>
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: 15 })}
+        />
+        <TransitionSeries.Sequence durationInFrames={235} name="Engagement">
+          <SceneEngagement />
+        </TransitionSeries.Sequence>
+        <TransitionSeries.Transition
+          presentation={fade()}
+          timing={linearTiming({ durationInFrames: 15 })}
+        />
+        <TransitionSeries.Sequence durationInFrames={113} name="EndCard">
+          <SceneEndCard />
+        </TransitionSeries.Sequence>
+      </TransitionSeries>
+    </>
   );
 };
 
@@ -56,7 +67,7 @@ export const MyComposition = () => {
     <Composition
       id="NovaPresentation"
       component={NovaPresentation}
-      durationInFrames={910}
+      durationInFrames={825}
       fps={30}
       width={1920}
       height={1080}

@@ -14,7 +14,7 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="Intro"
           component={SceneIntro}
-          durationInFrames={170}
+          durationInFrames={222}
           fps={30}
           width={1920}
           height={1080}
@@ -22,7 +22,7 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="Logo"
           component={SceneLogo}
-          durationInFrames={160}
+          durationInFrames={80}
           fps={30}
           width={1920}
           height={1080}
@@ -30,7 +30,7 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="Features"
           component={SceneFeatures}
-          durationInFrames={300}
+          durationInFrames={235}
           fps={30}
           width={1920}
           height={1080}
@@ -38,7 +38,7 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="Engagement"
           component={SceneEngagement}
-          durationInFrames={170}
+          durationInFrames={235}
           fps={30}
           width={1920}
           height={1080}
@@ -46,7 +46,7 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="EndCard"
           component={SceneEndCard}
-          durationInFrames={170}
+          durationInFrames={113}
           fps={30}
           width={1920}
           height={1080}

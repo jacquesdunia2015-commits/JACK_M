@@ -230,53 +230,6 @@ export const SceneFeatures: React.FC = () => {
           Service de proximité
         </Interactive.Div>
       </Interactive.Div>
-
-      <Interactive.Div
-        name="Feature row 5"
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 28,
-          opacity: interpolate(frame, [3.4 * fps, 4.1 * fps], [0, 1], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-            easing: Easing.bezier(0.16, 1, 0.3, 1),
-          }),
-          translate: interpolate(
-            frame,
-            [3.4 * fps, 4.1 * fps],
-            ["-36px 0px", "0px 0px"],
-            {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-              easing: Easing.bezier(0.16, 1, 0.3, 1),
-            },
-          ),
-        }}
-      >
-        <Interactive.Div
-          name="Bullet 5"
-          style={{
-            width: 22,
-            height: 22,
-            borderRadius: 999,
-            backgroundColor: "#ffffff",
-            flexShrink: 0,
-          }}
-        />
-        <Interactive.Div
-          name="Feature text 5"
-          style={{
-            fontFamily: brandFont,
-            fontWeight: 600,
-            fontSize: 52,
-            color: "#ffffff",
-          }}
-        >
-          Disponibilité 24h/24
-        </Interactive.Div>
-      </Interactive.Div>
     </AbsoluteFill>
   );
 };
