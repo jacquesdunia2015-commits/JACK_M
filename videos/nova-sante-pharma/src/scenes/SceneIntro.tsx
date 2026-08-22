@@ -77,7 +77,7 @@ export const SceneIntro: React.FC = () => {
             ),
           }}
         >
-          À BUKAVU,
+          PARTOUT EN RDC,
         </Interactive.Div>
         <Interactive.Div
           name="Line 2"

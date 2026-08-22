@@ -134,50 +134,7 @@ export const SceneEndCard: React.FC = () => {
           }),
         }}
       >
-        BUKAVU · SUD-KIVU · RDC
-      </Interactive.Div>
-
-      <Interactive.Div
-        name="WhatsApp badge"
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 14,
-          backgroundColor: "#25d366",
-          borderRadius: 999,
-          padding: "14px 30px",
-          marginTop: 30,
-          opacity: interpolate(frame, [2.65 * fps, 3.25 * fps], [0, 1], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-            easing: Easing.bezier(0.16, 1, 0.3, 1),
-          }),
-          scale: interpolate(frame, [2.65 * fps, 3.25 * fps], [0.9, 1], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-            easing: Easing.spring({ damping: 200 }),
-            output: "perceptual-scale",
-          }),
-        }}
-      >
-        <svg width="30" height="30" viewBox="0 0 34 34" style={{ flexShrink: 0 }}>
-          <path
-            d="M17 4a13 13 0 0 0-11 20l-2 8 8-2a13 13 0 1 0 5-26z"
-            fill="#ffffff"
-          />
-        </svg>
-        <Interactive.Div
-          name="WhatsApp number"
-          style={{
-            fontFamily: brandFont,
-            fontWeight: 600,
-            fontSize: 32,
-            color: "#ffffff",
-          }}
-        >
-          +243 999 870 833
-        </Interactive.Div>
+        PARTOUT EN RDC
       </Interactive.Div>
 
       <Interactive.Div

@@ -11,6 +11,7 @@ import { SceneLogo } from "./scenes/SceneLogo";
 import { SceneFeatures } from "./scenes/SceneFeatures";
 import { SceneEngagement } from "./scenes/SceneEngagement";
 import { SceneEndCard } from "./scenes/SceneEndCard";
+import { WhatsAppBar } from "./WhatsAppBar";
 
 type Props = {};
 
@@ -58,6 +59,7 @@ export const NovaPresentation: React.FC<Props> = () => {
           <SceneEndCard />
         </TransitionSeries.Sequence>
       </TransitionSeries>
+      <WhatsAppBar />
     </>
   );
 };
