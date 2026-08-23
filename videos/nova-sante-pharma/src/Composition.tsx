@@ -4,7 +4,11 @@ import {
   Audio,
   CalculateMetadataFunction,
   Composition,
+  Easing,
+  interpolate,
   staticFile,
+  useCurrentFrame,
+  useVideoConfig,
 } from "remotion";
 import { SceneIntro } from "./scenes/SceneIntro";
 import { SceneLogo } from "./scenes/SceneLogo";
@@ -24,9 +28,26 @@ const calculateMetadata: CalculateMetadataFunction<Props> = () => {
 // script, + 15 images de recouvrement par transition en fondu, + une
 // courte tenue finale.
 export const NovaPresentation: React.FC<Props> = () => {
+  const frame = useCurrentFrame();
+  const { durationInFrames, fps } = useVideoConfig();
+
   return (
     <>
       <Audio src={staticFile("audio/voiceover.mp3")} />
+      <Audio
+        name="Fond gospel congolais"
+        src={staticFile("audio/music.mp3")}
+        volume={interpolate(
+          frame,
+          [0, 0.7 * fps, durationInFrames - 1.5 * fps, durationInFrames],
+          [0, 0.22, 0.22, 0],
+          {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+            easing: Easing.bezier(0.16, 1, 0.3, 1),
+          },
+        )}
+      />
       <TransitionSeries>
         <TransitionSeries.Sequence durationInFrames={246} name="Intro">
           <SceneIntro />
