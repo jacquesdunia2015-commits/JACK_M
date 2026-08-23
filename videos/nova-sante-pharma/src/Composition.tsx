@@ -77,7 +77,7 @@ export const NovaPresentation: React.FC<Props> = () => {
           presentation={fade()}
           timing={linearTiming({ durationInFrames: 15 })}
         />
-        <TransitionSeries.Sequence durationInFrames={117} name="EndCard">
+        <TransitionSeries.Sequence durationInFrames={150} name="EndCard">
           <SceneEndCard />
         </TransitionSeries.Sequence>
       </TransitionSeries>
@@ -91,7 +91,7 @@ export const MyComposition = () => {
     <Composition
       id="NovaPresentation"
       component={NovaPresentation}
-      durationInFrames={877}
+      durationInFrames={910}
       fps={30}
       width={1920}
       height={1080}

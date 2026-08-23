@@ -138,6 +138,36 @@ export const SceneEndCard: React.FC = () => {
       </Interactive.Div>
 
       <Interactive.Div
+        name="CTA call to action"
+        style={{
+          fontFamily: brandFont,
+          fontWeight: 700,
+          fontSize: 44,
+          color: "#128c4a",
+          textAlign: "center",
+          marginTop: 34,
+          opacity: interpolate(frame, [2.7 * fps, 3.2 * fps], [0, 1], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+            easing: Easing.bezier(0.16, 1, 0.3, 1),
+          }),
+          scale: interpolate(
+            frame,
+            [2.7 * fps, 3.2 * fps, 3.6 * fps, 4 * fps],
+            [0.9, 1.06, 1, 1.06],
+            {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+              easing: Easing.bezier(0.34, 1.56, 0.64, 1),
+              output: "perceptual-scale",
+            },
+          ),
+        }}
+      >
+        Contactez-nous sur WhatsApp ↓
+      </Interactive.Div>
+
+      <Interactive.Div
         name="End closing line"
         style={{
           width: 160,
