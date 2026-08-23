@@ -1,0 +1,29 @@
+# Déploiements en un clic sur Render (https://render.com) — offre gratuite.
+# Ce dépôt contient plusieurs projets indépendants ; chaque service ci-dessous
+# pointe vers son propre sous-dossier (rootDir).
+#
+# Lien de déploiement (branche claude/new-session-78gytr) :
+#   https://render.com/deploy?repo=https://github.com/jacquesdunia2015-commits/JACK_M/tree/claude/new-session-78gytr
+#
+# Note : sur l'offre gratuite, le disque est éphémère — les bases de
+# démonstration (data/db.json) sont réinitialisées à chaque redéploiement.
+# Pour des données durables, ajouter un disque persistant par service et
+# pointer NOVA_DATA / MEDILAB_DATA vers son chemin de montage.
+services:
+  - type: web
+    name: nova-pharma-os
+    runtime: node
+    plan: free
+    rootDir: nova-pharma-os
+    buildCommand: ""
+    startCommand: node server.mjs
+    healthCheckPath: /
+
+  - type: web
+    name: medilab-saas
+    runtime: node
+    plan: free
+    rootDir: medilab
+    buildCommand: ""
+    startCommand: node server.mjs
+    healthCheckPath: /
