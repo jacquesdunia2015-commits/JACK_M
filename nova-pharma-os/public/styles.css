@@ -1,0 +1,163 @@
+/* NOVA PHARMA OS — feuille de style. Identité NOVA SANTÉ PHARMA (bleu
+   médical / vert professionnel), interface simple et rapide pour un
+   usage quotidien en officine. */
+
+:root {
+  --bleu: #0d3b66;
+  --bleu-clair: #eaf2f9;
+  --vert: #1f9d55;
+  --vert-fonce: #128c4a;
+  --vert-clair: #eafaf0;
+  --encre: #1e293b;
+  --encre-2: #5b6b78;
+  --fond: #f1f5f9;
+  --carte: #ffffff;
+  --bordure: #e2e8f0;
+  --danger: #dc2626;
+  --alerte: #d97706;
+  --rayon: 10px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  background: var(--fond);
+  color: var(--encre);
+  font-size: 15px;
+}
+
+.chargement { padding: 3rem; text-align: center; color: var(--encre-2); }
+
+/* ---------- Connexion ---------- */
+.ecran-login {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(140deg, #0d3b66 0%, #103a63 55%, #0f172a 100%);
+  padding: 1rem;
+}
+.boite-login {
+  background: var(--carte); border-radius: 16px; padding: 2.2rem;
+  width: 100%; max-width: 420px; box-shadow: 0 25px 60px rgba(0,0,0,.35);
+}
+.boite-login h1 { margin: 0 0 .1rem; font-size: 1.5rem; color: var(--bleu); }
+.boite-login h1 span { color: var(--vert); }
+.boite-login .sous-titre { color: var(--encre-2); margin: 0 0 1.4rem; font-size: .92rem; }
+.demo-comptes { margin-top: 1.2rem; font-size: .78rem; color: var(--encre-2); background: var(--vert-clair); border-radius: 8px; padding: .7rem .9rem; line-height: 1.6; }
+.demo-comptes code { background: #d3f3e0; padding: 0 .3em; border-radius: 4px; }
+
+/* ---------- Structure ---------- */
+.coquille { display: flex; min-height: 100vh; }
+.barre-laterale {
+  width: 230px; flex-shrink: 0; background: #0f172a; color: #cbd5e1;
+  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+}
+.logo { padding: 1.1rem 1.2rem; font-weight: 700; font-size: 1.1rem; color: #fff; border-bottom: 1px solid #1e293b; }
+.logo span { color: #4ade80; }
+.org-nom { padding: .6rem 1.2rem; font-size: .78rem; color: #94a3b8; border-bottom: 1px solid #1e293b; }
+.nav { flex: 1; padding: .6rem 0; overflow-y: auto; }
+.nav a {
+  display: block; padding: .58rem 1.2rem; color: #cbd5e1; text-decoration: none;
+  font-size: .91rem; border-left: 3px solid transparent;
+}
+.nav a:hover { background: #1e293b; color: #fff; }
+.nav a.actif { background: #12324f; color: #fff; border-left-color: #4ade80; }
+.pied-nav { padding: .9rem 1.2rem; border-top: 1px solid #1e293b; font-size: .85rem; }
+.pied-nav .qui { color: #e2e8f0; font-weight: 600; }
+.pied-nav .role { color: #94a3b8; font-size: .78rem; margin-bottom: .5rem; }
+
+.contenu { flex: 1; padding: 1.4rem 1.8rem; max-width: 1300px; }
+.entete-page { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+.entete-page h2 { margin: 0; font-size: 1.35rem; }
+
+/* ---------- Composants ---------- */
+.carte { background: var(--carte); border: 1px solid var(--bordure); border-radius: var(--rayon); padding: 1.1rem 1.3rem; margin-bottom: 1.1rem; }
+.carte h3 { margin: 0 0 .8rem; font-size: 1.02rem; color: var(--bleu); }
+
+.grille-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .9rem; margin-bottom: 1.1rem; }
+.stat { background: var(--carte); border: 1px solid var(--bordure); border-radius: var(--rayon); padding: .9rem 1.1rem; }
+.stat .valeur { font-size: 1.55rem; font-weight: 700; color: var(--bleu); }
+.stat.alerte .valeur { color: var(--danger); }
+.stat .libelle { font-size: .8rem; color: var(--encre-2); }
+
+table.donnees { width: 100%; border-collapse: collapse; font-size: .9rem; }
+table.donnees th { text-align: left; padding: .5rem .6rem; border-bottom: 2px solid var(--bordure); font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; color: var(--encre-2); }
+table.donnees td { padding: .52rem .6rem; border-bottom: 1px solid var(--bordure); vertical-align: top; }
+table.donnees tr.cliquable { cursor: pointer; }
+table.donnees tr.cliquable:hover { background: var(--bleu-clair); }
+
+.badge { display: inline-block; padding: .13rem .55rem; border-radius: 999px; font-size: .74rem; font-weight: 600; white-space: nowrap; }
+.badge.gris     { background: #e2e8f0; color: #334155; }
+.badge.jaune    { background: #fef9c3; color: #854d0e; }
+.badge.orange   { background: #fde68a; color: #92400e; }
+.badge.bleu     { background: #dbeafe; color: #1d4ed8; }
+.badge.violet   { background: #e9d5ff; color: #7e22ce; }
+.badge.vert     { background: #bbf7d0; color: #15803d; }
+.badge.teal     { background: #99f6e4; color: #0f766e; }
+.badge.rouge    { background: #fee2e2; color: #b91c1c; }
+.badge.role     { background: var(--bleu-clair); color: var(--bleu); }
+
+.flag { font-weight: 700; }
+.flag.normal { color: var(--vert); }
+.flag.bas, .flag.haut { color: var(--alerte); }
+.flag.critique { color: var(--danger); }
+
+/* ---------- Formulaires ---------- */
+label.champ { display: block; margin-bottom: .75rem; font-size: .87rem; color: var(--encre-2); }
+label.champ > span { display: block; margin-bottom: .25rem; font-weight: 600; }
+input, select, textarea {
+  width: 100%; padding: .5rem .65rem; border: 1px solid #cbd5e1; border-radius: 8px;
+  font: inherit; color: var(--encre); background: #fff;
+}
+input:focus, select:focus, textarea:focus { outline: 2px solid #7dd3a8; border-color: var(--vert); }
+textarea { resize: vertical; min-height: 66px; }
+.ligne-champs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .8rem; }
+
+button, .btn {
+  font: inherit; border: none; border-radius: 8px; padding: .52rem 1rem; cursor: pointer;
+  background: var(--vert); color: #fff; font-weight: 600; font-size: .9rem;
+  text-decoration: none; display: inline-block;
+}
+button:hover, .btn:hover { background: var(--vert-fonce); }
+button.secondaire { background: #e2e8f0; color: var(--encre); }
+button.secondaire:hover { background: #cbd5e1; }
+button.danger { background: var(--danger); }
+button.danger:hover { background: #b91c1c; }
+button.bleu-btn { background: var(--bleu); }
+button.bleu-btn:hover { background: #0a2c4d; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .8rem; }
+
+.recherche { max-width: 340px; }
+
+/* ---------- Divers ---------- */
+.vide { color: var(--encre-2); font-style: italic; padding: .8rem 0; }
+.note { font-size: .8rem; color: var(--encre-2); }
+.deux-colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+@media (max-width: 900px) {
+  .deux-colonnes { grid-template-columns: 1fr; }
+  .barre-laterale { width: 64px; }
+  .barre-laterale .logo { font-size: .75rem; padding: .8rem .3rem; text-align: center; }
+  .org-nom, .pied-nav .qui, .pied-nav .role { display: none; }
+  .nav a { padding: .58rem .4rem; text-align: center; font-size: .7rem; }
+  .contenu { padding: 1rem; }
+}
+
+#toasts { position: fixed; bottom: 1rem; right: 1rem; display: flex; flex-direction: column; gap: .5rem; z-index: 50; }
+.toast {
+  background: #0f172a; color: #f1f5f9; padding: .7rem 1.1rem; border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.25); font-size: .9rem; max-width: 380px;
+  animation: apparait .18s ease-out;
+}
+.toast.erreur { background: var(--danger); }
+@keyframes apparait { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.chrono { list-style: none; margin: 0; padding: 0; font-size: .85rem; }
+.chrono li { padding: .3rem 0 .3rem 1rem; border-left: 2px solid var(--bordure); }
+.chrono li b { color: var(--bleu); }
+
+.panier-ligne { display: flex; align-items: center; gap: .6rem; padding: .4rem 0; border-bottom: 1px solid var(--bordure); }
+.panier-ligne .nom { flex: 1; }
+.panier-ligne input[type=number] { width: 70px; }
+.total-panier { font-size: 1.3rem; font-weight: 700; color: var(--bleu); text-align: right; margin-top: .6rem; }
+
+.cellule-num { text-align: right; }
