@@ -1,0 +1,16 @@
+{
+  "name": "nova-pharma-os",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NOVA PHARMA OS — plateforme SaaS de gestion pharmaceutique, commerciale et logistique",
+  "workspaces": ["api", "web"],
+  "scripts": {
+    "migrate": "npm --workspace api run migrate",
+    "seed": "npm --workspace api run seed",
+    "dev:api": "npm --workspace api run start:dev",
+    "dev:web": "npm --workspace web run dev",
+    "build": "npm --workspace api run build && npm --workspace web run build",
+    "test": "npm --workspace api run test:e2e",
+    "typecheck": "npm --workspace api run typecheck && npm --workspace web run typecheck"
+  }
+}
