@@ -17,6 +17,15 @@ const ROLES: Record<string, string> = {
   commercial: 'Gestionnaire commercial',
 };
 
+/**
+ * Enveloppe du back-office SaaS.
+ *
+ * Elle vit dans le groupe de routes `(espace)` — sans segment d'URL — pour
+ * que la page de connexion, qui reste en dehors, ne soit pas soumise à ce
+ * garde. Sans cette séparation, un visiteur non connecté serait renvoyé
+ * vers `/admin/connexion`, qui déclencherait à nouveau le garde : une
+ * boucle de redirection sans fin.
+ */
 export default async function LayoutAdmin({ children }: { children: React.ReactNode }) {
   const session = await readSession();
   if (!session) redirect('/admin/connexion');
