@@ -209,4 +209,10 @@ export const rn: Dictionnaire = {
   'mobile.vente_enregistree': 'Ukugurisha kwanditswe',
   'mobile.installer': "Shira ku rupapuro rw'intango",
   'general.telephone': "Terefone y'umukiriya",
+  'nav.documents': 'Inyandiko',
+  'doc.titre': "Ubuyobozi n'inyandiko",
+  'doc.telecharger_word': 'Kuramwo muri Word',
+  'doc.ouvrir': 'Ugurura',
+  'doc.retour': 'Subira ku nyandiko',
+  'doc.introuvable': 'Inyandiko ntiyabonetse.',
 };

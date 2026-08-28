@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import BoutonDeconnexion from '@/components/BoutonDeconnexion';
+import Logo from '@/components/Logo';
 import Navigation, { LienNav } from '@/components/Navigation';
 import SelecteurLangue from '@/components/SelecteurLangue';
 import { apiSafe } from '@/lib/api';
@@ -36,13 +37,14 @@ export default async function LayoutPharmacie({
     { href: '/pharmacie/utilisateurs', label: t('nav.equipe'), icone: '▣', groupe: t('nav.administration') },
     { href: '/pharmacie/abonnement', label: t('nav.abonnement'), icone: '▢', groupe: t('nav.administration') },
     { href: '/pharmacie/support', label: t('nav.support'), icone: '▷', groupe: t('nav.administration') },
+    { href: '/pharmacie/documentation', label: t('nav.documents'), icone: '▢', groupe: t('nav.administration') },
   ];
 
   return (
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">NP</span>
+          <Logo />
           <span>
             <span className="brand-name">{t('app.nom')}</span>
             <br />

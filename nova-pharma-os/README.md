@@ -44,6 +44,15 @@ basculer sur une intégration facturée le jour où elle se justifie :
 | Mobile Money | Le client compose le code de l'opérateur ; le vendeur saisit la référence de transaction, unique, qui empêche tout double encaissement | Intégration directe de l'opérateur |
 | Application mobile | PWA installable depuis le navigateur, sans boutique | Application native |
 
+### Marque et documents
+
+- **Logo** : déposer `web/public/logo.png` (carré, 256 px minimum) le substitue au
+  monogramme « NP » sur la connexion, les deux espaces et l'application mobile.
+  Sans fichier, le monogramme reste affiché — l'interface n'a jamais d'image cassée.
+- **Guides intégrés** : les trois documents de `docs/` sont convertis en HTML à la
+  construction et consultables depuis le menu *Documents* des deux espaces, avec
+  téléchargement en Word.
+
 Dans les deux modes, la trace enregistrée est la même : passer de l'un à l'autre ne
 fait perdre aucun historique.
 
@@ -243,7 +252,9 @@ nova-pharma-os/
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
 │   └── public/           manifeste PWA, service worker, icônes
 ├── demarrer.mjs          lancement complet en une commande, base embarquée comprise
+├── scripts/              conversion des guides en Word, sans dépendance à installer
 └── docs/                 conformité, architecture, guides commercial et d'usage
+    └── word/             les mêmes guides en .docx, régénérables
 ```
 
 ---

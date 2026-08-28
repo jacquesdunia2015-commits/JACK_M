@@ -215,4 +215,10 @@ export const swCD: Dictionnaire = {
   'mobile.vente_enregistree': 'Mauzo imewekwa',
   'mobile.installer': 'Weka kwenye ecran ya mwanzo',
   'general.telephone': 'Simu ya mteja',
+  'nav.documents': 'Ma document',
+  'doc.titre': 'Miongozo na ma document',
+  'doc.telecharger_word': 'Pakua kwa Word',
+  'doc.ouvrir': 'Fungua',
+  'doc.retour': 'Rudi kwenye ma document',
+  'doc.introuvable': 'Document haikupatikana.',
 };

@@ -209,4 +209,10 @@ export const sw: Dictionnaire = {
   'mobile.vente_enregistree': 'Mauzo yamehifadhiwa',
   'mobile.installer': 'Weka kwenye skrini ya nyumbani',
   'general.telephone': 'Simu ya mteja',
+  'nav.documents': 'Nyaraka',
+  'doc.titre': 'Miongozo na nyaraka',
+  'doc.telecharger_word': 'Pakua kwa Word',
+  'doc.ouvrir': 'Fungua',
+  'doc.retour': 'Rudi kwenye nyaraka',
+  'doc.introuvable': 'Waraka haukupatikana.',
 };

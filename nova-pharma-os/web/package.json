@@ -4,10 +4,14 @@
   "private": true,
   "description": "NOVA PHARMA OS — back-office SaaS et espace pharmacie",
   "scripts": {
+    "documents": "node scripts/preparer-documents.mjs",
+    "predev": "npm run documents",
     "dev": "next dev -p 3000",
+    "prebuild": "npm run documents",
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
+    "pretypecheck": "npm run documents",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import FormulaireConnexion from '@/components/FormulaireConnexion';
+import Logo from '@/components/Logo';
 import SelecteurLangue from '@/components/SelecteurLangue';
 import { libellesConnexion, traduire } from '@/lib/i18n';
 
@@ -16,7 +17,7 @@ export default async function ConnexionAdmin() {
         </div>
 
         <div className="brand" style={{ marginBottom: '1.25rem', padding: 0 }}>
-          <span className="brand-mark">NP</span>
+          <Logo taille={40} />
           <span>
             <span className="brand-name">{t('app.nom')}</span>
             <br />

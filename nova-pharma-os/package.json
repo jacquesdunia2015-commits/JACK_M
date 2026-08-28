@@ -8,6 +8,7 @@
     "migrate": "npm --prefix api run migrate",
     "seed": "npm --prefix api run seed",
     "seed:demo": "npm --prefix api run seed:demo",
+    "documents:word": "python3 scripts/markdown-vers-word.py",
     "dev:api": "npm --prefix api run start:dev",
     "dev:web": "npm --prefix web run dev",
     "build": "npm --prefix api run build && npm --prefix web run build",

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import BoutonDeconnexion from '@/components/BoutonDeconnexion';
+import Logo from '@/components/Logo';
 import Navigation, { LienNav } from '@/components/Navigation';
 import SelecteurLangue from '@/components/SelecteurLangue';
 import { traduire } from '@/lib/i18n';
@@ -33,13 +34,14 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
     { href: '/admin/facturation', label: t('nav.facturation'), icone: '▦', groupe: t('nav.commerce') },
     { href: '/admin/forfaits', label: t('nav.forfaits'), icone: '▧', groupe: t('nav.commerce') },
     { href: '/admin/support', label: t('nav.support'), icone: '▷', groupe: t('nav.exploitation') },
+    { href: '/admin/documentation', label: t('nav.documents'), icone: '▢', groupe: t('nav.exploitation') },
   ];
 
   return (
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">NP</span>
+          <Logo />
           <span>
             <span className="brand-name">{t('app.nom')}</span>
             <br />

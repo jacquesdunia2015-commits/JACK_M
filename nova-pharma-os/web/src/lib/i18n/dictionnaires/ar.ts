@@ -209,4 +209,10 @@ export const ar: Dictionnaire = {
   'mobile.vente_enregistree': 'تم تسجيل البيع',
   'mobile.installer': 'إضافة إلى الشاشة الرئيسية',
   'general.telephone': 'هاتف الزبون',
+  'nav.documents': 'المستندات',
+  'doc.titre': 'الأدلة والمستندات',
+  'doc.telecharger_word': 'تنزيل بصيغة Word',
+  'doc.ouvrir': 'فتح',
+  'doc.retour': 'العودة إلى المستندات',
+  'doc.introuvable': 'المستند غير موجود.',
 };

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import Logo from '@/components/Logo';
 import ServiceWorker from '@/components/ServiceWorker';
 import { traduire } from '@/lib/i18n';
 import { readSession } from '@/lib/session';
@@ -28,7 +29,10 @@ export default async function LayoutMobile({
     <div className="mob">
       <ServiceWorker />
       <header className="mob-entete">
-        <span className="mob-marque">NOVA</span>
+        <span className="mob-marque">
+          <Logo taille={26} />
+          NOVA
+        </span>
         <span className="mob-qui">{session.name}</span>
       </header>
 

@@ -226,6 +226,12 @@ export const fr = {
   'mobile.vente_enregistree': 'Vente enregistrée',
   'mobile.installer': "Installer sur l'écran d'accueil",
   'general.telephone': 'Téléphone du client',
+  'nav.documents': 'Documents',
+  'doc.titre': 'Guides et documents',
+  'doc.telecharger_word': 'Télécharger en Word',
+  'doc.ouvrir': 'Ouvrir',
+  'doc.retour': 'Retour aux documents',
+  'doc.introuvable': 'Document introuvable.',
 } as const;
 
 export type CleTraduction = keyof typeof fr;

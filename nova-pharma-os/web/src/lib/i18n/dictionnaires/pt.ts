@@ -209,4 +209,10 @@ export const pt: Dictionnaire = {
   'mobile.vente_enregistree': 'Venda registada',
   'mobile.installer': 'Adicionar ao ecrã principal',
   'general.telephone': 'Telefone do cliente',
+  'nav.documents': 'Documentos',
+  'doc.titre': 'Guias e documentos',
+  'doc.telecharger_word': 'Transferir em Word',
+  'doc.ouvrir': 'Abrir',
+  'doc.retour': 'Voltar aos documentos',
+  'doc.introuvable': 'Documento não encontrado.',
 };

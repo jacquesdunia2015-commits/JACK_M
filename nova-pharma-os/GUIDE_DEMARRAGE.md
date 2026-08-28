@@ -170,6 +170,36 @@ Vous voyez vos pharmacies clientes, leurs abonnements, votre revenu mensuel.
 
 ---
 
+## Mettre votre logo
+
+Déposez votre image ici :
+
+```
+nova-pharma-os/web/public/logo.png
+```
+
+Puis arrêtez l'application (Ctrl + C) et relancez-la. Votre logo remplace le
+carré vert « NP » **partout** : page de connexion, barre latérale de la
+pharmacie, back-office et application mobile.
+
+| | |
+|---|---|
+| Nom du fichier | `logo.png` — ou `logo.svg`, `logo.jpg`, `logo.webp` |
+| Forme | **Carrée**, sinon l'image sera déformée |
+| Taille conseillée | 256 × 256 pixels au minimum |
+| Fond | Transparent (PNG) ou de couleur unie, au choix |
+
+Tant qu'aucun fichier n'est déposé, le monogramme « NP » s'affiche : l'interface
+reste finie, sans image cassée ni carré vide.
+
+> **L'icône de l'onglet et de l'écran d'accueil ne change pas toute seule.**
+> Elle vit dans deux fichiers séparés, `web/public/icone-192.png` et
+> `web/public/icone-512.png`. Pour la changer aussi, remplacez ces deux
+> fichiers par votre logo aux dimensions correspondantes (192 × 192 et
+> 512 × 512), en gardant exactement les mêmes noms.
+
+---
+
 ## Installer l'application sur un téléphone
 
 L'application s'installe **sans passer par le Play Store ni l'App Store**, donc
@@ -245,6 +275,22 @@ avec les instructions.
 > **Aucune intégration avec l'opérateur n'est nécessaire**, et donc aucun frais.
 > L'argent passe par le circuit habituel ; ce que l'application apporte, c'est
 > de savoir à quelle vente il correspond et de ne jamais le compter deux fois.
+
+---
+
+## Retrouver les guides dans l'application
+
+Les trois documents — celui-ci, le guide commercial et « Que faire avec NOVA
+PHARMA OS » — sont **lisibles depuis l'application elle-même**, menu
+*Documents* (en bas de la barre latérale, côté pharmacie comme côté
+back-office).
+
+Chacun peut aussi être **téléchargé en Word** d'un clic, pour l'imprimer,
+l'annoter ou l'envoyer par courriel à un confrère.
+
+> Les fichiers Word sont produits à partir des textes du dépôt. Si vous
+> modifiez un guide, relancez `python3 scripts/markdown-vers-word.py` pour
+> régénérer les `.docx`, puis redémarrez l'application.
 
 ---
 

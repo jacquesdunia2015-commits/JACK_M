@@ -209,4 +209,10 @@ export const en: Dictionnaire = {
   'mobile.vente_enregistree': 'Sale recorded',
   'mobile.installer': 'Add to home screen',
   'general.telephone': "Customer's phone",
+  'nav.documents': 'Documents',
+  'doc.titre': 'Guides and documents',
+  'doc.telecharger_word': 'Download as Word',
+  'doc.ouvrir': 'Open',
+  'doc.retour': 'Back to documents',
+  'doc.introuvable': 'Document not found.',
 };

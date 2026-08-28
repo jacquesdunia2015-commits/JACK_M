@@ -209,4 +209,10 @@ export const ln: Dictionnaire = {
   'mobile.vente_enregistree': 'Botεki ebombami',
   'mobile.installer': 'Tia na ekele ya ebandeli',
   'general.telephone': 'Telefone ya kiliya',
+  'nav.documents': 'Ba document',
+  'doc.titre': 'Batambwisi mpe ba document',
+  'doc.telecharger_word': 'Kokitisa na Word',
+  'doc.ouvrir': 'Kofungola',
+  'doc.retour': 'Kozonga na ba document',
+  'doc.introuvable': 'Document emonani te.',
 };

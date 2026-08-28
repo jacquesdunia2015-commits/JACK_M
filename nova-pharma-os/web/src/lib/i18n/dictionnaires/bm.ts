@@ -209,4 +209,10 @@ export const bm: Dictionnaire = {
   'mobile.vente_enregistree': 'Feereli sɛbɛnna',
   'mobile.installer': 'A bila kunbɛn yɔrɔ la',
   'general.telephone': 'Kiliyan ka telefɔni',
+  'nav.documents': 'Sɛbɛnw',
+  'doc.titre': 'Ɲɛbila ni sɛbɛnw',
+  'doc.telecharger_word': 'A jigin Word la',
+  'doc.ouvrir': 'A da wuli',
+  'doc.retour': 'Segin sɛbɛnw ma',
+  'doc.introuvable': 'Sɛbɛn ma sɔrɔ.',
 };

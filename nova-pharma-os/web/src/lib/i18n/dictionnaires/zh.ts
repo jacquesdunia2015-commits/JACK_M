@@ -207,4 +207,10 @@ export const zh: Dictionnaire = {
   'mobile.vente_enregistree': '销售已记录',
   'mobile.installer': '添加到主屏幕',
   'general.telephone': '客户电话',
+  'nav.documents': '文档',
+  'doc.titre': '指南与文档',
+  'doc.telecharger_word': '下载 Word 版',
+  'doc.ouvrir': '打开',
+  'doc.retour': '返回文档列表',
+  'doc.introuvable': '未找到该文档。',
 };

@@ -209,4 +209,10 @@ export const wo: Dictionnaire = {
   'mobile.vente_enregistree': 'Njaay bi denc nañu ko',
   'mobile.installer': 'Teg ko ci ekraan bi',
   'general.telephone': 'Telefonu kliyaan bi',
+  'nav.documents': 'Ay téere',
+  'doc.titre': 'Ay tektal ak téere',
+  'doc.telecharger_word': 'Yeb ci Word',
+  'doc.ouvrir': 'Ubbi',
+  'doc.retour': 'Dellu ci téere yi',
+  'doc.introuvable': 'Gisuñu téere bi.',
 };

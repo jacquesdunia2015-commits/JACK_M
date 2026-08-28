@@ -209,4 +209,10 @@ export const hi: Dictionnaire = {
   'mobile.vente_enregistree': 'बिक्री दर्ज हुई',
   'mobile.installer': 'होम स्क्रीन पर जोड़ें',
   'general.telephone': 'ग्राहक का फ़ोन',
+  'nav.documents': 'दस्तावेज़',
+  'doc.titre': 'गाइड और दस्तावेज़',
+  'doc.telecharger_word': 'Word में डाउनलोड करें',
+  'doc.ouvrir': 'खोलें',
+  'doc.retour': 'दस्तावेज़ों पर वापस',
+  'doc.introuvable': 'दस्तावेज़ नहीं मिला।',
 };
