@@ -1,4 +1,7 @@
-# Déploie QualiCode sur GitHub Pages.
+# Déploie les sites statiques du dépôt sur GitHub Pages :
+#   /            QualiCode (application d'analyse qualitative)
+#   /conseil/    site éditorial de conseil à la consommation
+#
 # L'application est 100 % statique : le contenu du dépôt est publié tel quel
 # sur la branche gh-pages (GitHub Pages se configure automatiquement sur
 # cette branche pour les dépôts publics).
@@ -11,7 +14,7 @@ name: Déploiement GitHub Pages
 
 on:
   push:
-    branches: [main, claude/app-from-uploads-gimlun]
+    branches: [main, claude/app-from-uploads-gimlun, claude/editorial-consumer-advice-site-311bjn]
   workflow_dispatch:
 
 permissions:
@@ -39,6 +42,18 @@ jobs:
           grep -q 'rel="manifest"' index.html \
             || { echo "::error::index.html ne référence pas le manifeste"; exit 1; }
           echo "Fichiers d'installation (PWA) présents."
+
+      - name: Régénération et recette du site éditorial de conseil
+        run: |
+          set -e
+          # Le générateur échoue si un contenu viole une règle de publication
+          # (alternative textuelle, signature, référentiel produit) ; le
+          # vérificateur échoue sur toute anomalie bloquante de recette.
+          python3 tools/generer_site_conseil.py
+          python3 tools/verifier_site_conseil.py
+          test -f conseil/index.html
+          test -f conseil/sitemap.xml
+          echo "Site éditorial régénéré et contrôlé."
 
       - name: Publication sur la branche gh-pages
         run: |

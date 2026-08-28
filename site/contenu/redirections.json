@@ -1,0 +1,5 @@
+{
+  "_lisez_moi": "Redirections 301 saisies à la main — reprise d'un ancien site (§ 8.3), fusion d'articles, changement d'URL décidé en dehors du générateur. Les changements de slug d'un contenu existant sont détectés automatiquement et n'ont pas à figurer ici.",
+  "_exemple": {"de": "ancienne-adresse/", "vers": "maison/cuisine/nouvelle-adresse/", "motif": "migration"},
+  "redirections": []
+}

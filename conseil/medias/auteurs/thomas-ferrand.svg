@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-hidden="true">
+<defs><linearGradient id="p" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#6B2E6E"/><stop offset="1" stop-color="#A45FA8"/></linearGradient></defs>
+<rect width="400" height="400" fill="url(#p)"/>
+<text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Georgia, serif"
+ font-size="160" fill="#fff" opacity=".92">TF</text></svg>
