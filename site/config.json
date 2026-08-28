@@ -1,0 +1,59 @@
+{
+  "_lisez_moi": "Réglages du site. Les valeurs entre crochets sont à compléter par le porteur du projet (cahier des charges, § 1.1). Aucun fichier HTML n'est à modifier à la main : tout est régénéré par tools/generer_site_conseil.py.",
+  "marque": "Choisir Simple",
+  "baseline": "Choisir devient simple",
+  "promesse": "Guides d'achat, comparatifs et actualité consommation. Des conseils sourcés, signés et mis à jour, pour décider vite et bien.",
+  "raison_sociale": "[Raison sociale de l'éditeur]",
+  "directeur_publication": "[Nom du directeur de la publication]",
+  "email_contact": "[contact@exemple.fr]",
+  "langue": "fr-FR",
+  "mode_demonstration": true,
+  "_mode_demonstration": "Affiche un bandeau signalant que les contenus, marques et prix sont fictifs. À passer à false avant toute mise en ligne réelle.",
+  "base_url": "https://jacquesdunia2015-commits.github.io/JACK_M/conseil",
+  "dossier_sortie": "conseil",
+  "urls_avec_rubrique": true,
+  "_urls_avec_rubrique": "Arbitrage § 6.4 / annexe B-3. true : /{rubrique}/{slug}/ (arborescence explicite). false : /{slug}/ (recatégorisation libre). Tout changement régénère automatiquement le plan de redirections 301.",
+  "couleurs": {
+    "primaire": "#17469E",
+    "primaire_sombre": "#0F2F6E",
+    "accent": "#B3521B",
+    "vert": "#186B4A",
+    "encre": "#14181F",
+    "encre_douce": "#4A5261",
+    "trait": "#DFE3EA",
+    "fond": "#FFFFFF",
+    "fond_doux": "#F5F7FB"
+  },
+  "articles_par_page": 12,
+  "budget_page_ko": 1200,
+  "budget_requetes": 45,
+  "meta_titre_max": 60,
+  "meta_description_max": 155,
+  "reseaux": {
+    "facebook": "https://www.facebook.com/[page]",
+    "x": "https://x.com/[compte]",
+    "linkedin": "https://www.linkedin.com/company/[page]",
+    "instagram": "https://www.instagram.com/[compte]"
+  },
+  "affiliation": {
+    "prefixe_redirection": "go",
+    "mention": "Certains liens de cet article sont des liens d'affiliation : nous pouvons percevoir une commission, sans surcoût pour vous.",
+    "rel": "sponsored nofollow noopener"
+  },
+  "newsletter": {
+    "plateforme": "[Brevo | Mailchimp | Mailjet]",
+    "endpoint": "[URL de l'API d'inscription — double opt-in obligatoire]",
+    "finalite": "Recevoir chaque semaine nos guides d'achat et nos décryptages consommation."
+  },
+  "mesure": {
+    "outil": "matomo",
+    "_outil": "Arbitrage § 6.7 / annexe B-4 : \"matomo\" (auto-hébergé) ou \"ga4\" (Consent Mode v2). Aucun script n'est chargé avant consentement.",
+    "matomo_url": "[https://analytics.exemple.fr/]",
+    "matomo_site_id": "1",
+    "ga4_id": "[G-XXXXXXXXXX]"
+  },
+  "publicite": {
+    "regie": "[Régie à retenir — annexe B-6]",
+    "emplacements_actifs": true
+  }
+}

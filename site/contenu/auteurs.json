@@ -1,0 +1,46 @@
+{
+  "_lisez_moi": "Fiches auteurs (cahier des charges § 4.3.5). La signature est obligatoire : le générateur refuse de publier un article dont l'auteur n'est pas déclaré ici (§ 5, signature obligatoire).",
+
+  "auteurs": [
+    {
+      "slug": "camille-renaud",
+      "nom": "Camille Renaud",
+      "fonction": "Rédactrice en chef",
+      "expertises": ["Maison", "Électroménager", "Méthodologie de test"],
+      "bio_courte": "Journaliste consommation depuis douze ans, Camille dirige la rédaction et garantit l'indépendance de nos sélections.",
+      "bio": "Camille Renaud est journaliste consommation depuis 2014. Après huit ans passés à couvrir l'équipement de la maison pour la presse spécialisée, elle a rejoint la rédaction pour y construire la méthodologie de test et de sélection appliquée à tous nos guides d'achat. Elle défend une ligne simple : un produit n'est recommandé que si nous savons expliquer, critère par critère, pourquoi il devance ses concurrents — et si nous savons dire à qui il ne convient pas. Elle supervise également la politique d'affiliation du site et la séparation stricte entre contenus éditoriaux et contenus commerciaux.",
+      "reseaux": {"linkedin": "https://www.linkedin.com/in/[profil]", "x": "https://x.com/[compte]"},
+      "email": "[camille@exemple.fr]"
+    },
+    {
+      "slug": "yanis-belkacem",
+      "nom": "Yanis Belkacem",
+      "fonction": "Journaliste High-Tech",
+      "expertises": ["Smartphones", "Audio", "Réparabilité"],
+      "bio_courte": "Yanis suit l'électronique grand public et traque les fiches techniques trompeuses.",
+      "bio": "Yanis Belkacem couvre l'électronique grand public depuis 2017. Il s'est spécialisé dans la durée de vie des appareils : suivi logiciel, disponibilité des pièces détachées, coût réel d'une réparation. Il croise systématiquement les annonces des fabricants avec les données publiques — indice de réparabilité, engagements de mise à jour, relevés de consommation — et privilégie les mesures reproductibles aux impressions d'écoute ou d'usage. Il anime la veille réglementaire du site sur l'écoconception et le droit à la réparation.",
+      "reseaux": {"linkedin": "https://www.linkedin.com/in/[profil]", "x": "https://x.com/[compte]"},
+      "email": "[yanis@exemple.fr]"
+    },
+    {
+      "slug": "sophie-marchal",
+      "nom": "Sophie Marchal",
+      "fonction": "Journaliste consommation responsable",
+      "expertises": ["Écoresponsable", "Made in France", "Alimentation"],
+      "bio_courte": "Sophie enquête sur l'origine réelle des produits et sur la solidité des allégations environnementales.",
+      "bio": "Sophie Marchal est journaliste indépendante spécialisée dans la consommation responsable. Elle travaille sur l'écart, souvent considérable, entre une allégation environnementale et ce qu'elle recouvre réellement : origine de fabrication, part de matière recyclée, conditions d'attribution d'un label. Elle s'appuie sur les référentiels publics et sur les cahiers des charges des labels, qu'elle lit intégralement avant d'en parler. Pour nos rubriques Made in France et Écoresponsable, elle vérifie systématiquement le lieu de fabrication auprès des marques et documente les refus de réponse.",
+      "reseaux": {"linkedin": "https://www.linkedin.com/in/[profil]", "instagram": "https://www.instagram.com/[compte]"},
+      "email": "[sophie@exemple.fr]"
+    },
+    {
+      "slug": "thomas-ferrand",
+      "nom": "Thomas Ferrand",
+      "fonction": "Journaliste famille & enfants",
+      "expertises": ["Puériculture", "Sécurité des produits", "Jouets"],
+      "bio_courte": "Thomas suit la sécurité des produits destinés aux enfants et les rappels de produits.",
+      "bio": "Thomas Ferrand couvre l'équipement des familles depuis 2019. Il consacre une part importante de son travail au suivi des rappels de produits et des alertes de sécurité, qu'il intègre à nos guides dès leur publication. Père de deux enfants, il teste le matériel de puériculture dans la durée — plusieurs mois d'usage quotidien — et considère qu'un équipement n'est recommandable que s'il reste sûr et pratique après un an de service. Il écarte par principe les produits dont la notice de sécurité est absente ou incompréhensible.",
+      "reseaux": {"linkedin": "https://www.linkedin.com/in/[profil]"},
+      "email": "[thomas@exemple.fr]"
+    }
+  ]
+}

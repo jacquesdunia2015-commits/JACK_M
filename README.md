@@ -18,6 +18,12 @@ fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicale
 📲 **Installer QualiCode** (icône sur le téléphone ou l'ordinateur, ouverture en un clic) : [installateurs/LISEZ-MOI.md](installateurs/LISEZ-MOI.md).
 💰 **Commercialisation** : [COMMERCIALISATION.md](COMMERCIALISATION.md) (les 6 étapes, circuit de vente, contrôle des licences, gestion des clients) · [PRICING.md](PRICING.md) (tarifs, licences, paiements) · [MARKETING.md](MARKETING.md) (cibles, canaux, modèle économique).
 
+> **Ce dépôt contient un second projet.** Le
+> **[site éditorial de conseil à la consommation](SITE_CONSEIL.md)** — guides d'achat,
+> comparatifs et actualité consommation — est réalisé d'après son propre cahier des charges
+> (août 2026). Sources dans [`site/`](site/), site généré dans [`conseil/`](conseil/),
+> en ligne sur <https://jacquesdunia2015-commits.github.io/JACK_M/conseil/>.
+
 ## 🚀 Lancement
 
 **Fichier unique (le plus simple)** : téléchargez **[dist/QualiCode.html](https://github.com/jacquesdunia2015-commits/JACK_M/raw/main/dist/QualiCode.html)**
