@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-hidden="true">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#6B2E6E"/><stop offset="1" stop-color="#A45FA8"/></linearGradient></defs>
+<rect width="1200" height="800" fill="url(#g)"/><circle cx="781" cy="477" r="181" fill="#fff" opacity="0.19"/><circle cx="247" cy="600" r="204" fill="#fff" opacity="0.24"/><circle cx="219" cy="103" r="222" fill="#fff" opacity="0.19"/><circle cx="390" cy="579" r="232" fill="#fff" opacity="0.15"/><circle cx="671" cy="702" r="93" fill="#fff" opacity="0.19"/><circle cx="883" cy="489" r="117" fill="#fff" opacity="0.24"/>
+<text x="600" y="400" text-anchor="middle" dominant-baseline="central"
+ font-family="Georgia, serif" font-size="176" fill="#fff" opacity=".82">PCC</text>
+</svg>

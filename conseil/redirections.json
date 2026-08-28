@@ -1,0 +1,4 @@
+{
+  "_lisez_moi": "Plan de redirections 301. En production, ces règles sont appliquées côté serveur (voir redirections.conf) ; la version statique publie des pages de redirection équivalentes.",
+  "redirections": []
+}

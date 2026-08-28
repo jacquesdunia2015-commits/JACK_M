@@ -1,0 +1,66 @@
+# Déploie les sites statiques du dépôt sur GitHub Pages :
+#   /            QualiCode (application d'analyse qualitative)
+#   /conseil/    site éditorial de conseil à la consommation
+#
+# L'application est 100 % statique : le contenu du dépôt est publié tel quel
+# sur la branche gh-pages (GitHub Pages se configure automatiquement sur
+# cette branche pour les dépôts publics).
+#
+# L'adresse publiée est la SEULE voie possible pour installer QualiCode comme
+# application (icône sur l'écran d'accueil) : les navigateurs refusent
+# d'installer un fichier .html ouvert localement. La branche de développement
+# est donc publiée elle aussi, pour que le site reflète la version courante.
+name: Déploiement GitHub Pages
+
+on:
+  push:
+    branches: [main, claude/app-from-uploads-gimlun, claude/editorial-consumer-advice-site-311bjn]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Vérification des fichiers indispensables à l'installation
+        run: |
+          set -e
+          for f in index.html manifest.webmanifest sw.js \
+                   assets/logo/qualicode-icon-192.png \
+                   assets/logo/qualicode-icon-512.png; do
+            test -f "$f" || { echo "::error::Fichier manquant : $f"; exit 1; }
+          done
+          grep -q 'rel="manifest"' index.html \
+            || { echo "::error::index.html ne référence pas le manifeste"; exit 1; }
+          echo "Fichiers d'installation (PWA) présents."
+
+      - name: Régénération et recette du site éditorial de conseil
+        run: |
+          set -e
+          # Le générateur échoue si un contenu viole une règle de publication
+          # (alternative textuelle, signature, référentiel produit) ; le
+          # vérificateur échoue sur toute anomalie bloquante de recette.
+          python3 tools/generer_site_conseil.py
+          python3 tools/verifier_site_conseil.py
+          test -f conseil/index.html
+          test -f conseil/sitemap.xml
+          echo "Site éditorial régénéré et contrôlé."
+
+      - name: Publication sur la branche gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          touch .nojekyll
+          git checkout --orphan gh-pages
+          git add -A
+          git commit -m "Déploiement de QualiCode (${GITHUB_SHA})"
+          git push --force origin gh-pages

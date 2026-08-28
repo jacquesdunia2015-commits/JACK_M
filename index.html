@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#17334f">
+<!-- Co-marquage affiché à côté du logo QualiCode. Modifiable ici pour toute
+     une organisation ; chaque utilisateur peut aussi le changer dans
+     l'application (ruban Accueil → 🏛️ Logo de l'organisation). -->
+<meta name="qc-org-nom" content="APSA">
+<meta name="qc-org-drapeau" content="cd"><!-- cd = RD Congo, rw = Rwanda, bj = Bénin, vide = aucun -->
+<!-- Logo officiel de l'organisation : déposez le fichier dans
+     assets/logo/organisation.png puis décommentez la ligne ci-dessous. Tant
+     qu'il n'est pas fourni, une vignette portant les initiales est affichée.
+<meta name="qc-org-logo" content="assets/logo/organisation.png"> -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QualiCode">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/logo/qualicode-icon-192.png">
+<title>QualiCode — Analyse qualitative de données</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' role='img' aria-label='QualiCode'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2317334f'/%3E%3Cstop offset='1' stop-color='%233a7ca5'/%3E%3C/linearGradient%3E%3CradialGradient id='glow' cx='0.3' cy='0.2' r='0.9'%3E%3Cstop offset='0' stop-color='%23ffffff' stop-opacity='0.14'/%3E%3Cstop offset='0.55' stop-color='%23ffffff' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect x='0' y='0' width='512' height='512' rx='112' fill='url(%23bg)'/%3E%3Crect x='0' y='0' width='512' height='512' rx='112' fill='url(%23glow)'/%3E%3Ccircle cx='250' cy='240' r='140' fill='none' stroke='%23ffffff' stroke-width='30'/%3E%3Crect x='165' y='177' width='88' height='26' rx='13' fill='%232ec4b6'/%3E%3Crect x='261' y='177' width='74' height='26' rx='13' fill='%23ffffff' opacity='0.85'/%3E%3Crect x='150' y='227' width='70' height='26' rx='13' fill='%23ffffff' opacity='0.85'/%3E%3Crect x='228' y='227' width='96' height='26' rx='13' fill='%23ee6352'/%3E%3Crect x='165' y='277' width='70' height='26' rx='13' fill='%23f6b93b'/%3E%3Crect x='243' y='277' width='92' height='26' rx='13' fill='%23ffffff' opacity='0.85'/%3E%3Cline x1='345' y1='335' x2='425' y2='415' stroke='%23f6b93b' stroke-width='38' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css"></head>
+<body>
+
+<!-- ===================== RUBAN ===================== -->
+<header id="ribbon">
+  <div class="app-brand"><span class="brand-logos"><svg class="brand-logo" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#26567d"/><circle cx="250" cy="240" r="140" fill="none" stroke="#fff" stroke-width="30"/><rect x="165" y="177" width="88" height="26" rx="13" fill="#2ec4b6"/><rect x="261" y="177" width="74" height="26" rx="13" fill="#fff" opacity="0.85"/><rect x="150" y="227" width="70" height="26" rx="13" fill="#fff" opacity="0.85"/><rect x="228" y="227" width="96" height="26" rx="13" fill="#ee6352"/><rect x="165" y="277" width="70" height="26" rx="13" fill="#f6b93b"/><rect x="243" y="277" width="92" height="26" rx="13" fill="#fff" opacity="0.85"/><line x1="345" y1="335" x2="425" y2="415" stroke="#f6b93b" stroke-width="38" stroke-linecap="round"/></svg></span><strong>QualiCode</strong></div>
+  <div class="ribbon-main">
+  <div class="ribbon-top">
+    <nav class="ribbon-tabs" id="ribbonTabs">
+      <button data-tab="home" class="active" data-i18n="tab_home">Accueil</button>
+      <button data-tab="import" data-i18n="tab_import">Importer</button>
+      <button data-tab="codes" data-i18n="tab_codes">Codes</button>
+      <button data-tab="memos" data-i18n="tab_memos">Mémos</button>
+      <button data-tab="variables" data-i18n="tab_variables">Variables</button>
+      <button data-tab="analysis" data-i18n="tab_analysis">Analyse</button>
+      <button data-tab="visual" data-i18n="tab_visual">Visualisation</button>
+      <button data-tab="reports" data-i18n="tab_reports">Rapports</button>
+    </nav>
+    <div class="ribbon-right">
+      <span id="projectName" class="project-name" title=""></span>
+      <button id="btnLang" class="icon-btn" title="Français / English">🌐 <span id="langLabel">FR</span></button>
+      <button id="btnInstallTop" class="icon-btn" data-i18n-title="m_install" title="Installer l'application">📲</button>
+      <button id="btnShortcuts" class="icon-btn" data-i18n-title="hk_title" title="Raccourcis clavier (F1)">⌨️</button>
+      <button id="btnLockNow" class="icon-btn" data-i18n-title="lock_now" title="Verrouiller l'écran" hidden>🔒</button>
+      <button id="btnTheme" class="icon-btn" title="Thème clair / sombre">🌓</button>
+    </div>
+  </div>
+
+  <div class="ribbon-content">
+    <!-- Accueil -->
+    <div class="ribbon-pane active" data-pane="home">
+      <div class="rgroup">
+        <button id="btnMyProjects" class="rbtn">📚<span data-i18n="my_projects">Mes projets</span></button>
+        <button id="btnNewProject" class="rbtn">🗂️<span data-i18n="new_project">Nouveau projet</span></button>
+        <button id="btnOpenProject" class="rbtn">📂<span data-i18n="open_project">Ouvrir (.projx)</span></button>
+        <button id="btnSaveProject" class="rbtn">💾<span data-i18n="save_project">Enregistrer (.projx)</span></button>
+        <button id="btnSampleProject" class="rbtn">🎓<span data-i18n="sample_project">Projet exemple</span></button>
+        <div class="rlabel" data-i18n="grp_project">Projet</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnProtect" class="rbtn">🔒<span data-i18n="protect">Mot de passe</span></button>
+        <button id="btnApplock" class="rbtn">🔐<span data-i18n="applock_btn">Mot de passe app</span></button>
+        <button id="btnLicense" class="rbtn">💳<span data-i18n="lic_btn">Abonnement</span></button>
+        <button id="btnMergeProject" class="rbtn">🧬<span data-i18n="merge_project">Fusionner (.projx)</span></button>
+        <button id="btnSharedFolder" class="rbtn">🔄<span data-i18n="shared_folder">Dossier partagé</span></button>
+        <button id="btnRealtime" class="rbtn">🌐<span data-i18n="rt_btn">Temps réel (serveur)</span></button>
+        <div class="rlabel" data-i18n="grp_team">Équipe</div>
+        <input type="file" id="mergeInput" accept=".projx,.json" hidden>
+      </div>
+      <div class="rgroup">
+        <input type="search" id="searchInput" data-i18n-ph="search_ph" placeholder="Recherche plein texte (ET, OU, &quot;phrase&quot;)…">
+        <button id="btnSearch" class="rbtn small">🔎<span data-i18n="search">Rechercher</span></button>
+        <div class="rlabel" data-i18n="grp_search">Recherche</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnUndo" class="rbtn" disabled>↩️<span data-i18n="undo">Annuler</span></button>
+        <button id="btnRedo" class="rbtn" disabled>↪️<span data-i18n="redo">Rétablir</span></button>
+        <div class="rlabel" data-i18n="grp_edit">Édition</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnGuidePdf" class="rbtn">📖<span data-i18n="guide_pdf">Guide (PDF)</span></button>
+        <button id="btnManuelPdf" class="rbtn">🎓<span data-i18n="manual_pdf">Manuel débutant (PDF)</span></button>
+        <button id="btnInstall" class="rbtn">📲<span data-i18n="m_install">Installer sur l'écran d'accueil</span></button>
+        <button id="btnOrgLogo" class="rbtn">🏛️<span data-i18n="org_btn">Logo de l'organisation</span></button>
+        <div class="rlabel" data-i18n="grp_docs">Documentation</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnTrash" class="rbtn">🗑️<span data-i18n="trash">Corbeille</span></button>
+        <div class="rlabel" data-i18n="grp_tools">Outils</div>
+      </div>
+    </div>
+
+    <!-- Importer -->
+    <div class="ribbon-pane" data-pane="import">
+      <div class="rgroup">
+        <button id="btnImportFiles" class="rbtn">📄<span data-i18n="import_files">Fichiers (DOCX, PDF, TXT, images)</span></button>
+        <button id="btnImportCsv" class="rbtn">📊<span data-i18n="import_csv">Enquête CSV</span></button>
+        <button id="btnPasteDoc" class="rbtn">📋<span data-i18n="paste_doc">Coller un texte</span></button>
+        <button id="btnStructuredText" class="rbtn">🧩<span data-i18n="structured_text">Texte structuré</span></button>
+        <button id="btnTranscribe" class="rbtn">🎙️<span data-i18n="transcribe">Transcrire un audio/vidéo</span></button>
+        <button id="btnSocial" class="rbtn">📱<span data-i18n="social_import">Réseaux sociaux (export)</span></button>
+        <button id="btnBiblio" class="rbtn">📚<span data-i18n="biblio">Bibliographie (RIS/BibTeX)</span></button>
+        <div class="rlabel" data-i18n="grp_import">Importation</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnNewGroup" class="rbtn">📁<span data-i18n="new_group">Nouveau groupe</span></button>
+        <div class="rlabel" data-i18n="grp_organize">Organisation</div>
+      </div>
+      <input type="file" id="fileInput" multiple accept=".txt,.md,.text,.docx,.pdf,.jpg,.jpeg,.png,.webp,.gif,.bmp" hidden>
+      <input type="file" id="csvInput" accept=".csv" hidden>
+      <input type="file" id="projInput" accept=".projx,.json,.qdpx" hidden>
+      <input type="file" id="audioInput" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp,.mp4,.webm,.mkv,.mov" hidden>
+      <input type="file" id="transInput" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.aac,.opus,.amr,.3gp,.mp4,.webm,.mkv,.mov" hidden>
+      <input type="file" id="socialInput" accept=".txt,.csv,.json" hidden>
+      <input type="file" id="biblioInput" accept=".ris,.bib,.txt" hidden>
+    </div>
+
+    <!-- Codes -->
+    <div class="ribbon-pane" data-pane="codes">
+      <div class="rgroup">
+        <button id="btnNewCode" class="rbtn">🏷️<span data-i18n="new_code">Nouveau code</span></button>
+        <button id="btnCodeSelection" class="rbtn">✏️<span data-i18n="code_selection">Coder la sélection</span></button>
+        <button id="btnInVivo" class="rbtn">💬<span data-i18n="in_vivo">Codage in vivo</span></button>
+        <div class="rlabel" data-i18n="grp_coding">Codage</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnAutoCode" class="rbtn">⚡<span data-i18n="autocode">Codage automatique</span></button>
+        <div class="rlabel" data-i18n="grp_autocode">Recherche lexicale</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnAiSuggest" class="rbtn">🤖<span data-i18n="ai_suggest">Suggestions IA</span></button>
+        <div class="rlabel" data-i18n="grp_ai">Assistance IA</div>
+      </div>
+      <div class="rgroup">
+        <label class="rcheck"><input type="checkbox" id="chkHighlights" checked> <span data-i18n="show_highlights">Afficher les surlignages</span></label>
+        <div class="rlabel" data-i18n="grp_display">Affichage</div>
+      </div>
+    </div>
+
+    <!-- Mémos -->
+    <div class="ribbon-pane" data-pane="memos">
+      <div class="rgroup">
+        <button id="btnProjectMemo" class="rbtn">📝<span data-i18n="project_memo">Mémo du projet</span></button>
+        <button id="btnMemoManager" class="rbtn">🗒️<span data-i18n="memo_manager">Gestionnaire de mémos</span></button>
+        <div class="rlabel" data-i18n="grp_memos">Mémos</div>
+      </div>
+    </div>
+
+    <!-- Variables -->
+    <div class="ribbon-pane" data-pane="variables">
+      <div class="rgroup">
+        <button id="btnEditVariables" class="rbtn">🧮<span data-i18n="edit_variables">Liste des variables</span></button>
+        <button id="btnDataEditor" class="rbtn">📋<span data-i18n="data_editor">Éditeur de données</span></button>
+        <div class="rlabel" data-i18n="grp_docvars">Variables de document</div>
+      </div>
+    </div>
+
+    <!-- Analyse -->
+    <div class="ribbon-pane" data-pane="analysis">
+      <div class="rgroup">
+        <button id="btnCodeMatrix" class="rbtn">🧮<span data-i18n="code_matrix">Matrice des codes</span></button>
+        <button id="btnCooc" class="rbtn">🔗<span data-i18n="cooc_matrix">Co-occurrences</span></button>
+        <button id="btnGroupCompare" class="rbtn">⚖️<span data-i18n="group_compare">Comparaison de groupes</span></button>
+        <div class="rlabel" data-i18n="grp_matrices">Matrices</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnWordFreq" class="rbtn">🔤<span data-i18n="word_freq">Fréquences de mots</span></button>
+        <button id="btnKwic" class="rbtn">📖<span data-i18n="kwic">Mots en contexte (KWIC)</span></button>
+        <div class="rlabel" data-i18n="grp_lexical">Analyse lexicale</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnStats" class="rbtn">📈<span data-i18n="stats">Statistiques</span></button>
+        <button id="btnAdvStats" class="rbtn">📐<span data-i18n="adv_stats">Statistiques avancées (χ², R)</span></button>
+        <div class="rlabel" data-i18n="grp_stats">Descriptives</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnSavedQueries" class="rbtn">📋<span data-i18n="saved_queries">Requêtes sauvegardées</span></button>
+        <div class="rlabel" data-i18n="grp_queries">Requêtes</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnKappa" class="rbtn">🤝<span data-i18n="kappa">Accord inter-codeurs (κ)</span></button>
+        <div class="rlabel" data-i18n="grp_team">Équipe</div>
+      </div>
+    </div>
+
+    <!-- Visualisation -->
+    <div class="ribbon-pane" data-pane="visual">
+      <div class="rgroup">
+        <button id="btnPortrait" class="rbtn">🎨<span data-i18n="doc_portrait">Portrait de document</span></button>
+        <button id="btnWordCloud" class="rbtn">☁️<span data-i18n="word_cloud">Nuage de mots</span></button>
+        <button id="btnBarChart" class="rbtn">📊<span data-i18n="bar_chart">Fréquences des codes</span></button>
+        <div class="rlabel" data-i18n="grp_visuals">Visualisations</div>
+      </div>
+      <div class="rgroup">
+        <button id="btnConceptMap" class="rbtn">🗺️<span data-i18n="concept_map">Carte conceptuelle</span></button>
+        <div class="rlabel" data-i18n="grp_concept_maps">Modélisation</div>
+      </div>
+    </div>
+
+    <!-- Rapports -->
+    <div class="ribbon-pane" data-pane="reports">
+      <div class="rgroup">
+        <button id="btnExportSegments" class="rbtn">📤<span data-i18n="export_segments">Segments (CSV)</span></button>
+        <button id="btnExportDocx" class="rbtn">📝<span data-i18n="export_docx">Rapport Word (.docx)</span></button>
+        <button id="btnExportReport" class="rbtn">🖨️<span data-i18n="export_report">Rapport imprimable</span></button>
+        <button id="btnExportCodes" class="rbtn">🌳<span data-i18n="export_codes">Système de codes</span></button>
+        <button id="btnExportMatrixCsv" class="rbtn">🧮<span data-i18n="export_matrix">Matrice (CSV)</span></button>
+        <button id="btnExportRefi" class="rbtn">🌐<span data-i18n="export_refi">REFI-QDA (.qdpx)</span></button>
+        <div class="rlabel" data-i18n="grp_exports">Exports</div>
+      </div>
+    </div>
+  </div>
+  </div>
+</header>
+
+<!-- ===================== ESPACE DE TRAVAIL : 4 VOLETS ===================== -->
+<main id="workspace">
+  <!-- Volet 1 : documents -->
+  <section class="panel" id="panel-docs">
+    <div class="panel-header">
+      <span data-i18n="panel_docs">📄 Système de documents</span>
+      <span class="panel-actions">
+        <input type="search" id="docFilter" class="panel-filter" data-i18n-ph="doc_filter_ph" placeholder="Filtrer…">
+        <button id="btnActivateAllDocs" class="mini-btn" data-i18n-title="activate_all" title="Tout activer / désactiver">✅</button>
+      </span>
+    </div>
+    <div class="panel-body" id="docTree"></div>
+  </section>
+
+  <div class="splitter splitter-h" id="splitH1"></div>
+
+  <!-- Volet 2 : codes -->
+  <section class="panel" id="panel-codes">
+    <div class="panel-header">
+      <span data-i18n="panel_codes">🏷️ Système de codes</span>
+      <span class="panel-actions">
+        <button id="btnActivateAllCodes" class="mini-btn" data-i18n-title="activate_all" title="Tout activer / désactiver">✅</button>
+        <button id="btnAddRootCode" class="mini-btn" data-i18n-title="new_code" title="Nouveau code">＋</button>
+      </span>
+    </div>
+    <div class="panel-body" id="codeTree"></div>
+  </section>
+
+  <div class="splitter splitter-v" id="splitV"></div>
+
+  <!-- Volet 3 : navigateur de document -->
+  <section class="panel" id="panel-browser">
+    <div class="panel-header">
+      <span id="browserTitle" data-i18n="panel_browser">📖 Navigateur de document</span>
+      <span class="panel-actions">
+        <button id="btnDocAudio" class="mini-btn" data-i18n-title="attach_audio" title="Associer l'audio de l'entretien">🎧</button>
+        <button id="btnDocMemo" class="mini-btn" data-i18n-title="doc_memo" title="Mémo du document">📝</button>
+        <button id="btnDocProps" class="mini-btn" data-i18n-title="doc_props" title="Propriétés / variables">⚙️</button>
+      </span>
+    </div>
+    <div class="panel-body" id="docBrowser">
+      <div class="empty-hint" data-i18n="hint_no_doc">Sélectionnez un document dans le volet de gauche, ou importez des données via l'onglet « Importer ».</div>
+    </div>
+  </section>
+
+  <div class="splitter splitter-h" id="splitH2"></div>
+
+  <!-- Volet 4 : segments récupérés / recherche -->
+  <section class="panel" id="panel-retrieved">
+    <div class="panel-header">
+      <span data-i18n="panel_retrieved">🧲 Segments récupérés</span>
+      <span class="panel-actions">
+        <label class="retrieval-mode">
+          <select id="retrievalMode">
+            <option value="or" data-i18n="mode_or">OU (au moins un code activé)</option>
+            <option value="and" data-i18n="mode_and">ET (intersection de codes)</option>
+          </select>
+        </label>
+      </span>
+    </div>
+    <div class="panel-body" id="retrievedPanel"></div>
+  </section>
+</main>
+
+<footer id="statusbar">
+  <span id="statusDocs"></span>
+  <span id="statusCodes"></span>
+  <span id="statusSegments"></span>
+  <span id="rtStatus"></span>
+  <span id="licStatus"></span>
+  <span id="statusSaved" class="right"></span>
+</footer>
+
+<!-- Menu contextuel de codage (apparaît lors d'une sélection de texte) -->
+<div id="codingPopup" class="coding-popup" hidden>
+  <div class="coding-popup-title" data-i18n="apply_code">Appliquer un code :</div>
+  <div id="codingPopupList"></div>
+  <div class="coding-popup-footer">
+    <button id="popupInVivo" data-i18n="in_vivo_short">In vivo</button>
+    <button id="popupNewCode" data-i18n="new_code_short">Nouveau code…</button>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toast" hidden></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
