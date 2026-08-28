@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { langueActive } from '@/lib/i18n';
 import './globals.css';
 
@@ -6,6 +6,20 @@ export const metadata: Metadata = {
   title: 'NOVA PHARMA OS',
   description:
     'Plateforme SaaS de gestion pharmaceutique, commerciale et logistique.',
+  // Le manifeste rend l'application installable sur un téléphone : le
+  // vendeur l'ajoute à son écran d'accueil et l'ouvre comme n'importe
+  // quelle autre application, sans passer par une boutique.
+  manifest: '/manifest.webmanifest',
+  appleWebApp: { capable: true, title: 'NOVA', statusBarStyle: 'black-translucent' },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0d5a4a',
+  width: 'device-width',
+  initialScale: 1,
+  // L'agrandissement reste autorisé : une interface qui l'interdit
+  // exclut les personnes qui en ont besoin pour lire.
+  maximumScale: 5,
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

@@ -276,3 +276,152 @@ button.petit, .btn.petit { padding: 0.32rem 0.6rem; font-size: 0.8rem; }
   .pos { grid-template-columns: 1fr; }
   .content { padding: 1rem; }
 }
+
+/* --------------------------- Application mobile ---------------------- */
+/*
+ * Écrans de téléphone, tenus d'une main, souvent en plein soleil : les
+ * cibles font au moins 44 px, les contrastes sont forcés, et la
+ * navigation reste sous le pouce.
+ */
+
+.mob {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--fond);
+}
+
+.mob-entete {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.75rem; padding: 0.85rem 1rem;
+  background: var(--vert-fonce); color: #fff;
+  position: sticky; top: 0; z-index: 5;
+}
+.mob-marque { font-weight: 700; letter-spacing: 0.06em; }
+.mob-qui { font-size: 0.82rem; opacity: 0.85; }
+
+.mob-contenu { flex: 1; padding: 1rem 1rem 5.5rem; }
+
+.mob-nav {
+  position: fixed; inset: auto 0 0 0; z-index: 6;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--blanc); border-top: 1px solid var(--bord);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.mob-nav a {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  padding: 0.65rem 0.25rem; font-size: 0.7rem; text-align: center;
+  color: var(--gris); text-decoration: none; min-height: 56px;
+}
+.mob-nav a span { font-size: 1.15rem; line-height: 1; }
+.mob-nav a:hover { text-decoration: none; color: var(--vert-fonce); }
+
+.mob-titre { font-size: 1.3rem; margin-bottom: 0.9rem; }
+.mob-sous-titre { font-size: 1rem; margin: 1.4rem 0 0.6rem; }
+.mob-note { display: block; color: var(--gris); font-size: 0.82rem; }
+.mob-vide {
+  color: var(--gris); font-size: 0.9rem; padding: 1rem;
+  background: var(--blanc); border: 1px solid var(--bord); border-radius: 12px;
+}
+
+.mob-chiffres { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.mob-chiffre {
+  background: var(--blanc); border: 1px solid var(--bord); border-radius: 12px;
+  padding: 0.85rem; display: flex; flex-direction: column; gap: 0.2rem;
+}
+.mob-chiffre.alerte { border-color: var(--attention); }
+.mob-chiffre-valeur { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.mob-chiffre-note { font-size: 0.74rem; color: var(--gris); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.mob-bouton {
+  display: block; width: 100%; margin-top: 1rem;
+  padding: 1rem; border: 0; border-radius: 12px;
+  background: var(--vert); color: #fff;
+  font-size: 1rem; font-weight: 650; text-align: center; text-decoration: none;
+  min-height: 52px;
+}
+.mob-bouton:hover { text-decoration: none; color: #fff; }
+.mob-bouton:disabled { opacity: 0.55; }
+.mob-bouton.secondaire { background: var(--blanc); color: var(--vert-fonce); border: 1px solid var(--bord); }
+
+.mob-recherche, .mob-ordonnance input, .mob-preuve input, .mob-apres-vente input {
+  width: 100%; padding: 0.9rem; font-size: 1rem;
+  border: 1px solid var(--bord); border-radius: 12px; margin-bottom: 0.6rem;
+  background: var(--blanc);
+}
+.mob-formulaire { margin-bottom: 0.4rem; }
+
+.mob-resultats, .mob-liste, .mob-ticket, .mob-livraisons {
+  list-style: none; margin: 0 0 0.5rem; padding: 0;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.mob-resultats button, .mob-liste li, .mob-liste a {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+  width: 100%; text-align: left; padding: 0.85rem;
+  background: var(--blanc); border: 1px solid var(--bord); border-radius: 12px;
+  font-size: 0.95rem; color: inherit; text-decoration: none; min-height: 56px;
+}
+.mob-liste a:hover { text-decoration: none; }
+.mob-resultats button { flex-direction: column; align-items: flex-start; gap: 0.15rem; }
+
+.mob-ticket li {
+  display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 0.6rem;
+  padding: 0.7rem 0.85rem; background: var(--blanc);
+  border: 1px solid var(--bord); border-radius: 12px;
+}
+.mob-ticket-nom { font-size: 0.92rem; }
+.mob-ticket-prix { font-variant-numeric: tabular-nums; font-weight: 600; }
+.mob-quantite { display: flex; align-items: center; gap: 0.5rem; }
+.mob-quantite button {
+  width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--bord);
+  background: var(--gris-clair); color: inherit; font-size: 1.2rem; line-height: 1;
+}
+
+.mob-total {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 0.9rem; margin-top: 0.8rem;
+  background: var(--vert-clair); border-radius: 12px; font-size: 1.05rem;
+}
+.mob-total b { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+
+.mob-moyens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.7rem; }
+.mob-moyens button {
+  padding: 0.85rem 0.4rem; border-radius: 12px; border: 1px solid var(--bord);
+  background: var(--blanc); color: inherit; font-size: 0.85rem; min-height: 50px;
+}
+.mob-moyens button.actif { background: var(--vert); color: #fff; border-color: var(--vert); }
+
+.mob-ordonnance, .mob-preuve, .mob-apres-vente {
+  margin-top: 1rem; padding: 0.9rem;
+  background: var(--blanc); border: 1px solid var(--bord); border-radius: 12px;
+}
+.mob-ordonnance p { font-size: 0.85rem; color: var(--alerte); }
+.mob-instructions {
+  font-size: 0.85rem; padding: 0.7rem; margin: 0.6rem 0;
+  background: var(--vert-clair); border-radius: 10px;
+}
+
+.mob-message { padding: 0.85rem; border-radius: 12px; margin-bottom: 0.9rem; font-size: 0.9rem; }
+.mob-message.ok { background: var(--vert-clair); color: var(--vert-fonce); }
+.mob-message.danger { background: #fdecec; color: var(--alerte); }
+
+.mob-livraisons li {
+  padding: 0.9rem; background: var(--blanc);
+  border: 1px solid var(--bord); border-radius: 12px;
+}
+.mob-livraison-tete { display: flex; justify-content: space-between; gap: 0.6rem; align-items: center; }
+.mob-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.mob-actions .mob-bouton { margin-top: 0; }
+.mob-etat {
+  font-size: 0.72rem; padding: 0.25rem 0.55rem; border-radius: 999px;
+  background: var(--gris-clair); color: var(--gris); white-space: nowrap;
+}
+.mob-etat.delivered { background: var(--vert-clair); color: var(--vert-fonce); }
+.mob-etat.failed { background: #fdecec; color: var(--alerte); }
+
+/* Sur un écran large — une tablette au comptoir — l'application mobile
+   reste centrée plutôt que de s'étirer sur toute la largeur. */
+@media (min-width: 720px) {
+  .mob-contenu, .mob-entete, .mob-nav { max-width: 560px; margin-inline: auto; }
+  .mob-nav { inset: auto 0 0 0; }
+}

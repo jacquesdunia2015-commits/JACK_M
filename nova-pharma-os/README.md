@@ -21,13 +21,31 @@ Deux espaces distincts, une seule base :
 | Espace | Administré par | Contenu |
 |---|---|---|
 | **Back-office SaaS** | NOVA PHARMA OS | Pharmacies clientes, forfaits, abonnements, facturation, relances, support, métriques, sauvegardes |
-| **Espace pharmacie** | Chaque pharmacie abonnée | Catalogue, lots et FEFO, stock, achats, ventes POS, caisse, clients, B2B, livraison, rapports |
+| **Espace pharmacie** | Chaque pharmacie abonnée | Catalogue, lots et FEFO, stock, achats, ventes POS, caisse, clients, B2B, livraison, messagerie, Mobile Money, rapports |
 
-- **API** : NestJS + TypeScript, 82 tables PostgreSQL, documentation OpenAPI générée.
-- **Interface** : Next.js 15 + TypeScript, rendu serveur, 22 routes.
-- **Isolation** : PostgreSQL Row-Level Security, 293 politiques, zéro table non protégée.
-- **Tests** : 59 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **API** : NestJS + TypeScript, 87 tables PostgreSQL, documentation OpenAPI générée.
+- **Interface** : Next.js 15 + TypeScript, rendu serveur, espace bureau et application
+  mobile installable (PWA).
+- **Langues** : 15, dont le kiswahili de la RD Congo, le lingala, le kinyarwanda, le
+  kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
+- **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
+  `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
+- **Tests** : 76 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
+
+### Fonctionner sans rien payer
+
+Trois fonctions ont été conçues pour rendre service **avant** tout contrat payant, et
+basculer sur une intégration facturée le jour où elle se justifie :
+
+| Fonction | Mode gratuit, disponible d'emblée | Mode payant, plus tard |
+|---|---|---|
+| SMS et WhatsApp | La plateforme compose le message et rend un lien `wa.me` / `sms:` que le vendeur ouvre sur **son** téléphone | Passerelle HTTP appelée par la plateforme |
+| Mobile Money | Le client compose le code de l'opérateur ; le vendeur saisit la référence de transaction, unique, qui empêche tout double encaissement | Intégration directe de l'opérateur |
+| Application mobile | PWA installable depuis le navigateur, sans boutique | Application native |
+
+Dans les deux modes, la trace enregistrée est la même : passer de l'un à l'autre ne
+fait perdre aucun historique.
 
 ---
 
@@ -211,7 +229,7 @@ relançables à la main depuis le back-office après un incident.
 
 ```
 nova-pharma-os/
-├── db/migrations/        15 migrations SQL, appliquées dans l'ordre et une seule fois
+├── db/migrations/        16 migrations SQL, appliquées dans l'ordre et une seule fois
 ├── api/                  NestJS — API métier et back-office SaaS
 │   ├── src/common/       socle : base, contexte tenant, auth, quotas, audit, numérotation
 │   ├── src/modules/
@@ -219,9 +237,13 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             59 tests de bout en bout
-├── web/                  Next.js — interface des deux espaces
-└── docs/                 conformité au cahier des charges, architecture
+│   └── test/             76 tests de bout en bout
+├── web/                  Next.js — interface des deux espaces + application mobile
+│   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
+│   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
+│   └── public/           manifeste PWA, service worker, icônes
+├── demarrer.mjs          lancement complet en une commande, base embarquée comprise
+└── docs/                 conformité, architecture, guides commercial et d'usage
 ```
 
 ---
@@ -232,13 +254,14 @@ nova-pharma-os/
 cd api && npm run test:e2e
 ```
 
-Trois suites, exécutées sur une base recréée à chaque lancement :
+Quatre suites, exécutées sur une base recréée à chaque lancement :
 
 | Suite | Ce qu'elle démontre |
 |---|---|
 | `acceptance-saas.e2e-spec.ts` | Les 17 critères d'acceptation du cahier des charges |
 | `pharmacy-operations.e2e-spec.ts` | FEFO, stock, caisse, crédit, B2B, inventaire, mise en route |
 | `tenant-isolation.e2e-spec.ts` | L'isolation tient au niveau base, sans le code applicatif |
+| `messaging-payments.e2e-spec.ts` | Un message ne part pas deux fois, un versement Mobile Money ne s'encaisse pas deux fois |
 
 ---
 
@@ -247,18 +270,21 @@ Trois suites, exécutées sur une base recréée à chaque lancement :
 Conformément à la priorité commerciale du cahier des charges, ces éléments viennent
 **après validation du produit auprès de plusieurs pharmacies réellement actives** :
 
-- **Applications mobiles Flutter** (vendeur, magasinier, livreur, client) — l'API et
-  le schéma les portent déjà : synchronisation hors ligne idempotente, tournée du
-  livreur, preuve de livraison.
-- **Envoi réel des notifications** — WhatsApp Business, SMS, e-mail, Firebase. Les
-  notifications sont produites et stockées ; il reste à brancher les passerelles.
-- **Encaissement Mobile Money en ligne** — la couche d'adaptateurs et le
-  rapprochement idempotent existent ; il reste l'intégration opérateur.
+- **Applications natives Flutter** (magasinier, client) — l'application mobile
+  installable couvre aujourd'hui le vendeur et le livreur : vente au comptoir,
+  tournée, preuve de remise. Ce qui manque au natif : la vente hors ligne et le
+  lecteur de code-barres.
+- **Passerelle d'envoi automatique** — SMS et WhatsApp partent aujourd'hui du
+  téléphone du vendeur, gratuitement. Le mode « gateway » est prévu dans le modèle
+  et dans les réglages ; il reste à écrire l'appel HTTP et à souscrire un compte.
+- **Intégration directe des opérateurs Mobile Money** — la demande, la confirmation
+  et le rapprochement existent, avec unicité de la référence de transaction. Il
+  reste à recevoir la confirmation de l'opérateur au lieu de la saisir.
 - **OCR des factures fournisseur**, **IA et prévisions**, **marketplace B2B**,
   **IoT température**, **module importation**.
-- **Traduction complète des 12 langues** — l'architecture multilingue est en place
-  (langues déclarées dans les paramètres de la plateforme, localisation par pays) ;
-  l'interface est aujourd'hui livrée en français.
+- **Relecture des traductions** — les 15 langues sont écrites et utilisables ; dix
+  d'entre elles n'ont pas encore été relues par un locuteur natif, ce que
+  l'application signale elle-même sur la page de connexion.
 - **Meilisearch**, **Metabase**, **Kubernetes** — pertinents à la montée en charge,
   inutiles au démarrage.
 

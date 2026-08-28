@@ -170,6 +170,84 @@ Vous voyez vos pharmacies clientes, leurs abonnements, votre revenu mensuel.
 
 ---
 
+## Installer l'application sur un téléphone
+
+L'application s'installe **sans passer par le Play Store ni l'App Store**, donc
+sans compte développeur et sans frais.
+
+### Sur Android
+1. Ouvrez `http://ADRESSE:3000/mobile` dans **Chrome** (l'adresse est affichée
+   au démarrage, voir l'étape 5).
+2. Menu **⋮** en haut à droite → **Ajouter à l'écran d'accueil**.
+3. L'icône verte « NOVA » apparaît avec vos autres applications.
+
+### Sur iPhone
+1. Ouvrez la même adresse dans **Safari** (pas Chrome : sur iPhone, seul Safari
+   sait installer).
+2. Bouton **Partager** (le carré avec une flèche) → **Sur l'écran d'accueil**.
+
+### Ce que le vendeur y trouve
+- **Vendre** — chercher un produit, l'ajouter, encaisser. Le stock bouge
+  immédiatement, comme au comptoir.
+- **Stock** — vérifier une disponibilité sans revenir à l'ordinateur.
+- **Tournée** — pour un livreur : ses livraisons du jour, un bouton par étape,
+  et le nom de la personne qui reçoit le colis à la remise.
+
+> **Sans réseau, l'application ne vend pas.** C'est volontaire : afficher un
+> stock d'hier ferait vendre un lot déjà écoulé. Elle affiche un message clair
+> plutôt que des chiffres faux.
+
+---
+
+## Envoyer un reçu par WhatsApp ou SMS — gratuitement
+
+Après une vente, saisissez le numéro du client et appuyez sur **Envoyer le
+reçu**. L'application prépare le message, puis ouvre **WhatsApp sur votre
+téléphone** avec le texte déjà écrit. Vous appuyez sur envoyer.
+
+**C'est votre téléphone qui envoie, donc ça ne coûte rien à la pharmacie.**
+Aucun compte, aucun abonnement, aucun contrat.
+
+Le message reste enregistré dans NOVA PHARMA OS : vous pouvez toujours montrer
+ce qui a été écrit à un client, et à quelle date.
+
+Quatre modèles sont livrés : reçu de vente, rappel de paiement, livraison en
+route, et reçu par SMS. Ils se modifient dans les réglages.
+
+> **Plus tard, si le volume grandit.** Au-delà d'une trentaine de messages par
+> jour, ouvrir l'écran à chaque fois devient pénible. Il existe alors un mode
+> « passerelle » où l'application envoie toute seule — mais cela demande un
+> compte payant chez un opérateur de messagerie. Le passage de l'un à l'autre
+> ne fait rien perdre : les messages déjà envoyés restent dans le même journal.
+
+---
+
+## Encaisser par Mobile Money
+
+Après une vente, appuyez sur **Encaisser Mobile Money**. L'application affiche
+ce qu'il faut dire au client :
+
+> M-Pesa (Vodacom) — 12,50 $US · Composez *1122# · Référence à conserver : MM-260828-0001
+
+Le client compose, l'argent arrive sur le compte marchand de la pharmacie, et
+l'opérateur lui renvoie un identifiant de transaction. **Vous saisissez cet
+identifiant**, et le versement se rattache automatiquement à la vente.
+
+Pourquoi cet identifiant est obligatoire : c'est lui qui prouve le versement.
+Et il est **unique** — si quelqu'un essaie d'enregistrer deux fois la même
+transaction, l'application refuse et dit sous quelle référence elle a déjà été
+encaissée. C'est cette règle qui fait tenir la caisse en fin de journée.
+
+Quatre opérateurs sont préparés : M-Pesa, Airtel Money, Orange Money et
+Afrimoney. Saisissez votre numéro marchand dans les réglages, il sera dicté
+avec les instructions.
+
+> **Aucune intégration avec l'opérateur n'est nécessaire**, et donc aucun frais.
+> L'argent passe par le circuit habituel ; ce que l'application apporte, c'est
+> de savoir à quelle vente il correspond et de ne jamais le compter deux fois.
+
+---
+
 ## Changer la langue de l'application
 
 En haut à droite de chaque écran, un menu déroulant donne la langue. Il est
@@ -226,6 +304,16 @@ Voici un parcours d'essai qui montre l'essentiel en vingt minutes :
 7. **Changer de langue** — en haut à droite, choisissez *Kiswahili ya Kongo*.
    → *Observez :* les menus, les titres et les alertes passent en swahili ;
    notez les mots qui sonnent faux, ce sont eux qu'il faudra corriger.
+8. **Vendre depuis un téléphone** — ouvrez `/mobile` sur le téléphone d'un
+   vendeur, cherchez « para », encaissez.
+   → *Observez :* la vente apparaît aussitôt sur l'ordinateur.
+9. **Envoyer un reçu WhatsApp** — juste après la vente, saisissez votre propre
+   numéro et appuyez sur *Envoyer le reçu*.
+   → *Observez :* WhatsApp s'ouvre, message déjà écrit. Vous recevez le reçu.
+10. **Encaisser en Mobile Money** — puis essayez de saisir **deux fois** la même
+    référence de transaction.
+    → *Observez :* la deuxième est refusée, avec le numéro de l'encaissement
+    déjà enregistré. C'est ce qui protège votre caisse.
 
 ---
 

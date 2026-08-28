@@ -16,8 +16,12 @@ import { DeliveryService } from './delivery/delivery.service';
 import { InventoryController } from './inventory/inventory.controller';
 import { InventoryService } from './inventory/inventory.service';
 import { StockService } from './inventory/stock.service';
+import { MessagingController } from './messaging/messaging.controller';
+import { MessagingService } from './messaging/messaging.service';
 import { OnboardingController } from './onboarding/onboarding.controller';
 import { OnboardingService } from './onboarding/onboarding.service';
+import { PaymentsController } from './payments/payments.controller';
+import { MobileMoneyService } from './payments/mobile-money.service';
 import { PurchasingController } from './purchasing/purchasing.controller';
 import { PurchasingService } from './purchasing/purchasing.service';
 import { ReportingController } from './reporting/reporting.controller';
@@ -28,7 +32,8 @@ import { SalesService } from './sales/sales.service';
 /**
  * Espace pharmacie : l'exploitation quotidienne d'une officine —
  * catalogue, stock et lots, achats, ventes, caisse, clients, commerce
- * professionnel, livraison, rapports et administration locale.
+ * professionnel, livraison, messagerie client, encaissement Mobile
+ * Money, rapports et administration locale.
  */
 @Module({
   imports: [PlatformModule],
@@ -41,6 +46,8 @@ import { SalesService } from './sales/sales.service';
     CashController,
     B2bController,
     DeliveryController,
+    MessagingController,
+    PaymentsController,
     ReportingController,
     TenantAdminController,
     AccountController,
@@ -56,6 +63,8 @@ import { SalesService } from './sales/sales.service';
     CashService,
     B2bService,
     DeliveryService,
+    MessagingService,
+    MobileMoneyService,
     ReportingService,
     TenantAdminService,
     OnboardingService,

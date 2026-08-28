@@ -65,6 +65,11 @@ export class Harness {
     return token ? req.set('Authorization', `Bearer ${token}`) : req;
   }
 
+  put(path: string, body: unknown = {}, token?: string) {
+    const req = this.http().put(`/api${path}`).send(body as object);
+    return token ? req.set('Authorization', `Bearer ${token}`) : req;
+  }
+
   async loginPlatform(email: string, password = 'NovaPharma2026!'): Promise<Session> {
     const res = await this.post('/auth/platform/login', { email, password }).expect(201);
     return { token: res.body.accessToken, user: res.body.user };

@@ -69,23 +69,40 @@ demander à une pharmacie de Goma de dépendre de votre ordinateur portable.
 **Votre première cliente à 79 $ par mois couvre déjà tous ces frais.** À partir de la
 deuxième, vous gagnez de l'argent. C'est le point important de tout ce document.
 
-### Les frais qui n'arrivent que plus tard
+### Trois fonctions qui marchent déjà, sans rien payer
 
-Ces trois services sont **payants et exigent un compte d'entreprise**. Le logiciel est
-prêt à s'y brancher, mais rien ne partira tant que vous n'aurez pas ces comptes.
+Ce point a changé : ce qui figurait ici comme « plus tard, quand vous aurez un
+compte » **fonctionne aujourd'hui**, dans une version gratuite qui rend le même
+service au comptoir.
 
-| Service | Ce que ça coûte | Ce qu'il faut d'abord |
+| Fonction | Comment elle marche gratuitement | Ce que ça vous coûte |
 |---|---|---|
-| **SMS** | ~0,02 à 0,05 $ par message *(à confirmer)* | Compte chez un agrégateur (Africa's Talking, Twilio) ou accord direct avec un opérateur |
-| **WhatsApp Business** | ~0,01 à 0,09 $ par conversation *(à confirmer)* | Compte Meta Business vérifié, passer par un partenaire agréé |
-| **Mobile Money** | ~1 à 3 % de chaque transaction *(à confirmer)* | Compte marchand chez M-Pesa, Airtel Money ou Orange Money — **exige une entreprise enregistrée** |
+| **Reçus WhatsApp** | L'application prépare le message et ouvre WhatsApp sur le téléphone du vendeur ; il appuie sur envoyer | **0 $** — c'est son forfait, pas le vôtre |
+| **SMS** | Même principe, avec l'application SMS du téléphone | **0 $** |
+| **Encaissement Mobile Money** | Le client compose le code de l'opérateur, le vendeur saisit la référence de transaction | **0 $** de votre côté ; la commission de l'opérateur est prélevée comme d'habitude |
+| **Application mobile** | S'installe depuis le navigateur, « Ajouter à l'écran d'accueil » | **0 $** — ni Play Store, ni App Store, ni compte développeur |
 
-**Mon conseil : n'y touchez pas maintenant.** Ce sont des frais et des démarches
-administratives pour des fonctions dont vos premières clientes se passeront très bien.
-Le téléphone et un carnet suffisent pour prévenir une pharmacie d'un impayé quand vous
-en avez trois.
+C'est un argument de vente, pas seulement une économie : vous pouvez montrer un
+reçu WhatsApp arriver sur le téléphone d'un pharmacien pendant la démonstration,
+sans avoir ouvert le moindre compte.
 
-Le jour où vous en aurez trente, le calcul changera — et le logiciel sera prêt.
+### Ce qui reste payant, et quand ça le devient
+
+| Service | Ce que ça coûte | Quand ça vaut la peine |
+|---|---|---|
+| **Passerelle SMS** | ~0,02 à 0,05 $ par message *(à confirmer)* | Au-delà de ~30 messages par jour, quand ouvrir l'écran à chaque fois devient pénible |
+| **WhatsApp Business** | ~0,01 à 0,09 $ par conversation *(à confirmer)* | Idem, ou si vous voulez des rappels automatiques la nuit |
+| **Intégration Mobile Money** | ~1 à 3 % de chaque transaction *(à confirmer)*, en plus de la commission habituelle | Au-delà de ~50 encaissements par jour, quand la saisie manuelle coûte plus cher que la commission |
+
+Chacun exige un compte d'entreprise et des démarches administratives : compte
+chez un agrégateur (Africa's Talking, Twilio), compte Meta Business vérifié,
+compte marchand chez M-Pesa, Airtel Money ou Orange Money — ce dernier **exige
+une entreprise enregistrée**.
+
+**Mon conseil : n'y touchez pas maintenant.** La version gratuite fait le travail
+tant que vous avez moins d'une dizaine de pharmacies. Et le passage à la version
+payante ne fait rien perdre : les messages et les encaissements déjà enregistrés
+restent dans le même journal, au même endroit.
 
 ---
 

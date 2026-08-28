@@ -24,6 +24,7 @@ export const DEFAULT_ROLES: DefaultRole[] = [
       'customers.read', 'customers.write', 'customers.credit',
       'b2b.read', 'b2b.write', 'delivery.read', 'delivery.write',
       'cash.read', 'cash.manage', 'payments.read', 'payments.write',
+      'messaging.read', 'messaging.write',
       'reporting.read', 'reporting.financial',
       'users.read', 'users.write', 'settings.read', 'settings.write',
       'billing.read', 'support.read', 'support.write', 'audit.read',
@@ -38,6 +39,7 @@ export const DEFAULT_ROLES: DefaultRole[] = [
       'sales.read', 'sales.create',
       'customers.read', 'customers.write',
       'cash.read', 'payments.write',
+      'messaging.read', 'messaging.write',
     ],
   },
   {
@@ -48,6 +50,7 @@ export const DEFAULT_ROLES: DefaultRole[] = [
       'catalog.read', 'sales.read', 'sales.create',
       'cash.read', 'cash.manage',
       'payments.read', 'payments.write', 'customers.read',
+      'messaging.read', 'messaging.write',
     ],
   },
   {
@@ -79,13 +82,16 @@ export const DEFAULT_ROLES: DefaultRole[] = [
       'customers.read', 'customers.write', 'customers.credit',
       'b2b.read', 'b2b.write', 'delivery.read',
       'payments.read', 'payments.write', 'reporting.read',
+      'messaging.read', 'messaging.write',
     ],
   },
   {
     code: 'livreur',
     name: 'Livreur',
     description: 'Prend en charge et confirme les livraisons.',
-    permissions: ['delivery.read', 'delivery.write', 'customers.read'],
+    permissions: [
+      'delivery.read', 'delivery.write', 'customers.read', 'messaging.read',
+    ],
   },
   {
     code: 'comptable',
@@ -94,7 +100,7 @@ export const DEFAULT_ROLES: DefaultRole[] = [
     permissions: [
       'reporting.read', 'reporting.financial',
       'payments.read', 'sales.read', 'purchasing.read',
-      'customers.read', 'billing.read', 'audit.read',
+      'customers.read', 'billing.read', 'audit.read', 'messaging.read',
     ],
   },
 ];

@@ -38,8 +38,9 @@ export class OrganizationsService {
         default_currency: string;
         default_locale: string;
         default_timezone: string;
+        phone_prefix: string | null;
       }>(
-        `SELECT code, default_currency, default_locale, default_timezone
+        `SELECT code, default_currency, default_locale, default_timezone, phone_prefix
            FROM country_settings WHERE code = $1`,
         [dto.countryCode.toUpperCase()],
         `Pays « ${dto.countryCode} » non paramétré. Ajoutez-le au référentiel avant de créer la pharmacie.`,
@@ -132,6 +133,8 @@ export class OrganizationsService {
         [organizationId, country.code],
       );
 
+      await this.seedMessaging(tenantTx, organizationId, country.phone_prefix);
+
       // Retour au contexte plateforme pour les écritures de niveau SaaS.
       const platformTx = await this.enterPlatform(tenantTx);
 
@@ -193,6 +196,62 @@ export class OrganizationsService {
    * toutes premières lignes métier d'une pharmacie qu'il vient de créer,
    * et ces tables ne sont accessibles que depuis un contexte tenant.
    */
+  /**
+   * Messagerie client et Mobile Money, prêts à l'usage dès l'ouverture.
+   *
+   * Les deux démarrent en mode manuel : le message part du téléphone du
+   * vendeur, la référence Mobile Money est saisie à la main. Aucun
+   * contrat, aucun frais — une pharmacie peut envoyer un reçu WhatsApp
+   * le jour de son ouverture. Les opérateurs sont ceux de la RD Congo ;
+   * la pharmacie complète son numéro marchand, qui lui est propre.
+   */
+  private async seedMessaging(
+    tx: Tx,
+    organizationId: string,
+    indicatif: string | null,
+  ): Promise<void> {
+    await tx.query(
+      `INSERT INTO messaging_settings (organization_id, default_country_code)
+       VALUES ($1, COALESCE($2, '+243'))
+       ON CONFLICT (organization_id) DO NOTHING`,
+      [organizationId, indicatif],
+    );
+
+    await tx.query(
+      `INSERT INTO message_templates
+         (organization_id, code, channel, locale, label, body)
+       SELECT $1, v.code, v.channel, 'fr', v.label, v.body
+         FROM (VALUES
+           ('receipt', 'whatsapp', 'Reçu de vente',
+            'Bonjour {{client}}, merci de votre achat chez {{pharmacie}}. ' ||
+            'Reçu {{numero}} — montant {{montant}}. Bonne santé à vous.'),
+           ('payment_reminder', 'whatsapp', 'Rappel de paiement',
+            'Bonjour {{client}}, votre solde chez {{pharmacie}} est de {{montant}}. ' ||
+            'Merci de passer régler quand vous le pourrez.'),
+           ('delivery_on_way', 'whatsapp', 'Livraison en route',
+            'Bonjour {{client}}, votre commande {{numero}} de {{pharmacie}} est en route. ' ||
+            'Montant à régler : {{montant}}.'),
+           ('receipt_sms', 'sms', 'Reçu de vente (SMS)',
+            '{{pharmacie}} : recu {{numero}}, montant {{montant}}. Merci.')
+         ) AS v(code, channel, label, body)
+       ON CONFLICT (organization_id, code, channel, locale) DO NOTHING`,
+      [organizationId],
+    );
+
+    await tx.query(
+      `INSERT INTO mobile_money_operators (organization_id, code, label, ussd_pattern)
+       SELECT $1, v.code, v.label, v.ussd
+         FROM (VALUES
+           ('mpesa',     'M-Pesa (Vodacom)', '*1122#'),
+           ('airtel',    'Airtel Money',     '*501#'),
+           ('orange',    'Orange Money',     '*144#'),
+           ('afrimoney', 'Afrimoney',        '*555#')
+         ) AS v(code, label, ussd)
+       ON CONFLICT (organization_id, code) DO NOTHING`,
+      [organizationId],
+    );
+  }
+
   private async enterTenant(tx: Tx, organizationId: string): Promise<Tx> {
     await tx.query(
       `SELECT set_config('nova.organization_id', $1, true),
