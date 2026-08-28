@@ -3,10 +3,28 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+/**
+ * Les libellés arrivent en propriétés plutôt que d'être lus ici : la
+ * langue vit dans un cookie, que seul un composant serveur sait lire.
+ */
+export interface LibellesConnexion {
+  email: string;
+  motDePasse: string;
+  identifiant: string;
+  facultatif: string;
+  aideIdentifiant: string;
+  bouton: string;
+  enCours: string;
+  echec: string;
+  serviceInjoignable: string;
+}
+
 export default function FormulaireConnexion({
   space,
+  libelles,
 }: {
   space: 'pharmacy' | 'platform';
+  libelles: LibellesConnexion;
 }) {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -32,13 +50,13 @@ export default function FormulaireConnexion({
       });
       const body = await response.json();
       if (!response.ok) {
-        setErreur(body.message ?? 'Connexion impossible.');
+        setErreur(body.message ?? libelles.echec);
         return;
       }
       router.push(body.redirectTo);
       router.refresh();
     } catch {
-      setErreur("Le service est injoignable. Vérifiez votre connexion.");
+      setErreur(libelles.serviceInjoignable);
     } finally {
       setEnvoi(false);
     }
@@ -49,7 +67,7 @@ export default function FormulaireConnexion({
       {erreur && <div className="erreur">{erreur}</div>}
 
       <div className="field">
-        <label htmlFor="email">Adresse e-mail</label>
+        <label htmlFor="email">{libelles.email}</label>
         <input
           id="email"
           type="email"
@@ -61,7 +79,7 @@ export default function FormulaireConnexion({
       </div>
 
       <div className="field">
-        <label htmlFor="password">Mot de passe</label>
+        <label htmlFor="password">{libelles.motDePasse}</label>
         <input
           id="password"
           type="password"
@@ -75,7 +93,7 @@ export default function FormulaireConnexion({
       {space === 'pharmacy' && (
         <div className="field">
           <label htmlFor="slug">
-            Identifiant de la pharmacie <span className="muted">(facultatif)</span>
+            {libelles.identifiant} <span className="muted">({libelles.facultatif})</span>
           </label>
           <input
             id="slug"
@@ -84,13 +102,13 @@ export default function FormulaireConnexion({
             placeholder="nova-sante-pharma"
           />
           <p className="small muted" style={{ marginTop: '0.3rem', marginBottom: 0 }}>
-            À renseigner seulement si votre adresse sert dans plusieurs pharmacies.
+            {libelles.aideIdentifiant}
           </p>
         </div>
       )}
 
       <button type="submit" disabled={envoi} style={{ width: '100%' }}>
-        {envoi ? 'Connexion…' : 'Se connecter'}
+        {envoi ? libelles.enCours : libelles.bouton}
       </button>
     </form>
   );

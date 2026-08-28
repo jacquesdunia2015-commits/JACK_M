@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
-export default function BoutonDeconnexion() {
+export default function BoutonDeconnexion({ libelle }: { libelle: string }) {
   const router = useRouter();
 
   async function deconnecter() {
@@ -13,7 +13,7 @@ export default function BoutonDeconnexion() {
 
   return (
     <button className="secondaire petit" onClick={deconnecter}>
-      Se déconnecter
+      {libelle}
     </button>
   );
 }

@@ -2,6 +2,7 @@ import Etiquette from '@/components/Etiquette';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, money, quantity } from '@/lib/format';
+import { traduire } from '@/lib/i18n';
 
 interface LigneStock {
   product_id: string; sku: string; name: string; unit: string;
@@ -22,6 +23,7 @@ export default async function PageStock({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
+  const { t } = await traduire();
   const requete = q ? `?search=${encodeURIComponent(q)}` : '';
 
   const [stock, alertes] = await Promise.all([
@@ -34,28 +36,25 @@ export default async function PageStock({
   return (
     <>
       <div className="page-head">
-        <h1>Stock et lots</h1>
-        <p>
-          Positions par produit, valorisation et surveillance des péremptions.
-          Les sorties suivent la règle FEFO.
-        </p>
+        <h1>{t('stock.titre')}</h1>
+        <p>{t('stock.sous_titre')}</p>
       </div>
 
       {alertes.length > 0 && (
         <section className="card">
           <div className="card-head">
-            <h2>Alertes ouvertes</h2>
-            <span className="hint">{alertes.length} à traiter</span>
+            <h2>{t('stock.alertes_ouvertes')}</h2>
+            <span className="hint">{alertes.length} {t('general.a_traiter')}</span>
           </div>
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Nature</th>
-                  <th>Produit</th>
-                  <th>Lot</th>
-                  <th>Message</th>
-                  <th className="num">Échéance</th>
+                  <th>{t('general.nature')}</th>
+                  <th>{t('catalogue.produit')}</th>
+                  <th>{t('general.lot')}</th>
+                  <th>{t('general.message')}</th>
+                  <th className="num">{t('general.echeance')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -82,28 +81,28 @@ export default async function PageStock({
 
       <section className="card">
         <div className="card-head">
-          <h2>Positions de stock</h2>
-          <span className="hint">Valeur totale : {money(valeurTotale)}</span>
+          <h2>{t('stock.positions')}</h2>
+          <span className="hint">{t('stock.valeur_totale')} : {money(valeurTotale)}</span>
         </div>
 
         <form style={{ marginBottom: '1rem', maxWidth: 360 }}>
-          <input name="q" defaultValue={q ?? ''} placeholder="Rechercher un produit…" />
+          <input name="q" defaultValue={q ?? ''} placeholder={`${t('caisse.rechercher_produit')}…`} />
         </form>
 
         {stock.length === 0 ? (
-          <Vide message="Aucune position de stock." />
+          <Vide message={t('general.aucune_donnee')} />
         ) : (
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Produit</th>
-                  <th className="num">En stock</th>
-                  <th className="num">Disponible</th>
-                  <th className="num">Seuil</th>
-                  <th className="num">Lots</th>
-                  <th className="num">Péremption la plus proche</th>
-                  <th className="num">Valeur</th>
+                  <th>{t('catalogue.produit')}</th>
+                  <th className="num">{t('stock.en_stock')}</th>
+                  <th className="num">{t('stock.disponible')}</th>
+                  <th className="num">{t('stock.seuil')}</th>
+                  <th className="num">{t('stock.lots')}</th>
+                  <th className="num">{t('stock.peremption_proche')}</th>
+                  <th className="num">{t('general.valeur')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -120,7 +119,7 @@ export default async function PageStock({
                       </td>
                       <td className="num">
                         {enStock <= 0 ? (
-                          <span className="tag danger">Rupture</span>
+                          <span className="tag danger">{t('stock.rupture')}</span>
                         ) : (
                           <span className={sousSeuil ? 'tag warn' : ''}>
                             {quantity(l.on_hand)} {l.unit}

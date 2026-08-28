@@ -3,6 +3,7 @@ import Stat from '@/components/Stat';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, money, percent, quantity } from '@/lib/format';
+import { traduire } from '@/lib/i18n';
 import { readSession } from '@/lib/session';
 
 interface Dashboard {
@@ -21,15 +22,16 @@ interface Dashboard {
 
 export default async function TableauDeBord() {
   const session = await readSession();
+  const { t } = await traduire();
   const data = await apiSafe<Dashboard | null>('/reports/dashboard', null);
 
   if (!data) {
     return (
       <>
         <div className="page-head">
-          <h1>Tableau de bord</h1>
+          <h1>{t('bord.titre')}</h1>
         </div>
-        <Vide message="Les indicateurs seront disponibles dès les premières opérations." />
+        <Vide message={t('general.aucune_donnee')} />
       </>
     );
   }
@@ -40,71 +42,73 @@ export default async function TableauDeBord() {
   return (
     <>
       <div className="page-head">
-        <h1>Tableau de bord</h1>
-        <p>Activité du jour et santé du stock.</p>
+        <h1>{t('bord.titre')}</h1>
+        <p>{t('bord.sous_titre')}</p>
       </div>
 
       {session?.readonly && (
         <div className="banner danger">
-          <strong>Abonnement suspendu</strong>
-          Vos données restent consultables, mais aucune modification n&apos;est possible.
-          Réglez la facture en attente pour rétablir vos accès.
+          <strong>{t('general.abonnement_suspendu')}</strong>
+          {t('general.message_suspension')}
         </div>
       )}
 
       {alertesTotal > 0 && (
         <div className="banner warn">
-          <strong>{alertesTotal} point(s) de vigilance sur le stock</strong>
-          {data.alerts.outOfStock} rupture(s) · {data.alerts.lowStock} sous le seuil ·{' '}
-          {data.alerts.expiring} péremption(s) proche(s) · {data.alerts.expired} lot(s) périmé(s).{' '}
-          <Link href="/pharmacie/stock">Voir le détail</Link>
+          <strong>
+            {alertesTotal} {t('bord.vigilance')}
+          </strong>
+          {data.alerts.outOfStock} {t('stock.rupture')} · {data.alerts.lowStock}{' '}
+          {t('stock.stock_bas')} · {data.alerts.expiring} {t('stock.expire')} ·{' '}
+          {data.alerts.expired} {t('stock.perime')}.{' '}
+          <Link href="/pharmacie/stock">{t('action.voir_detail')}</Link>
         </div>
       )}
 
       <div className="grid grid-4" style={{ marginBottom: '1.25rem' }}>
         <Stat
-          label="Ventes du jour"
+          label={t('bord.ventes_jour')}
           valeur={money(data.today.revenue)}
-          note={`${data.today.sales} vente(s) · panier moyen ${money(data.today.averageBasket)}`}
+          note={`${data.today.sales} ${t('bord.ventes')} · ${t('bord.panier_moyen')} ${money(data.today.averageBasket)}`}
         />
         <Stat
-          label="Marge du jour"
+          label={t('bord.marge_jour')}
           valeur={money(data.today.margin)}
-          note={`Crédit accordé : ${money(data.today.creditSales)}`}
+          note={`${t('bord.credit_accorde')} : ${money(data.today.creditSales)}`}
           ton="ok"
         />
         <Stat
-          label="Chiffre d'affaires du mois"
+          label={t('bord.ca_mois')}
           valeur={money(data.month.revenue)}
-          note={`Marge ${percent(data.month.marginPercent)} · ${data.month.sales} ventes`}
+          note={`${t('catalogue.marge')} ${percent(data.month.marginPercent)} · ${data.month.sales} ${t('bord.ventes')}`}
         />
         <Stat
-          label="Stock valorisé"
+          label={t('bord.stock_valorise')}
           valeur={money(data.stock.value)}
-          note={`${quantity(data.stock.units)} unités · ${data.stock.productsInStock} références`}
+          note={`${quantity(data.stock.units)} ${t('bord.unites')} · ${data.stock.productsInStock} ${t('bord.references')}`}
         />
       </div>
 
       <div className="grid grid-3" style={{ marginBottom: '1.25rem' }}>
         <Stat
-          label="Créances clients"
+          label={t('bord.creances')}
           valeur={money(data.receivables.total)}
-          note={`${data.receivables.customers} client(s) débiteur(s)`}
+          note={`${data.receivables.customers} ${t('bord.clients_debiteurs')}`}
           ton={data.receivables.total > 0 ? 'warn' : undefined}
         />
         <Stat
-          label="Valeur menacée à 90 jours"
+          label={t('bord.valeur_menacee')}
           valeur={money(data.stock.valueExpiring90Days)}
-          note="Stock arrivant à péremption"
+          note={t('stock.expire')}
           ton={data.stock.valueExpiring90Days > 0 ? 'warn' : undefined}
         />
         <Stat
-          label="Caisse"
-          valeur={data.cashSession ? money(data.cashSession.expectedCash) : 'Fermée'}
+          label={t('bord.caisse')}
+          valeur={data.cashSession ? money(data.cashSession.expectedCash) : t('caisse.aucune_ouverte')}
           note={
             data.cashSession
-              ? `${data.cashSession.registerCode} · ouverte le ${date(data.cashSession.openedAt)}`
-              : 'Ouvrez la caisse pour encaisser'
+              ? `${data.cashSession.registerCode} · ${t('caisse.ouverte_depuis')} ${date(data.cashSession.openedAt)}`
+              : t('caisse.ouvrir_avant')
           }
         />
       </div>
@@ -112,20 +116,20 @@ export default async function TableauDeBord() {
       <div className="grid grid-2">
         <section className="card">
           <div className="card-head">
-            <h2>Meilleures ventes</h2>
-            <span className="hint">30 derniers jours</span>
+            <h2>{t('bord.meilleures_ventes')}</h2>
+            <span className="hint">{t('bord.30_jours')}</span>
           </div>
           {data.topProducts.length === 0 ? (
-            <Vide message="Aucune vente sur la période." />
+            <Vide message={t('general.aucune_donnee')} />
           ) : (
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Produit</th>
-                    <th className="num">Quantité</th>
-                    <th className="num">Chiffre d&apos;affaires</th>
-                    <th className="num">Marge</th>
+                    <th>{t('catalogue.produit')}</th>
+                    <th className="num">{t('general.quantite')}</th>
+                    <th className="num">{t('general.chiffre_affaires')}</th>
+                    <th className="num">{t('catalogue.marge')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -149,21 +153,21 @@ export default async function TableauDeBord() {
 
         <section className="card">
           <div className="card-head">
-            <h2>Péremptions à surveiller</h2>
-            <span className="hint">90 prochains jours</span>
+            <h2>{t('bord.peremptions')}</h2>
+            <span className="hint">{t('bord.90_jours')}</span>
           </div>
           {data.expiringSoon.length === 0 ? (
-            <Vide message="Aucun lot ne périme dans les 90 jours." />
+            <Vide message={t('general.aucune_donnee')} />
           ) : (
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Produit</th>
-                    <th>Lot</th>
-                    <th className="num">Quantité</th>
-                    <th className="num">Échéance</th>
-                    <th className="num">Valeur</th>
+                    <th>{t('catalogue.produit')}</th>
+                    <th>{t('general.lot')}</th>
+                    <th className="num">{t('general.quantite')}</th>
+                    <th className="num">{t('general.echeance')}</th>
+                    <th className="num">{t('general.valeur')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -178,7 +182,7 @@ export default async function TableauDeBord() {
                         <span
                           className={`small ${l.days_left < 30 ? 'tag danger' : 'muted'}`}
                         >
-                          {l.days_left} j
+                          {l.days_left} {t('general.jours')}
                         </span>
                       </td>
                       <td className="num">{money(l.value_at_risk)}</td>

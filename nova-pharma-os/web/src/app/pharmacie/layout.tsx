@@ -1,21 +1,10 @@
 import { redirect } from 'next/navigation';
 import BoutonDeconnexion from '@/components/BoutonDeconnexion';
 import Navigation, { LienNav } from '@/components/Navigation';
+import SelecteurLangue from '@/components/SelecteurLangue';
 import { apiSafe } from '@/lib/api';
+import { traduire } from '@/lib/i18n';
 import { readSession } from '@/lib/session';
-
-const LIENS: LienNav[] = [
-  { href: '/pharmacie', label: 'Tableau de bord', icone: '▤', groupe: 'Exploitation' },
-  { href: '/pharmacie/caisse', label: 'Caisse', icone: '▦', groupe: 'Exploitation' },
-  { href: '/pharmacie/stock', label: 'Stock et lots', icone: '▥', groupe: 'Exploitation' },
-  { href: '/pharmacie/catalogue', label: 'Catalogue', icone: '▧', groupe: 'Exploitation' },
-  { href: '/pharmacie/achats', label: 'Achats', icone: '▨', groupe: 'Approvisionnement' },
-  { href: '/pharmacie/clients', label: 'Clients', icone: '▩', groupe: 'Commerce' },
-  { href: '/pharmacie/b2b', label: 'Commandes B2B', icone: '▤', groupe: 'Commerce' },
-  { href: '/pharmacie/utilisateurs', label: 'Équipe', icone: '▣', groupe: 'Administration' },
-  { href: '/pharmacie/abonnement', label: 'Mon abonnement', icone: '▢', groupe: 'Administration' },
-  { href: '/pharmacie/support', label: 'Support', icone: '▷', groupe: 'Administration' },
-];
 
 interface Onboarding {
   progressPercent: number;
@@ -33,7 +22,21 @@ export default async function LayoutPharmacie({
   if (!session) redirect('/connexion');
   if (session.space !== 'pharmacy') redirect('/admin');
 
+  const { t, langue } = await traduire();
   const onboarding = await apiSafe<Onboarding | null>('/onboarding', null);
+
+  const liens: LienNav[] = [
+    { href: '/pharmacie', label: t('nav.tableau_de_bord'), icone: '▤', groupe: t('nav.exploitation') },
+    { href: '/pharmacie/caisse', label: t('nav.caisse'), icone: '▦', groupe: t('nav.exploitation') },
+    { href: '/pharmacie/stock', label: t('nav.stock'), icone: '▥', groupe: t('nav.exploitation') },
+    { href: '/pharmacie/catalogue', label: t('nav.catalogue'), icone: '▧', groupe: t('nav.exploitation') },
+    { href: '/pharmacie/achats', label: t('nav.achats'), icone: '▨', groupe: t('nav.approvisionnement') },
+    { href: '/pharmacie/clients', label: t('nav.clients'), icone: '▩', groupe: t('nav.commerce') },
+    { href: '/pharmacie/b2b', label: t('nav.b2b'), icone: '▤', groupe: t('nav.commerce') },
+    { href: '/pharmacie/utilisateurs', label: t('nav.equipe'), icone: '▣', groupe: t('nav.administration') },
+    { href: '/pharmacie/abonnement', label: t('nav.abonnement'), icone: '▢', groupe: t('nav.administration') },
+    { href: '/pharmacie/support', label: t('nav.support'), icone: '▷', groupe: t('nav.administration') },
+  ];
 
   return (
     <div className="shell">
@@ -41,16 +44,17 @@ export default async function LayoutPharmacie({
         <div className="brand">
           <span className="brand-mark">NP</span>
           <span>
-            <span className="brand-name">NOVA PHARMA OS</span>
+            <span className="brand-name">{t('app.nom')}</span>
             <br />
             <span className="brand-sub">{session.organizationSlug}</span>
           </span>
         </div>
-        <Navigation liens={LIENS} />
+        <Navigation liens={liens} />
         {onboarding && onboarding.progressPercent < 100 && (
           <div className="small" style={{ marginTop: 'auto', padding: '0 0.4rem' }}>
             <div className="muted" style={{ marginBottom: '0.3rem' }}>
-              Mise en route — {onboarding.completed}/{onboarding.total} étapes
+              {t('general.mise_en_route')} — {onboarding.completed}/{onboarding.total}{' '}
+              {t('general.etapes')}
             </div>
             <div className="bar">
               <span style={{ width: `${onboarding.progressPercent}%` }} />
@@ -67,9 +71,10 @@ export default async function LayoutPharmacie({
           </div>
           <div className="topbar-actions">
             {session.readonly && (
-              <span className="tag danger">Compte en lecture seule</span>
+              <span className="tag danger">{t('general.lecture_seule')}</span>
             )}
-            <BoutonDeconnexion />
+            <SelecteurLangue courante={langue.code} libelle={t('general.langue')} />
+            <BoutonDeconnexion libelle={t('connexion.deconnexion')} />
           </div>
         </header>
         <main className="content">{children}</main>

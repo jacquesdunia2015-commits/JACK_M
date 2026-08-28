@@ -1,15 +1,9 @@
 import { redirect } from 'next/navigation';
 import BoutonDeconnexion from '@/components/BoutonDeconnexion';
 import Navigation, { LienNav } from '@/components/Navigation';
+import SelecteurLangue from '@/components/SelecteurLangue';
+import { traduire } from '@/lib/i18n';
 import { readSession } from '@/lib/session';
-
-const LIENS: LienNav[] = [
-  { href: '/admin', label: 'Tableau de bord', icone: '▤', groupe: 'Pilotage' },
-  { href: '/admin/pharmacies', label: 'Pharmacies clientes', icone: '▥', groupe: 'Clients' },
-  { href: '/admin/facturation', label: 'Facturation', icone: '▦', groupe: 'Commerce' },
-  { href: '/admin/forfaits', label: 'Forfaits et options', icone: '▧', groupe: 'Commerce' },
-  { href: '/admin/support', label: 'Support', icone: '▷', groupe: 'Exploitation' },
-];
 
 const ROLES: Record<string, string> = {
   super_admin: 'Super administrateur',
@@ -31,18 +25,28 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
   if (!session) redirect('/admin/connexion');
   if (session.space !== 'platform') redirect('/pharmacie');
 
+  const { t, langue } = await traduire();
+
+  const liens: LienNav[] = [
+    { href: '/admin', label: t('nav.tableau_de_bord'), icone: '▤', groupe: t('nav.pilotage') },
+    { href: '/admin/pharmacies', label: t('nav.pharmacies'), icone: '▥', groupe: t('nav.clients_menu') },
+    { href: '/admin/facturation', label: t('nav.facturation'), icone: '▦', groupe: t('nav.commerce') },
+    { href: '/admin/forfaits', label: t('nav.forfaits'), icone: '▧', groupe: t('nav.commerce') },
+    { href: '/admin/support', label: t('nav.support'), icone: '▷', groupe: t('nav.exploitation') },
+  ];
+
   return (
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">
           <span className="brand-mark">NP</span>
           <span>
-            <span className="brand-name">NOVA PHARMA OS</span>
+            <span className="brand-name">{t('app.nom')}</span>
             <br />
-            <span className="brand-sub">Back-office SaaS</span>
+            <span className="brand-sub">{t('app.back_office')}</span>
           </span>
         </div>
-        <Navigation liens={LIENS} />
+        <Navigation liens={liens} />
       </aside>
 
       <div className="main">
@@ -52,7 +56,8 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
             <span className="muted"> · {ROLES[session.role ?? ''] ?? session.role}</span>
           </div>
           <div className="topbar-actions">
-            <BoutonDeconnexion />
+            <SelecteurLangue courante={langue.code} libelle={t('general.langue')} />
+            <BoutonDeconnexion libelle={t('connexion.deconnexion')} />
           </div>
         </header>
         <main className="content">{children}</main>

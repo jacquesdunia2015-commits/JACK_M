@@ -46,7 +46,11 @@ export async function POST(request: NextRequest) {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
-    secure: process.env.NODE_ENV === 'production',
+    // Le drapeau « secure » suit le protocole réellement utilisé, et non
+    // l'environnement : sur un réseau Wi-Fi local en http://, un cookie
+    // marqué « secure » serait refusé par le navigateur, et la connexion
+    // depuis un téléphone échouerait sans message d'erreur.
+    secure: request.nextUrl.protocol === 'https:',
     maxAge: 60 * 60 * 8,
   });
   return result;

@@ -1,32 +1,42 @@
 import Link from 'next/link';
 import FormulaireConnexion from '@/components/FormulaireConnexion';
+import SelecteurLangue from '@/components/SelecteurLangue';
+import { libellesConnexion, traduire } from '@/lib/i18n';
 
 export const metadata = { title: 'Connexion — NOVA PHARMA OS' };
 
-export default function Connexion() {
+export default async function Connexion() {
+  const { t, langue } = await traduire();
+
   return (
     <main className="auth">
       <div className="auth-card">
+        <div className="auth-langue">
+          <SelecteurLangue courante={langue.code} libelle={t('general.langue')} />
+        </div>
+
         <div className="brand" style={{ marginBottom: '1.25rem', padding: 0 }}>
           <span className="brand-mark">NP</span>
           <span>
-            <span className="brand-name">NOVA PHARMA OS</span>
+            <span className="brand-name">{t('app.nom')}</span>
             <br />
-            <span className="brand-sub">Espace pharmacie</span>
+            <span className="brand-sub">{t('app.espace_pharmacie')}</span>
           </span>
         </div>
 
-        <h1>Connexion à votre officine</h1>
-        <p className="sous-titre">
-          Gérez vos stocks, vos ventes et vos clients depuis un seul endroit.
-        </p>
+        <h1>{t('connexion.titre')}</h1>
+        <p className="sous-titre">{t('connexion.sous_titre')}</p>
 
-        <FormulaireConnexion space="pharmacy" />
+        <FormulaireConnexion space="pharmacy" libelles={libellesConnexion(t)} />
 
         <p className="auth-switch">
-          Vous administrez la plateforme ?{' '}
-          <Link href="/admin/connexion">Back-office NOVA PHARMA OS</Link>
+          {t('connexion.vers_admin')}{' '}
+          <Link href="/admin/connexion">{t('app.back_office')}</Link>
         </p>
+
+        {!langue.revue && (
+          <p className="small muted">{t('general.traduction_non_relue')}</p>
+        )}
       </div>
     </main>
   );
