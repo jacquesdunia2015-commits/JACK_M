@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 76 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 78 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -111,8 +111,14 @@ consulter les données d'une autre pharmacie ». Cette garantie ne repose pas su
 discipline du code applicatif, mais sur PostgreSQL lui-même.
 
 **Comment cela fonctionne.** L'API se connecte avec le rôle `nova_app`, qui n'est ni
-propriétaire des tables, ni superutilisateur, et ne dispose pas de `BYPASSRLS`. Au
-début de chaque transaction, elle positionne le contexte :
+propriétaire des tables, ni superutilisateur, et ne dispose pas de `BYPASSRLS`. Elle
+le vérifie au démarrage et **refuse de démarrer** si ce n'est pas le cas : un rôle
+privilégié ignorerait les politiques sans produire la moindre erreur, et chaque
+pharmacie verrait les données des autres pendant que tous les écrans continueraient
+de paraître normaux. C'est la panne la plus dangereuse du produit parce qu'elle est
+silencieuse — elle est donc rendue bruyante.
+
+Au début de chaque transaction, l'API positionne le contexte :
 
 ```sql
 SELECT set_config('nova.organization_id', $1, true),
@@ -246,7 +252,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             76 tests de bout en bout
+│   └── test/             78 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français

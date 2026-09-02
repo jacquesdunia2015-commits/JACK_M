@@ -32,6 +32,21 @@ const PORT_API = Number(process.env.NOVA_PORT_API ?? 3001);
 const PORT_WEB = Number(process.env.NOVA_PORT_WEB ?? 3000);
 const MOT_DE_PASSE_BASE = 'nova_local';
 
+/**
+ * Mot de passe du rôle applicatif.
+ *
+ * L'application ne se connecte jamais avec l'administrateur de la base.
+ * C'est une règle de sûreté, pas une précaution de style : un
+ * superutilisateur PostgreSQL ignore les politiques de cloisonnement, et
+ * chaque pharmacie verrait alors les données des autres — sans message
+ * d'erreur, sans rien d'anormal à l'écran.
+ *
+ * La base n'écoute que sur cette machine ; ce mot de passe ne protège
+ * donc rien d'exposé au réseau.
+ */
+const MOT_DE_PASSE_APPLICATIF = 'nova_app_local';
+const ROLE_APPLICATIF = 'nova_app';
+
 const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const processusEnfants = [];
 let postgres = null;
@@ -218,10 +233,26 @@ async function demarrerBase() {
 // ---------------------------------------------------------------------
 // 3. Configuration
 // ---------------------------------------------------------------------
+/**
+ * Dérive l'adresse de connexion de l'application à partir de celle de
+ * l'administrateur, en n'en changeant que l'identité.
+ *
+ * Les deux visent la même base : seule la façon de s'y connecter change.
+ * L'administrateur sert aux migrations, qui créent les tables ; le rôle
+ * applicatif sert à tout le reste, et lui reste soumis au cloisonnement.
+ */
+function urlRoleApplicatif(urlAdministrateur) {
+  const url = new URL(urlAdministrateur);
+  url.username = ROLE_APPLICATIF;
+  url.password = MOT_DE_PASSE_APPLICATIF;
+  return url.toString();
+}
+
 function ecrireConfiguration() {
   etape('Configuration');
 
   const urlBase = urlBaseChoisie;
+  const urlApplicative = urlRoleApplicatif(urlBase);
   const secret = `local-${Buffer.from(RACINE).toString('base64url').slice(0, 32)}`;
 
   writeFileSync(
@@ -231,8 +262,9 @@ function ecrireConfiguration() {
       'NODE_ENV=production',
       `PORT=${PORT_API}`,
       'API_PREFIX=api',
-      `DATABASE_URL=${urlBase}`,
+      `DATABASE_URL=${urlApplicative}`,
       `DATABASE_ADMIN_URL=${urlBase}`,
+      `NOVA_APP_PASSWORD=${MOT_DE_PASSE_APPLICATIF}`,
       `JWT_SECRET=${secret}`,
       'SCHEDULER_ENABLED=true',
       'BACKUP_DIR=../donnees/sauvegardes',
@@ -265,22 +297,34 @@ function preparerDonnees() {
   executer(NPM, ['run', 'migrate'], DOSSIER_API, { silencieux: true });
   succes('Structure de la base à jour.');
 
+  info('Vérification du compte de connexion de l\'application…');
+  executer(NPM, ['run', 'role:app'], DOSSIER_API, { silencieux: true });
+  succes('Compte applicatif en place, sans droit de contourner le cloisonnement.');
+
   info('Vérification des comptes…');
   executer(NPM, ['run', 'seed'], DOSSIER_API, { silencieux: true });
   succes('Comptes en place. Les mots de passe existants ne sont pas modifiés.');
 
-  info("Préparation de la pharmacie de démonstration…");
-  const resultat = executer(
-    NPM,
-    ['run', 'seed:demo'],
-    DOSSIER_API,
-    { silencieux: true, tolerant: true },
-  );
-  if (resultat.status === 0) {
-    succes('Pharmacie de démonstration en place.');
-  } else {
-    info("La pharmacie de démonstration n'a pas pu être préparée ; " +
-         "l'application démarre quand même.");
+  // Deux pharmacies distinctes, et c'est voulu : NOVA SANTÉ PHARMA
+  // reçoit les vraies données de l'officine, la démonstration sert à
+  // s'exercer sans risque. Les mélanger dans une seule ferait perdre
+  // l'un ou l'autre — un stock d'exercice fausserait les comptes, et un
+  // essai raté abîmerait les vraies écritures.
+  for (const [libelle, script] of [
+    ['NOVA SANTÉ PHARMA', 'seed:nova-sante'],
+    ['pharmacie de démonstration', 'seed:demo'],
+  ]) {
+    info(`Préparation de la ${libelle}…`);
+    const resultat = executer(NPM, ['run', script], DOSSIER_API, {
+      silencieux: true,
+      tolerant: true,
+    });
+    if (resultat.status === 0) {
+      succes(`${libelle} en place.`);
+    } else {
+      info(`La ${libelle} n'a pas pu être préparée ; ` +
+           "l'application démarre quand même.");
+    }
   }
 }
 
@@ -474,9 +518,17 @@ async function principal() {
     console.log(`\n  ${gris('Aucun réseau détecté : accès depuis cet ordinateur uniquement.')}`);
   }
 
-  console.log(`\n  ${gras('Comptes de démonstration :')}`);
-  console.log('    Pharmacie      gerant@pharmacie-demo.cd     /  Pharmacie2026!');
-  console.log('    Back-office    admin@novapharmaos.com       /  NovaPharma2026!');
+  console.log(`\n  ${gras('NOVA SANTÉ PHARMA — votre officine :')}`);
+  console.log('    Gérant         gerant@nova-sante-pharma.cd   /  NovaSante2026!');
+  console.log('    Vendeur        vendeur@nova-sante-pharma.cd  /  Vendeur2026!');
+  console.log('    Livreur        livreur@nova-sante-pharma.cd  /  Livreur2026!');
+  console.log(gris('    Stock à zéro : il se remplit à votre première réception.'));
+
+  console.log(`\n  ${gras('Pour s\'exercer sans risque :')}`);
+  console.log('    Démonstration  gerant@pharmacie-demo.cd      /  Pharmacie2026!');
+  console.log('    Back-office    admin@novapharmaos.com        /  NovaPharma2026!');
+
+  console.log(`\n  ${gris('Changez ces mots de passe avant de saisir de vraies données.')}`);
 
   console.log(`\n  ${gris('Pour arrêter : appuyez sur Ctrl + C dans cette fenêtre.')}`);
   console.log(`${gras('═'.repeat(56))}\n`);

@@ -172,6 +172,45 @@ describe('Isolation multi-tenant au niveau base de données', () => {
     expect(missing.map((m) => m.relname)).toEqual([]);
   });
 
+  /**
+   * Les tests ci-dessus interrogent la base directement. Ceux-ci passent
+   * par l'API, comme le navigateur d'un utilisateur.
+   *
+   * La distinction n'est pas théorique : une configuration qui connecte
+   * l'application avec un rôle privilégié laisse la base répondre
+   * correctement aux tests précédents — le contexte y est posé à la main
+   * — tout en montrant, à l'écran, les données de toutes les pharmacies.
+   * Seul un appel HTTP avec le jeton d'une pharmacie le révèle.
+   */
+  it("l'API ne montre à chaque pharmacie que son propre catalogue", async () => {
+    for (const pharmacy of pharmacies) {
+      const res = await harness
+        .get('/catalog/products?pageSize=100', pharmacy.token)
+        .expect(200);
+      const skus = (res.body.data as { sku: string }[]).map((p) => p.sku);
+      expect(skus).toEqual([`SKU-${pharmacy.slug.split('-')[1]}`]);
+    }
+  });
+
+  it("l'API ne montre à chaque pharmacie que ses propres réglages livrés", async () => {
+    // Modèles de message et opérateurs Mobile Money sont posés à
+    // l'identique dans chaque pharmacie lors de sa création. Deux
+    // pharmacies qui en voient le double, ce sont deux pharmacies qui
+    // voient les lignes l'une de l'autre.
+    for (const pharmacy of pharmacies) {
+      const modeles = await harness.get('/messaging/templates', pharmacy.token).expect(200);
+      const operateurs = await harness
+        .get('/payments/mobile-money/operators', pharmacy.token)
+        .expect(200);
+
+      const codesModeles = (modeles.body as { code: string }[]).map((m) => m.code);
+      const codesOperateurs = (operateurs.body as { code: string }[]).map((o) => o.code);
+
+      expect(codesModeles).toHaveLength(new Set(codesModeles).size);
+      expect(codesOperateurs).toHaveLength(new Set(codesOperateurs).size);
+    }
+  });
+
   it("la sauvegarde d'une pharmacie ne capte pas les données d'une autre", async () => {
     const [alpha, beta] = pharmacies;
     const backup = await harness

@@ -45,7 +45,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
   constructor(@Inject(ConfigService) private readonly config: ConfigService) {}
 
-  onModuleInit(): void {
+  async onModuleInit(): Promise<void> {
     const connectionString = this.config.get<string>('DATABASE_URL');
     if (!connectionString) {
       throw new Error('DATABASE_URL est requis.');
@@ -60,6 +60,51 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     this.pool.on('error', (err) =>
       this.logger.error(`Erreur du pool PostgreSQL : ${err.message}`),
     );
+
+    await this.verifierRoleApplicatif();
+  }
+
+  /**
+   * Refuse de démarrer si le rôle de connexion échappe aux politiques
+   * Row-Level Security.
+   *
+   * Toute l'étanchéité entre pharmacies repose sur ces politiques. Or un
+   * superutilisateur PostgreSQL — ou un rôle porteur de BYPASSRLS — les
+   * ignore purement et simplement : les requêtes continuent de répondre,
+   * les écrans se remplissent, et chaque pharmacie voit les données des
+   * autres sans qu'aucune erreur n'apparaisse nulle part.
+   *
+   * C'est la panne la plus dangereuse du produit, parce qu'elle est
+   * silencieuse. On la rend donc bruyante : l'API ne démarre pas.
+   */
+  private async verifierRoleApplicatif(): Promise<void> {
+    const { rows } = await this.pool.query<{
+      role: string;
+      superutilisateur: boolean;
+      contourne_rls: boolean;
+    }>(
+      `SELECT rolname AS role,
+              rolsuper AS superutilisateur,
+              rolbypassrls AS contourne_rls
+         FROM pg_roles WHERE rolname = current_user`,
+    );
+
+    const role = rows[0];
+    if (!role) return;
+
+    if (role.superutilisateur || role.contourne_rls) {
+      const raison = role.superutilisateur
+        ? 'est superutilisateur'
+        : 'porte l’attribut BYPASSRLS';
+      throw new Error(
+        `Refus de démarrer : le rôle « ${role.role} » ${raison}, ` +
+          'il ignore donc les politiques de cloisonnement et chaque pharmacie ' +
+          "verrait les données des autres.\n" +
+          'Corrigez DATABASE_URL pour utiliser le rôle applicatif (nova_app) ; ' +
+          'réservez le rôle administrateur à DATABASE_ADMIN_URL, ' +
+          'qui ne sert qu’aux migrations.',
+      );
+    }
   }
 
   async onModuleDestroy(): Promise<void> {

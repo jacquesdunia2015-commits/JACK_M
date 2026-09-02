@@ -36,8 +36,18 @@ export class Harness {
 
     this.app = moduleRef.createNestApplication();
     this.app.setGlobalPrefix('api');
+    // Exactement la configuration de `src/main.ts`. Sans la conversion
+    // implicite, un paramètre d'URL reste une chaîne et échoue sur un
+    // `@IsInt()` — un rejet que le vrai serveur ne produit jamais. Un
+    // banc d'essai qui refuse ce que la production accepte fait perdre
+    // du temps sur de fausses pannes, et masque les vraies.
     this.app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
     );
     await this.app.init();
   }

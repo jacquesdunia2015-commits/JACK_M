@@ -142,17 +142,40 @@ http://localhost:3000
 
 ## Étape 6 — Se connecter
 
-Deux comptes sont créés automatiquement pour vos essais.
+Deux pharmacies sont créées automatiquement, et c'est voulu : l'une reçoit
+vos vraies données, l'autre sert à s'exercer sans rien casser.
 
-### Pour tester comme une pharmacie
+### NOVA SANTÉ PHARMA — votre officine
+
+C'est **votre** pharmacie, celle de Bukavu. Trois comptes sont prêts :
+
+| Qui | Adresse | Mot de passe |
+|---|---|---|
+| Gérant | `gerant@nova-sante-pharma.cd` | `NovaSante2026!` |
+| Vendeur | `vendeur@nova-sante-pharma.cd` | `Vendeur2026!` |
+| Livreur | `livreur@nova-sante-pharma.cd` | `Livreur2026!` |
+
+Le vendeur et le livreur sont faits pour l'**application mobile** : ouvrez
+`http://…:3000/mobile` sur leur téléphone.
+
+Vous y trouvez un catalogue de 18 produits courants d'une officine de Bukavu,
+et **un stock à zéro**. Ce n'est pas un oubli : un stock inventé vous ferait
+vendre des boîtes qui ne sont pas sur l'étagère. Le stock se remplit à votre
+première réception réelle — voir « Vos trois premiers gestes » plus bas.
+
+### Pharmacie de démonstration — pour s'exercer
+
 | | |
 |---|---|
 | Adresse | `gerant@pharmacie-demo.cd` |
 | Mot de passe | `Pharmacie2026!` |
 
-Vous arrivez sur le tableau de bord d'une pharmacie qui a déjà : 8 produits,
-du stock réparti sur des lots, 4 ventes passées, 2 clients, et une alerte de
-péremption. C'est **une vraie pharmacie en fonctionnement**, pas un décor.
+Celle-ci a déjà 8 produits, du stock réparti sur des lots, 4 ventes passées,
+2 clients et une alerte de péremption. Servez-vous-en pour former l'équipe :
+une erreur ici n'a aucune conséquence.
+
+Les deux pharmacies ne se voient pas l'une l'autre. Une vente d'exercice
+n'apparaîtra jamais dans les comptes de NOVA SANTÉ PHARMA.
 
 ### Pour tester comme l'éditeur (vous)
 En bas de la page de connexion, cliquez **« Back-office NOVA PHARMA OS »**.
@@ -167,6 +190,30 @@ Vous voyez vos pharmacies clientes, leurs abonnements, votre revenu mensuel.
 > ⚠️ **Ces mots de passe sont publics** — ils sont écrits dans ce guide. Ils
 > conviennent pour tester entre vous. Le jour où de vraies données de patients ou
 > d'argent entreront dans le système, il faudra les changer.
+
+---
+
+## Vos trois premiers gestes dans NOVA SANTÉ PHARMA
+
+Connectez-vous en **gérant**, puis, dans cet ordre :
+
+**1. Corrigez le catalogue.** Ouvrez *Catalogue*. Supprimez ce que vous ne
+vendez pas, ajoutez ce qui manque, et surtout **ajustez les prix** : ceux
+livrés sont des ordres de grandeur, pas vos prix.
+
+**2. Enregistrez une réception.** Ouvrez *Achats → Réception*. Prenez une
+facture fournisseur réelle et saisissez-la : le fournisseur, chaque produit,
+son **numéro de lot** et sa **date de péremption**. C'est ce geste qui crée
+le stock. L'application refusera un produit périssable sans date de
+péremption — c'est voulu.
+
+**3. Faites une vente.** Ouvrez *Ventes*. Le stock que vous venez de recevoir
+apparaît. À la sortie, l'application prend d'elle-même le lot qui périme le
+plus tôt : vous n'avez rien à surveiller.
+
+À partir de là, l'officine tourne. Le reste — clients à crédit, livraisons,
+rappels WhatsApp, encaissement Mobile Money — s'ajoute quand vous en avez
+besoin.
 
 ---
 

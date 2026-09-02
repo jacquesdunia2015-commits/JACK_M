@@ -15,7 +15,9 @@
     "test:e2e": "jest --runInBand --config ./test/jest-e2e.json",
     "lint": "eslint \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "seed:demo": "ts-node -T src/database/run-seed-demo.ts"
+    "seed:demo": "ts-node -T src/database/run-seed-demo.ts",
+    "seed:nova-sante": "ts-node -T src/database/run-seed-nova-sante.ts",
+    "role:app": "ts-node -T src/database/ensure-app-role.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.15",
