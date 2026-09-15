@@ -9,7 +9,8 @@
 
 | | État |
 |---|---|
-| Fonctionnalités | ✅ 70/70 vérifiées automatiquement (import, codage, analyses, exports, IA, temps réel…) |
+| Fonctionnalités | ✅ import, codage, analyses, exports, IA, temps réel — voir le détail du cahier des charges |
+| Vérifications automatiques | ✅ **391 contrôles** (`node tests/tous.mjs`) + **32 en navigateur réel** (`tests/navigateur.html`) — voir [tests/README.md](tests/README.md) |
 | Ordinateur | ✅ installation avec icône, en ligne comme hors ligne |
 | Téléphone Android | ✅ installation confirmée |
 | iPhone / tablettes | ✅ prévu (Safari), même procédure |

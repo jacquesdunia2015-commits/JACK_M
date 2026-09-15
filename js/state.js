@@ -62,7 +62,18 @@ export const state = {
    Les anciens projets stockés en localStorage sont migrés au premier chargement. */
 let saveTimer = null;
 let onSavedCallback = null;
+let onSaveErrorCallback = null;
 export function setOnSaved(cb) { onSavedCallback = cb; }
+
+/**
+ * Prévenir l'utilisateur quand une sauvegarde ÉCHOUE.
+ *
+ * C'est le scénario noir d'un travail de terrain : le disque sature ou le
+ * navigateur refuse d'écrire, l'autosauvegarde échoue en silence, et
+ * l'utilisateur code encore une heure en croyant son travail à l'abri. Une
+ * erreur dans la console ne sauve personne — il faut le lui dire à l'écran.
+ */
+export function setOnSaveError(cb) { onSaveErrorCallback = cb; }
 
 /**
  * STOCKAGE PERSISTANT — protection des projets contre l'effacement.
@@ -168,11 +179,23 @@ export function persistNow() {
     });
     writeIndex(index);
   } catch (e) { console.error(e); }
-  // Écriture asynchrone (clonage structuré : rapide même sur un gros corpus)
+  // Écriture asynchrone (clonage structuré : rapide même sur un gros corpus).
+  // Résout à `true` si le projet est bien sur le disque, `false` sinon ; ne
+  // rejette jamais, pour qu'une panne de stockage n'interrompe pas la saisie
+  // en cours. En cas d'échec, `state.ui.dirty` reste vrai : le travail non
+  // enregistré est signalé, et la sauvegarde suivante le reprendra.
   return idbPut(p.id, p).then(() => {
     state.ui.dirty = false;
     if (onSavedCallback) onSavedCallback();
-  }).catch(e => console.error("Autosave failed", e));
+    return true;
+  }).catch(e => {
+    console.error("Autosave failed", e);
+    // Ce qui est en mémoire ne correspond plus à ce qui est sur le disque :
+    // le projet doit rester signalé comme non enregistré, quoi qu'il arrive.
+    state.ui.dirty = true;
+    if (onSaveErrorCallback) onSaveErrorCallback(e);
+    return false;
+  });
 }
 
 // Migration : ancienne clé unique + anciens projets localStorage → IndexedDB

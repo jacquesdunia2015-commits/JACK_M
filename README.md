@@ -137,7 +137,22 @@ server/sync-server.mjs  Serveur de relais WebSocket (RFC 6455, zéro dépendance
 js/crypto.js        Chiffrement AES-256-GCM du .projx (PBKDF2, Web Crypto)
 js/merge.js         Fusion de projets + kappa de Cohen (accord inter-codeurs)
 js/sample.js        Projet exemple : analyse TERMINÉE de bout en bout (codage pondéré et commenté, mémos, requêtes sauvegardées, carte conceptuelle, bibliographie)
+tests/              Vérifications automatiques, sans dépendance (voir tests/README.md)
 ```
+
+## Vérifier que tout fonctionne
+
+```bash
+node tests/tous.mjs          # 391 contrôles, aucune installation requise
+```
+
+Puis, dans un navigateur réel (vraie base IndexedDB, vrai import REFI-QDA,
+vrai chiffrement) : lancez `python3 -m http.server 8000` et ouvrez
+**http://localhost:8000/tests/navigateur.html**. Cette page vérifie aussi que
+**vos propres projets** se relisent correctement et vous prévient si ce
+navigateur risque d'effacer vos données — sans jamais y toucher.
+
+Détail des suites : [tests/README.md](tests/README.md).
 
 **Modèle de données** (`.projx`, JSON) : `documents`, `documentGroups`, `codes` (hiérarchie par `parentId`),
 `segments` (offsets de caractères `start`/`end` dans le texte source, poids, commentaire), `memos`, `variables`,

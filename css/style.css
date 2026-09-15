@@ -669,3 +669,14 @@ body.dark .diag-block { background: #3a2f1e; }
 .key-row { display: flex; gap: 6px; align-items: center; flex: 1; flex-wrap: wrap; }
 .key-row input { flex: 1; min-width: 180px; }
 .key-row .btn { white-space: nowrap; }
+
+/* Témoin de sauvegarde en échec : rouge, et il y reste tant que le projet
+   n'est pas réellement enregistré. Un travail de terrain non sauvegardé ne
+   doit jamais se signaler par un message qui disparaît tout seul. */
+#statusSaved.save-error {
+  color: #fff;
+  background: #c0392b;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
