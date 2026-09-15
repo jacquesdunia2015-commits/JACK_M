@@ -18,7 +18,8 @@ const SHELL = [
   "./js/export.js", "./js/helpdocs.js", "./js/pdf.js", "./js/refi.js",
   "./js/conceptmap.js", "./js/audio.js", "./js/social.js", "./js/ai.js",
   "./js/sync.js", "./js/imagecode.js", "./js/ocr.js", "./js/biblio.js",
-  "./js/stats.js", "./js/realtime.js", "./js/mobile.js", "./js/app.js",
+  "./js/stats.js", "./js/realtime.js", "./js/mobile.js",
+  "./js/branding.js", "./js/app.js",
 ];
 
 self.addEventListener("install", event => {

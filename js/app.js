@@ -2,7 +2,7 @@
 import { t, setLang, getLang, applyStaticTranslations, LANGS } from "./i18n.js";
 import {
   state, emptyProject, normalizeProject, uid, CODE_COLORS,
-  scheduleSave, persistNow, loadPersisted, setOnSaved, savePrefs, loadPrefs,
+  scheduleSave, persistNow, loadPersisted, setOnSaved, setOnSaveError, savePrefs, loadPrefs,
   listProjects, loadProjectById, deleteProjectById,
   getDoc, getCode, getGroup, getSegment, childCodes, segmentsOfDoc,
   addDocument, addGroup, addCode, addSegment, deleteSegment,
@@ -114,9 +114,21 @@ async function init() {
   childCodes(null).forEach(c => expandedCodes.add(c.id));
 
   setOnSaved(() => {
-    $("#statusSaved").textContent = "✓ " + t("autosaved") + " · " + new Date().toLocaleTimeString();
+    const el = $("#statusSaved");
+    el.classList.remove("save-error");
+    el.textContent = "✓ " + t("autosaved") + " · " + new Date().toLocaleTimeString();
     // Diffusion temps réel de la contribution locale après chaque sauvegarde
     if (rtStatus().connected) rtBroadcast(myContribution());
+  });
+
+  // Une sauvegarde qui échoue doit se VOIR. Le témoin passe au rouge et y
+  // reste : contrairement à un message fugace, il est encore là quand
+  // l'utilisateur relève les yeux, et il l'invite à exporter avant de fermer.
+  setOnSaveError(() => {
+    const el = $("#statusSaved");
+    el.classList.add("save-error");
+    el.textContent = "⚠️ " + t("save_failed_short");
+    toast("⚠️ " + t("save_failed"), 15000);
   });
   setRtHandlers({
     onRemoteUpdate: applyRemoteUpdate,
