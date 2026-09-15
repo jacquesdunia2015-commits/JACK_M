@@ -38,7 +38,8 @@ import {
 } from "./sync.js";
 import { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } from "./crypto.js";
 import { hasAppLock, setAppLock, removeAppLock, verifyAppLock, applockGate, showLockScreen } from "./applock.js";
-import { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS, deviceCode } from "./license.js";
+import { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS, deviceCode,
+  accesLibreActif, joursAccesLibre, finAccesLibreTexte } from "./license.js";
 import { buildPaymentsHtml } from "./payments.js";
 import { downloadGuidePdf, downloadManuelPdf } from "./helpdocs.js";
 import { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerServiceWorker,
@@ -3249,7 +3250,9 @@ function openApplockModal() {
 async function openLicenseModal() {
   const st = await licenseStatus();
   let stateLine;
-  if (st.state === "active") {
+  if (st.state === "libre") {
+    stateLine = `🎁 <b>${esc(t("lic_state_free").replace("{date}", finAccesLibreTexte()))}</b>`;
+  } else if (st.state === "active") {
     stateLine = `✅ <b>${esc(t("lic_state_active"))}</b> — ${esc(t(PLAN_LABELS[st.plan]))}` +
       (st.plan === "life" ? "" : ` · ${esc(t("lic_expires"))} ${esc(st.exp)}`) +
       (st.licensee ? ` · ${esc(t("lic_licensee"))} : ${esc(st.licensee)}` : "");
@@ -3262,6 +3265,9 @@ async function openLicenseModal() {
     title: "💳 " + t("lic_title"), wide: true,
     bodyHtml: `
       <p class="lic-state">${stateLine}</p>
+      ${st.state === "libre" ? `<div class="lic-free-note">${esc(
+        t("lic_free_note").replace("{date}", finAccesLibreTexte()).replace("{n}", joursAccesLibre())
+      )}</div>` : ""}
       <div class="device-box">
         <div class="device-label">${esc(t("lic_device"))}</div>
         <div class="device-code" id="devCode">${esc(deviceCode())}</div>
@@ -3273,6 +3279,7 @@ async function openLicenseModal() {
       <p class="lock-msg" id="licMsg" hidden></p>
       <hr>
       <h3>${esc(t("lic_buy_title"))}</h3>
+      ${st.state === "libre" ? `<p class="hint">${esc(t("lic_free_no_pay"))}</p>` : ""}
       ${buildPaymentsHtml()}`,
     footer: [
       { label: t("close"), onClick: (o, close) => close() },

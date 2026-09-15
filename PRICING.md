@@ -2,6 +2,30 @@
 
 *Document du vendeur. Version du 15 juillet 2026. Tous les prix sont en dollars US.*
 
+## 0. Période d'accès libre en cours
+
+**Jusqu'au 15 novembre 2026, QualiCode est offert.** Aucune clé, aucun paiement :
+toutes les fonctions sont ouvertes pour tout le monde. Les tarifs de ce document
+ne s'appliqueront qu'à partir du 16 novembre 2026.
+
+Ce que cela change pour la vente :
+
+- **Ne vendez pas de licence pendant cette période** — vous encaisseriez pour
+  quelque chose qui est gratuit, et le client s'en apercevra.
+- **Faites-vous connaître** : c'est le moment d'installer QualiCode chez le plus
+  de gens possible, de recueillir des retours et des témoignages.
+- **Collectez les codes appareil** dès maintenant : le jour où la période se
+  termine, vous pourrez délivrer les clés sans délai.
+- À la fin de la période, **chaque utilisateur garde ses 5 jours d'essai
+  intacts** — le compteur ne tourne pas pendant la gratuité. Personne n'est
+  bloqué du jour au lendemain.
+
+Pour prolonger ou raccourcir : changez `ACCES_LIBRE_JUSQU_AU` dans
+`js/license.js`, reconstruisez, republiez. Une chaîne vide arrête l'accès libre
+immédiatement.
+
+---
+
 ## 1. Positionnement de prix
 
 Repères du marché (licence individuelle, prix publics 2026) :

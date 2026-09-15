@@ -22,6 +22,44 @@ const STORE_KEY = "qualicode.license";
 const TRIAL_DAYS = 5;
 const DAY_MS = 86400000;
 
+/**
+ * PÉRIODE D'ACCÈS LIBRE — lancement promotionnel.
+ *
+ * Tant que cette date n'est pas dépassée, QualiCode s'utilise entièrement sans
+ * abonnement ni clé : aucun écran de blocage, aucune limite de durée. Passé
+ * cette date, le fonctionnement normal reprend tout seul, sans mise à jour à
+ * déployer — la bascule est une simple comparaison de dates.
+ *
+ * Pour prolonger : avancez la date. Pour arrêter l'accès libre immédiatement :
+ * mettez la chaîne vide. Rien d'autre à toucher dans le code.
+ *
+ * Format : AAAA-MM-JJ. L'accès reste ouvert jusqu'à la fin de ce jour-là.
+ */
+export const ACCES_LIBRE_JUSQU_AU = "2026-11-15";
+
+/** Vrai si la période d'accès libre court encore. */
+export function accesLibreActif(now = Date.now()) {
+  if (!ACCES_LIBRE_JUSQU_AU) return false;
+  return endOfDay(ACCES_LIBRE_JUSQU_AU) >= now;
+}
+
+/** Jours restants d'accès libre (0 si la période est close). */
+export function joursAccesLibre(now = Date.now()) {
+  if (!accesLibreActif(now)) return 0;
+  return Math.ceil((endOfDay(ACCES_LIBRE_JUSQU_AU) - now) / DAY_MS);
+}
+
+/** Date de fin d'accès libre, écrite en toutes lettres dans la langue affichée. */
+export function finAccesLibreTexte() {
+  try {
+    const langue = (typeof document !== "undefined" && document.documentElement.lang) || undefined;
+    return new Date(ACCES_LIBRE_JUSQU_AU + "T12:00:00")
+      .toLocaleDateString(langue, { day: "numeric", month: "long", year: "numeric" });
+  } catch {
+    return ACCES_LIBRE_JUSQU_AU;
+  }
+}
+
 export const PLAN_LABELS = { day: "lic_plan_day", week: "lic_plan_week", month: "lic_plan_month", year: "lic_plan_year", life: "lic_plan_life" };
 
 const enc2 = new TextEncoder();
@@ -113,7 +151,7 @@ function endOfDay(iso) {
   return new Date(iso + "T23:59:59").getTime();
 }
 
-/** État courant : { state: "active"|"trial"|"expired", daysLeft, plan, exp, reason }. */
+/** État courant : { state: "libre"|"active"|"trial"|"expired", daysLeft, plan, exp, reason }. */
 export async function licenseStatus() {
   const rec = readStore();
   const now = Date.now();
@@ -121,14 +159,34 @@ export async function licenseStatus() {
   // Détection grossière de recul d'horloge (> 36 h en arrière)
   const tampered = rec.lastSeen && now < rec.lastSeen - 1.5 * DAY_MS;
   rec.lastSeen = Math.max(now, rec.lastSeen || 0);
+
+  // Une licence payée prime sur tout : le client doit voir ce qu'il a acheté,
+  // même pendant l'accès libre.
+  if (rec.key) {
+    const v = await verifyKey(rec.key);
+    if (v.ok && endOfDay(v.exp) >= now && !tampered) {
+      writeStore(rec);
+      return { state: "active", plan: v.plan, exp: v.exp, licensee: v.licensee, daysLeft: Math.ceil((endOfDay(v.exp) - now) / DAY_MS) };
+    }
+  }
+
+  // Accès libre : personne n'est bloqué, quelle que soit la raison.
+  //
+  // Le compteur d'essai n'est VOLONTAIREMENT pas démarré ici. Le démarrer
+  // reviendrait à consommer les 5 jours d'essai de chaque utilisateur pendant
+  // la promotion : à la fin de la période, tous seraient bloqués le même jour,
+  // à l'heure précise où la vente commence. L'essai démarre donc à la première
+  // ouverture APRÈS la période libre — chacun garde ses 5 jours entiers.
+  if (accesLibreActif(now)) {
+    writeStore(rec);
+    return { state: "libre", fin: ACCES_LIBRE_JUSQU_AU, daysLeft: joursAccesLibre(now) };
+  }
+
   if (!rec.trialStart) rec.trialStart = now;
   writeStore(rec);
 
   if (rec.key) {
     const v = await verifyKey(rec.key);
-    if (v.ok && endOfDay(v.exp) >= now && !tampered) {
-      return { state: "active", plan: v.plan, exp: v.exp, licensee: v.licensee, daysLeft: Math.ceil((endOfDay(v.exp) - now) / DAY_MS) };
-    }
     if (v.ok && endOfDay(v.exp) < now) return { state: "expired", reason: "key", plan: v.plan, exp: v.exp };
   }
   if (tampered) return { state: "expired", reason: "clock" };
@@ -141,6 +199,7 @@ export async function licenseStatus() {
 
 /** Texte court pour la barre d'état. */
 export function licenseBadge(st) {
+  if (st.state === "libre") return "🎁 " + t("lic_free_badge").replace("{date}", finAccesLibreTexte());
   if (st.state === "active") return "💳 " + t(PLAN_LABELS[st.plan]) + (st.plan === "life" ? "" : " → " + st.exp);
   if (st.state === "trial") return "⏳ " + t("lic_trial_badge").replace("{n}", st.daysLeft);
   return "⛔ " + t("lic_expired_badge");

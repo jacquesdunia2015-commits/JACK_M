@@ -654,6 +654,17 @@ body.dark .diag-block { background: #3a2f1e; }
 }
 .device-box .hint { margin-top: 8px; font-size: 12.5px; }
 
+/* Période d'accès libre : bandeau d'explication dans la fenêtre Abonnement.
+   Volontairement en vert plutôt qu'en couleur d'accent : c'est une bonne
+   nouvelle, pas un avertissement, et elle ne doit pas se confondre avec le
+   cadre du code appareil juste en dessous. */
+.lic-free-note {
+  background: color-mix(in srgb, #16a34a 12%, var(--bg));
+  border-left: 4px solid #16a34a; border-radius: 8px;
+  padding: 10px 13px; margin-bottom: 12px;
+  font-size: 13.5px; line-height: 1.5;
+}
+
 /* Champ de clé API : afficher / masquer / oublier */
 .key-row { display: flex; gap: 6px; align-items: center; flex: 1; flex-wrap: wrap; }
 .key-row input { flex: 1; min-width: 180px; }

@@ -676,6 +676,17 @@ body.dark .diag-block { background: #3a2f1e; }
 }
 .device-box .hint { margin-top: 8px; font-size: 12.5px; }
 
+/* Période d'accès libre : bandeau d'explication dans la fenêtre Abonnement.
+   Volontairement en vert plutôt qu'en couleur d'accent : c'est une bonne
+   nouvelle, pas un avertissement, et elle ne doit pas se confondre avec le
+   cadre du code appareil juste en dessous. */
+.lic-free-note {
+  background: color-mix(in srgb, #16a34a 12%, var(--bg));
+  border-left: 4px solid #16a34a; border-radius: 8px;
+  padding: 10px 13px; margin-bottom: 12px;
+  font-size: 13.5px; line-height: 1.5;
+}
+
 /* Champ de clé API : afficher / masquer / oublier */
 .key-row { display: flex; gap: 6px; align-items: center; flex: 1; flex-wrap: wrap; }
 .key-row input { flex: 1; min-width: 180px; }
@@ -1619,6 +1630,10 @@ const translations = {
     applock_removed: "Mot de passe supprimé.", applock_badpw: "Mot de passe actuel incorrect.",
     lic_btn: "Abonnement", lic_title: "Licence et abonnement",
     lic_trial_badge: "Essai : {n} j restants", lic_expired_badge: "Licence expirée",
+    lic_free_badge: "Accès libre jusqu'au {date}",
+    lic_state_free: "Accès libre — aucun abonnement requis jusqu'au {date}",
+    lic_free_note: "QualiCode est actuellement offert : toutes les fonctions sont ouvertes, sans clé ni paiement, jusqu'au {date} ({n} jour(s) restant(s)). Vos projets vous appartiennent et restent sur votre appareil ; ils seront toujours là ensuite. Après cette date, l'essai gratuit de 5 jours démarrera, puis un abonnement sera nécessaire.",
+    lic_free_no_pay: "Rien à payer aujourd'hui. Les tarifs ci-dessous ne s'appliqueront qu'après la période d'accès libre.",
     lic_state_trial: "Essai gratuit — {n} jour(s) restant(s)", lic_state_active: "Licence active",
     lic_state_expired: "Licence ou essai expiré",
     lic_plan_day: "Formule Jour", lic_plan_week: "Formule Semaine", lic_plan_month: "Formule Mois",
@@ -1934,6 +1949,10 @@ const translations = {
     applock_removed: "Password removed.", applock_badpw: "Current password is incorrect.",
     lic_btn: "Subscription", lic_title: "License & subscription",
     lic_trial_badge: "Trial: {n} d left", lic_expired_badge: "License expired",
+    lic_free_badge: "Free access until {date}",
+    lic_state_free: "Free access — no subscription required until {date}",
+    lic_free_note: "QualiCode is currently free: every feature is open, with no key and no payment, until {date} ({n} day(s) left). Your projects are yours and stay on your device; they will still be there afterwards. After that date the 5-day free trial starts, then a subscription is required.",
+    lic_free_no_pay: "Nothing to pay today. The prices below will only apply once the free-access period ends.",
     lic_state_trial: "Free trial — {n} day(s) left", lic_state_active: "Active license",
     lic_state_expired: "License or trial expired",
     lic_plan_day: "Day plan", lic_plan_week: "Week plan", lic_plan_month: "Month plan",
@@ -3256,6 +3275,44 @@ const STORE_KEY = "qualicode.license";
 const TRIAL_DAYS = 5;
 const DAY_MS = 86400000;
 
+/**
+ * PÉRIODE D'ACCÈS LIBRE — lancement promotionnel.
+ *
+ * Tant que cette date n'est pas dépassée, QualiCode s'utilise entièrement sans
+ * abonnement ni clé : aucun écran de blocage, aucune limite de durée. Passé
+ * cette date, le fonctionnement normal reprend tout seul, sans mise à jour à
+ * déployer — la bascule est une simple comparaison de dates.
+ *
+ * Pour prolonger : avancez la date. Pour arrêter l'accès libre immédiatement :
+ * mettez la chaîne vide. Rien d'autre à toucher dans le code.
+ *
+ * Format : AAAA-MM-JJ. L'accès reste ouvert jusqu'à la fin de ce jour-là.
+ */
+const ACCES_LIBRE_JUSQU_AU = "2026-11-15";
+
+/** Vrai si la période d'accès libre court encore. */
+function accesLibreActif(now = Date.now()) {
+  if (!ACCES_LIBRE_JUSQU_AU) return false;
+  return endOfDay(ACCES_LIBRE_JUSQU_AU) >= now;
+}
+
+/** Jours restants d'accès libre (0 si la période est close). */
+function joursAccesLibre(now = Date.now()) {
+  if (!accesLibreActif(now)) return 0;
+  return Math.ceil((endOfDay(ACCES_LIBRE_JUSQU_AU) - now) / DAY_MS);
+}
+
+/** Date de fin d'accès libre, écrite en toutes lettres dans la langue affichée. */
+function finAccesLibreTexte() {
+  try {
+    const langue = (typeof document !== "undefined" && document.documentElement.lang) || undefined;
+    return new Date(ACCES_LIBRE_JUSQU_AU + "T12:00:00")
+      .toLocaleDateString(langue, { day: "numeric", month: "long", year: "numeric" });
+  } catch {
+    return ACCES_LIBRE_JUSQU_AU;
+  }
+}
+
 const PLAN_LABELS = { day: "lic_plan_day", week: "lic_plan_week", month: "lic_plan_month", year: "lic_plan_year", life: "lic_plan_life" };
 
 const enc2 = new TextEncoder();
@@ -3347,7 +3404,7 @@ function endOfDay(iso) {
   return new Date(iso + "T23:59:59").getTime();
 }
 
-/** État courant : { state: "active"|"trial"|"expired", daysLeft, plan, exp, reason }. */
+/** État courant : { state: "libre"|"active"|"trial"|"expired", daysLeft, plan, exp, reason }. */
 async function licenseStatus() {
   const rec = readStore();
   const now = Date.now();
@@ -3355,14 +3412,34 @@ async function licenseStatus() {
   // Détection grossière de recul d'horloge (> 36 h en arrière)
   const tampered = rec.lastSeen && now < rec.lastSeen - 1.5 * DAY_MS;
   rec.lastSeen = Math.max(now, rec.lastSeen || 0);
+
+  // Une licence payée prime sur tout : le client doit voir ce qu'il a acheté,
+  // même pendant l'accès libre.
+  if (rec.key) {
+    const v = await verifyKey(rec.key);
+    if (v.ok && endOfDay(v.exp) >= now && !tampered) {
+      writeStore(rec);
+      return { state: "active", plan: v.plan, exp: v.exp, licensee: v.licensee, daysLeft: Math.ceil((endOfDay(v.exp) - now) / DAY_MS) };
+    }
+  }
+
+  // Accès libre : personne n'est bloqué, quelle que soit la raison.
+  //
+  // Le compteur d'essai n'est VOLONTAIREMENT pas démarré ici. Le démarrer
+  // reviendrait à consommer les 5 jours d'essai de chaque utilisateur pendant
+  // la promotion : à la fin de la période, tous seraient bloqués le même jour,
+  // à l'heure précise où la vente commence. L'essai démarre donc à la première
+  // ouverture APRÈS la période libre — chacun garde ses 5 jours entiers.
+  if (accesLibreActif(now)) {
+    writeStore(rec);
+    return { state: "libre", fin: ACCES_LIBRE_JUSQU_AU, daysLeft: joursAccesLibre(now) };
+  }
+
   if (!rec.trialStart) rec.trialStart = now;
   writeStore(rec);
 
   if (rec.key) {
     const v = await verifyKey(rec.key);
-    if (v.ok && endOfDay(v.exp) >= now && !tampered) {
-      return { state: "active", plan: v.plan, exp: v.exp, licensee: v.licensee, daysLeft: Math.ceil((endOfDay(v.exp) - now) / DAY_MS) };
-    }
     if (v.ok && endOfDay(v.exp) < now) return { state: "expired", reason: "key", plan: v.plan, exp: v.exp };
   }
   if (tampered) return { state: "expired", reason: "clock" };
@@ -3375,6 +3452,7 @@ async function licenseStatus() {
 
 /** Texte court pour la barre d'état. */
 function licenseBadge(st) {
+  if (st.state === "libre") return "🎁 " + t("lic_free_badge").replace("{date}", finAccesLibreTexte());
   if (st.state === "active") return "💳 " + t(PLAN_LABELS[st.plan]) + (st.plan === "life" ? "" : " → " + st.exp);
   if (st.state === "trial") return "⏳ " + t("lic_trial_badge").replace("{n}", st.daysLeft);
   return "⛔ " + t("lic_expired_badge");
@@ -3423,7 +3501,7 @@ async function licenseGate(onExport) {
   });
 }
 
-return { deviceCode, makeKey, verifyKey, activateKey, licenseStatus, licenseBadge, licenseGate, PLAN_LABELS };
+return { accesLibreActif, joursAccesLibre, finAccesLibreTexte, deviceCode, makeKey, verifyKey, activateKey, licenseStatus, licenseBadge, licenseGate, ACCES_LIBRE_JUSQU_AU, PLAN_LABELS };
 })();
 
 __QC["merge"] = (function () {
@@ -6842,7 +6920,8 @@ const {
 } = __QC["sync"];
 const { isEncryptedEnvelope, encryptProjectJson, decryptProjectEnvelope } = __QC["crypto"];
 const { hasAppLock, setAppLock, removeAppLock, verifyAppLock, applockGate, showLockScreen } = __QC["applock"];
-const { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS, deviceCode } = __QC["license"];
+const { licenseStatus, licenseGate, activateKey, licenseBadge, PLAN_LABELS, deviceCode,
+  accesLibreActif, joursAccesLibre, finAccesLibreTexte } = __QC["license"];
 const { buildPaymentsHtml } = __QC["payments"];
 const { downloadGuidePdf, downloadManuelPdf } = __QC["helpdocs"];
 const { initMobile, isMobileLayout, focusTextPanel, showMobilePanel, registerServiceWorker,
@@ -10053,7 +10132,9 @@ function openApplockModal() {
 async function openLicenseModal() {
   const st = await licenseStatus();
   let stateLine;
-  if (st.state === "active") {
+  if (st.state === "libre") {
+    stateLine = `🎁 <b>${esc(t("lic_state_free").replace("{date}", finAccesLibreTexte()))}</b>`;
+  } else if (st.state === "active") {
     stateLine = `✅ <b>${esc(t("lic_state_active"))}</b> — ${esc(t(PLAN_LABELS[st.plan]))}` +
       (st.plan === "life" ? "" : ` · ${esc(t("lic_expires"))} ${esc(st.exp)}`) +
       (st.licensee ? ` · ${esc(t("lic_licensee"))} : ${esc(st.licensee)}` : "");
@@ -10066,6 +10147,9 @@ async function openLicenseModal() {
     title: "💳 " + t("lic_title"), wide: true,
     bodyHtml: `
       <p class="lic-state">${stateLine}</p>
+      ${st.state === "libre" ? `<div class="lic-free-note">${esc(
+        t("lic_free_note").replace("{date}", finAccesLibreTexte()).replace("{n}", joursAccesLibre())
+      )}</div>` : ""}
       <div class="device-box">
         <div class="device-label">${esc(t("lic_device"))}</div>
         <div class="device-code" id="devCode">${esc(deviceCode())}</div>
@@ -10077,6 +10161,7 @@ async function openLicenseModal() {
       <p class="lock-msg" id="licMsg" hidden></p>
       <hr>
       <h3>${esc(t("lic_buy_title"))}</h3>
+      ${st.state === "libre" ? `<p class="hint">${esc(t("lic_free_no_pay"))}</p>` : ""}
       ${buildPaymentsHtml()}`,
     footer: [
       { label: t("close"), onClick: (o, close) => close() },
