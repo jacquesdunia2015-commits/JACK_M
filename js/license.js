@@ -34,8 +34,14 @@ const DAY_MS = 86400000;
  * mettez la chaîne vide. Rien d'autre à toucher dans le code.
  *
  * Format : AAAA-MM-JJ. L'accès reste ouvert jusqu'à la fin de ce jour-là.
+ *
+ * Échéance actuelle : 31 mars 2027. Elle a été choisie pour couvrir un cycle
+ * de recherche entier — collecte, codage, analyse, rédaction et soutenance —
+ * et non les deux mois d'une opération commerciale. Un mémoire ou une thèse
+ * qui se verrait refuser l'accès à son propre corpus en pleine rédaction
+ * serait un dégât sans rapport avec l'enjeu d'une licence.
  */
-export const ACCES_LIBRE_JUSQU_AU = "2026-11-15";
+export const ACCES_LIBRE_JUSQU_AU = "2027-03-31";
 
 /** Vrai si la période d'accès libre court encore. */
 export function accesLibreActif(now = Date.now()) {

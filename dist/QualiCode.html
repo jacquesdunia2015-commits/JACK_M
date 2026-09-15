@@ -1630,9 +1630,10 @@ const translations = {
     applock_removed: "Mot de passe supprimé.", applock_badpw: "Mot de passe actuel incorrect.",
     lic_btn: "Abonnement", lic_title: "Licence et abonnement",
     lic_trial_badge: "Essai : {n} j restants", lic_expired_badge: "Licence expirée",
+    storage_not_durable: "Ce navigateur peut effacer vos projets pour libérer de la place. Installez QualiCode (bouton 📲) et exportez votre projet après chaque séance de travail.",
     lic_free_badge: "Accès libre jusqu'au {date}",
     lic_state_free: "Accès libre — aucun abonnement requis jusqu'au {date}",
-    lic_free_note: "QualiCode est actuellement offert : toutes les fonctions sont ouvertes, sans clé ni paiement, jusqu'au {date} ({n} jour(s) restant(s)). Vos projets vous appartiennent et restent sur votre appareil ; ils seront toujours là ensuite. Après cette date, l'essai gratuit de 5 jours démarrera, puis un abonnement sera nécessaire.",
+    lic_free_note: "QualiCode est actuellement offert : toutes les fonctions sont ouvertes, sans clé ni paiement, jusqu'au {date} ({n} jour(s) restant(s)). Vos projets vous appartiennent et restent sur votre appareil ; ils seront toujours là ensuite. Vos projets vous appartiennent et restent sur votre appareil. Après cette date, l'essai gratuit de 5 jours démarrera, puis un abonnement sera nécessaire.",
     lic_free_no_pay: "Rien à payer aujourd'hui. Les tarifs ci-dessous ne s'appliqueront qu'après la période d'accès libre.",
     lic_state_trial: "Essai gratuit — {n} jour(s) restant(s)", lic_state_active: "Licence active",
     lic_state_expired: "Licence ou essai expiré",
@@ -1949,6 +1950,7 @@ const translations = {
     applock_removed: "Password removed.", applock_badpw: "Current password is incorrect.",
     lic_btn: "Subscription", lic_title: "License & subscription",
     lic_trial_badge: "Trial: {n} d left", lic_expired_badge: "License expired",
+    storage_not_durable: "This browser may erase your projects to free up space. Install QualiCode (📲 button) and export your project after every working session.",
     lic_free_badge: "Free access until {date}",
     lic_state_free: "Free access — no subscription required until {date}",
     lic_free_note: "QualiCode is currently free: every feature is open, with no key and no payment, until {date} ({n} day(s) left). Your projects are yours and stay on your device; they will still be there afterwards. After that date the 5-day free trial starts, then a subscription is required.",
@@ -2162,6 +2164,48 @@ const state = {
 let saveTimer = null;
 let onSavedCallback = null;
 function setOnSaved(cb) { onSavedCallback = cb; }
+
+/**
+ * STOCKAGE PERSISTANT — protection des projets contre l'effacement.
+ *
+ * Par défaut, un navigateur considère les données d'un site comme jetables :
+ * il peut vider IndexedDB quand l'espace manque, et Safari sur iPhone efface
+ * celles d'un site NON INSTALLÉ après sept jours sans visite. Un travail de
+ * terrain — entretiens transcrits, codage de plusieurs semaines — disparaîtrait
+ * alors sans le moindre avertissement.
+ *
+ * `navigator.storage.persist()` demande au navigateur de traiter ces données
+ * comme durables. La réponse dépend du navigateur : Chrome l'accorde en
+ * silence à une application installée ou régulièrement utilisée, Firefox
+ * demande à l'utilisateur, Safari l'accorde à une application installée sur
+ * l'écran d'accueil.
+ *
+ * Renvoie { supporte, accorde } — l'appelant prévient l'utilisateur si le
+ * navigateur refuse, car il doit alors exporter son projet régulièrement.
+ */
+async function demanderStockageDurable() {
+  try {
+    if (!navigator.storage || !navigator.storage.persist) {
+      return { supporte: false, accorde: false };
+    }
+    // Déjà accordé lors d'une visite précédente : rien à redemander.
+    if (await navigator.storage.persisted()) return { supporte: true, accorde: true };
+    return { supporte: true, accorde: await navigator.storage.persist() };
+  } catch {
+    return { supporte: false, accorde: false };
+  }
+}
+
+/** Espace occupé et disponible, pour l'écran de diagnostic. */
+async function estimationStockage() {
+  try {
+    if (!navigator.storage || !navigator.storage.estimate) return null;
+    const e = await navigator.storage.estimate();
+    return { utilise: e.usage || 0, quota: e.quota || 0 };
+  } catch {
+    return null;
+  }
+}
 
 function scheduleSave() {
   state.ui.dirty = true;
@@ -2529,7 +2573,7 @@ function getMemo(targetType, targetId) {
   return state.project.memos.find(m => m.targetType === targetType && m.targetId === targetId);
 }
 
-return { uid, emptyProject, setOnSaved, scheduleSave, persistNow, loadProjectById, listProjects, deleteProjectById, loadPersisted, savePrefs, loadPrefs, normalizeProject, childCodes, codeWithDescendants, segmentsOfCode, segmentsOfDoc, pushUndoSnapshot, clearUndoHistory, undoAction, redoAction, canUndo, canRedo, addDocument, addGroup, addCode, addSegment, deleteSegment, trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode, saveQuery, deleteQuery, upsertMemo, getMemo, CODE_COLORS, state, getDoc, getCode, getGroup, getSegment };
+return { uid, emptyProject, setOnSaved, demanderStockageDurable, estimationStockage, scheduleSave, persistNow, loadProjectById, listProjects, deleteProjectById, loadPersisted, savePrefs, loadPrefs, normalizeProject, childCodes, codeWithDescendants, segmentsOfCode, segmentsOfDoc, pushUndoSnapshot, clearUndoHistory, undoAction, redoAction, canUndo, canRedo, addDocument, addGroup, addCode, addSegment, deleteSegment, trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode, saveQuery, deleteQuery, upsertMemo, getMemo, CODE_COLORS, state, getDoc, getCode, getGroup, getSegment };
 })();
 
 __QC["analysis"] = (function () {
@@ -3287,8 +3331,14 @@ const DAY_MS = 86400000;
  * mettez la chaîne vide. Rien d'autre à toucher dans le code.
  *
  * Format : AAAA-MM-JJ. L'accès reste ouvert jusqu'à la fin de ce jour-là.
+ *
+ * Échéance actuelle : 31 mars 2027. Elle a été choisie pour couvrir un cycle
+ * de recherche entier — collecte, codage, analyse, rédaction et soutenance —
+ * et non les deux mois d'une opération commerciale. Un mémoire ou une thèse
+ * qui se verrait refuser l'accès à son propre corpus en pleine rédaction
+ * serait un dégât sans rapport avec l'enjeu d'une licence.
  */
-const ACCES_LIBRE_JUSQU_AU = "2026-11-15";
+const ACCES_LIBRE_JUSQU_AU = "2027-03-31";
 
 /** Vrai si la période d'accès libre court encore. */
 function accesLibreActif(now = Date.now()) {
@@ -6892,6 +6942,7 @@ const {
   upsertMemo, getMemo,
   pushUndoSnapshot, undoAction, redoAction, canUndo, canRedo, clearUndoHistory,
   saveQuery, deleteQuery,
+  demanderStockageDurable, estimationStockage,
 } = __QC["state"];
 const {
   searchDocuments, wordFrequencies, kwic, codeMatrix, coocMatrix,
@@ -6979,6 +7030,11 @@ async function init() {
   // Verrou d'application : mot de passe AVANT tout accès aux données
   await applockGate();
 
+  // Protéger les projets AVANT d'en charger ou d'en créer un : le navigateur
+  // doit savoir que ces données ne sont pas jetables. Voir
+  // demanderStockageDurable() dans state.js pour ce qui est réellement en jeu.
+  protegerLesDonnees();
+
   if (!(await loadPersisted())) {
     state.project = buildSampleProject();
     persistNow();
@@ -7054,12 +7110,15 @@ function renderAll() {
   $("#projectName").title = state.project.name;
 }
 
-function toast(msg) {
+// `duree` permet de laisser un message important à l'écran plus longtemps :
+// 2,6 s suffisent pour « enregistré », pas pour un avertissement que
+// l'utilisateur doit lire et comprendre.
+function toast(msg, duree = 2600) {
   const el = $("#toast");
   el.textContent = msg;
   el.hidden = false;
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => { el.hidden = true; }, 2600);
+  toast._t = setTimeout(() => { el.hidden = true; }, duree);
 }
 
 /* ================================================================
@@ -10127,6 +10186,27 @@ function openApplockModal() {
     el.textContent = text; el.hidden = false;
   }
   return m;
+}
+
+/**
+ * Demande au navigateur de ne pas effacer les projets, et prévient si c'est
+ * refusé. L'avertissement n'est montré qu'une fois : répété à chaque
+ * ouverture, il serait ignoré comme le reste.
+ */
+async function protegerLesDonnees() {
+  const r = await demanderStockageDurable();
+  if (r.accorde) return;
+
+  const DEJA_DIT = "qualicode.stockageAvertissement";
+  try { if (localStorage.getItem(DEJA_DIT)) return; } catch { /* sans conséquence */ }
+
+  // Le refus n'est pas une panne : beaucoup de navigateurs n'accordent le
+  // stockage durable qu'à une application installée. On dit donc quoi faire,
+  // pas seulement ce qui ne va pas.
+  setTimeout(() => {
+    toast("⚠️ " + t("storage_not_durable"), 12000);
+    try { localStorage.setItem(DEJA_DIT, "1"); } catch { /* sans conséquence */ }
+  }, 4000);
 }
 
 async function openLicenseModal() {
