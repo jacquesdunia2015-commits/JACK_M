@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr" data-base="../../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redirection vers Marchand A…</title>
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="refresh" content="1;url=https://exemple-marchand-a.fr/p/mini-borea?aff=[ID]">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<main id="contenu"><div class="conteneur section lecture">
+<h1>Redirection en cours…</h1>
+<p>Vous allez être dirigé vers <strong>Marchand A</strong>
+pour le produit <strong>Mini Boréa</strong>.</p>
+<p class="mention-affiliation"><span>Certains liens de cet article sont des liens d&#x27;affiliation : nous pouvons percevoir une commission, sans surcoût pour vous.</span></p>
+<p><a class="bouton" href="https://exemple-marchand-a.fr/p/mini-borea?aff=[ID]" rel="sponsored nofollow noopener">
+Continuer vers Marchand A</a></p>
+<p><a href="../../">Retour à l'accueil</a></p>
+</div></main>
+<script>
+(function(){
+  try {
+    var brut = window.localStorage.getItem("consentement.v1");
+    var ok = brut && JSON.parse(brut).choix && JSON.parse(brut).choix.mesure;
+    if (ok) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ evenement: "clic_affilie_sortant", produit: "gourde-mini-borea",
+        marchand: "Marchand A" });
+    }
+  } catch (e) {}
+  location.replace("https://exemple-marchand-a.fr/p/mini-borea?aff=[ID]");
+})();
+</script>
+</body>
+</html>

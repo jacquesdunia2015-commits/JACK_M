@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-hidden="true">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#0F2F6E"/><stop offset="1" stop-color="#3F63A8"/></linearGradient></defs>
+<rect width="600" height="600" fill="url(#g)"/><circle cx="303" cy="382" r="244" fill="#fff" opacity="0.28"/><circle cx="284" cy="318" r="118" fill="#fff" opacity="0.10"/><circle cx="444" cy="349" r="149" fill="#fff" opacity="0.19"/><circle cx="94" cy="296" r="131" fill="#fff" opacity="0.24"/><circle cx="394" cy="354" r="180" fill="#fff" opacity="0.24"/><circle cx="416" cy="420" r="220" fill="#fff" opacity="0.24"/>
+<text x="300" y="300" text-anchor="middle" dominant-baseline="central"
+ font-family="Georgia, serif" font-size="132" fill="#fff" opacity=".82">PÉ</text>
+</svg>

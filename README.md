@@ -19,6 +19,12 @@ fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicale
 🎁 **Accès libre jusqu'au 31 mars 2027** : QualiCode s'utilise entièrement sans abonnement ni clé pendant cette période — toutes les fonctions sont ouvertes. Après cette date, l'essai gratuit de 5 jours démarre, puis l'abonnement s'applique. La bascule est automatique (`ACCES_LIBRE_JUSQU_AU` dans `js/license.js`).
 💰 **Commercialisation** : [COMMERCIALISATION.md](COMMERCIALISATION.md) (les 6 étapes, circuit de vente, contrôle des licences, gestion des clients) · [PRICING.md](PRICING.md) (tarifs, licences, paiements) · [MARKETING.md](MARKETING.md) (cibles, canaux, modèle économique).
 
+> **Ce dépôt contient un second projet.** Le
+> **[site éditorial de conseil à la consommation](SITE_CONSEIL.md)** — guides d'achat,
+> comparatifs et actualité consommation — est réalisé d'après son propre cahier des charges
+> (août 2026). Sources dans [`site/`](site/), site généré dans [`conseil/`](conseil/),
+> en ligne sur <https://jacquesdunia2015-commits.github.io/JACK_M/conseil/>.
+
 ## 🚀 Lancement
 
 **Fichier unique (le plus simple)** : téléchargez **[dist/QualiCode.html](https://github.com/jacquesdunia2015-commits/JACK_M/raw/main/dist/QualiCode.html)**

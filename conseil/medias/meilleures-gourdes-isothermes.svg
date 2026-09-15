@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-hidden="true">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#B3521B"/><stop offset="1" stop-color="#DB8B4E"/></linearGradient></defs>
+<rect width="1200" height="800" fill="url(#g)"/><circle cx="553" cy="431" r="143" fill="#fff" opacity="0.15"/><circle cx="296" cy="469" r="62" fill="#fff" opacity="0.10"/><circle cx="529" cy="371" r="161" fill="#fff" opacity="0.15"/><circle cx="329" cy="549" r="60" fill="#fff" opacity="0.24"/><circle cx="981" cy="228" r="202" fill="#fff" opacity="0.10"/><circle cx="949" cy="620" r="185" fill="#fff" opacity="0.24"/>
+<text x="600" y="400" text-anchor="middle" dominant-baseline="central"
+ font-family="Georgia, serif" font-size="176" fill="#fff" opacity=".82">LMG</text>
+</svg>

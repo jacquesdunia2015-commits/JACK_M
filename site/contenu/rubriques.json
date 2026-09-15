@@ -1,0 +1,117 @@
+{
+  "_lisez_moi": "Arborescence du site (cahier des charges § 4.1). Ajouter, renommer ou supprimer une rubrique se fait ici, sans développement. Si un slug change, le générateur crée automatiquement la redirection 301 correspondante.",
+
+  "transverses": [
+    {
+      "slug": "made-in-france",
+      "nom": "Made in France",
+      "titre": "Made in France : nos sélections fabriquées en France",
+      "chapo": "Où fabrique-t-on encore en France, et à quel prix ? Nous vérifions l'origine réelle des produits, distinguons la fabrication de l'assemblage et signalons les labels qui engagent vraiment leur détenteur. Toutes nos sélections tricolores, rubrique par rubrique.",
+      "couleur": "primaire"
+    },
+    {
+      "slug": "ecoresponsable",
+      "nom": "Écoresponsable",
+      "titre": "Écoresponsable : consommer moins, choisir mieux",
+      "chapo": "Durabilité, réparabilité, impact réel : nous passons au crible les promesses environnementales des marques et privilégions ce qui dure. Nos guides écoresponsables s'appuient sur des données publiques — indice de réparabilité, étiquette énergie, études d'agences publiques.",
+      "couleur": "vert"
+    }
+  ],
+
+  "rubriques": [
+    {
+      "slug": "enfants",
+      "nom": "Enfants",
+      "titre": "Enfants : équiper, habiller et occuper sans se tromper",
+      "chapo": "De la naissance à l'adolescence, les besoins changent vite et le budget suit. Nos guides comparent la sécurité, la durabilité et le rapport qualité-prix des équipements pour enfants, en écartant les gadgets qui ne servent qu'une saison.",
+      "sous": [
+        {"slug": "soins", "nom": "Soins", "chapo": "Hygiène, bain, change, premiers soins : ce qui est vraiment utile, et ce qui ne l'est pas."},
+        {"slug": "vetements", "nom": "Vêtements", "chapo": "Matières, tailles, résistance au lavage : bien habiller sans racheter tous les trois mois."},
+        {"slug": "chambres", "nom": "Chambres", "chapo": "Lits, rangements, veilleuses : aménager une chambre sûre et évolutive."},
+        {"slug": "sorties-balades", "nom": "Sorties & balades", "chapo": "Poussettes, porte-bébés, sièges auto : le matériel qui suit vraiment le rythme des sorties."},
+        {"slug": "jouets", "nom": "Jouets", "chapo": "Des jouets solides, sûrs et adaptés à l'âge, plutôt que des piles de plastique."},
+        {"slug": "jeux", "nom": "Jeux", "chapo": "Jeux de société, jeux d'éveil, jeux d'extérieur : nos sélections par âge."}
+      ]
+    },
+    {
+      "slug": "loisirs",
+      "nom": "Loisirs",
+      "titre": "Loisirs : voyager, bouger, jouer",
+      "chapo": "Le bon équipement est celui qui sert souvent. Nous comparons le matériel de loisir sur ce qui compte à l'usage : poids, encombrement, robustesse et disponibilité des pièces détachées.",
+      "sous": [
+        {"slug": "voyage", "nom": "Voyage", "chapo": "Bagages, accessoires et préparation : partir léger et bien assuré."},
+        {"slug": "culture", "nom": "Culture", "chapo": "Livres, liseuses, abonnements : nos repères pour choisir sans se disperser."},
+        {"slug": "sport", "nom": "Sport", "chapo": "Équipements de sport testés sur la durée, du débutant au pratiquant régulier."},
+        {"slug": "deplacement", "nom": "Déplacement", "chapo": "Vélo, vélo électrique, trottinette : comparatifs et conseils d'entretien."},
+        {"slug": "gaming", "nom": "Gaming", "chapo": "Consoles, manettes, accessoires : ce qui change réellement l'expérience de jeu."},
+        {"slug": "jeux-jouets", "nom": "Jeux & jouets", "chapo": "Le meilleur des jeux pour toute la famille, testés en conditions réelles."}
+      ]
+    },
+    {
+      "slug": "sante-bien-etre",
+      "nom": "Santé & bien-être",
+      "titre": "Santé & bien-être : des repères fiables, jamais d'avis médical",
+      "chapo": "Nos contenus santé s'appuient sur les recommandations des autorités sanitaires et citent systématiquement leurs sources. Ils informent sur les produits du quotidien : ils ne remplacent en aucun cas l'avis d'un professionnel de santé.",
+      "sous": [
+        {"slug": "pour-elle", "nom": "Pour elle", "chapo": "Hygiène, soins, prévention : ce que disent réellement les études."},
+        {"slug": "pour-lui", "nom": "Pour lui", "chapo": "Rasage, soins, sommeil, activité physique : nos guides sans promesses excessives."},
+        {"slug": "grossesse", "nom": "Grossesse", "chapo": "Équipement, confort et vigilance : l'essentiel, validé par les recommandations officielles."},
+        {"slug": "pour-nos-enfants", "nom": "Pour nos enfants", "chapo": "Sommeil, alimentation, écrans : des repères clairs pour les parents."}
+      ]
+    },
+    {
+      "slug": "vetements",
+      "nom": "Vêtements",
+      "titre": "Vêtements : acheter moins, acheter mieux",
+      "chapo": "Composition, solidité des coutures, tenue au lavage, origine de fabrication : nos comparatifs privilégient les vêtements qui durent plusieurs années plutôt que ceux qui suivent la saison.",
+      "sous": [
+        {"slug": "pour-elle", "nom": "Pour elle", "chapo": "Basiques durables, matières et coupes : nos sélections."},
+        {"slug": "pour-lui", "nom": "Pour lui", "chapo": "Du vestiaire quotidien aux pièces techniques, ce qui tient dans le temps."},
+        {"slug": "pour-nos-enfants", "nom": "Pour nos enfants", "chapo": "Vêtements d'enfants résistants, sûrs et faciles à entretenir."}
+      ]
+    },
+    {
+      "slug": "maison",
+      "nom": "Maison",
+      "titre": "Maison : équiper chaque pièce sans se ruiner",
+      "chapo": "De la cuisine au jardin, nous comparons les équipements du quotidien sur leur durée de vie réelle, la disponibilité des pièces détachées et le coût d'usage, pas seulement sur le prix affiché.",
+      "sous": [
+        {"slug": "cuisine", "nom": "Cuisine", "chapo": "Ustensiles, contenants, petit matériel : ce qui dure vraiment."},
+        {"slug": "salon", "nom": "Salon", "chapo": "Confort, éclairage, rangement : aménager une pièce de vie qui vieillit bien."},
+        {"slug": "chambre", "nom": "Chambre", "chapo": "Literie, linge de lit, occultation : le sommeil d'abord."},
+        {"slug": "salle-de-bain", "nom": "Salle de bain", "chapo": "Hygiène, rangement, économies d'eau : nos guides pratiques."},
+        {"slug": "jardin-bricolage", "nom": "Jardin & bricolage", "chapo": "Outils, entretien, réparation : s'équiper une fois pour longtemps."}
+      ]
+    },
+    {
+      "slug": "electromenager",
+      "nom": "Électroménager",
+      "titre": "Électroménager : consommation, réparabilité, durée de vie",
+      "chapo": "Étiquette énergie, indice de réparabilité, garantie et disponibilité des pièces : nos comparatifs d'électroménager reposent sur des données publiques vérifiables, pas sur les arguments des fabricants.",
+      "sous": [
+        {"slug": "gros", "nom": "Gros électroménager", "chapo": "Lave-linge, réfrigérateurs, fours : le coût réel sur dix ans."},
+        {"slug": "petit", "nom": "Petit électroménager", "chapo": "Aspirateurs, robots, machines à café : puissance utile et entretien."}
+      ]
+    },
+    {
+      "slug": "high-tech",
+      "nom": "High-Tech",
+      "titre": "High-Tech : la technique traduite en langage clair",
+      "chapo": "Nous traduisons les fiches techniques en critères de choix concrets : autonomie réelle, durée du suivi logiciel, réparabilité et prix au bon moment. Sans jargon inutile.",
+      "sous": [
+        {"slug": "telephonie", "nom": "Téléphonie", "chapo": "Smartphones, forfaits, accessoires : durer plus longtemps avec le même appareil."},
+        {"slug": "audio", "nom": "Audio", "chapo": "Casques, écouteurs, enceintes : ce qui s'entend vraiment."},
+        {"slug": "informatique", "nom": "Informatique", "chapo": "Ordinateurs, périphériques, stockage : dimensionner selon l'usage."},
+        {"slug": "tv", "nom": "TV", "chapo": "Dalles, taille, son : choisir sans payer les options inutiles."},
+        {"slug": "gaming", "nom": "Gaming", "chapo": "Matériel de jeu : ce qui compte selon la plateforme."}
+      ]
+    },
+    {
+      "slug": "actu-conseils",
+      "nom": "Actu & conseils",
+      "titre": "Actu & conseils : décryptages et chiffres sourcés",
+      "chapo": "Nouvelle réglementation, étude qui fait débat, promesse marketing à vérifier : nous décryptons l'actualité de la consommation en citant nos sources primaires, institutions et études à l'appui.",
+      "sous": []
+    }
+  ]
+}

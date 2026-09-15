@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-hidden="true">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#6B2E6E"/><stop offset="1" stop-color="#A45FA8"/></linearGradient></defs>
+<rect width="1200" height="800" fill="url(#g)"/><circle cx="414" cy="178" r="116" fill="#fff" opacity="0.19"/><circle cx="484" cy="489" r="230" fill="#fff" opacity="0.28"/><circle cx="284" cy="100" r="246" fill="#fff" opacity="0.10"/><circle cx="745" cy="359" r="152" fill="#fff" opacity="0.28"/><circle cx="614" cy="620" r="231" fill="#fff" opacity="0.24"/><circle cx="806" cy="233" r="115" fill="#fff" opacity="0.24"/>
+<text x="600" y="400" text-anchor="middle" dominant-baseline="central"
+ font-family="Georgia, serif" font-size="176" fill="#fff" opacity=".82">LMC</text>
+</svg>

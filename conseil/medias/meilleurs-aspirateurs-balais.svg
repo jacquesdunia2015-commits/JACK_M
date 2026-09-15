@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-hidden="true">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#6B2E6E"/><stop offset="1" stop-color="#A45FA8"/></linearGradient></defs>
+<rect width="1200" height="800" fill="url(#g)"/><circle cx="1100" cy="278" r="111" fill="#fff" opacity="0.10"/><circle cx="651" cy="690" r="147" fill="#fff" opacity="0.28"/><circle cx="141" cy="374" r="135" fill="#fff" opacity="0.24"/><circle cx="1055" cy="534" r="225" fill="#fff" opacity="0.10"/><circle cx="610" cy="605" r="73" fill="#fff" opacity="0.24"/><circle cx="410" cy="183" r="84" fill="#fff" opacity="0.19"/>
+<text x="600" y="400" text-anchor="middle" dominant-baseline="central"
+ font-family="Georgia, serif" font-size="176" fill="#fff" opacity=".82">LMA</text>
+</svg>

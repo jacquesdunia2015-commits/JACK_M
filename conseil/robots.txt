@@ -1,0 +1,9 @@
+# Choisir Simple
+User-agent: *
+Allow: /
+# Pages sans valeur d'indexation (§ 4.4 et § 4.6)
+Disallow: /JACK_M/conseil/recherche/
+Disallow: /JACK_M/conseil/go/
+Disallow: *?q=
+
+Sitemap: https://jacquesdunia2015-commits.github.io/JACK_M/conseil/sitemap.xml

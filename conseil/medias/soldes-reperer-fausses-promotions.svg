@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-hidden="true">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#6B2E6E"/><stop offset="1" stop-color="#A45FA8"/></linearGradient></defs>
+<rect width="1200" height="800" fill="url(#g)"/><circle cx="1051" cy="702" r="146" fill="#fff" opacity="0.24"/><circle cx="765" cy="236" r="135" fill="#fff" opacity="0.24"/><circle cx="614" cy="339" r="208" fill="#fff" opacity="0.15"/><circle cx="957" cy="246" r="144" fill="#fff" opacity="0.24"/><circle cx="382" cy="562" r="180" fill="#fff" opacity="0.19"/><circle cx="908" cy="173" r="150" fill="#fff" opacity="0.10"/>
+<text x="600" y="400" text-anchor="middle" dominant-baseline="central"
+ font-family="Georgia, serif" font-size="176" fill="#fff" opacity=".82">SEP</text>
+</svg>
