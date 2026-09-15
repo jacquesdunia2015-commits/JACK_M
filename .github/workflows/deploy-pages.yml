@@ -40,6 +40,14 @@ jobs:
             || { echo "::error::index.html ne référence pas le manifeste"; exit 1; }
           echo "Fichiers d'installation (PWA) présents."
 
+      - name: Vérifications automatiques
+        # Volontairement NON bloquant : pendant une collecte de terrain, une
+        # vérification en échec ne doit pas empêcher de publier un correctif
+        # urgent. Le résultat est visible dans le journal de l'action, et
+        # `node tests/tous.mjs` le redonne en local à tout moment.
+        continue-on-error: true
+        run: node tests/tous.mjs
+
       - name: Publication sur la branche gh-pages
         run: |
           git config user.name "github-actions[bot]"
