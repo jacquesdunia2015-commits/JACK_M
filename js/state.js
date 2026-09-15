@@ -64,6 +64,48 @@ let saveTimer = null;
 let onSavedCallback = null;
 export function setOnSaved(cb) { onSavedCallback = cb; }
 
+/**
+ * STOCKAGE PERSISTANT — protection des projets contre l'effacement.
+ *
+ * Par défaut, un navigateur considère les données d'un site comme jetables :
+ * il peut vider IndexedDB quand l'espace manque, et Safari sur iPhone efface
+ * celles d'un site NON INSTALLÉ après sept jours sans visite. Un travail de
+ * terrain — entretiens transcrits, codage de plusieurs semaines — disparaîtrait
+ * alors sans le moindre avertissement.
+ *
+ * `navigator.storage.persist()` demande au navigateur de traiter ces données
+ * comme durables. La réponse dépend du navigateur : Chrome l'accorde en
+ * silence à une application installée ou régulièrement utilisée, Firefox
+ * demande à l'utilisateur, Safari l'accorde à une application installée sur
+ * l'écran d'accueil.
+ *
+ * Renvoie { supporte, accorde } — l'appelant prévient l'utilisateur si le
+ * navigateur refuse, car il doit alors exporter son projet régulièrement.
+ */
+export async function demanderStockageDurable() {
+  try {
+    if (!navigator.storage || !navigator.storage.persist) {
+      return { supporte: false, accorde: false };
+    }
+    // Déjà accordé lors d'une visite précédente : rien à redemander.
+    if (await navigator.storage.persisted()) return { supporte: true, accorde: true };
+    return { supporte: true, accorde: await navigator.storage.persist() };
+  } catch {
+    return { supporte: false, accorde: false };
+  }
+}
+
+/** Espace occupé et disponible, pour l'écran de diagnostic. */
+export async function estimationStockage() {
+  try {
+    if (!navigator.storage || !navigator.storage.estimate) return null;
+    const e = await navigator.storage.estimate();
+    return { utilise: e.usage || 0, quota: e.quota || 0 };
+  } catch {
+    return null;
+  }
+}
+
 export function scheduleSave() {
   state.ui.dirty = true;
   clearTimeout(saveTimer);

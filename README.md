@@ -16,7 +16,7 @@ fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicale
 🆘 **Le site ne répond pas ?** → [INSTALLATION.md](INSTALLATION.md) (dépannage complet, hébergement alternatif, installation hors ligne).
 🖼️ **Schéma d'installation sur téléphone** (image à partager) : [assets/schemas/installation-telephone.png](assets/schemas/installation-telephone.png)
 📲 **Installer QualiCode** (icône sur le téléphone ou l'ordinateur, ouverture en un clic) : [installateurs/LISEZ-MOI.md](installateurs/LISEZ-MOI.md).
-🎁 **Accès libre jusqu'au 15 novembre 2026** : QualiCode s'utilise entièrement sans abonnement ni clé pendant cette période — toutes les fonctions sont ouvertes. Après cette date, l'essai gratuit de 5 jours démarre, puis l'abonnement s'applique. La bascule est automatique (`ACCES_LIBRE_JUSQU_AU` dans `js/license.js`).
+🎁 **Accès libre jusqu'au 31 mars 2027** : QualiCode s'utilise entièrement sans abonnement ni clé pendant cette période — toutes les fonctions sont ouvertes. Après cette date, l'essai gratuit de 5 jours démarre, puis l'abonnement s'applique. La bascule est automatique (`ACCES_LIBRE_JUSQU_AU` dans `js/license.js`).
 💰 **Commercialisation** : [COMMERCIALISATION.md](COMMERCIALISATION.md) (les 6 étapes, circuit de vente, contrôle des licences, gestion des clients) · [PRICING.md](PRICING.md) (tarifs, licences, paiements) · [MARKETING.md](MARKETING.md) (cibles, canaux, modèle économique).
 
 ## 🚀 Lancement

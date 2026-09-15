@@ -10,6 +10,7 @@ import {
   upsertMemo, getMemo,
   pushUndoSnapshot, undoAction, redoAction, canUndo, canRedo, clearUndoHistory,
   saveQuery, deleteQuery,
+  demanderStockageDurable, estimationStockage,
 } from "./state.js";
 import {
   searchDocuments, wordFrequencies, kwic, codeMatrix, coocMatrix,
@@ -97,6 +98,11 @@ async function init() {
   // Verrou d'application : mot de passe AVANT tout accès aux données
   await applockGate();
 
+  // Protéger les projets AVANT d'en charger ou d'en créer un : le navigateur
+  // doit savoir que ces données ne sont pas jetables. Voir
+  // demanderStockageDurable() dans state.js pour ce qui est réellement en jeu.
+  protegerLesDonnees();
+
   if (!(await loadPersisted())) {
     state.project = buildSampleProject();
     persistNow();
@@ -172,12 +178,15 @@ function renderAll() {
   $("#projectName").title = state.project.name;
 }
 
-function toast(msg) {
+// `duree` permet de laisser un message important à l'écran plus longtemps :
+// 2,6 s suffisent pour « enregistré », pas pour un avertissement que
+// l'utilisateur doit lire et comprendre.
+function toast(msg, duree = 2600) {
   const el = $("#toast");
   el.textContent = msg;
   el.hidden = false;
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => { el.hidden = true; }, 2600);
+  toast._t = setTimeout(() => { el.hidden = true; }, duree);
 }
 
 /* ================================================================
@@ -3245,6 +3254,27 @@ function openApplockModal() {
     el.textContent = text; el.hidden = false;
   }
   return m;
+}
+
+/**
+ * Demande au navigateur de ne pas effacer les projets, et prévient si c'est
+ * refusé. L'avertissement n'est montré qu'une fois : répété à chaque
+ * ouverture, il serait ignoré comme le reste.
+ */
+async function protegerLesDonnees() {
+  const r = await demanderStockageDurable();
+  if (r.accorde) return;
+
+  const DEJA_DIT = "qualicode.stockageAvertissement";
+  try { if (localStorage.getItem(DEJA_DIT)) return; } catch { /* sans conséquence */ }
+
+  // Le refus n'est pas une panne : beaucoup de navigateurs n'accordent le
+  // stockage durable qu'à une application installée. On dit donc quoi faire,
+  // pas seulement ce qui ne va pas.
+  setTimeout(() => {
+    toast("⚠️ " + t("storage_not_durable"), 12000);
+    try { localStorage.setItem(DEJA_DIT, "1"); } catch { /* sans conséquence */ }
+  }, 4000);
 }
 
 async function openLicenseModal() {

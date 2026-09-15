@@ -13,8 +13,8 @@
 | Ordinateur | ✅ installation avec icône, en ligne comme hors ligne |
 | Téléphone Android | ✅ installation confirmée |
 | iPhone / tablettes | ✅ prévu (Safari), même procédure |
-| **Accès libre** | 🎁 **en cours jusqu'au 15 novembre 2026** — tout est gratuit, aucune clé requise |
-| Essai + abonnements | ✅ 5 jours, puis jour/semaine/mois/an/à vie (à partir du 16 novembre 2026) |
+| **Accès libre** | 🎁 **en cours jusqu'au 31 mars 2027** — tout est gratuit, aucune clé requise |
+| Essai + abonnements | ✅ 5 jours, puis jour/semaine/mois/an/à vie (à partir du 1er avril 2027) |
 | Contrôle des licences | ✅ **clés verrouillées par appareil** (voir §3) |
 | Suivi des clients | ✅ `tools/gestion_clients.py` |
 | Documentation client | ✅ Guide, Manuel débutant, schéma d'installation |
@@ -22,7 +22,7 @@
 **Il ne manque rien de technique pour vendre.** Ce qui reste est commercial :
 publier, encaisser, faire connaître.
 
-> ⏳ **Mais ne vendez rien avant le 16 novembre 2026.** L'application est
+> ⏳ **Mais ne vendez rien avant le 1er avril 2027.** L'application est
 > actuellement en accès libre : encaisser un abonnement pour une période où le
 > logiciel est gratuit se retourne toujours contre le vendeur. Utilisez ces deux
 > mois pour installer, faire essayer, recueillir des témoignages et **collecter
