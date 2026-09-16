@@ -25,6 +25,16 @@ fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicale
 et ouvrez-le par **double-clic** — aucune installation, aucun serveur, fonctionne sans internet.
 (Régénérable à tout moment : `python3 tools/build_standalone.py`.)
 
+Pour livrer un fichier qui contient **déjà un projet** — utile quand le
+destinataire n'a ni bonne connexion ni aisance avec l'explorateur de fichiers :
+
+```bash
+QC_PROJET=chemin/vers/projet.projx python3 tools/build_standalone.py
+```
+
+Le projet est embarqué dans le fichier : au premier lancement il s'ouvre tout
+seul, et le bouton **Accueil ▸ Projet exemple** le recharge à tout moment.
+
 > Ce lien pointe vers le site publié, qui suit toujours la version déployée. Le
 > lien `raw/main` employé auparavant renvoyait vers la branche `main`, restée au
 > 11 juillet 2026 : il livrait une version périmée, antérieure à la période

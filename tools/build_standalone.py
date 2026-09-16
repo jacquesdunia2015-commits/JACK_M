@@ -47,6 +47,36 @@ def main() -> None:
         if leftover:
             raise SystemExit(f"Transformation incomplète dans {name}.js : {leftover.group(0)!r}")
         bundle.append(code)
+
+        # QC_PROJET=chemin.projx : embarque un projet dans le fichier.
+        #
+        # Motif : sur téléphone, ou avec une connexion difficile, « télécharger
+        # un .projx puis le retrouver dans l'explorateur de fichiers » est
+        # l'étape où l'on décroche. Un fichier unique qui contient déjà le
+        # projet supprime l'étape : on ouvre, le projet est là.
+        #
+        # L'injection se place APRÈS le module « sample » et avant « app », qui
+        # lit la fonction à son propre chargement. Au premier lancement (aucun
+        # projet enregistré) et sur le bouton « Projet exemple », c'est ce
+        # projet qui est chargé au lieu de l'exemple générique.
+        if name == "sample" and os.environ.get("QC_PROJET"):
+            chemin = Path(os.environ["QC_PROJET"])
+            if not chemin.is_absolute():
+                chemin = ROOT / chemin
+            projet = json.loads(chemin.read_text(encoding="utf-8"))
+            if projet.get("format") != "qualicode-projx":
+                raise SystemExit(f"{chemin} n'est pas un projet QualiCode (.projx)")
+            bundle.append(
+                '__QC["sample"].buildSampleProject = function () {\n'
+                '  return __QC["state"].normalizeProject('
+                + json.dumps(projet, ensure_ascii=False)
+                + ");\n};\n"
+            )
+            print(f"Projet embarqué : {chemin.name} — "
+                  f"{len(projet.get('documents', []))} documents, "
+                  f"{len(projet.get('codes', []))} codes, "
+                  f"{len(projet.get('segments', []))} segments")
+
     js = "\n".join(bundle)
 
     html = (ROOT / "index.html").read_text(encoding="utf-8")
