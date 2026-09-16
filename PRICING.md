@@ -4,9 +4,9 @@
 
 ## 0. Période d'accès libre en cours
 
-**Jusqu'au 31 mars 2027, QualiCode est offert.** Aucune clé, aucun paiement :
+**Jusqu'au 31 décembre 2027, QualiCode est offert.** Aucune clé, aucun paiement :
 toutes les fonctions sont ouvertes pour tout le monde. Les tarifs de ce document
-ne s'appliqueront qu'à partir du 1er avril 2027.
+ne s'appliqueront qu'à partir du 1er janvier 2028.
 
 Ce que cela change pour la vente :
 
