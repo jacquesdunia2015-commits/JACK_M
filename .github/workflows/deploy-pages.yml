@@ -1,9 +1,10 @@
 # Déploie QualiCode sur GitHub Pages.
-# L'application est 100 % statique : le contenu du dépôt est publié tel quel
-# sur la branche gh-pages (GitHub Pages se configure automatiquement sur
-# cette branche pour les dépôts publics).
 #
-# L'adresse publiée est la SEULE voie possible pour installer QualiCode comme
+# L'application est 100 % statique : le contenu du dépôt est publié tel quel sur
+# la branche gh-pages, que GitHub Pages sert à l'adresse
+# https://jacquesdunia2015-commits.github.io/JACK_M/
+#
+# Cette adresse est la SEULE voie possible pour installer QualiCode comme
 # application (icône sur l'écran d'accueil) : les navigateurs refusent
 # d'installer un fichier .html ouvert localement. La branche de développement
 # est donc publiée elle aussi, pour que le site reflète la version courante.
@@ -31,14 +32,30 @@ jobs:
       - name: Vérification des fichiers indispensables à l'installation
         run: |
           set -e
-          for f in index.html manifest.webmanifest sw.js \
+          for f in index.html manifest.webmanifest sw.js 404.html \
+                   css/style.css js/app.js \
                    assets/logo/qualicode-icon-192.png \
                    assets/logo/qualicode-icon-512.png; do
             test -f "$f" || { echo "::error::Fichier manquant : $f"; exit 1; }
           done
           grep -q 'rel="manifest"' index.html \
             || { echo "::error::index.html ne référence pas le manifeste"; exit 1; }
+          grep -q 'js/app.js' index.html \
+            || { echo "::error::index.html ne charge pas l'application"; exit 1; }
           echo "Fichiers d'installation (PWA) présents."
+
+      # Garde-fou : ce site est public. MediStat contient des données médicales
+      # de démonstration et n'a rien à faire sur l'adresse de QualiCode ; la
+      # publier une fois par accident a suffi. Mieux vaut ne rien déployer que
+      # de déployer ce qui ne doit pas l'être.
+      - name: Refus de publier autre chose que QualiCode
+        run: |
+          set -e
+          if [ -e medistat ]; then
+            echo "::error::medistat/ est présent dans l'arborescence : publication refusée."
+            exit 1
+          fi
+          echo "Arborescence conforme : QualiCode seul."
 
       - name: Vérifications automatiques
         # Volontairement NON bloquant : pendant une collecte de terrain, une
@@ -47,6 +64,34 @@ jobs:
         # `node tests/tous.mjs` le redonne en local à tout moment.
         continue-on-error: true
         run: node tests/tous.mjs
+
+      # L'empreinte s'affiche dans la barre d'état de l'application et dans le
+      # rapport de diagnostic. Sans elle, « la nouveauté n'est pas là » est
+      # indiscernable de « mon navigateur me montre une page en cache ».
+      - name: Inscription de la version publiée dans la page
+        run: |
+          set -e
+          court="$(printf '%s' "${GITHUB_SHA}" | cut -c1-7)"
+          test -n "$court" || { echo "::error::GITHUB_SHA absent"; exit 1; }
+          empreinte="$court · $(date -u '+%d/%m/%Y %H:%M') UTC"
+          python3 - "$empreinte" <<'PY'
+          import sys, pathlib, re
+          empreinte = sys.argv[1]
+          p = pathlib.Path("index.html")
+          s = p.read_text(encoding="utf-8")
+          neuf, n = re.subn(r'(<meta name="qc-version" content=")[^"]*(">)',
+                            lambda m: m.group(1) + empreinte + m.group(2), s, count=1)
+          if n != 1:
+              sys.exit("::error::balise qc-version introuvable dans index.html")
+          p.write_text(neuf, encoding="utf-8")
+          print("Version publiée :", empreinte)
+          PY
+
+      # Outils réservés au vendeur : le générateur de clés porte le secret de
+      # signature, le registre suit les clients. Ils n'ont aucune raison d'être
+      # servis par le site public.
+      - name: Retrait des outils réservés au vendeur
+        run: rm -f tools/generer_cle.py tools/gestion_clients.py clients.json
 
       - name: Publication sur la branche gh-pages
         run: |

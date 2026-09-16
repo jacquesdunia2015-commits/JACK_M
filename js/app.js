@@ -3350,7 +3350,21 @@ async function openLicenseModal() {
 /* ================================================================
    Barre d'état
 ================================================================ */
+/**
+ * Version publiée, telle qu'elle est inscrite dans la page au déploiement.
+ *
+ * Sans elle, impossible de distinguer « le site n'a pas été mis à jour » de
+ * « mon navigateur me montre une page en cache » — deux problèmes différents
+ * qui se règlent de deux manières différentes.
+ */
+export function versionPubliee() {
+  const meta = document.querySelector('meta[name="qc-version"]');
+  const v = (meta && meta.content || "").trim();
+  return v && v !== "dev" ? v : "";
+}
+
 function renderStatus() {
+  $("#statusVersion").textContent = versionPubliee() ? "⟳ " + versionPubliee() : "";
   $("#statusDocs").textContent = `📄 ${state.project.documents.length} ${t("docs")}`;
   $("#statusCodes").textContent = `🏷️ ${state.project.codes.length} ${t("codes_lbl")}`;
   $("#statusSegments").textContent = `✂️ ${state.project.segments.length} ${t("segments_lbl")}`;
