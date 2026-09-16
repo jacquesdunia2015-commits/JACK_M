@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QualiCode — vérifications en navigateur réel</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 24px 18px 60px; line-height: 1.5; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sous { color: #666; font-size: 14px; margin-top: 0; }
+  h2 { font-size: 15px; margin: 26px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #ccc; }
+  .v { display: flex; gap: 8px; padding: 3px 0; font-size: 14px; align-items: baseline; }
+  .v .m { flex: none; width: 1.2em; font-weight: bold; }
+  .ok .m { color: #15803d; } .ko .m { color: #b91c1c; } .info .m { color: #64748b; }
+  .avert .m { color: #b45309; }
+  .ko { color: #b91c1c; } .avert { color: #b45309; }
+  .detail { font-size: 12.5px; color: #64748b; margin-left: 1.9em; white-space: pre-wrap; }
+  #bilan { position: sticky; top: 0; background: Canvas; padding: 10px 0; font-weight: bold;
+           font-size: 16px; border-bottom: 2px solid #ccc; z-index: 2; }
+  .vert { color: #15803d; } .rouge { color: #b91c1c; }
+  .note { background: #fef9c3; color: #713f12; border-left: 4px solid #eab308;
+          padding: 10px 14px; border-radius: 4px; font-size: 13.5px; }
+  @media (prefers-color-scheme: dark) { .note { background: #3f3413; color: #fde68a; } .sous, .detail { color: #94a3b8; } }
+  button { font: inherit; padding: 6px 14px; border-radius: 6px; border: 1px solid #94a3b8;
+           background: transparent; color: inherit; cursor: pointer; }
+  iframe { width: 100%; height: 320px; border: 1px solid #94a3b8; border-radius: 6px; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<h1>QualiCode — vérifications en navigateur réel</h1>
+<p class="sous">Ce que Node ne peut pas vérifier : la vraie base IndexedDB, le vrai
+analyseur XML, le vrai chiffrement du navigateur. Complément de
+<code>node tests/tous.mjs</code>.</p>
+
+<div class="note">
+  <strong>Cette page ne touche pas à vos projets.</strong> Elle travaille dans une base
+  d'essai séparée (<code>qualicode-tests</code>), qu'elle supprime en terminant. Vos
+  projets ne sont que <em>lus</em>, pour vérifier qu'ils sont bien là.
+  <br><br>
+  Elle doit être ouverte depuis un serveur (comme l'application elle-même), et non par
+  double-clic : <code>python3 -m http.server</code> dans le dossier de QualiCode, puis
+  <code>http://localhost:8000/tests/navigateur.html</code>.
+</div>
+
+<div id="bilan">Vérifications en cours…</div>
+<div id="sortie"></div>
+
+<h2>Test de démarrage complet (facultatif)</h2>
+<p class="sous">Charge l'application entière dans un cadre et vérifie qu'elle s'ouvre
+sans erreur. Comme l'application véritable, elle lira vos projets existants.</p>
+<button id="lancerDemarrage">Lancer le test de démarrage</button>
+<div id="sortieDemarrage"></div>
+
+<script type="module">
+const sortie = document.getElementById("sortie");
+let reussis = 0, echoues = 0, avertissements = 0;
+
+function ligne(cible, classe, marque, nom, detail) {
+  const d = document.createElement("div");
+  d.className = "v " + classe;
+  d.innerHTML = `<span class="m">${marque}</span><span></span>`;
+  d.lastElementChild.textContent = nom;
+  cible.appendChild(d);
+  if (detail) {
+    const e = document.createElement("div");
+    e.className = "detail";
+    e.textContent = detail;
+    cible.appendChild(e);
+  }
+}
+const verifier = (nom, condition, detail = "") => {
+  if (condition) { reussis++; ligne(sortie, "ok", "✓", nom); }
+  else { echoues++; ligne(sortie, "ko", "✗", nom, detail); }
+  return !!condition;
+};
+const egal = (nom, obtenu, attendu) =>
+  verifier(nom, Object.is(obtenu, attendu), `attendu : ${JSON.stringify(attendu)}\nobtenu  : ${JSON.stringify(obtenu)}`);
+/* Un avertissement ne dit pas que QualiCode est en panne : il dit que ce
+   navigateur-ci, tel qu'il est réglé, expose les données à un risque. Le
+   mélanger aux échecs ferait passer pour un défaut du logiciel ce qui se
+   corrige en installant l'application. */
+const avertir = (nom, condition, detail = "") => {
+  if (condition) { reussis++; ligne(sortie, "ok", "✓", nom); }
+  else { avertissements++; ligne(sortie, "avert", "⚠", nom, detail); }
+  return !!condition;
+};
+const info = texte => ligne(sortie, "info", "·", texte);
+const titre = texte => { const h = document.createElement("h2"); h.textContent = texte; sortie.appendChild(h); };
+
+function majBilan() {
+  const b = document.getElementById("bilan");
+  const suffixe = avertissements ? ` · ${avertissements} avertissement(s)` : "";
+  b.className = echoues ? "rouge" : (avertissements ? "" : "vert");
+  b.textContent = echoues
+    ? `${reussis} vérifications réussies, ${echoues} en échec${suffixe}`
+    : `${reussis} vérifications réussies — tout est au vert${suffixe}`;
+}
+
+try {
+  /* ============ Chargement des modules réels ============ */
+  const S = await import("../js/state.js");
+  const { buildRefiQdpx, importRefiQdpx } = await import("../js/refi.js");
+  const { encryptProjectJson, decryptProjectEnvelope, isEncryptedEnvelope } = await import("../js/crypto.js");
+  const { buildSampleProject } = await import("../js/sample.js");
+  const { flatCodes } = await import("../js/analysis.js");
+
+  /* ============ 1. Vos projets sont-ils là ? ============ */
+  titre("Vos projets, tels qu'ils sont enregistrés sur cet appareil");
+  const mesProjets = S.listProjects();
+  info(`${mesProjets.length} projet(s) dans la bibliothèque de cet appareil.`);
+  let lisibles = 0, illisibles = [];
+  for (const e of mesProjets) {
+    const p = await S.loadProjectById(e.id);
+    if (p && p.format === "qualicode-projx") lisibles++;
+    else illisibles.push(e.name);
+  }
+  verifier(`vos ${mesProjets.length} projet(s) se relisent sans erreur`,
+    illisibles.length === 0, "illisibles : " + illisibles.join(", "));
+  for (const e of mesProjets.slice(0, 8)) {
+    info(`« ${e.name} » — ${e.documents} document(s), ${e.codes} code(s), ${e.segments} segment(s), modifié le ${new Date(e.modified).toLocaleString()}`);
+  }
+
+  /* ============ 2. Stockage durable ============ */
+  titre("Ce navigateur protège-t-il vos données ?");
+  if (navigator.storage && navigator.storage.persisted) {
+    const durable = await navigator.storage.persisted();
+    avertir("le stockage est marqué durable (vos projets ne seront pas effacés pour faire de la place)",
+      durable, "Installez QualiCode depuis le bouton 📲 : c'est ce qui obtient ce statut, et sur iPhone ce qui empêche l'effacement au bout de sept jours d'inactivité.");
+  } else info("Ce navigateur n'expose pas l'API de stockage durable.");
+  if (navigator.storage && navigator.storage.estimate) {
+    const e = await navigator.storage.estimate();
+    info(`Espace utilisé : ${(e.usage / 1048576).toFixed(1)} Mo sur ${(e.quota / 1048576).toFixed(0)} Mo disponibles.`);
+  }
+
+  /* ============ 3. Aller-retour dans une vraie IndexedDB ============ */
+  titre("Écriture et relecture dans une vraie base IndexedDB");
+  const BASE_ESSAI = "qualicode-tests";
+  const ouvrirEssai = () => new Promise((res, rej) => {
+    const rq = indexedDB.open(BASE_ESSAI, 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore("projects");
+    rq.onsuccess = () => res(rq.result);
+    rq.onerror = () => rej(rq.error);
+  });
+  const ecrire = (db, cle, valeur) => new Promise((res, rej) => {
+    const tx = db.transaction("projects", "readwrite");
+    tx.objectStore("projects").put(valeur, cle);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+  const relire = (db, cle) => new Promise((res, rej) => {
+    const rq = db.transaction("projects").objectStore("projects").get(cle);
+    rq.onsuccess = () => res(rq.result ?? null);
+    rq.onerror = () => rej(rq.error);
+  });
+
+  // Un projet construit par les vraies fonctions de QualiCode.
+  const avant = S.state.project;
+  S.state.project = S.emptyProject("Projet d'essai");
+  S.clearUndoHistory();
+  const texteLong = "Paragraphe d'entretien. ".repeat(2000); // ≈ 46 000 caractères
+  const d1 = S.addDocument("Entretien d'essai", texteLong + "\nFin de l'entretien accentué : élève, garçon, œuf.");
+  d1.variables = { sexe: "Femme", âge: "34" };
+  const c1 = S.addCode("Code parent");
+  const c2 = S.addCode("Sous-code", c1.id);
+  for (let i = 0; i < 500; i++) S.addSegment(d1.id, i % 2 ? c1.id : c2.id, i * 20, i * 20 + 15, texteLong.slice(i * 20, i * 20 + 15));
+  const projetEssai = S.state.project;
+  S.state.project = avant; // on ne touche pas au projet réellement ouvert
+
+  const db = await ouvrirEssai();
+  const t0 = performance.now();
+  await ecrire(db, projetEssai.id, projetEssai);
+  const duree = performance.now() - t0;
+  const relu = await relire(db, projetEssai.id);
+  verifier("le projet est relu depuis la base", !!relu);
+  egal("le texte long est intact", relu.documents[0].text.length, projetEssai.documents[0].text.length);
+  verifier("les accents et caractères spéciaux survivent",
+    relu.documents[0].text.endsWith("élève, garçon, œuf."));
+  egal("les 500 segments sont relus", relu.segments.length, 500);
+  egal("les variables du document sont relues", relu.documents[0].variables.âge, "34");
+  egal("la hiérarchie des codes est relue", relu.codes[1].parentId, relu.codes[0].id);
+  verifier(`l'écriture d'un corpus de ${(JSON.stringify(projetEssai).length / 1e6).toFixed(1)} Mo prend ${duree.toFixed(0)} ms`,
+    duree < 5000, `durée mesurée : ${duree.toFixed(0)} ms`);
+
+  // Le clonage structuré du navigateur, et non JSON : une modification
+  // ultérieure de l'objet en mémoire ne doit pas atteindre la base.
+  projetEssai.name = "Renommé après coup";
+  const relu2 = await relire(db, projetEssai.id);
+  egal("ce qui est écrit est une copie indépendante", relu2.name, "Projet d'essai");
+
+  /* ============ 4. Aller-retour REFI-QDA complet ============ */
+  titre("Aller-retour REFI-QDA (.qdpx) — le format que lisent MAXQDA et NVivo");
+  projetEssai.name = "Projet d'essai";
+  projetEssai.memo = "Mémo de projet & essai <balise>.";
+  projetEssai.variables = ["sexe", "âge"];
+  const archive = buildRefiQdpx(projetEssai);
+  verifier("l'archive est produite", archive instanceof Blob && archive.size > 0);
+  info(`Taille de l'archive : ${(archive.size / 1024).toFixed(0)} ko.`);
+
+  const { project: reimporte, stats } = await importRefiQdpx(await archive.arrayBuffer());
+  egal("le nom du projet revient", reimporte.name, "Projet d'essai");
+  egal("le document revient", stats.documents, 1);
+  egal("les deux codes reviennent", stats.codes, 2);
+  egal("les 500 codages reviennent", stats.segments, 500);
+  egal("le texte du document est identique au caractère près",
+    reimporte.documents[0].text, projetEssai.documents[0].text);
+  verifier("la hiérarchie des codes est reconstituée",
+    reimporte.codes.some(c => c.name === "Sous-code" && c.parentId),
+    JSON.stringify(reimporte.codes.map(c => [c.name, c.parentId])));
+  egal("la variable est réattachée au document", reimporte.documents[0].variables.sexe, "Femme");
+  verifier("le mémo de projet revient", reimporte.memo.includes("Mémo de projet & essai <balise>."));
+
+  // Le point le plus fragile : les bornes de codage après l'aller-retour.
+  const avantTries = [...projetEssai.segments].sort((a, b) => a.start - b.start);
+  const apresTries = [...reimporte.segments].sort((a, b) => a.start - b.start);
+  const decales = apresTries.filter((s, i) =>
+    s.start !== avantTries[i].start || s.end !== avantTries[i].end);
+  verifier("aucune borne de codage n'a bougé", decales.length === 0,
+    decales.slice(0, 3).map(s => `${s.start}–${s.end}`).join(", "));
+  const fautifs = apresTries.filter(s => s.text !== reimporte.documents[0].text.slice(s.start, s.end));
+  verifier("chaque citation réimportée correspond bien à son passage", fautifs.length === 0);
+
+  /* ============ 5. Chiffrement d'un projet ============ */
+  titre("Chiffrement d'un projet par mot de passe");
+  const clair = JSON.stringify({ format: "qualicode-projx", name: "Secret", documents: [], codes: [], segments: [] });
+  const enveloppe = await encryptProjectJson(clair, "mot-de-passe-du-terrain");
+  verifier("l'enveloppe est reconnue comme chiffrée", isEncryptedEnvelope(enveloppe));
+  verifier("le contenu n'apparaît pas en clair dans l'enveloppe",
+    !JSON.stringify(enveloppe).includes("Secret"));
+  const dechiffre = await decryptProjectEnvelope(enveloppe, "mot-de-passe-du-terrain");
+  egal("le bon mot de passe restitue le projet exact", dechiffre, clair);
+  let refus = false;
+  try { await decryptProjectEnvelope(enveloppe, "mauvais-mot-de-passe"); } catch { refus = true; }
+  verifier("un mauvais mot de passe est refusé", refus);
+
+  /* ============ 6. Projet de démonstration ============ */
+  titre("Projet de démonstration (ce que voit un nouvel utilisateur)");
+  const demo = buildSampleProject();
+  verifier("il contient des documents", demo.documents.length > 0);
+  verifier("il contient un système de codes", demo.codes.length > 0);
+  verifier("il contient des passages déjà codés", demo.segments.length > 0);
+  const orphelins = demo.segments.filter(s =>
+    !demo.codes.some(c => c.id === s.codeId) || !demo.documents.some(d => d.id === s.docId));
+  verifier("aucun codage ne pointe dans le vide", orphelins.length === 0);
+  const horsTexte = demo.segments.filter(s => {
+    const d = demo.documents.find(x => x.id === s.docId);
+    return s.start < 0 || s.end > d.text.length || s.end <= s.start;
+  });
+  verifier("aucun codage ne déborde de son document", horsTexte.length === 0);
+  const avantPlat = S.state.project;
+  S.state.project = demo;
+  verifier("l'arbre des codes s'aplatit sans boucle infinie", flatCodes().length >= demo.codes.length);
+  S.state.project = avantPlat;
+
+  /* ============ Ménage ============ */
+  db.close();
+  await new Promise(res => { const rq = indexedDB.deleteDatabase(BASE_ESSAI); rq.onsuccess = rq.onerror = rq.onblocked = res; });
+  titre("Ménage");
+  verifier("la base d'essai a été supprimée", true);
+
+} catch (e) {
+  echoues++;
+  ligne(sortie, "ko", "✗", "Une vérification a interrompu la suite : " + e.message, e.stack);
+}
+
+majBilan();
+
+/* ============ Démarrage complet, sur demande ============ */
+document.getElementById("lancerDemarrage").addEventListener("click", e => {
+  e.target.disabled = true;
+  const zone = document.getElementById("sortieDemarrage");
+  zone.textContent = "";
+  const cadre = document.createElement("iframe");
+  cadre.src = "../index.html";
+  zone.appendChild(cadre);
+  const erreurs = [];
+  const controle = () => {
+    const doc = cadre.contentDocument;
+    const gagne = c => !!(doc && doc.querySelector(c));
+    const rempli = c => { const el = doc && doc.querySelector(c); return !!el && el.children.length > 0; };
+    const lignes = [
+      ["la page se charge", !!doc && !!doc.body],
+      ["le bandeau de l'application est présent", gagne(".app-brand")],
+      ["les quatre panneaux sont en place",
+        ["#panel-docs", "#panel-codes", "#panel-browser"].every(gagne)],
+      ["la liste des documents est affichée", gagne("#docTree")],
+      ["elle contient au moins un document", rempli("#docTree")],
+      ["le système de codes est affiché", gagne("#codeTree")],
+      ["il contient au moins un code", rempli("#codeTree")],
+      ["aucun écran de licence ne bloque l'accès (période libre)",
+        !doc.querySelector(".modal-overlay")],
+      ["aucune clé de traduction brute n'est affichée",
+        !/\b(?:lic|ai|panel|btn|grp)_[a-z0-9_]{3,}\b/.test(doc.body.innerText || "")],
+      ["aucune erreur JavaScript au démarrage", erreurs.length === 0],
+    ];
+    for (const [nom, ok] of lignes) ligne(zone, ok ? "ok" : "ko", ok ? "✓" : "✗", nom,
+      ok ? "" : erreurs.join("\n"));
+  };
+  // Les erreurs doivent être écoutées AVANT que les scripts du cadre ne
+  // s'exécutent : posées après « load », elles arriveraient trop tard.
+  const brancher = () => {
+    try { cadre.contentWindow.addEventListener("error", ev => erreurs.push(ev.message)); } catch { /* pas encore accessible */ }
+  };
+  brancher();
+  cadre.addEventListener("load", () => {
+    brancher();
+    // On attend que l'application ait fini de peupler ses panneaux plutôt que
+    // de parier sur un délai fixe : un téléphone lent mettra plus de temps
+    // qu'un ordinateur, et un délai trop court ferait échouer un test sain.
+    const limite = Date.now() + 15000;
+    const attendre = () => {
+      const doc = cadre.contentDocument;
+      const pret = doc && doc.querySelector("#docTree") && doc.querySelector("#docTree").children.length > 0;
+      if (pret || Date.now() > limite) controle();
+      else setTimeout(attendre, 400);
+    };
+    setTimeout(attendre, 600);
+  });
+});
+</script>
+</body>
+</html>

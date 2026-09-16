@@ -1,0 +1,151 @@
+<!-- Source du schéma d'installation sur téléphone.
+     Rendu en image : node tools/faire_schema.js  →  installation-telephone.png -->
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1080px; font-family: "DejaVu Sans", "Segoe UI", Arial, sans-serif;
+    color: #1c2b3a; background: #f4f6f9;
+  }
+  .page { padding: 34px 38px 30px; }
+  header { text-align: center; margin-bottom: 24px; }
+  .logo { width: 82px; height: 82px; border-radius: 20px; }
+  h1 { font-size: 38px; color: #17334f; margin: 12px 0 4px; }
+  .sub { font-size: 20px; color: #5a6b7a; }
+
+  .etape {
+    background: #fff; border: 2px solid #cfdce8; border-radius: 16px;
+    padding: 20px 24px; margin-bottom: 16px; position: relative;
+  }
+  .num {
+    position: absolute; left: -14px; top: -14px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #2660a4; color: #fff; font-size: 27px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,.2);
+  }
+  .etape h2 { font-size: 26px; color: #17334f; margin: 0 0 10px 44px; }
+  .etape p, .etape li { font-size: 20px; line-height: 1.5; }
+  .adresse {
+    background: #eef3f8; border: 2px dashed #7fa8cf; border-radius: 10px;
+    padding: 12px 16px; font-size: 21px; text-align: center; margin: 10px 0;
+    word-break: break-all; color: #17334f; font-weight: 600;
+  }
+  .danger {
+    background: #fdecea; border-left: 7px solid #d64545; border-radius: 0 10px 10px 0;
+    padding: 14px 18px; margin-top: 12px; font-size: 20px; line-height: 1.45;
+  }
+  .astuce {
+    background: #fdf6e6; border-left: 7px solid #e8a33f; border-radius: 0 10px 10px 0;
+    padding: 14px 18px; margin-top: 12px; font-size: 19px; line-height: 1.45;
+  }
+  .deux { display: flex; gap: 16px; }
+  .col {
+    flex: 1; background: #fff; border-radius: 16px; padding: 18px 20px;
+    border: 2px solid #cfdce8;
+  }
+  .col.android { border-color: #3ba55d; }
+  .col.iphone { border-color: #2660a4; }
+  .col h3 { font-size: 24px; margin-bottom: 10px; }
+  .col.android h3 { color: #2e8049; }
+  .col.iphone h3 { color: #17334f; }
+  .col ol { margin-left: 24px; }
+  .col li { font-size: 19px; line-height: 1.45; margin-bottom: 7px; }
+  .touche {
+    display: inline-block; background: #17334f; color: #fff; border-radius: 8px;
+    padding: 1px 11px; font-weight: 700; font-size: 20px;
+  }
+  .resultat {
+    background: #e8f5ec; border: 2px solid #3ba55d; border-radius: 16px;
+    padding: 20px 24px; text-align: center; margin-top: 16px;
+  }
+  .resultat h2 { font-size: 27px; color: #2e8049; margin-bottom: 6px; }
+  .resultat p { font-size: 20px; }
+  .bas {
+    margin-top: 16px; background: #17334f; color: #fff; border-radius: 14px;
+    padding: 18px 22px; font-size: 19px; line-height: 1.5;
+  }
+  .bas b { color: #ffd479; }
+  .fleche { text-align: center; font-size: 30px; color: #7fa8cf; margin: -6px 0 8px; }
+</style>
+<div class="page">
+  <header>
+    <img class="logo" src="ICONE">
+    <h1>Installer QualiCode sur votre téléphone</h1>
+    <div class="sub">3 étapes · une seule fois · ensuite ça marche sans internet</div>
+  </header>
+
+  <div class="etape">
+    <div class="num">1</div>
+    <h2>Ouvrir l'adresse dans le VRAI navigateur</h2>
+    <div class="adresse">ADRESSE</div>
+    <p>Tapez ou collez cette adresse directement dans <b>Chrome</b> (Android)
+       ou <b>Safari</b> (iPhone).</p>
+    <div class="danger">
+      ⛔ <b>Ne touchez pas le lien depuis WhatsApp.</b> WhatsApp l'ouvre dans son
+      mini-navigateur, qui <b>ne peut rien installer</b>.<br>
+      Si c'est déjà fait : dans QualiCode, touchez <span class="touche">📲</span>
+      puis <b>« 🌐 Ouvrir dans Chrome »</b>.
+    </div>
+  </div>
+
+  <div class="fleche">▼</div>
+
+  <div class="etape">
+    <div class="num">2</div>
+    <h2>Laisser la page se charger, puis recharger une fois</h2>
+    <p>Attendez que QualiCode s'affiche complètement, puis <b>rechargez la page</b>
+       (tirez l'écran vers le bas). C'est ce deuxième chargement qui prépare le
+       mode hors ligne.</p>
+  </div>
+
+  <div class="fleche">▼</div>
+
+  <div class="etape" style="padding-bottom: 14px">
+    <div class="num">3</div>
+    <h2>Installer depuis le menu du navigateur</h2>
+    <div class="deux">
+      <div class="col android">
+        <h3>🤖 Android</h3>
+        <ol>
+          <li>Touchez <span class="touche">⋮</span> en haut à droite</li>
+          <li>Choisissez <b>« Installer l'application »</b><br>
+              (ou « Ajouter à l'écran d'accueil »)</li>
+          <li>Confirmez</li>
+        </ol>
+        <div class="astuce">Samsung Internet : menu <b>☰</b> en bas → « Ajouter
+          la page à » → « Écran d'accueil ».<br>
+          ⚠️ Il n'y a <b>pas</b> de bouton ⬆️ sur Android.</div>
+      </div>
+      <div class="col iphone">
+        <h3>🍎 iPhone / iPad</h3>
+        <ol>
+          <li>Ouvrez l'adresse <b>dans Safari</b></li>
+          <li>Touchez <span class="touche">⬆️</span> en bas de l'écran</li>
+          <li>Faites défiler → <b>« Sur l'écran d'accueil »</b></li>
+        </ol>
+        <div class="astuce">⚠️ Sur iPhone, <b>seul Safari</b> peut installer —
+          même Chrome ne le peut pas (règle d'Apple).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="resultat">
+    <h2>✅ L'icône QualiCode est sur votre écran d'accueil</h2>
+    <p>Elle s'ouvre en plein écran, en un seul toucher, et <b>fonctionne sans
+       connexion</b>. Vos données restent sur votre téléphone.</p>
+  </div>
+
+  <div class="bas">
+    <b>Ça ne marche pas ?</b> Dans QualiCode, touchez <b>📲</b> en haut de l'écran,
+    puis <b>🔍 Vérifier maintenant</b> : l'application teste chaque condition et
+    vous dit précisément laquelle manque. Le bouton <b>📋 Copier le diagnostic</b>
+    prépare un rapport à envoyer.<br>
+    <b>Rappel :</b> l'installation n'est qu'un confort — le fichier
+    <b>QualiCode.html</b> ouvert depuis « Fichiers » offre exactement les mêmes
+    fonctions.
+  </div>
+</div>
+</html>

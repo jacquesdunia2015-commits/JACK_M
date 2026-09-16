@@ -1,0 +1,109 @@
+# Déploie QualiCode sur GitHub Pages.
+#
+# L'application est 100 % statique : le contenu du dépôt est publié tel quel sur
+# la branche gh-pages, que GitHub Pages sert à l'adresse
+# https://jacquesdunia2015-commits.github.io/JACK_M/
+#
+# Cette adresse est la SEULE voie possible pour installer QualiCode comme
+# application (icône sur l'écran d'accueil) : les navigateurs refusent
+# d'installer un fichier .html ouvert localement. La branche de développement
+# est donc publiée elle aussi, pour que le site reflète la version courante.
+name: Déploiement GitHub Pages
+
+on:
+  push:
+    branches: [main, claude/app-from-uploads-gimlun]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Vérification des fichiers indispensables à l'installation
+        run: |
+          set -e
+          for f in index.html manifest.webmanifest sw.js 404.html \
+                   css/style.css js/app.js \
+                   assets/logo/qualicode-icon-192.png \
+                   assets/logo/qualicode-icon-512.png; do
+            test -f "$f" || { echo "::error::Fichier manquant : $f"; exit 1; }
+          done
+          grep -q 'rel="manifest"' index.html \
+            || { echo "::error::index.html ne référence pas le manifeste"; exit 1; }
+          grep -q 'js/app.js' index.html \
+            || { echo "::error::index.html ne charge pas l'application"; exit 1; }
+          echo "Fichiers d'installation (PWA) présents."
+
+      # Garde-fou : ce site est public, et deux dossiers n'ont rien à y faire.
+      # MediStat contient des données médicales de démonstration — l'avoir
+      # publié une fois par accident a suffi. memoire-ngoma/ contient le
+      # matériel d'exercice d'un travail de recherche non soutenu : présent
+      # dans le dépôt à la demande de son auteur, il n'a pas à être servi par
+      # l'adresse publique de l'application. Mieux vaut ne rien déployer que
+      # de déployer ce qui ne doit pas l'être.
+      - name: Refus de publier autre chose que QualiCode
+        run: |
+          set -e
+          for interdit in medistat memoire-ngoma; do
+            if [ -e "$interdit" ]; then
+              echo "::error::$interdit/ est présent dans l'arborescence : publication refusée."
+              exit 1
+            fi
+          done
+          echo "Arborescence conforme : QualiCode seul."
+
+      - name: Vérifications automatiques
+        # Volontairement NON bloquant : pendant une collecte de terrain, une
+        # vérification en échec ne doit pas empêcher de publier un correctif
+        # urgent. Le résultat est visible dans le journal de l'action, et
+        # `node tests/tous.mjs` le redonne en local à tout moment.
+        continue-on-error: true
+        run: node tests/tous.mjs
+
+      # L'empreinte s'affiche dans la barre d'état de l'application et dans le
+      # rapport de diagnostic. Sans elle, « la nouveauté n'est pas là » est
+      # indiscernable de « mon navigateur me montre une page en cache ».
+      - name: Inscription de la version publiée dans la page
+        run: |
+          set -e
+          court="$(printf '%s' "${GITHUB_SHA}" | cut -c1-7)"
+          test -n "$court" || { echo "::error::GITHUB_SHA absent"; exit 1; }
+          empreinte="$court · $(date -u '+%d/%m/%Y %H:%M') UTC"
+          python3 - "$empreinte" <<'PY'
+          import sys, pathlib, re
+          empreinte = sys.argv[1]
+          p = pathlib.Path("index.html")
+          s = p.read_text(encoding="utf-8")
+          neuf, n = re.subn(r'(<meta name="qc-version" content=")[^"]*(">)',
+                            lambda m: m.group(1) + empreinte + m.group(2), s, count=1)
+          if n != 1:
+              sys.exit("::error::balise qc-version introuvable dans index.html")
+          p.write_text(neuf, encoding="utf-8")
+          print("Version publiée :", empreinte)
+          PY
+
+      # Outils réservés au vendeur : le générateur de clés porte le secret de
+      # signature, le registre suit les clients. Ils n'ont aucune raison d'être
+      # servis par le site public.
+      - name: Retrait des outils réservés au vendeur
+        run: rm -f tools/generer_cle.py tools/gestion_clients.py clients.json
+
+      - name: Publication sur la branche gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          touch .nojekyll
+          git checkout --orphan gh-pages
+          git add -A
+          git commit -m "Déploiement de QualiCode (${GITHUB_SHA})"
+          git push --force origin gh-pages

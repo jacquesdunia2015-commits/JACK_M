@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="QualiCode">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#17334f"/>
+      <stop offset="1" stop-color="#3a7ca5"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.3" cy="0.2" r="0.9">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Fond d'icône (carré arrondi, dégradé bleu profond) -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#glow)"/>
+
+  <!-- Le « Q » : bulle de dialogue des entretiens -->
+  <circle cx="250" cy="240" r="140" fill="none" stroke="#ffffff" stroke-width="30"/>
+
+  <!-- Lignes de texte codées (segments surlignés en couleur) -->
+  <rect x="165" y="177" width="88" height="26" rx="13" fill="#2ec4b6"/>
+  <rect x="261" y="177" width="74" height="26" rx="13" fill="#ffffff" opacity="0.85"/>
+
+  <rect x="150" y="227" width="70" height="26" rx="13" fill="#ffffff" opacity="0.85"/>
+  <rect x="228" y="227" width="96" height="26" rx="13" fill="#ee6352"/>
+
+  <rect x="165" y="277" width="70" height="26" rx="13" fill="#f6b93b"/>
+  <rect x="243" y="277" width="92" height="26" rx="13" fill="#ffffff" opacity="0.85"/>
+
+  <!-- Queue du Q : trait de surligneur (le geste du codage) -->
+  <line x1="345" y1="335" x2="425" y2="415" stroke="#f6b93b" stroke-width="38" stroke-linecap="round"/>
+</svg>
