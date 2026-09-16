@@ -35,13 +35,16 @@ const DAY_MS = 86400000;
  *
  * Format : AAAA-MM-JJ. L'accès reste ouvert jusqu'à la fin de ce jour-là.
  *
- * Échéance actuelle : 31 mars 2027. Elle a été choisie pour couvrir un cycle
- * de recherche entier — collecte, codage, analyse, rédaction et soutenance —
- * et non les deux mois d'une opération commerciale. Un mémoire ou une thèse
- * qui se verrait refuser l'accès à son propre corpus en pleine rédaction
- * serait un dégât sans rapport avec l'enjeu d'une licence.
+ * Échéance actuelle : 31 décembre 2027. Le 31 mars 2027 retenu auparavant
+ * couvrait la collecte et la rédaction, mais pas une soutenance reportée ni les
+ * corrections qui la suivent : l'accès aurait pu être refusé à un auteur sur
+ * son propre corpus, à quelques semaines du dépôt. Fin 2027 laisse cette marge.
+ *
+ * C'est une décision COMMERCIALE, pas une contrainte technique : repousser la
+ * date repousse d'autant le démarrage des abonnements. Elle se change ici, sur
+ * cette seule ligne, et prend effet à la construction suivante.
  */
-export const ACCES_LIBRE_JUSQU_AU = "2027-03-31";
+export const ACCES_LIBRE_JUSQU_AU = "2027-12-31";
 
 /** Vrai si la période d'accès libre court encore. */
 export function accesLibreActif(now = Date.now()) {
