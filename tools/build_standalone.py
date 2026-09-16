@@ -12,6 +12,8 @@ import base64
 import json
 import os
 import re
+import subprocess
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,6 +50,24 @@ def main() -> None:
     js = "\n".join(bundle)
 
     html = (ROOT / "index.html").read_text(encoding="utf-8")
+
+    # Empreinte du fichier unique. Un QualiCode.html circule par clé USB et par
+    # WhatsApp : des copies de plusieurs mois d'écart coexistent sur le terrain,
+    # et rien ne permettait de les distinguer à l'ouverture. L'empreinte
+    # s'affiche dans la barre d'état et dans le rapport de diagnostic.
+    empreinte = "fichier unique · " + datetime.now().strftime("%d/%m/%Y")
+    try:
+        sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
+                             capture_output=True, text=True, check=True).stdout.strip()
+        if sha:
+            empreinte = f"{sha} · fichier unique · " + datetime.now().strftime("%d/%m/%Y")
+    except Exception:
+        pass  # dépôt absent : la date suffit
+    html, n = re.subn(r'(<meta name="qc-version" content=")[^"]*(">)',
+                      lambda m: m.group(1) + empreinte + m.group(2), html, count=1)
+    if n != 1:
+        raise SystemExit("balise qc-version introuvable dans index.html")
+
     css = (ROOT / "css" / "style.css").read_text(encoding="utf-8")
     html = html.replace('<link rel="stylesheet" href="css/style.css">', f"<style>\n{css}\n</style>")
     # Fichier unique : pas de manifeste ni d'icône externes (aucune requête réseau)
