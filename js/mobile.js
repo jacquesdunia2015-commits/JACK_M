@@ -442,6 +442,9 @@ export async function installDiagnostic() {
     secure, swReady,
     nativePrompt: !!installPrompt,
     siteUrl: SITE_URL,
+    // Version publiée : la première chose à lire quand l'utilisateur dit
+    // « la nouveauté n'est pas là ».
+    version: (document.querySelector('meta[name="qc-version"]')?.content || "dev").trim(),
   };
 }
 

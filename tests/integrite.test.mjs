@@ -66,6 +66,31 @@ verifier("tous les fichiers appelés par index.html existent", refsManquantes.le
 verifier("le script principal est chargé comme module",
   /<script type="module" src="js\/app\.js">/.test(html));
 
+verifier("une page 404 est fournie (adresse fausse → retour à l'application)",
+  existsSync(join(racine, "404.html")));
+verifier("l'empreinte de version est présente dans la page",
+  /<meta name="qc-version" content="[^"]*">/.test(html));
+verifier("la barre d'état réserve une place à l'empreinte de version",
+  html.includes('id="statusVersion"'));
+
+// Le lien de téléchargement a longtemps pointé vers la branche `main`, restée
+// deux mois en arrière : il livrait une version périmée de l'application.
+const versMain = ["README.md", "INSTALLATION.md", "GUIDE_UTILISATION.md", "MANUEL_DEBUTANT.md"]
+  .filter(f => lire(f).includes("/raw/main/"));
+verifier("aucun lien de téléchargement ne pointe vers la branche main",
+  versMain.length === 0, versMain.join(", "));
+
+titre("Publication : ce que l'action vérifie avant de déployer");
+const action = lire(".github/workflows/deploy-pages.yml");
+for (const f of ["index.html", "manifest.webmanifest", "sw.js", "404.html", "css/style.css", "js/app.js"]) {
+  verifier(`l'action refuse de publier sans ${f}`, action.includes(f));
+}
+verifier("l'action refuse de publier medistat/", /medistat/.test(action));
+verifier("l'action retire les outils réservés au vendeur",
+  action.includes("generer_cle.py") && action.includes("gestion_clients.py"));
+verifier("l'action inscrit l'empreinte de version", action.includes("qc-version"));
+verifier("l'action exécute les vérifications", action.includes("tests/tous.mjs"));
+
 const manifeste = JSON.parse(lire("manifest.webmanifest"));
 verifier("le manifeste est un JSON valide", !!manifeste.name);
 const iconesManquantes = manifeste.icons.filter(i => !existsSync(join(racine, i.src)));

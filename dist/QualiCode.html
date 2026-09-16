@@ -7,6 +7,10 @@
 <!-- Co-marquage affiché à côté du logo QualiCode. Modifiable ici pour toute
      une organisation ; chaque utilisateur peut aussi le changer dans
      l'application (ruban Accueil → 🏛️ Logo de l'organisation). -->
+<!-- Empreinte de la version publiée. Remplacée automatiquement au déploiement
+     par le commit et la date : c'est ce qui permet de savoir, en ouvrant le
+     site, si l'on voit bien la dernière version et non une page en cache. -->
+<meta name="qc-version" content="dev">
 <meta name="qc-org-nom" content="APSA">
 <meta name="qc-org-drapeau" content="cd"><!-- cd = RD Congo, rw = Rwanda, bj = Bénin, vide = aucun -->
 <!-- Logo officiel de l'organisation : déposez le fichier dans
@@ -968,6 +972,7 @@ body.dark .diag-block { background: #3a2f1e; }
   <span id="statusSegments"></span>
   <span id="rtStatus"></span>
   <span id="licStatus"></span>
+  <span id="statusVersion" title="Version publiée"></span>
   <span id="statusSaved" class="right"></span>
 </footer>
 
@@ -6937,6 +6942,9 @@ async function installDiagnostic() {
     secure, swReady,
     nativePrompt: !!installPrompt,
     siteUrl: SITE_URL,
+    // Version publiée : la première chose à lire quand l'utilisateur dit
+    // « la nouveauté n'est pas là ».
+    version: (document.querySelector('meta[name="qc-version"]')?.content || "dev").trim(),
   };
 }
 
@@ -10322,7 +10330,21 @@ async function openLicenseModal() {
 /* ================================================================
    Barre d'état
 ================================================================ */
+/**
+ * Version publiée, telle qu'elle est inscrite dans la page au déploiement.
+ *
+ * Sans elle, impossible de distinguer « le site n'a pas été mis à jour » de
+ * « mon navigateur me montre une page en cache » — deux problèmes différents
+ * qui se règlent de deux manières différentes.
+ */
+function versionPubliee() {
+  const meta = document.querySelector('meta[name="qc-version"]');
+  const v = (meta && meta.content || "").trim();
+  return v && v !== "dev" ? v : "";
+}
+
 function renderStatus() {
+  $("#statusVersion").textContent = versionPubliee() ? "⟳ " + versionPubliee() : "";
   $("#statusDocs").textContent = `📄 ${state.project.documents.length} ${t("docs")}`;
   $("#statusCodes").textContent = `🏷️ ${state.project.codes.length} ${t("codes_lbl")}`;
   $("#statusSegments").textContent = `✂️ ${state.project.segments.length} ${t("segments_lbl")}`;
@@ -10331,7 +10353,7 @@ function renderStatus() {
 
 init();
 
-return {  };
+return { versionPubliee };
 })();
 
 </script>

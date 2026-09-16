@@ -21,13 +21,25 @@ fonctionnalités de la version 1.0 déjà incluses (variables, analyses lexicale
 
 ## 🚀 Lancement
 
-**Fichier unique (le plus simple)** : téléchargez **[dist/QualiCode.html](https://github.com/jacquesdunia2015-commits/JACK_M/raw/main/dist/QualiCode.html)**
+**Fichier unique (le plus simple)** : téléchargez **[QualiCode.html](https://jacquesdunia2015-commits.github.io/JACK_M/dist/QualiCode.html)**
 et ouvrez-le par **double-clic** — aucune installation, aucun serveur, fonctionne sans internet.
 (Régénérable à tout moment : `python3 tools/build_standalone.py`.)
+
+> Ce lien pointe vers le site publié, qui suit toujours la version déployée. Le
+> lien `raw/main` employé auparavant renvoyait vers la branche `main`, restée au
+> 11 juillet 2026 : il livrait une version périmée, antérieure à la période
+> d'accès libre.
 
 **En ligne** : l'application est déployée automatiquement sur GitHub Pages —
 👉 **https://jacquesdunia2015-commits.github.io/JACK_M/**
 (les données restent locales : rien n'est envoyé au serveur, qui ne fait que fournir les fichiers de l'application).
+
+La **barre d'état, en bas de l'application, affiche la version publiée**
+(`⟳ 0981fc9 · 16/09/2026 07:30 UTC`). C'est la première chose à regarder si une
+nouveauté semble absente : si l'empreinte est ancienne, la page vient du cache du
+navigateur — rechargez en maintenant **Ctrl+Maj+R** (ordinateur) ou fermez
+complètement l'onglet (téléphone). Si elle est absente, la page n'a pas été
+servie par le site publié.
 
 **En local (sources)** : aucune installation, aucune dépendance. Il suffit de servir le dossier en statique :
 

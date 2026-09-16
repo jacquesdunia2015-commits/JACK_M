@@ -67,9 +67,34 @@ clients quand vous commercialiserez QualiCode. Un hébergeur qui répond bien
 depuis l'Afrique de l'Est/Centrale est un vrai atout commercial.
 
 ### c) Vérifier GitHub Pages (si vous tenez à cette adresse)
-Dans le dépôt : **Settings → Pages** → la source doit être la branche
-`gh-pages`. Le déploiement se fait automatiquement à chaque envoi de code, et
-il vérifie désormais que les fichiers d'installation sont présents.
+
+GitHub Pages **est activé** sur ce dépôt, source `gh-pages`, et la publication
+se fait automatiquement à chaque envoi de code : au 16 septembre 2026, dix-neuf
+déploiements avaient réussi, le dernier portant la version courante. Si
+l'adresse ne répond pas depuis votre téléphone, la cause est donc à chercher du
+côté du réseau (voir a et b ci-dessus), non du côté du site.
+
+Avant de publier, l'action vérifie désormais que :
+
+- les fichiers d'installation sont tous présents (page, manifeste, service
+  worker, icônes, feuille de style, `js/app.js`, page 404) ;
+- l'arborescence ne contient **que** QualiCode — une publication qui
+  emporterait `medistat/` est refusée ;
+- les outils réservés au vendeur (`tools/generer_cle.py`,
+  `tools/gestion_clients.py`) ne partent pas sur le site public.
+
+Elle inscrit enfin **l'empreinte de la version** dans la page. Elle s'affiche en
+bas de l'application (`⟳ 0981fc9 · 16/09/2026 07:30 UTC`) et figure dans le
+rapport de diagnostic (📲 → 🔍 Vérifier maintenant). Une empreinte ancienne
+signifie que le navigateur sert une page en cache ; une empreinte absente, que
+la page ne vient pas du site publié.
+
+> ⚠️ **La branche `main` est restée au 11 juillet 2026** et ne contient ni
+> `sw.js`, ni `manifest.webmanifest`, ni `assets/`. Elle figure pourtant dans les
+> déclencheurs de l'action : un envoi sur `main` publierait donc un site plus
+> ancien et **non installable**, écrasant la version actuelle. Mettre `main` à
+> jour depuis la branche de développement est la façon durable de mettre cette
+> adresse à l'abri.
 
 ---
 
