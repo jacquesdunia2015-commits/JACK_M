@@ -44,17 +44,22 @@ jobs:
             || { echo "::error::index.html ne charge pas l'application"; exit 1; }
           echo "Fichiers d'installation (PWA) présents."
 
-      # Garde-fou : ce site est public. MediStat contient des données médicales
-      # de démonstration et n'a rien à faire sur l'adresse de QualiCode ; la
-      # publier une fois par accident a suffi. Mieux vaut ne rien déployer que
+      # Garde-fou : ce site est public, et deux dossiers n'ont rien à y faire.
+      # MediStat contient des données médicales de démonstration — l'avoir
+      # publié une fois par accident a suffi. memoire-ngoma/ contient le
+      # matériel d'exercice d'un travail de recherche non soutenu : présent
+      # dans le dépôt à la demande de son auteur, il n'a pas à être servi par
+      # l'adresse publique de l'application. Mieux vaut ne rien déployer que
       # de déployer ce qui ne doit pas l'être.
       - name: Refus de publier autre chose que QualiCode
         run: |
           set -e
-          if [ -e medistat ]; then
-            echo "::error::medistat/ est présent dans l'arborescence : publication refusée."
-            exit 1
-          fi
+          for interdit in medistat memoire-ngoma; do
+            if [ -e "$interdit" ]; then
+              echo "::error::$interdit/ est présent dans l'arborescence : publication refusée."
+              exit 1
+            fi
+          done
           echo "Arborescence conforme : QualiCode seul."
 
       - name: Vérifications automatiques

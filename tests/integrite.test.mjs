@@ -147,6 +147,38 @@ verifier("la date de fin d'accès libre est une date valide",
 verifier(`l'accès libre est effectif aujourd'hui (jusqu'au ${ACCES_LIBRE_JUSQU_AU})`, accesLibreActif());
 
 /* ================== Documentation ================== */
+/* ================== Dossier d'exercice (présent sur la branche de travail) ================== */
+// Ce dossier ne suit pas l'application : il n'existe pas sur la branche
+// déployée. Les contrôles ne s'exécutent donc que s'il est là.
+if (existsSync(join(racine, "memoire-ngoma"))) {
+  titre("Dossier d'exercice memoire-ngoma/");
+  const lisezMoi = lire("memoire-ngoma/LISEZ-MOI.md");
+  verifier("l'avertissement « données simulées » ouvre le LISEZ-MOI",
+    /^#\s*⚠️\s*DONNÉES ENTIÈREMENT SIMULÉES/m.test(lisezMoi));
+  verifier("le déploiement refuse explicitement ce dossier",
+    lire(".github/workflows/deploy-pages.yml").includes("memoire-ngoma"));
+
+  const projx = JSON.parse(lire("memoire-ngoma/livrables/Memoire_Ngoma_SIMULATION.projx"));
+  egal("le projet d'exercice est au bon format", projx.format, "qualicode-projx");
+  const codes = new Set(projx.codes.map(c => c.id));
+  const docs = new Map(projx.documents.map(d => [d.id, d]));
+  const orphelins = projx.segments.filter(s => !codes.has(s.codeId) || !docs.has(s.docId));
+  verifier("aucun codage ne pointe dans le vide", orphelins.length === 0, String(orphelins.length));
+  const decales = projx.segments.filter(s => {
+    const d = docs.get(s.docId);
+    return !d || s.start < 0 || s.end > d.text.length || s.end <= s.start
+      || s.text !== d.text.slice(s.start, s.end);
+  });
+  verifier("chaque extrait correspond exactement à son passage", decales.length === 0, String(decales.length));
+  verifier("tous les documents portent l'avertissement de simulation",
+    projx.documents.every(d => d.text.includes("DONNÉES SIMULÉES")));
+  verifier("le mémo de projet avertit que rien ne peut être cité",
+    /ne peut être cité/i.test(projx.memo));
+  const doubleCodage = new Set(projx.segments.map(s => s.coder || "C1"));
+  verifier("le double codage est présent (deux codeurs)", doubleCodage.size === 2,
+    [...doubleCodage].join(", "));
+}
+
 titre("Documentation livrée avec l'application");
 for (const f of ["README.md", "GUIDE_UTILISATION.md", "MANUEL_DEBUTANT.md", "INSTALLATION.md"]) {
   verifier(`${f} est présent et non vide`, existsSync(join(racine, f)) && statSync(join(racine, f)).size > 500);
