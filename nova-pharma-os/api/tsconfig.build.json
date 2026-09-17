@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "//": "Compilation de production : les tests sont exclus, sans quoi la racine des sources engloberait test/ et la sortie deviendrait dist/src/main.js au lieu de dist/main.js.",
+  "exclude": ["node_modules", "test", "dist", "**/*.spec.ts", "**/*.e2e-spec.ts"]
+}

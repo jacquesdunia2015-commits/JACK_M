@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.next/
+storage/
+*.tsbuildinfo
+.env
+.env.local
+!.env.example
+# Base de données locale et sauvegardes du poste de démonstration.
+donnees/
+
+# Artefacts produits par scripts/preparer-documents.mjs avant chaque
+# construction. La source est le Markdown à la racine ; les versions Word
+# de docs/word/ sont, elles, suivies pour rester téléchargeables depuis
+# le dépôt.
+web/src/contenu/
+web/public/documents/

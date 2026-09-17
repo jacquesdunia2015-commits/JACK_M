@@ -1,0 +1,70 @@
+# =====================================================================
+# NOVA PHARMA OS — environnement complet en une commande
+#
+#   docker compose up --build
+#
+# Puis : http://localhost:3000 (interface) · http://localhost:3001/api/docs
+# =====================================================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: nova
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports: ['5432:5432']
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d nova']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Cache et files d'attente : notifications, tâches planifiées,
+  # synchronisation hors ligne.
+  redis:
+    image: redis:7-alpine
+    ports: ['6379:6379']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./api
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      # L'application se connecte avec un rôle SANS BYPASSRLS.
+      DATABASE_URL: postgresql://nova_app:${NOVA_APP_PASSWORD:-nova_app}@db:5432/nova
+      # Rôle propriétaire, réservé aux migrations.
+      DATABASE_ADMIN_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/nova
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      CORS_ORIGINS: http://localhost:3000
+      SCHEDULER_ENABLED: 'true'
+      BACKUP_DIR: /var/lib/nova/backups
+    ports: ['3001:3001']
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    volumes:
+      - backups:/var/lib/nova/backups
+
+  web:
+    build:
+      context: ./web
+    environment:
+      NODE_ENV: production
+      # L'URL de l'API reste interne : le navigateur ne la voit jamais.
+      NOVA_API_URL: http://api:3001/api
+    ports: ['3000:3000']
+    depends_on: [api]
+
+volumes:
+  db-data:
+  backups:

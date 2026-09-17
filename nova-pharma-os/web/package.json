@@ -1,0 +1,28 @@
+{
+  "name": "@nova-pharma-os/web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NOVA PHARMA OS — back-office SaaS et espace pharmacie",
+  "scripts": {
+    "documents": "node scripts/preparer-documents.mjs",
+    "predev": "npm run documents",
+    "dev": "next dev -p 3000",
+    "prebuild": "npm run documents",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "pretypecheck": "npm run documents",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "typescript": "^5.7.3"
+  }
+}
