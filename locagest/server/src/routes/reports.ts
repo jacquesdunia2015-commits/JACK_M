@@ -13,11 +13,9 @@ reportsRouter.use(requireRole('bailleur'));
 const STATE_LABELS: Record<string, string> = {
   paye: 'Payé', partiel: 'Partiel', a_venir: 'À venir', en_retard: 'En retard', impaye: 'Impayé',
 };
-type Totals = Record<'USD' | 'CDF', { expected: number; collected: number; remaining: number }>;
-const emptyTotals = (): Totals => ({
-  USD: { expected: 0, collected: 0, remaining: 0 },
-  CDF: { expected: 0, collected: 0, remaining: 0 },
-});
+/** Totaux par monnaie : seules les monnaies réellement en jeu apparaissent. */
+type Totals = Record<string, { expected: number; collected: number; remaining: number }>;
+const bucket = (totals: Totals, cur: string) => (totals[cur] ??= { expected: 0, collected: 0, remaining: 0 });
 
 async function monthly(ownerId: number, period: string) {
   const last = addDays(addMonths(period, 1), -1);
@@ -30,10 +28,10 @@ async function monthly(ownerId: number, period: string) {
       ORDER BY p.title`,
     [ownerId, period, last],
   );
-  const totals = emptyTotals();
+  const totals: Totals = {};
   const lines = leases.map((l) => {
     const s = paymentState({ period, startDate: l.start_date, rent: l.monthly_rent, paid: l.paid, today: ref });
-    const t = totals[l.currency as 'USD' | 'CDF'];
+    const t = bucket(totals, l.currency);
     t.expected += l.monthly_rent;
     t.collected += l.paid;
     // Arriérés : seulement les loyers déjà échus, pas les mois à venir
@@ -86,31 +84,34 @@ reportsRouter.get('/annual', async (req, res) => {
   const me = currentUser(req);
   const year = z.coerce.number().int().min(2000).max(2100).parse(req.query.year ?? today().slice(0, 4));
   const months = [];
-  const totals = emptyTotals();
+  const totals: Totals = {};
   for (let m = 0; m < 12; m++) {
     const period = `${year}-${String(m + 1).padStart(2, '0')}-01`;
     const r = await monthly(me.id, period);
-    for (const cur of ['USD', 'CDF'] as const) {
-      totals[cur].expected += r.totals[cur].expected;
-      totals[cur].collected += r.totals[cur].collected;
-      totals[cur].remaining += r.totals[cur].remaining;
+    for (const [cur, v] of Object.entries(r.totals)) {
+      const t = bucket(totals, cur);
+      t.expected += v.expected;
+      t.collected += v.collected;
+      t.remaining += v.remaining;
     }
     months.push({ month: r.month, totals: r.totals, occupancyRate: r.occupancy.rate });
   }
+  const currencies = Object.keys(totals).sort();
   if (req.query.format === 'csv') {
     res
       .type('text/csv; charset=utf-8')
       .attachment(`locagest-rapport-${year}.csv`)
       .send(
         toCsv(
-          ['Mois', 'Attendu USD', 'Encaissé USD', 'Arriérés USD', 'Attendu FC', 'Encaissé FC', 'Arriérés FC', "Taux d'occupation %"],
+          ['Mois', ...currencies.flatMap((c) => [`Attendu ${c}`, `Encaissé ${c}`, `Arriérés ${c}`]), "Taux d'occupation %"],
           months.map((m) => [
-            m.month, m.totals.USD.expected, m.totals.USD.collected, m.totals.USD.remaining,
-            m.totals.CDF.expected, m.totals.CDF.collected, m.totals.CDF.remaining, m.occupancyRate,
+            m.month,
+            ...currencies.flatMap((c) => [m.totals[c]?.expected ?? 0, m.totals[c]?.collected ?? 0, m.totals[c]?.remaining ?? 0]),
+            m.occupancyRate,
           ]),
         ),
       );
     return;
   }
-  res.json({ year, months, totals });
+  res.json({ year, months, totals, currencies });
 });

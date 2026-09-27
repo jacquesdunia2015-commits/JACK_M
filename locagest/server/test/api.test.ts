@@ -22,6 +22,18 @@ describe('authentification', () => {
     expect(ok.status).toBe(200);
     const me = await api().get('/api/auth/me').set('Authorization', `Bearer ${ok.body.token}`);
     expect(me.body.user.fullName).toBe('Jean');
+    expect(me.body.user.locale).toBe('fr');
+  });
+
+  it('enregistre la langue choisie et renvoie des codes d’erreur traduisibles', async () => {
+    const a = await registerLandlord();
+    const upd = await api().patch('/api/auth/me').set(a.auth).send({ locale: 'ln' });
+    expect(upd.body.user.locale).toBe('ln');
+    expect((await api().patch('/api/auth/me').set(a.auth).send({ locale: 'xx' })).status).toBe(400);
+    const bad = await api().post('/api/auth/login').send({ email: 'personne@test.cd', password: 'x' });
+    expect(bad.body).toMatchObject({ code: 'bad_credentials', error: 'Email ou mot de passe incorrect' });
+    const missing = await api().get('/api/properties/999999').set(a.auth);
+    expect(missing.body).toMatchObject({ code: 'not_found', vars: { entity: 'property' } });
   });
 
   it('refuse les requêtes sans jeton ou avec un jeton invalide', async () => {

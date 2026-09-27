@@ -41,9 +41,11 @@ dashboardRouter.get('/', async (req, res) => {
   const months = Array.from({ length: 12 }, (_, i) => addMonths(from, i).slice(0, 7));
   const revenue = months.map((month) => ({
     month,
-    USD: rev.find((r) => r.month === month && r.currency === 'USD')?.total ?? 0,
-    CDF: rev.find((r) => r.month === month && r.currency === 'CDF')?.total ?? 0,
+    totals: Object.fromEntries(rev.filter((r) => r.month === month).map((r) => [r.currency, r.total])) as Record<string, number>,
   }));
+  const add = (acc: Record<string, number>, cur: string, n: number) => {
+    acc[cur] = (acc[cur] ?? 0) + n;
+  };
 
   // Loyers en retard / impayés sur les baux actifs
   const { rows: paid } = await query(
@@ -53,13 +55,13 @@ dashboardRouter.get('/', async (req, res) => {
   );
   const paidMap = new Map(paid.map((r) => [`${r.lease_id}:${r.period}`, r.paid]));
   const late: any[] = [];
-  const arrears = { USD: 0, CDF: 0 } as Record<string, number>;
+  const arrears: Record<string, number> = {};
   for (const l of leases) {
     for (const period of leasePeriods(l.start_date, l.end_date, ref)) {
       const amount = paidMap.get(`${l.id}:${period}`) ?? 0;
       const s = paymentState({ period, startDate: l.start_date, rent: l.monthly_rent, paid: amount, today: ref });
       if (s.state === 'en_retard' || s.state === 'impaye') {
-        arrears[l.currency] += s.remaining;
+        add(arrears, l.currency, s.remaining);
         late.push({
           leaseId: l.id, property: l.property_title, tenant: `${l.first_name} ${l.last_name}`,
           period, currency: l.currency, ...s,
@@ -70,8 +72,10 @@ dashboardRouter.get('/', async (req, res) => {
   late.sort((a, b) => b.daysLate - a.daysLate);
 
   const thisMonth = ref.slice(0, 7);
-  const expected = { USD: 0, CDF: 0 } as Record<string, number>;
-  for (const l of leases) expected[l.currency] += l.monthly_rent;
+  const expected: Record<string, number> = {};
+  for (const l of leases) add(expected, l.currency, l.monthly_rent);
+  // Monnaies en jeu (baux actifs et encaissements de l'année), pour l'affichage
+  const currencies = [...new Set([...leases.map((l) => l.currency), ...rev.map((r) => r.currency)])].sort();
 
   res.json({
     today: ref,
@@ -82,7 +86,8 @@ dashboardRouter.get('/', async (req, res) => {
     guaranteeLevels: levels,
     urgent: urgent.slice(0, 20),
     revenue,
-    revenueThisMonth: revenue.find((r) => r.month === thisMonth) ?? { month: thisMonth, USD: 0, CDF: 0 },
+    revenueThisMonth: revenue.find((r) => r.month === thisMonth)?.totals ?? {},
+    currencies,
     expectedMonthly: expected,
     arrears,
     late: late.slice(0, 20),

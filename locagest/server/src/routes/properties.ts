@@ -33,7 +33,7 @@ const propertySchema = z.object({
   kitchens: count,
   condition: z.enum(['bon', 'moyen', 'a_renover']).default('bon'),
   monthlyRent: money,
-  currency: currency.default('USD'),
+  currency: currency.optional(),
   availableFrom: dateStr.nullish().or(z.literal('').transform(() => null)),
   status: z.enum(['vacante', 'occupee', 'maintenance']).default('vacante'),
 });
@@ -51,7 +51,7 @@ function values(d: z.infer<typeof propertySchema>) {
 
 async function ownedProperty(ownerId: number, id: number) {
   const p = await one('SELECT * FROM properties WHERE id = $1 AND owner_id = $2', [id, ownerId]);
-  if (!p) throw notFound('Propriété');
+  if (!p) throw notFound('property');
   return p;
 }
 
@@ -100,12 +100,13 @@ propertiesRouter.get('/:id', async (req, res) => {
 propertiesRouter.post('/', async (req, res) => {
   const me = currentUser(req);
   const d = propertySchema.parse(req.body);
-  const { plan } = (await one('SELECT plan FROM users WHERE id = $1', [me.id]))!;
+  const { plan, currency: defaultCurrency } = (await one('SELECT plan, currency FROM users WHERE id = $1', [me.id]))!;
+  d.currency ??= defaultCurrency;
   const limit = PLANS[plan as Plan].maxProperties;
   if (limit !== null) {
     const { n } = (await one('SELECT COUNT(*) AS n FROM properties WHERE owner_id = $1', [me.id]))!;
     if (n >= limit) {
-      throw new HttpError(402, `Votre offre ${PLANS[plan as Plan].label} est limitée à ${limit} propriétés. Passez à l'offre supérieure.`);
+      throw new HttpError(402, `Votre offre ${PLANS[plan as Plan].label} est limitée à ${limit} propriétés. Passez à l'offre supérieure.`, 'plan_limit_properties', { plan: PLANS[plan as Plan].label, limit });
     }
   }
   const p = await one(
@@ -120,8 +121,9 @@ propertiesRouter.post('/', async (req, res) => {
 propertiesRouter.put('/:id', async (req, res) => {
   const me = currentUser(req);
   const id = idParam(req);
-  await ownedProperty(me.id, id);
+  const existing = await ownedProperty(me.id, id);
   const d = propertySchema.parse(req.body);
+  d.currency ??= existing.currency;
   const sets = COLUMNS.split(',').map((c, i) => `${c.trim()} = $${i + 3}`).join(', ');
   const p = await one(`UPDATE properties SET ${sets}, updated_at = now() WHERE id = $1 AND owner_id = $2 RETURNING *`, [
     id,
@@ -137,7 +139,7 @@ propertiesRouter.delete('/:id', async (req, res) => {
   const id = idParam(req);
   await ownedProperty(me.id, id);
   const lease = await one('SELECT 1 FROM leases WHERE property_id = $1 LIMIT 1', [id]);
-  if (lease) throw new HttpError(409, 'Cette propriété a des baux enregistrés : elle ne peut pas être supprimée.');
+  if (lease) throw new HttpError(409, 'Cette propriété a des baux enregistrés : elle ne peut pas être supprimée.', 'property_has_leases');
   const photos = await query('SELECT filename FROM property_photos WHERE property_id = $1', [id]);
   await query('DELETE FROM properties WHERE id = $1', [id]);
   await Promise.all(photos.rows.map((r) => unlink(path.join(config.uploadDir, r.filename)).catch(() => {})));
@@ -159,7 +161,7 @@ const upload = multer({
   }),
   limits: { fileSize: 5 * 1024 * 1024, files: 10 },
   fileFilter: (_req, file, cb) =>
-    ALLOWED.has(file.mimetype) ? cb(null, true) : cb(new HttpError(400, 'Formats acceptés : JPEG, PNG, WebP')),
+    ALLOWED.has(file.mimetype) ? cb(null, true) : cb(new HttpError(400, 'Formats acceptés : JPEG, PNG, WebP', 'photo_format')),
 });
 
 propertiesRouter.post('/:id/photos', async (req, res, next) => {
@@ -170,7 +172,7 @@ propertiesRouter.post('/:id/photos', async (req, res, next) => {
     if (err) return next(err);
     try {
       const files = (req.files as Express.Multer.File[]) ?? [];
-      if (!files.length) throw new HttpError(400, 'Aucune photo reçue');
+      if (!files.length) throw new HttpError(400, 'Aucune photo reçue', 'photo_none');
       const out = [];
       for (const f of files) {
         const r = await one(
@@ -194,7 +196,7 @@ propertiesRouter.delete('/:id/photos/:photoId', async (req, res) => {
     idParam(req, 'photoId'),
     id,
   ]);
-  if (!photo) throw notFound('Photo');
+  if (!photo) throw notFound('photo');
   await unlink(path.join(config.uploadDir, photo.filename)).catch(() => {});
   res.status(204).end();
 });

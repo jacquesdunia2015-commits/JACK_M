@@ -2,28 +2,32 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
-import { CONDITIONS, PROPERTY_STATUS, PROPERTY_TYPES, LEASE_STATUS, address, date, money } from '../lib/format';
+import { CONDITIONS, PROPERTY_STATUSES, PROPERTY_STATUS_CLS, PROPERTY_TYPES, address, date, money } from '../lib/format';
 import { AlertBadge, Badge, Empty, ErrorBox, Field, Loading, PageHeader, Row } from '../components/ui';
+import { useT } from '../i18n';
+import { useAuth } from '../lib/auth';
+import { CurrencySelect } from '../components/GeoSelect';
 
 export function Properties() {
+  const t = useT();
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
   const { data, error, loading } = useFetch<any[]>(`/properties?status=${status}&q=${encodeURIComponent(q)}`);
 
   return (
     <>
-      <PageHeader title="Propriétés" subtitle="Votre portefeuille immobilier" actions={<Link to="/proprietes/nouvelle" className="btn-primary">+ Ajouter une propriété</Link>} />
+      <PageHeader title={t('nav.properties')} subtitle={t('prop.subtitle')} actions={<Link to="/proprietes/nouvelle" className="btn-primary">+ {t('prop.add')}</Link>} />
       <div className="mb-4 flex flex-wrap gap-2">
-        <input className="input max-w-xs" placeholder="Rechercher (nom, commune, quartier…)" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input className="input max-w-xs" placeholder={t('prop.search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <select className="input max-w-48" value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="">Tous les statuts</option>
-          {Object.entries(PROPERTY_STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          <option value="">{t('prop.allStatuses')}</option>
+          {PROPERTY_STATUSES.map((k) => <option key={k} value={k}>{t(`propStatus.${k}`)}</option>)}
         </select>
       </div>
       <ErrorBox error={error} />
       {loading && !data ? <Loading /> : !data?.length ? (
-        <Empty title="Aucune propriété">
-          <Link to="/proprietes/nouvelle" className="btn-primary">Ajouter ma première propriété</Link>
+        <Empty title={t('prop.none')}>
+          <Link to="/proprietes/nouvelle" className="btn-primary">{t('prop.addFirst')}</Link>
         </Empty>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -35,14 +39,14 @@ export function Properties() {
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-semibold text-slate-900">{p.title}</p>
-                  <Badge className={PROPERTY_STATUS[p.status].cls}>{PROPERTY_STATUS[p.status].label}</Badge>
+                  <Badge className={PROPERTY_STATUS_CLS[p.status]}>{t(`propStatus.${p.status as 'vacante'}`)}</Badge>
                 </div>
                 <p className="mt-1 truncate text-sm text-slate-500">{address(p)}</p>
                 <div className="mt-3 flex items-center justify-between text-sm">
-                  <span className="text-slate-600">{PROPERTY_TYPES[p.type]} · {p.bedrooms} ch.</span>
-                  <span className="font-semibold text-slate-900">{money(p.monthly_rent, p.currency)}<span className="font-normal text-slate-500">/mois</span></span>
+                  <span className="text-slate-600">{t(`propType.${p.type as 'maison'}`)} · {t('prop.bedroomsShort', { n: p.bedrooms })}</span>
+                  <span className="font-semibold text-slate-900">{t('common.perMonth', { amount: money(p.monthly_rent, p.currency) })}</span>
                 </div>
-                {p.current_tenant && <p className="mt-2 text-xs text-slate-500">Locataire : {p.current_tenant}</p>}
+                {p.current_tenant && <p className="mt-2 text-xs text-slate-500">{t('prop.currentTenant', { name: p.current_tenant })}</p>}
               </div>
             </Link>
           ))}
@@ -59,9 +63,12 @@ const EMPTY = {
 };
 
 export function PropertyForm() {
+  const t = useT();
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState<typeof EMPTY>(EMPTY);
+  // Nouvelle propriété : monnaie par défaut du bailleur (celle de son pays)
+  const [form, setForm] = useState<typeof EMPTY>({ ...EMPTY, currency: user?.currency ?? 'USD' });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -102,65 +109,62 @@ export function PropertyForm() {
 
   return (
     <>
-      <PageHeader title={id ? 'Modifier la propriété' : 'Nouvelle propriété'} />
+      <PageHeader title={id ? t('prop.editTitle') : t('prop.newTitle')} />
       <form onSubmit={submit} className="space-y-6">
         <ErrorBox error={error} />
         <section className="card grid gap-4 md:grid-cols-2">
-          <h2 className="font-semibold md:col-span-2">Identification</h2>
-          <Field label="Intitulé" className="md:col-span-2"><input className="input" required value={form.title} onChange={set('title')} placeholder="Ex. Maison Kintambo" /></Field>
-          <Field label="Type">
+          <h2 className="font-semibold md:col-span-2">{t('prop.section.identity')}</h2>
+          <Field label={t('prop.field.title')} className="md:col-span-2"><input className="input" required value={form.title} onChange={set('title')} placeholder={t('prop.field.titlePlaceholder')} /></Field>
+          <Field label={t('prop.field.type')}>
             <select className="input" value={form.type} onChange={set('type')}>
-              {Object.entries(PROPERTY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              {PROPERTY_TYPES.map((k) => <option key={k} value={k}>{t(`propType.${k}`)}</option>)}
             </select>
           </Field>
-          <Field label="Statut">
+          <Field label={t('common.status')}>
             <select className="input" value={form.status} onChange={set('status')}>
-              {Object.entries(PROPERTY_STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+              {PROPERTY_STATUSES.map((k) => <option key={k} value={k}>{t(`propStatus.${k}`)}</option>)}
             </select>
           </Field>
         </section>
 
         <section className="card grid gap-4 md:grid-cols-3">
-          <h2 className="font-semibold md:col-span-3">Adresse</h2>
-          <Field label="Province"><input className="input" required value={form.province} onChange={set('province')} /></Field>
-          <Field label="Commune"><input className="input" required value={form.commune} onChange={set('commune')} /></Field>
-          <Field label="Quartier"><input className="input" value={form.quartier} onChange={set('quartier')} /></Field>
-          <Field label="Avenue / rue" className="md:col-span-2"><input className="input" value={form.avenue} onChange={set('avenue')} /></Field>
-          <Field label="Numéro"><input className="input" value={form.numero} onChange={set('numero')} /></Field>
+          <h2 className="font-semibold md:col-span-3">{t('prop.section.address')}</h2>
+          <Field label={t('prop.field.province')}><input className="input" required value={form.province} onChange={set('province')} /></Field>
+          <Field label={t('prop.field.commune')}><input className="input" required value={form.commune} onChange={set('commune')} /></Field>
+          <Field label={t('prop.field.quartier')}><input className="input" value={form.quartier} onChange={set('quartier')} /></Field>
+          <Field label={t('prop.field.avenue')} className="md:col-span-2"><input className="input" value={form.avenue} onChange={set('avenue')} /></Field>
+          <Field label={t('prop.field.numero')}><input className="input" value={form.numero} onChange={set('numero')} /></Field>
         </section>
 
         <section className="card grid grid-cols-2 gap-4 md:grid-cols-5">
-          <h2 className="col-span-2 font-semibold md:col-span-5">Caractéristiques</h2>
-          {num('bedrooms', 'Chambres')}
-          {num('livingRooms', 'Salons')}
-          {num('toiletsInternal', 'Toilettes internes')}
-          {num('toiletsExternal', 'Toilettes externes')}
-          {num('kitchens', 'Cuisines')}
-          <Field label="État" className="col-span-2">
+          <h2 className="col-span-2 font-semibold md:col-span-5">{t('prop.section.features')}</h2>
+          {num('bedrooms', t('prop.field.bedrooms'))}
+          {num('livingRooms', t('prop.field.livingRooms'))}
+          {num('toiletsInternal', t('prop.field.toiletsInternal'))}
+          {num('toiletsExternal', t('prop.field.toiletsExternal'))}
+          {num('kitchens', t('prop.field.kitchens'))}
+          <Field label={t('prop.field.condition')} className="col-span-2">
             <select className="input" value={form.condition} onChange={set('condition')}>
-              {Object.entries(CONDITIONS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              {CONDITIONS.map((k) => <option key={k} value={k}>{t(`condition.${k}`)}</option>)}
             </select>
           </Field>
-          <Field label="Description" className="col-span-2 md:col-span-5">
+          <Field label={t('prop.field.description')} className="col-span-2 md:col-span-5">
             <textarea className="input" rows={3} value={form.description} onChange={set('description')} />
           </Field>
         </section>
 
         <section className="card grid gap-4 md:grid-cols-3">
-          <h2 className="font-semibold md:col-span-3">Location</h2>
-          <Field label="Loyer mensuel"><input className="input" type="number" min={0} step="0.01" required value={form.monthlyRent} onChange={set('monthlyRent')} /></Field>
-          <Field label="Devise">
-            <select className="input" value={form.currency} onChange={set('currency')}>
-              <option value="USD">Dollar (USD)</option>
-              <option value="CDF">Franc congolais (FC)</option>
-            </select>
+          <h2 className="font-semibold md:col-span-3">{t('prop.section.rental')}</h2>
+          <Field label={t('field.monthlyRent')}><input className="input" type="number" min={0} step="0.01" required value={form.monthlyRent} onChange={set('monthlyRent')} /></Field>
+          <Field label={t('field.currency')}>
+            <CurrencySelect value={form.currency} preferred={user?.currency} onChange={(currency) => setForm({ ...form, currency })} />
           </Field>
-          <Field label="Disponible à partir du"><input className="input" type="date" value={form.availableFrom} onChange={set('availableFrom')} /></Field>
+          <Field label={t('prop.field.availableFrom')}><input className="input" type="date" value={form.availableFrom} onChange={set('availableFrom')} /></Field>
         </section>
 
         <div className="flex gap-2">
-          <button className="btn-primary" disabled={busy}>{busy ? 'Enregistrement…' : 'Enregistrer'}</button>
-          <button type="button" className="btn-secondary" onClick={() => navigate(-1)}>Annuler</button>
+          <button className="btn-primary" disabled={busy}>{busy ? t('common.saving') : t('common.save')}</button>
+          <button type="button" className="btn-secondary" onClick={() => navigate(-1)}>{t('common.cancel')}</button>
         </div>
       </form>
     </>
@@ -168,6 +172,7 @@ export function PropertyForm() {
 }
 
 export function PropertyDetail() {
+  const t = useT();
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: p, error, loading, reload } = useFetch<any>(`/properties/${id}`);
@@ -193,12 +198,12 @@ export function PropertyDetail() {
     }
   };
   const removePhoto = async (photoId: number) => {
-    if (!confirm('Supprimer cette photo ?')) return;
+    if (!confirm(t('prop.confirmDeletePhoto'))) return;
     await api(`/properties/${id}/photos/${photoId}`, { method: 'DELETE' }).catch((e) => setActionError(e.message));
     await reload();
   };
   const remove = async () => {
-    if (!confirm('Supprimer définitivement cette propriété ?')) return;
+    if (!confirm(t('prop.confirmDelete'))) return;
     try {
       await api(`/properties/${id}`, { method: 'DELETE' });
       navigate('/proprietes');
@@ -215,9 +220,9 @@ export function PropertyDetail() {
         subtitle={address(p)}
         actions={
           <>
-            {!active && <Link to={`/baux/nouveau?propertyId=${p.id}`} className="btn-primary">Créer un bail</Link>}
-            <Link to={`/proprietes/${p.id}/modifier`} className="btn-secondary">Modifier</Link>
-            <button onClick={remove} className="btn-danger">Supprimer</button>
+            {!active && <Link to={`/baux/nouveau?propertyId=${p.id}`} className="btn-primary">{t('common.createLease')}</Link>}
+            <Link to={`/proprietes/${p.id}/modifier`} className="btn-secondary">{t('common.edit')}</Link>
+            <button onClick={remove} className="btn-danger">{t('common.delete')}</button>
           </>
         }
       />
@@ -225,21 +230,21 @@ export function PropertyDetail() {
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="card lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-semibold">Galerie photos</h2>
+            <h2 className="font-semibold">{t('prop.gallery')}</h2>
             <label className="btn-secondary cursor-pointer">
-              {uploading ? 'Envoi…' : '+ Ajouter des photos'}
+              {uploading ? t('prop.uploading') : `+ ${t('prop.addPhotos')}`}
               <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(e) => upload(e.target.files)} disabled={uploading} />
             </label>
           </div>
           {p.photos.length === 0 ? (
-            <Empty title="Aucune photo">JPEG, PNG ou WebP, 5 Mo maximum par photo.</Empty>
+            <Empty title={t('prop.noPhotos')}>{t('prop.photoHint')}</Empty>
           ) : (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
               {p.photos.map((ph: any) => (
                 <div key={ph.id} className="group relative overflow-hidden rounded-lg bg-slate-100">
                   <a href={ph.url} target="_blank" rel="noreferrer"><img src={ph.url} alt={ph.name ?? ''} className="aspect-[4/3] w-full object-cover" /></a>
-                  <button onClick={() => removePhoto(ph.id)} className="absolute right-2 top-2 rounded-md bg-white/90 px-2 py-1 text-xs text-red-700 opacity-0 shadow group-hover:opacity-100 focus:opacity-100">
-                    Supprimer
+                  <button onClick={() => removePhoto(ph.id)} className="absolute end-2 top-2 rounded-md bg-white/90 px-2 py-1 text-xs text-red-700 opacity-0 shadow group-hover:opacity-100 focus:opacity-100">
+                    {t('common.delete')}
                   </button>
                 </div>
               ))}
@@ -249,40 +254,41 @@ export function PropertyDetail() {
         </section>
 
         <section className="card">
-          <h2 className="mb-2 font-semibold">Fiche</h2>
+          <h2 className="mb-2 font-semibold">{t('prop.sheet')}</h2>
           <dl>
-            <Row label="Statut"><Badge className={PROPERTY_STATUS[p.status].cls}>{PROPERTY_STATUS[p.status].label}</Badge></Row>
-            <Row label="Type">{PROPERTY_TYPES[p.type]}</Row>
-            <Row label="Loyer">{money(p.monthly_rent, p.currency)} / mois</Row>
-            <Row label="État">{CONDITIONS[p.condition]}</Row>
-            <Row label="Chambres">{p.bedrooms}</Row>
-            <Row label="Salons">{p.living_rooms}</Row>
-            <Row label="Toilettes int. / ext.">{p.toilets_internal} / {p.toilets_external}</Row>
-            <Row label="Cuisines">{p.kitchens}</Row>
-            <Row label="Disponible le">{date(p.available_from)}</Row>
+            <Row label={t('common.status')}><Badge className={PROPERTY_STATUS_CLS[p.status]}>{t(`propStatus.${p.status as 'vacante'}`)}</Badge></Row>
+            <Row label={t('prop.field.type')}>{t(`propType.${p.type as 'maison'}`)}</Row>
+            <Row label={t('field.rent')}>{t('common.perMonth', { amount: money(p.monthly_rent, p.currency) })}</Row>
+            <Row label={t('prop.field.condition')}>{t(`condition.${p.condition as 'bon'}`)}</Row>
+            <Row label={t('prop.field.bedrooms')}>{p.bedrooms}</Row>
+            <Row label={t('prop.field.livingRooms')}>{p.living_rooms}</Row>
+            <Row label={t('prop.toilets')}>{p.toilets_internal} / {p.toilets_external}</Row>
+            <Row label={t('prop.field.kitchens')}>{p.kitchens}</Row>
+            <Row label={t('prop.availableOn')}>{date(p.available_from)}</Row>
           </dl>
         </section>
       </div>
 
       <section className="card mt-6">
-        <h2 className="mb-3 font-semibold">Historique des baux</h2>
-        {p.leases.length === 0 ? <Empty title="Aucun bail pour cette propriété" /> : <LeaseTable leases={p.leases} show="tenant" />}
+        <h2 className="mb-3 font-semibold">{t('prop.leaseHistory')}</h2>
+        {p.leases.length === 0 ? <Empty title={t('prop.noLeases')} /> : <LeaseTable leases={p.leases} show="tenant" />}
       </section>
     </>
   );
 }
 
 export function LeaseTable({ leases, show }: { leases: any[]; show: 'tenant' | 'property' }) {
+  const t = useT();
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
           <tr className="border-b border-slate-200">
-            <th className="th">{show === 'tenant' ? 'Locataire' : 'Propriété'}</th>
-            <th className="th">Période</th>
-            <th className="th">Loyer</th>
-            <th className="th">Statut</th>
-            <th className="th">Garantie</th>
+            <th className="th">{show === 'tenant' ? t('field.tenant') : t('field.property')}</th>
+            <th className="th">{t('lease.period')}</th>
+            <th className="th">{t('field.rent')}</th>
+            <th className="th">{t('common.status')}</th>
+            <th className="th">{t('lease.guarantee')}</th>
           </tr>
         </thead>
         <tbody>
@@ -291,7 +297,7 @@ export function LeaseTable({ leases, show }: { leases: any[]; show: 'tenant' | '
               <td className="td"><Link className="font-medium text-brand-700 hover:underline" to={`/baux/${l.id}`}>{show === 'tenant' ? `${l.first_name} ${l.last_name}` : l.property_title}</Link></td>
               <td className="td whitespace-nowrap">{date(l.start_date)} → {date(l.end_date)}</td>
               <td className="td whitespace-nowrap">{money(l.monthly_rent, l.currency)}</td>
-              <td className="td">{LEASE_STATUS[l.status]}</td>
+              <td className="td">{t(`leaseStatus.${l.status as 'actif'}`)}</td>
               <td className="td"><AlertBadge level={l.guarantee.level} days={l.guarantee.daysRemaining} /></td>
             </tr>
           ))}

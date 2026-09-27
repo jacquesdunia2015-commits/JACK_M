@@ -45,7 +45,7 @@ function values(d: z.infer<typeof tenantSchema>) {
 
 async function ownedTenant(ownerId: number, id: number) {
   const t = await one('SELECT * FROM tenants WHERE id = $1 AND owner_id = $2', [id, ownerId]);
-  if (!t) throw notFound('Locataire');
+  if (!t) throw notFound('tenant');
   return t;
 }
 
@@ -100,7 +100,7 @@ tenantsRouter.post('/', async (req, res) => {
   if (limit !== null) {
     const { n } = (await one('SELECT COUNT(*) AS n FROM tenants WHERE owner_id = $1', [me.id]))!;
     if (n >= limit) {
-      throw new HttpError(402, `Votre offre ${PLANS[plan as Plan].label} est limitée à ${limit} locataires. Passez à l'offre supérieure.`);
+      throw new HttpError(402, `Votre offre ${PLANS[plan as Plan].label} est limitée à ${limit} locataires. Passez à l'offre supérieure.`, 'plan_limit_tenants', { plan: PLANS[plan as Plan].label, limit });
     }
   }
   const t = await one(
@@ -131,7 +131,7 @@ tenantsRouter.delete('/:id', async (req, res) => {
   const id = idParam(req);
   const t = await ownedTenant(me.id, id);
   const lease = await one('SELECT 1 FROM leases WHERE tenant_id = $1 LIMIT 1', [id]);
-  if (lease) throw new HttpError(409, 'Ce locataire a des baux enregistrés : il ne peut pas être supprimé.');
+  if (lease) throw new HttpError(409, 'Ce locataire a des baux enregistrés : il ne peut pas être supprimé.', 'tenant_has_leases');
   await transaction(async (c) => {
     await c.query('DELETE FROM tenants WHERE id = $1', [id]);
     if (t.user_id) await c.query('DELETE FROM users WHERE id = $1', [t.user_id]);
@@ -145,7 +145,7 @@ tenantsRouter.post('/:id/portal', async (req, res) => {
   const me = currentUser(req);
   const t = await ownedTenant(me.id, idParam(req));
   const { password } = z.object({ password: z.string().min(8, 'Mot de passe : 8 caractères minimum').max(200) }).parse(req.body);
-  if (!t.email) throw new HttpError(400, 'Renseignez d’abord l’email du locataire');
+  if (!t.email) throw new HttpError(400, 'Renseignez d’abord l’email du locataire', 'tenant_email_required');
   const hash = await bcrypt.hash(password, 10);
   const user = await transaction(async (c) => {
     if (t.user_id) {

@@ -1,66 +1,96 @@
 export type Level = 'vert' | 'jaune' | 'orange' | 'rouge';
 
-export const LEVELS: Record<Level, { label: string; emoji: string; badge: string; dot: string; range: string; action: string; pulse: string }> = {
-  vert: {
-    label: 'Normal', emoji: '🟢', badge: 'bg-emerald-50 text-emerald-800 ring-emerald-200', dot: 'bg-emerald-500',
-    range: '60 jours et plus', action: 'Aucune action immédiate', pulse: '',
-  },
+/** Styles des niveaux d'alerte ; les libellés sont dans les traductions (level.*). */
+export const LEVELS: Record<Level, { emoji: string; badge: string; dot: string; pulse: string; color: string }> = {
+  vert: { emoji: '🟢', badge: 'bg-emerald-50 text-emerald-800 ring-emerald-200', dot: 'bg-emerald-500', pulse: '', color: '#10b981' },
   jaune: {
-    label: 'Attention', emoji: '🟡', badge: 'bg-yellow-50 text-yellow-800 ring-yellow-300', dot: 'bg-yellow-400',
-    range: '30 à 59 jours', action: 'Préparer le renouvellement, contacter le locataire', pulse: 'alert-pulse-slow [--pulse-color:rgb(234_179_8/0.5)]',
+    emoji: '🟡', badge: 'bg-yellow-50 text-yellow-800 ring-yellow-300', dot: 'bg-yellow-400',
+    pulse: 'alert-pulse-slow [--pulse-color:rgb(234_179_8/0.5)]', color: '#facc15',
   },
   orange: {
-    label: 'Urgent', emoji: '🟠', badge: 'bg-orange-50 text-orange-800 ring-orange-300', dot: 'bg-orange-500',
-    range: '1 à 29 jours', action: 'Relancer le locataire, préparer les documents', pulse: 'alert-pulse [--pulse-color:rgb(249_115_22/0.55)]',
+    emoji: '🟠', badge: 'bg-orange-50 text-orange-800 ring-orange-300', dot: 'bg-orange-500',
+    pulse: 'alert-pulse [--pulse-color:rgb(249_115_22/0.55)]', color: '#f97316',
   },
   rouge: {
-    label: 'Critique', emoji: '🔴', badge: 'bg-red-50 text-red-800 ring-red-300', dot: 'bg-red-500',
-    range: 'Expirée', action: 'Action immédiate, régulariser la situation', pulse: 'alert-pulse [--pulse-color:rgb(239_68_68/0.55)]',
+    emoji: '🔴', badge: 'bg-red-50 text-red-800 ring-red-300', dot: 'bg-red-500',
+    pulse: 'alert-pulse [--pulse-color:rgb(239_68_68/0.55)]', color: '#ef4444',
   },
 };
 export const LEVEL_ORDER: Level[] = ['rouge', 'orange', 'jaune', 'vert'];
 
-export function money(n: number | null | undefined, currency = 'USD') {
-  const v = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: currency === 'CDF' ? 0 : 2 }).format(n ?? 0);
-  return currency === 'CDF' ? `${v} FC` : `${v} $`;
+export const PROPERTY_TYPES = ['maison', 'appartement', 'studio', 'villa', 'chambre', 'bureau', 'autre'] as const;
+export const PROPERTY_STATUSES = ['vacante', 'occupee', 'maintenance'] as const;
+export const PROPERTY_STATUS_CLS: Record<string, string> = {
+  vacante: 'bg-sky-50 text-sky-800 ring-sky-200',
+  occupee: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
+  maintenance: 'bg-slate-100 text-slate-700 ring-slate-300',
+};
+export const CONDITIONS = ['bon', 'moyen', 'a_renover'] as const;
+export const PAYMENT_METHODS = ['especes', 'mobile_money', 'virement', 'autre'] as const;
+export const PAYMENT_STATE_CLS: Record<string, string> = {
+  paye: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
+  partiel: 'bg-sky-50 text-sky-800 ring-sky-200',
+  a_venir: 'bg-slate-100 text-slate-700 ring-slate-300',
+  en_retard: 'bg-orange-50 text-orange-800 ring-orange-300',
+  impaye: 'bg-red-50 text-red-800 ring-red-300',
+};
+
+// Locale des formats (dates, nombres), réglée par le fournisseur de traductions.
+let intl = 'fr-FR';
+export function setFormatLocale(locale: string) {
+  intl = locale;
 }
+
+/** Montant dans sa monnaie, au format de la langue de l'interface (« 1 500 $ », « 25 000 FC », « €300 »…). */
+export function money(n: number | null | undefined, currency = 'USD') {
+  const value = n ?? 0;
+  let s: string;
+  try {
+    s = new Intl.NumberFormat(intl, {
+      style: 'currency',
+      currency,
+      currencyDisplay: 'narrowSymbol',
+      maximumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    }).format(value);
+  } catch {
+    s = `${new Intl.NumberFormat(intl).format(value)} ${currency}`;
+  }
+  return s.replace('CDF', 'FC').replace(/\bXAF\b|\bXOF\b/, 'F CFA');
+}
+
+/** Plusieurs monnaies à la fois : « 1 500 $ · 250 000 FC » (monnaies à zéro omises). */
+export function moneyAll(totals: Record<string, number> | null | undefined, fallbackCurrency = 'USD') {
+  const entries = Object.entries(totals ?? {}).filter(([, v]) => v);
+  if (!entries.length) return money(0, fallbackCurrency);
+  return entries.map(([c, v]) => money(v, c)).join(' · ');
+}
+
+const utc = (d: string) => {
+  const [y, m, day] = d.slice(0, 10).split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, day || 1));
+};
 
 export function date(d: string | null | undefined) {
   if (!d) return '—';
-  const [y, m, day] = d.slice(0, 10).split('-');
-  return `${day}/${m}/${y}`;
+  return utc(d).toLocaleDateString(intl, { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+}
+
+export function dateTime(d: string) {
+  return new Date(d).toLocaleString(intl, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
 export function month(p: string) {
-  const [y, m] = p.split('-').map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  return utc(p.slice(0, 7) + '-01').toLocaleDateString(intl, { month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+
+export function shortMonth(p: string) {
+  return utc(p.slice(0, 7) + '-01').toLocaleDateString(intl, { month: 'short', timeZone: 'UTC' });
 }
 
 export function todayISO() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
-
-export const PROPERTY_TYPES: Record<string, string> = {
-  maison: 'Maison', appartement: 'Appartement', studio: 'Studio', villa: 'Villa', chambre: 'Chambre', bureau: 'Bureau', autre: 'Autre',
-};
-export const PROPERTY_STATUS: Record<string, { label: string; cls: string }> = {
-  vacante: { label: 'Vacante', cls: 'bg-sky-50 text-sky-800 ring-sky-200' },
-  occupee: { label: 'Occupée', cls: 'bg-emerald-50 text-emerald-800 ring-emerald-200' },
-  maintenance: { label: 'En maintenance', cls: 'bg-slate-100 text-slate-700 ring-slate-300' },
-};
-export const CONDITIONS: Record<string, string> = { bon: 'Bon état', moyen: 'État moyen', a_renover: 'À rénover' };
-export const LEASE_STATUS: Record<string, string> = { actif: 'Actif', termine: 'Terminé', renouvele: 'Renouvelé' };
-export const PAYMENT_METHODS: Record<string, string> = {
-  especes: 'Espèces', mobile_money: 'Mobile Money', virement: 'Virement', autre: 'Autre',
-};
-export const PAYMENT_STATES: Record<string, { label: string; cls: string }> = {
-  paye: { label: 'Payé', cls: 'bg-emerald-50 text-emerald-800 ring-emerald-200' },
-  partiel: { label: 'Partiel', cls: 'bg-sky-50 text-sky-800 ring-sky-200' },
-  a_venir: { label: 'À venir', cls: 'bg-slate-100 text-slate-700 ring-slate-300' },
-  en_retard: { label: 'En retard', cls: 'bg-orange-50 text-orange-800 ring-orange-300' },
-  impaye: { label: 'Impayé', cls: 'bg-red-50 text-red-800 ring-red-300' },
-};
 
 export function address(p: { numero?: string | null; avenue?: string | null; quartier?: string | null; commune?: string; province?: string }) {
   return [[p.numero, p.avenue].filter(Boolean).join(' '), p.quartier, p.commune, p.province].filter(Boolean).join(', ');

@@ -38,7 +38,7 @@ export function createApp(opts: { webDist?: string } = {}) {
   app.use('/api/messages', authenticate, messagesRouter);
   app.use('/api/reports', authenticate, reportsRouter);
   app.use('/api/notifications', authenticate, notificationsRouter);
-  app.use('/api', (_req, _res, next) => next(new HttpError(404, 'Route inconnue')));
+  app.use('/api', (_req, _res, next) => next(new HttpError(404, 'Route inconnue', 'route_unknown')));
 
   app.use('/uploads', express.static(path.resolve(config.uploadDir), { maxAge: '7d', fallthrough: false }));
 

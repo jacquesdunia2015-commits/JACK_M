@@ -65,7 +65,7 @@ messagesRouter.get('/', async (req, res) => {
 
 async function ownedTenant(ownerId: number, id: number) {
   const t = await one('SELECT * FROM tenants WHERE id = $1 AND owner_id = $2', [id, ownerId]);
-  if (!t) throw notFound('Locataire');
+  if (!t) throw notFound('tenant');
   return t;
 }
 
@@ -90,7 +90,7 @@ export const portalMessagesRouter = Router();
 
 async function myTenant(userId: number) {
   const t = await one('SELECT * FROM tenants WHERE user_id = $1', [userId]);
-  if (!t) throw new HttpError(404, 'Aucun dossier locataire associé à ce compte');
+  if (!t) throw new HttpError(404, 'Aucun dossier locataire associé à ce compte', 'no_tenant_record');
   return t;
 }
 

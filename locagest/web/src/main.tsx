@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './index.css';
@@ -17,9 +17,15 @@ import { Account } from './pages/Account';
 import { Messages, PortalMessages } from './pages/Messages';
 import { Reports } from './pages/Reports';
 import { NotificationsProvider } from './lib/notifications';
+import { I18nProvider, useI18n } from './i18n';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
+  const { setLang } = useI18n();
+  // À la connexion, l'interface prend la langue enregistrée sur le compte.
+  useEffect(() => {
+    if (user?.locale) setLang(user.locale);
+  }, [user?.id, user?.locale, setLang]);
   if (loading) return <Loading />;
   if (!user) {
     return (
@@ -74,12 +80,14 @@ function AppRoutes() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <NotificationsProvider>
-          <AppRoutes />
-        </NotificationsProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <I18nProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <NotificationsProvider>
+            <AppRoutes />
+          </NotificationsProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </I18nProvider>
   </StrictMode>,
 );

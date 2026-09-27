@@ -15,15 +15,17 @@ async function main() {
   const ref = today();
   const hash = await bcrypt.hash('demo1234', 10);
   await transaction(async (c) => {
-    await c.query("DELETE FROM users WHERE email IN ('demo@locagest.app', 'locataire@locagest.app', 'admin@locagest.app')");
+    await c.query(
+      "DELETE FROM users WHERE email IN ('demo@locagest.app', 'locataire@locagest.app', 'admin@locagest.app', 'dakar@locagest.app')",
+    );
     await c.query(
       `INSERT INTO users(email, password_hash, full_name, role, plan) VALUES ('admin@locagest.app', $1, 'Administrateur', 'admin', 'enterprise')`,
       [await bcrypt.hash('admin1234', 10)],
     );
     const owner = (
       await c.query(
-        `INSERT INTO users(email, password_hash, full_name, phone, role, plan)
-         VALUES ('demo@locagest.app', $1, 'Jean-Pierre Mbala', '+243 81 000 0000', 'bailleur', 'pro') RETURNING id`,
+        `INSERT INTO users(email, password_hash, full_name, phone, role, plan, country, currency, locale)
+         VALUES ('demo@locagest.app', $1, 'Jean-Pierre Mbala', '+243 81 000 0000', 'bailleur', 'pro', 'CD', 'USD', 'fr') RETURNING id`,
         [hash],
       )
     ).rows[0].id;
@@ -102,6 +104,48 @@ async function main() {
     ).rows[0].id;
     await c.query('UPDATE tenants SET user_id = $1 WHERE id = $2', [portal, tenantIds[0]]);
 
+    // Un second bailleur, au Sénégal (franc CFA, wolof), pour la répartition par pays
+    const dakar = (
+      await c.query(
+        `INSERT INTO users(email, password_hash, full_name, phone, role, country, currency, locale)
+         VALUES ('dakar@locagest.app', $1, 'Awa Diop', '+221 77 000 0000', 'bailleur', 'SN', 'XOF', 'wo') RETURNING id`,
+        [hash],
+      )
+    ).rows[0].id;
+    const villa = (
+      await c.query(
+        `INSERT INTO properties(owner_id, title, type, province, commune, quartier, bedrooms, living_rooms, toilets_internal,
+           kitchens, monthly_rent, currency, status)
+         VALUES ($1, 'Appartement Mermoz', 'appartement', 'Dakar', 'Mermoz-Sacré-Cœur', 'Mermoz', 2, 1, 1, 1, 250000, 'XOF', 'occupee')
+         RETURNING id`,
+        [dakar],
+      )
+    ).rows[0].id;
+    const moussa = (
+      await c.query(
+        `INSERT INTO tenants(owner_id, first_name, last_name, phone, nationality, profession)
+         VALUES ($1, 'Moussa', 'Ndiaye', '+221 76 111 1111', 'Sénégalaise', 'Commerçant') RETURNING id`,
+        [dakar],
+      )
+    ).rows[0].id;
+    const dakarEnd = addDays(ref, 20);
+    const dakarLease = (
+      await c.query(
+        `INSERT INTO leases(owner_id, property_id, tenant_id, start_date, end_date, guarantee_expires_on, monthly_rent, currency, guarantee_amount)
+         VALUES ($1,$2,$3,$4,$5,$5,250000,'XOF',500000) RETURNING id`,
+        [dakar, villa, moussa, addMonths(dakarEnd, -12), dakarEnd],
+      )
+    ).rows[0].id;
+    // Loyers payés par Mobile Money depuis le début du bail
+    for (let m = 12; m >= 0; m--) {
+      const period = firstOfMonth(addMonths(ref, -m));
+      if (period < firstOfMonth(addMonths(dakarEnd, -12))) continue;
+      await c.query(
+        `INSERT INTO payments(owner_id, lease_id, period, amount, paid_on, method) VALUES ($1,$2,$3,250000,$4,'mobile_money')`,
+        [dakar, dakarLease, period, addDays(period, 3)],
+      );
+    }
+
     // Une conversation de démonstration, avec un message non lu pour le bailleur
     await c.query(
       `INSERT INTO messages(owner_id, tenant_id, sender_role, body, read_at, created_at) VALUES
@@ -115,6 +159,7 @@ async function main() {
   console.log('  Bailleur   : demo@locagest.app / demo1234');
   console.log('  Locataire  : locataire@locagest.app / demo1234');
   console.log('  Admin      : admin@locagest.app / admin1234');
+  console.log('  Bailleur au Sénégal (FCFA, wolof) : dakar@locagest.app / demo1234');
 }
 
 main()

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { LEVELS, type Level } from '../lib/format';
+import { useT } from '../i18n';
 
 export function Badge({ className = '', children }: { className?: string; children: ReactNode }) {
   return <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${className}`}>{children}</span>;
@@ -8,15 +9,17 @@ export function Badge({ className = '', children }: { className?: string; childr
 
 /** Pastille couleur de garantie ; les niveaux d'alerte pulsent. */
 export function AlertBadge({ level, days }: { level: Level | null; days?: number }) {
-  if (!level) return <Badge className="bg-slate-100 text-slate-600 ring-slate-200">Clôturé</Badge>;
+  const t = useT();
+  if (!level) return <Badge className="bg-slate-100 text-slate-600 ring-slate-200">{t('alert.closed')}</Badge>;
   const l = LEVELS[level];
+  const label = t(`level.${level}`);
   const txt =
-    days === undefined ? l.label : days > 0 ? `${days} j` : days === 0 ? "Aujourd'hui" : `Expirée (${-days} j)`;
+    days === undefined ? label : days > 0 ? t('alert.days', { n: days }) : days === 0 ? t('alert.today') : t('alert.expiredDays', { n: -days });
   return (
     <Badge className={`${l.badge} ${l.pulse}`}>
       <span className={`h-2 w-2 rounded-full ${l.dot}`} aria-hidden />
       {txt}
-      <span className="sr-only"> — {l.label}</span>
+      <span className="sr-only"> — {label}</span>
     </Badge>
   );
 }
@@ -39,7 +42,8 @@ export function ErrorBox({ error }: { error: string | null | undefined }) {
 }
 
 export function Loading() {
-  return <div className="py-16 text-center text-sm text-slate-500">Chargement…</div>;
+  const t = useT();
+  return <div className="py-16 text-center text-sm text-slate-500">{t('common.loading')}</div>;
 }
 
 export function Empty({ title, children }: { title: string; children?: ReactNode }) {
@@ -90,7 +94,7 @@ export function Row({ label, children }: { label: string; children: ReactNode })
   return (
     <div className="flex justify-between gap-4 border-b border-slate-100 py-2 text-sm last:border-0">
       <dt className="text-slate-500">{label}</dt>
-      <dd className="text-right font-medium text-slate-800">{children ?? '—'}</dd>
+      <dd className="text-end font-medium text-slate-800">{children ?? '—'}</dd>
     </div>
   );
 }

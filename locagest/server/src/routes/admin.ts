@@ -18,12 +18,20 @@ adminRouter.get('/stats', async (_req, res) => {
       (SELECT COUNT(*) FROM leases WHERE status = 'actif') AS active_leases,
       (SELECT COUNT(*) FROM alerts WHERE created_at > now() - interval '30 days') AS alerts_30d`);
   const plans = await query("SELECT plan, COUNT(*) AS n FROM users WHERE role = 'bailleur' GROUP BY plan");
-  res.json({ ...r, plans: Object.fromEntries(plans.rows.map((p) => [p.plan, p.n])) });
+  // Répartition géographique des bailleurs
+  const countries = await query(
+    "SELECT COALESCE(country, '??') AS country, COUNT(*) AS n FROM users WHERE role = 'bailleur' GROUP BY 1 ORDER BY 2 DESC",
+  );
+  res.json({
+    ...r,
+    plans: Object.fromEntries(plans.rows.map((p) => [p.plan, p.n])),
+    countries: countries.rows,
+  });
 });
 
 adminRouter.get('/users', async (_req, res) => {
   const { rows } = await query(
-    `SELECT u.id, u.email, u.full_name, u.phone, u.plan, u.active, u.created_at,
+    `SELECT u.id, u.email, u.full_name, u.phone, u.plan, u.active, u.created_at, u.country, u.currency, u.locale,
             (SELECT COUNT(*) FROM properties p WHERE p.owner_id = u.id) AS properties,
             (SELECT COUNT(*) FROM tenants t WHERE t.owner_id = u.id) AS tenants,
             (SELECT COUNT(*) FROM leases l WHERE l.owner_id = u.id AND l.status = 'actif') AS active_leases
@@ -43,7 +51,7 @@ adminRouter.patch('/users/:id', async (req, res) => {
       WHERE id = $1 AND role = 'bailleur' RETURNING id, email, full_name, plan, active`,
     [id, d.plan ?? null, d.active ?? null],
   );
-  if (!u) throw notFound('Compte');
+  if (!u) throw notFound('account');
   await audit(me.id, 'admin_update', 'user', id, d);
   res.json(u);
 });

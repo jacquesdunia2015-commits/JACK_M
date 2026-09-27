@@ -41,7 +41,7 @@
   @apply mb-1 block text-sm font-medium text-slate-700;
 }
 @utility th {
-  @apply px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500;
+  @apply px-3 py-2 text-start text-xs font-semibold uppercase tracking-wide text-slate-500;
 }
 @utility td {
   @apply px-3 py-3 text-sm text-slate-700;

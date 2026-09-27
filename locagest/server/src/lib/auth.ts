@@ -1,7 +1,7 @@
 import type { Request, RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from './config.js';
-import { HttpError } from './errors.js';
+import { HttpError, notFound } from './errors.js';
 import { one } from '../db/pool.js';
 
 export type Role = 'bailleur' | 'locataire' | 'admin';
@@ -28,18 +28,18 @@ export const authenticate: RequestHandler = async (req, _res, next) => {
   try {
     const header = req.headers.authorization ?? '';
     const token = header.startsWith('Bearer ') ? header.slice(7) : null;
-    if (!token) throw new HttpError(401, 'Authentification requise');
+    if (!token) throw new HttpError(401, 'Authentification requise', 'auth_required');
     let payload: jwt.JwtPayload;
     try {
       payload = jwt.verify(token, config.jwtSecret) as jwt.JwtPayload;
     } catch {
-      throw new HttpError(401, 'Session expirée, reconnectez-vous');
+      throw new HttpError(401, 'Session expirée, reconnectez-vous', 'session_expired');
     }
     const user = await one(
       'SELECT id, role, email, landlord_id, active FROM users WHERE id = $1',
       [Number(payload.sub)],
     );
-    if (!user || !user.active) throw new HttpError(401, 'Compte introuvable ou désactivé');
+    if (!user || !user.active) throw new HttpError(401, 'Compte introuvable ou désactivé', 'account_unavailable');
     req.user = { id: user.id, role: user.role, email: user.email, landlordId: user.landlord_id };
     next();
   } catch (e) {
@@ -52,20 +52,20 @@ export const requireRole =
   (...roles: Role[]): RequestHandler =>
   (req, _res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      next(new HttpError(403, 'Accès refusé pour ce rôle'));
+      next(new HttpError(403, 'Accès refusé pour ce rôle', 'forbidden_role'));
       return;
     }
     next();
   };
 
 export function currentUser(req: Request): AuthUser {
-  if (!req.user) throw new HttpError(401, 'Authentification requise');
+  if (!req.user) throw new HttpError(401, 'Authentification requise', 'auth_required');
   return req.user;
 }
 
 /** Identifiant entier d'un paramètre de route, ou 404. */
 export function idParam(req: Request, name = 'id'): number {
   const n = Number(req.params[name]);
-  if (!Number.isInteger(n) || n <= 0) throw new HttpError(404, 'Ressource introuvable');
+  if (!Number.isInteger(n) || n <= 0) throw notFound();
   return n;
 }

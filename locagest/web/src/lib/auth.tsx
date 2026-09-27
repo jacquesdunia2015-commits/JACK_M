@@ -8,6 +8,9 @@ export interface User {
   phone: string | null;
   role: 'bailleur' | 'locataire' | 'admin';
   plan: 'starter' | 'pro' | 'enterprise';
+  locale: string;
+  country: string | null;
+  currency: string;
   planInfo: { label: string; maxProperties: number | null; maxTenants: number | null; price: string };
 }
 
@@ -15,7 +18,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  register: (data: { email: string; password: string; fullName: string; phone?: string }) => Promise<User>;
+  register: (data: { email: string; password: string; fullName: string; phone?: string; locale?: string; country?: string | null; currency?: string }) => Promise<User>;
   logout: () => void;
   setUser: (u: User) => void;
 }
@@ -46,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(r.user);
     return r.user;
   };
-  const register = async (data: { email: string; password: string; fullName: string; phone?: string }) => {
+  const register = async (data: { email: string; password: string; fullName: string; phone?: string; locale?: string; country?: string | null; currency?: string }) => {
     const r = await api<{ token: string; user: User }>('/auth/register', { method: 'POST', body: data });
     setToken(r.token);
     setUser(r.user);

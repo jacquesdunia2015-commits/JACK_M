@@ -81,7 +81,8 @@ describe('rapports et reçus', () => {
     expect(r.body.totals.USD.expected).toBe(6000);
     expect(r.body.totals.USD.collected).toBe(500);
     const csv = await api().get('/api/reports/annual?year=2026&format=csv').set(a.auth);
-    expect(csv.text).toContain('2026-01;500;500;0;0;0;0;100');
+    expect(csv.text).toContain('Mois;Attendu USD;Encaissé USD;Arriérés USD;Taux d');
+    expect(csv.text).toContain('2026-01;500;500;0;100');
   });
 
   it("ne compte pas les mois à venir dans les arriérés", async () => {

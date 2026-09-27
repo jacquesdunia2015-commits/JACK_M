@@ -8,8 +8,11 @@ const frDate = (d: string) => {
   return `${day}/${m}/${y}`;
 };
 
-export const fmtMoney = (n: number, cur: string) =>
-  `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(n)} ${cur === 'CDF' ? 'FC' : '$'}`;
+/** Montant avec sa monnaie (« 1 500 $ », « 25 000 FC », « 300 € », « 45 000 F CFA »…). */
+export function fmtMoney(n: number, cur: string) {
+  const s = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: cur, currencyDisplay: 'narrowSymbol' }).format(n);
+  return s.replace('CDF', 'FC').replace(/\bXAF\b|\bXOF\b/, 'F CFA');
+}
 
 const TYPES: Record<string, string> = {
   maison: 'Maison', appartement: 'Appartement', studio: 'Studio', villa: 'Villa', chambre: 'Chambre', bureau: 'Bureau', autre: 'Bien',
