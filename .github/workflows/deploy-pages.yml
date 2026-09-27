@@ -98,6 +98,12 @@ jobs:
       - name: Retrait des outils réservés au vendeur
         run: rm -f tools/generer_cle.py tools/gestion_clients.py clients.json
 
+      # LocaGest (SaaS de gestion de locataires) est une application distincte,
+      # avec son propre serveur : ses sources n'ont pas à être servies par le
+      # site public de QualiCode.
+      - name: Retrait de LocaGest
+        run: rm -rf locagest
+
       - name: Publication sur la branche gh-pages
         run: |
           git config user.name "github-actions[bot]"

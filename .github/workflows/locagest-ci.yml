@@ -1,0 +1,38 @@
+# Vérifications de LocaGest (SaaS de gestion de locataires, dossier locagest/).
+name: LocaGest CI
+
+on:
+  push:
+    paths: ['locagest/**', '.github/workflows/locagest-ci.yml']
+  pull_request:
+    paths: ['locagest/**', '.github/workflows/locagest-ci.yml']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: locagest
+          POSTGRES_PASSWORD: locagest
+          POSTGRES_DB: locagest_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U locagest" --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: locagest
+    env:
+      DATABASE_URL: postgres://locagest:locagest@localhost:5432/locagest_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: locagest/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
