@@ -3,9 +3,10 @@ import { state, getDoc, getCode } from "./state.js";
 import { flatCodes, codeMatrix } from "./analysis.js";
 import { t } from "./i18n.js";
 import { buildReportDocx } from "./docxout.js";
+import { enteteRapportHtml } from "./branding.js";
 
 // Le lien doit être rattaché au DOM pour que le nom de fichier soit respecté
-function downloadBlob(filename, blob) {
+export function downloadBlob(filename, blob) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -100,7 +101,7 @@ export function openPrintableReport(segments) {
   const byCode = new Map(codes.map(c => [c.id, []]));
   for (const s of segments) if (byCode.has(s.codeId)) byCode.get(s.codeId).push(s);
 
-  let body = `<h1>${esc(state.project.name)} — ${esc(t("report_title"))}</h1>
+  let body = enteteRapportHtml() + `<h1>${esc(state.project.name)} — ${esc(t("report_title"))}</h1>
   <p class="meta">${esc(t("report_generated"))} ${new Date().toLocaleString()} · ${state.project.documents.length} ${esc(t("docs"))} · ${state.project.codes.length} ${esc(t("codes_lbl"))} · ${segments.length} ${esc(t("segments_lbl"))}</p>`;
 
   if (state.project.memo) body += `<div class="memo"><strong>${esc(t("project_memo"))} :</strong> ${esc(state.project.memo)}</div>`;

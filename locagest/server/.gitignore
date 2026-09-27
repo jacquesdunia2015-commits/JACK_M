@@ -1,0 +1,4 @@
+test/.uploads/
+uploads/
+dist/
+.env

@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+}
+
+/* Éléments en alerte : pulsation légère (cahier des charges §3.4) */
+@keyframes alert-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--pulse-color, rgb(239 68 68 / 0.55)); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+.alert-pulse { animation: alert-pulse 1.6s ease-in-out infinite; }
+.alert-pulse-slow { animation: alert-pulse 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .alert-pulse, .alert-pulse-slow { animation: none; }
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed;
+}
+@utility btn-primary {
+  @apply btn bg-brand-700 text-white hover:bg-brand-800;
+}
+@utility btn-secondary {
+  @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+}
+@utility btn-danger {
+  @apply btn border border-red-200 bg-white text-red-700 hover:bg-red-50;
+}
+@utility card {
+  @apply min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm;
+}
+@utility input {
+  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100;
+}
+@utility label {
+  @apply mb-1 block text-sm font-medium text-slate-700;
+}
+@utility th {
+  @apply px-3 py-2 text-start text-xs font-semibold uppercase tracking-wide text-slate-500;
+}
+@utility td {
+  @apply px-3 py-3 text-sm text-slate-700;
+}
+
+/* Impression des rapports : seul le contenu principal est imprimé */
+@media print {
+  aside, header, .no-print { display: none !important; }
+  main { margin-left: 0 !important; padding: 0 !important; }
+  body { background: white; }
+  .card { box-shadow: none; break-inside: avoid; }
+}

@@ -2,9 +2,23 @@
 import { emptyProject, uid, CODE_COLORS } from "./state.js";
 
 export function buildSampleProject() {
-  const p = emptyProject("Exemple — Étude sur le télétravail");
+  const p = emptyProject("Exemple — Étude sur le télétravail (analyse terminée)");
   p.id = "exemple-teletravail"; // identifiant stable : recharger l'exemple le remplace au lieu de le dupliquer
-  p.memo = "Projet de démonstration : trois entretiens semi-directifs et un focus group fictifs sur le vécu du télétravail. Utilisez-le pour tester le codage, la récupération de segments et les analyses.";
+  p.memo = `ÉTUDE TERMINÉE — démonstration du processus complet d'analyse dans QualiCode (données fictives).
+
+QUESTION DE RECHERCHE — Comment les salariés vivent-ils le télétravail, et quelles conditions organisationnelles rendent ce vécu positif ?
+
+MÉTHODE — 3 entretiens semi-directifs (profils contrastés : expérimentée avec enfants, junior en studio, sénior réticente devenue convaincue) + 1 focus group RH. Analyse thématique (Braun & Clarke) : codage descriptif, regroupement en 3 thèmes (Avantages perçus, Difficultés, Organisation et management), codage complet, puis croisements par variables (âge, ancienneté de télétravail).
+
+RÉSULTATS PRINCIPAUX —
+1. Les avantages (concentration, flexibilité, temps gagné) sont unanimes et non négociables : personne ne veut revenir au bureau à temps plein.
+2. Les difficultés dominantes sont la frontière vie pro/vie perso et l'isolement ; elles frappent différemment selon les profils : le junior (Karim) souffre d'un déficit d'apprentissage et de matériel, l'expérimentée (Aline) de la porosité des temps, la sénior (Marguerite) a construit des stratégies (pièce dédiée, porte fermée).
+3. La variable décisive n'est pas l'âge mais l'ANCIENNETÉ de télétravail : avec le temps, chacun construit des stratégies de séparation — voir la requête sauvegardée « Frontière vie pro/perso (tous) » et la comparaison par variable.
+4. Côté organisation : le management par objectifs est apprécié mais ambivalent (sentiment de surveillance par le reporting) ; les réponses RH (budget équipement, jours communs, formation des managers) répondent point par point aux difficultés exprimées — voir la carte conceptuelle « Modèle des résultats ».
+
+RÉPONSE À LA QUESTION — Le vécu est positif quand trois conditions sont réunies : un espace de travail dédié, un cadre collectif clair (jours fixes, droit à la déconnexion appliqué) et un management par objectifs accompagné (points réguliers).
+
+LIMITES — Corpus fictif de démonstration ; en situation réelle, viser la saturation (8–15 entretiens) et un double codage avec kappa (voir Guide, section 12).`;
   p.variables = ["âge", "sexe", "secteur", "ancienneté_télétravail"];
 
   const gEntretiens = { id: uid(), name: "Entretiens individuels" };
@@ -95,46 +109,115 @@ Participant 3 : Il reste le chantier de la formation aux outils pour les salari�
   const cEquite = mk("Équité / justice interne", cOrg.id, 10);
   p.codes.push(cAvantages, cConc, cFlex, cDiff, cIso, cFront, cFatigue, cMateriel, cOrg, cManag, cForm, cEquite);
 
-  // Segments pré-codés (localisés par recherche de sous-chaîne pour rester robustes)
-  const seg = (doc, code, needle) => {
+  // Segments codés (localisés par recherche de sous-chaîne pour rester robustes),
+  // avec poids (1–100 : importance analytique) et commentaires d'analyse
+  const seg = (doc, code, needle, weight = 1, comment = "") => {
     const start = doc.text.indexOf(needle);
     if (start === -1) return null;
-    return { id: uid(), docId: doc.id, codeId: code.id, start, end: start + needle.length, text: needle, weight: 1, comment: "", created: new Date().toISOString() };
+    return { id: uid(), docId: doc.id, codeId: code.id, start, end: start + needle.length, text: needle, weight, comment, created: new Date().toISOString() };
   };
   const segments = [
-    seg(doc1, cConc, "Le matin, je suis beaucoup plus concentrée qu'au bureau, il n'y a pas d'interruptions, pas de collègues qui passent à l'improviste."),
-    seg(doc1, cFatigue, "On enchaîne parfois quatre ou cinq visios et à la fin de la journée je suis épuisée, plus fatiguée qu'après une journée au bureau."),
-    seg(doc1, cFront, "Mon bureau est dans le salon, donc le soir je vois l'ordinateur et j'ai du mal à décrocher. Il m'arrive de répondre à des courriels à vingt-deux heures."),
-    seg(doc1, cIso, "En télétravail, je me sens parfois isolée, même si on a des canaux de discussion en ligne."),
-    seg(doc1, cFlex, "Je gagne trois heures de transport par jour, c'est du temps pour ma famille et pour le sport."),
-    seg(doc2, cMateriel, "J'habite dans un petit studio, je travaille sur la table de la cuisine. Ce n'est pas confortable, j'ai mal au dos et je n'ai pas de deuxième écran."),
-    seg(doc2, cIso, "À distance, je n'ose pas déranger, j'attends la prochaine réunion."),
-    seg(doc2, cFlex, "Je peux aller à la salle de sport le midi, je fais des économies de transport et de repas."),
-    seg(doc2, cConc, "pour les tâches répétitives, franchement, je suis plus efficace chez moi, personne ne me sollicite."),
-    seg(doc2, cManag, "des points réguliers avec mon manager. Parfois je me sens un peu abandonné, je ne sais pas si ce que je fais va dans la bonne direction."),
-    seg(doc3, cFront, "Le soir, je ferme la porte et le travail reste derrière. C'est ma frontière à moi."),
-    seg(doc3, cForm, "L'entreprise n'a pas proposé assez de formation aux outils numériques, tout le monde s'est débrouillé."),
-    seg(doc3, cManag, "Mon chef est passé d'un contrôle des horaires à un suivi par objectifs."),
-    seg(doc3, cConc, "Moins de bruit, moins de fatigue, plus de concentration."),
-    seg(doc4, cEquite, "Les métiers qui ne peuvent pas télétravailler, l'accueil, la logistique, vivent mal le fait que d'autres soient chez eux. On a un vrai sujet de justice interne."),
-    seg(doc4, cFatigue, "la fatigue liée aux visioconférences"),
-    seg(doc4, cIso, "le sentiment d'isolement chez les nouveaux embauchés. L'intégration à distance ne fonctionne pas bien."),
-    seg(doc4, cFront, "On a des salariés qui envoient des courriels le soir et le week-end."),
-    seg(doc4, cManag, "On forme aussi les managers au management à distance : fixer des objectifs, faire des points réguliers, repérer les signaux d'isolement."),
-    seg(doc4, cForm, "Il reste le chantier de la formation aux outils pour les salariés les plus éloignés du numérique."),
+    // — Entretien 01 : Aline (expérimentée, bureau dans le salon)
+    seg(doc1, cConc, "Le matin, je suis beaucoup plus concentrée qu'au bureau, il n'y a pas d'interruptions, pas de collègues qui passent à l'improviste.", 60),
+    seg(doc1, cFatigue, "On enchaîne parfois quatre ou cinq visios et à la fin de la journée je suis épuisée, plus fatiguée qu'après une journée au bureau.", 70, "Paradoxe : le télétravail fatigue autrement (écrans), pas moins."),
+    seg(doc1, cFront, "Mon bureau est dans le salon, donc le soir je vois l'ordinateur et j'ai du mal à décrocher. Il m'arrive de répondre à des courriels à vingt-deux heures.", 85, "Cas type de porosité des temps : l'espace non séparé entraîne le débordement horaire. Contraster avec Marguerite (porte fermée)."),
+    seg(doc1, cIso, "En télétravail, je me sens parfois isolée, même si on a des canaux de discussion en ligne.", 50),
+    seg(doc1, cIso, "Les discussions informelles, clairement. La machine à café, les déjeuners d'équipe. C'est là que circulent les informations importantes et qu'on garde le lien.", 70, "L'informel comme canal d'information : la perte invisible du distanciel."),
+    seg(doc1, cFlex, "Je gagne trois heures de transport par jour, c'est du temps pour ma famille et pour le sport.", 65),
+    seg(doc1, cFlex, "L'idéal pour moi, c'est deux jours au bureau, trois jours à la maison.", 55, "Préférence hybride 2/3 — à confronter au « cadre » réclamé par Marguerite."),
+    // — Entretien 02 : Karim (junior, studio, 1 an d'ancienneté)
+    seg(doc2, cMateriel, "J'habite dans un petit studio, je travaille sur la table de la cuisine. Ce n'est pas confortable, j'ai mal au dos et je n'ai pas de deuxième écran.", 80, "Inégalité matérielle : condition de logement = condition de travail."),
+    seg(doc2, cMateriel, "Un vrai budget pour l'équipement à domicile", 60, "Revendication reprise presque mot pour mot par la RH (budget 200 €) : croisement doc2 × doc4."),
+    seg(doc2, cIso, "À distance, je n'ose pas déranger, j'attends la prochaine réunion.", 75, "Frein à l'apprentissage informel chez le junior."),
+    seg(doc2, cIso, "J'ai l'impression de progresser moins vite que si j'étais sur place tous les jours.", 80, "Coût d'apprentissage du distanciel pour les nouveaux entrants — rejoint le constat RH sur l'intégration."),
+    seg(doc2, cFlex, "Je peux aller à la salle de sport le midi, je fais des économies de transport et de repas.", 50),
+    seg(doc2, cConc, "pour les tâches répétitives, franchement, je suis plus efficace chez moi, personne ne me sollicite.", 45),
+    seg(doc2, cManag, "des points réguliers avec mon manager. Parfois je me sens un peu abandonné, je ne sais pas si ce que je fais va dans la bonne direction.", 75, "Besoin d'accompagnement managérial rapproché en début de carrière."),
+    // — Entretien 03 : Marguerite (sénior, pièce dédiée, convertie)
+    seg(doc3, cFront, "J'ai aménagé une vraie pièce de travail dans l'ancienne chambre de ma fille. Une porte que je peux fermer, ça change tout.", 90, "Stratégie spatiale de séparation — la « porte » comme frontière matérielle ET symbolique."),
+    seg(doc3, cFront, "Le soir, je ferme la porte et le travail reste derrière. C'est ma frontière à moi.", 85, "Verbatim clé du thème : la frontière se construit."),
+    seg(doc3, cForm, "L'entreprise n'a pas proposé assez de formation aux outils numériques, tout le monde s'est débrouillé.", 70),
+    seg(doc3, cForm, "Moi, j'ai dû me former sur le tas.", 40),
+    seg(doc3, cManag, "Mon chef est passé d'un contrôle des horaires à un suivi par objectifs.", 65),
+    seg(doc3, cManag, "on me juge sur ce que je produis, pas sur ma présence. Mais certains collègues le vivent mal, ils ont l'impression d'être surveillés autrement, par les outils de reporting.", 80, "Ambivalence du management par objectifs : autonomie pour les uns, surveillance algorithmique pour les autres."),
+    seg(doc3, cConc, "Moins de bruit, moins de fatigue, plus de concentration.", 55),
+    seg(doc3, cOrg, "il faut un cadre : des jours fixes, des règles claires, sinon chacun fait n'importe quoi et le collectif se délite.", 85, "Verbatim de conclusion : l'adhésion au télétravail passe par un cadre collectif."),
+    // — Focus group RH
+    seg(doc4, cEquite, "Les métiers qui ne peuvent pas télétravailler, l'accueil, la logistique, vivent mal le fait que d'autres soient chez eux. On a un vrai sujet de justice interne.", 90, "Angle mort des entretiens individuels : l'équité entre télétravaillables et non-télétravaillables."),
+    seg(doc4, cFatigue, "la fatigue liée aux visioconférences", 60, "Triangulation : confirme le vécu d'Aline au niveau collectif."),
+    seg(doc4, cIso, "le sentiment d'isolement chez les nouveaux embauchés. L'intégration à distance ne fonctionne pas bien.", 85, "Triangulation : confirme le vécu de Karim au niveau collectif."),
+    seg(doc4, cFront, "On a des salariés qui envoient des courriels le soir et le week-end.", 70),
+    seg(doc4, cFront, "La charte existe, mais elle n'est pas appliquée.", 75, "Écart règle/pratique sur le droit à la déconnexion."),
+    seg(doc4, cMateriel, "Un budget équipement de deux cents euros par salarié", 55, "Réponse organisationnelle au problème soulevé par Karim."),
+    seg(doc4, cOrg, "des jours de présence communs par équipe pour recréer du collectif", 60),
+    seg(doc4, cManag, "On forme aussi les managers au management à distance : fixer des objectifs, faire des points réguliers, repérer les signaux d'isolement.", 70),
+    seg(doc4, cManag, "C'est un changement de culture profond.", 45),
+    seg(doc4, cForm, "Il reste le chantier de la formation aux outils pour les salariés les plus éloignés du numérique.", 65, "Rejoint le vécu de Marguerite (« formée sur le tas »)."),
   ].filter(Boolean);
   p.segments.push(...segments);
 
-  p.memos.push({
-    id: uid(), targetType: "code", targetId: cIso.id, title: "Définition",
-    text: "Coder ici tout passage exprimant un sentiment de solitude, de perte de lien avec le collectif, ou une difficulté d'intégration liée à la distance.",
-    created: new Date().toISOString(),
+  // ── Mémos : définitions des codes (grille de codage) et impressions par document
+  const memo = (targetType, targetId, title, text) =>
+    p.memos.push({ id: uid(), targetType, targetId, title, text, created: new Date().toISOString() });
+
+  memo("code", cAvantages.id, "Définition",
+    "THÈME 1. Tout bénéfice attribué au télétravail par la personne (concentration, flexibilité, économies, qualité de vie). Règle : coder le bénéfice VÉCU, pas les généralités (« on dit que… »).");
+  memo("code", cDiff.id, "Définition",
+    "THÈME 2. Toute difficulté, coût ou risque attribué au télétravail. Sous-codes : isolement, frontière vie pro/perso, fatigue numérique, matériel. Un même passage peut porter deux sous-codes.");
+  memo("code", cOrg.id, "Définition",
+    "THÈME 3. Ce qui relève de l'entreprise et du collectif : pratiques managériales, formation, équité, règles communes. C'est le thème des LEVIERS d'action.");
+  memo("code", cIso.id, "Définition",
+    "Coder ici tout passage exprimant un sentiment de solitude, de perte de lien avec le collectif, ou une difficulté d'intégration/apprentissage liée à la distance.");
+  memo("code", cFront.id, "Définition + analyse",
+    "Passages sur la (non-)séparation des temps et des espaces. RÉSULTAT : la frontière n'est pas donnée, elle se CONSTRUIT (pièce dédiée de Marguerite vs salon d'Aline) — c'est l'ancienneté de télétravail qui fait la différence, pas l'âge.");
+  memo("code", cManag.id, "Définition + analyse",
+    "Pratiques d'encadrement à distance. RÉSULTAT : le passage au management par objectifs est apprécié mais ambivalent (autonomie ↔ sentiment de surveillance par le reporting). Le besoin de points réguliers est maximal chez le junior.");
+  memo("document", doc1.id, "Impression générale",
+    "Profil expérimenté avec charge familiale : adhésion forte (gain de temps) mais porosité des temps maximale — bureau dans le salon, courriels tardifs. Cas d'école pour le thème Frontière.");
+  memo("document", doc2.id, "Impression générale",
+    "Profil junior : le télétravail interroge surtout l'apprentissage du métier, le matériel et l'accompagnement managérial. Contre-cas des récits enthousiastes.");
+  memo("document", doc3.id, "Impression générale",
+    "Profil sénior « convertie » : trajectoire réticence → adhésion. Porteuse des stratégies gagnantes (pièce dédiée, cadre, objectifs). Verbatims de conclusion du rapport.");
+  memo("document", doc4.id, "Impression générale",
+    "Regard organisationnel : triangule les trois entretiens (fatigue visio, isolement des nouveaux, déconnexion) et ajoute l'angle mort de l'équité interne. Les actions RH répondent point par point aux difficultés individuelles.");
+
+  // ── Requêtes sauvegardées (combinaisons de filtres prêtes à rejouer)
+  const allDocs = [doc1.id, doc2.id, doc3.id, doc4.id];
+  const q = (name, docs, codes, mode) =>
+    p.savedQueries.push({ id: uid(), name, activatedDocs: docs, activatedCodes: codes, retrievalMode: mode, created: new Date().toISOString() });
+  q("Frontière vie pro/perso (tous les documents)", allDocs, [cFront.id], "or");
+  q("Toutes les difficultés — entretiens individuels", [doc1.id, doc2.id, doc3.id], [cIso.id, cFront.id, cFatigue.id, cMateriel.id], "or");
+  q("Avantages perçus (tous)", allDocs, [cConc.id, cFlex.id], "or");
+  q("Leviers organisationnels (focus group)", [doc4.id], [cManag.id, cForm.id, cEquite.id, cOrg.id], "or");
+
+  // ── Carte conceptuelle : le modèle final des résultats
+  const n = (label, x, y, color, w) => ({ id: uid(), label, x, y, color, width: w, height: 36 });
+  const nVecu = n("VÉCU DU TÉLÉTRAVAIL", 430, 40, "#3a7ca5", 200);
+  const nAvant = n("Avantages : concentration, flexibilité", 120, 150, "#2e9e6b", 250);
+  const nDiff = n("Difficultés : isolement, frontière, fatigue", 430, 260, "#d64545", 260);
+  const nStrat = n("Stratégies individuelles (pièce dédiée, porte fermée)", 120, 370, "#e8a33d", 260);
+  const nCadre = n("Cadre collectif (jours fixes, déconnexion)", 740, 150, "#7b5ea7", 250);
+  const nManag = n("Management par objectifs + points réguliers", 740, 370, "#2ec4b6", 260);
+  const e = (from, to, label) => ({ id: uid(), from: from.id, to: to.id, label });
+  p.conceptMaps.push({
+    id: uid(), name: "Modèle des résultats",
+    nodes: [nVecu, nAvant, nDiff, nStrat, nCadre, nManag],
+    edges: [
+      e(nAvant, nVecu, "renforce l'adhésion"),
+      e(nDiff, nVecu, "fragilise"),
+      e(nStrat, nDiff, "atténue (avec l'ancienneté)"),
+      e(nCadre, nDiff, "prévient"),
+      e(nManag, nDiff, "atténue (surtout juniors)"),
+      e(nManag, nVecu, "ambivalent : autonomie / surveillance"),
+    ],
   });
-  p.memos.push({
-    id: uid(), targetType: "document", targetId: doc2.id, title: "Impression générale",
-    text: "Profil junior : le télétravail interroge surtout l'apprentissage du métier et l'accompagnement managérial. À comparer avec les profils expérimentés.",
-    created: new Date().toISOString(),
-  });
+
+  // ── Références bibliographiques (chapitre Références du rapport)
+  const ref = (type, authors, year, title, container, publisher, doi) =>
+    p.bibliography.push({ id: uid(), type, authors, year, title, container, publisher, volume: "", issue: "", pages: "", doi });
+  ref("article", ["Braun, V.", "Clarke, V."], "2006", "Using thematic analysis in psychology", "Qualitative Research in Psychology, 3(2)", "", "10.1191/1478088706qp063oa");
+  ref("book", ["Paillé, P.", "Mucchielli, A."], "2021", "L'analyse qualitative en sciences humaines et sociales (5e éd.)", "", "Armand Colin", "");
+  ref("article", ["Vayre, É."], "2019", "Les incidences du télétravail sur le travailleur dans les domaines professionnel, familial et social", "Le travail humain, 82(1)", "", "10.3917/th.821.0001");
 
   return p;
 }

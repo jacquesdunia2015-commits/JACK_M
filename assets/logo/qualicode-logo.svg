@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 320" role="img" aria-label="QualiCode — analyse qualitative">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#17334f"/>
+      <stop offset="1" stop-color="#3a7ca5"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icône -->
+  <g transform="translate(30,32) scale(0.5)">
+    <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
+    <circle cx="250" cy="240" r="140" fill="none" stroke="#ffffff" stroke-width="30"/>
+    <rect x="165" y="177" width="88" height="26" rx="13" fill="#2ec4b6"/>
+    <rect x="261" y="177" width="74" height="26" rx="13" fill="#ffffff" opacity="0.85"/>
+    <rect x="150" y="227" width="70" height="26" rx="13" fill="#ffffff" opacity="0.85"/>
+    <rect x="228" y="227" width="96" height="26" rx="13" fill="#ee6352"/>
+    <rect x="165" y="277" width="70" height="26" rx="13" fill="#f6b93b"/>
+    <rect x="243" y="277" width="92" height="26" rx="13" fill="#ffffff" opacity="0.85"/>
+    <line x1="345" y1="335" x2="425" y2="415" stroke="#f6b93b" stroke-width="38" stroke-linecap="round"/>
+  </g>
+
+  <!-- Nom -->
+  <text x="330" y="185" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="122" font-weight="700" letter-spacing="-2">
+    <tspan fill="#17334f">Quali</tspan><tspan fill="#3a7ca5">Code</tspan>
+  </text>
+
+  <!-- Devise -->
+  <text x="334" y="248" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="41" font-weight="400" fill="#5a6b7a">L'analyse qualitative, simple et hors ligne</text>
+</svg>
