@@ -20,6 +20,7 @@ import { notificationsRouter } from './routes/notifications.js';
 export function createApp(opts: { webDist?: string } = {}) {
   const app = express();
   app.disable('x-powered-by');
+  if (config.trustProxy) app.set('trust proxy', 1);
   app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: 'same-site' } }));
   app.use(cors({ origin: config.appUrl }));
   app.use(express.json({ limit: '1mb' }));

@@ -81,7 +81,13 @@ Sans `SMTP_HOST`, les emails sont **simulés** : ils s'affichent dans la console
 avec le statut « Simulé » dans l'historique des alertes. Pour envoyer de vrais emails, renseignez les
 variables `SMTP_*` dans `server/.env` (Brevo, SendGrid et Gmail fonctionnent en SMTP).
 
-### Production
+### Mise en ligne
+
+**Render, en un clic** : voir **[DEPLOIEMENT.md](DEPLOIEMENT.md)** (lien de déploiement, étapes, limites
+de l'offre gratuite, emails, nom de domaine). Le fichier `render.yaml` à la racine du dépôt décrit le
+service et sa base de données.
+
+### Production (autre hébergeur)
 
 ```bash
 npm run build        # compile l'API (server/dist) et l'interface (web/dist)
