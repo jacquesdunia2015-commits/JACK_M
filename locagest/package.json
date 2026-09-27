@@ -15,5 +15,8 @@
     "seed": "npm run seed -w server",
     "test": "npm test -w server && npm test -w web",
     "typecheck": "npm run typecheck -w server && npm run typecheck -w web"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

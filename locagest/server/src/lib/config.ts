@@ -17,7 +17,11 @@ export const config = {
   jwtSecret: required('JWT_SECRET', isTest ? 'secret-de-test' : undefined),
   port: Number(process.env.PORT ?? 4000),
   timezone: process.env.APP_TIMEZONE ?? 'Africa/Kinshasa',
-  appUrl: process.env.APP_URL ?? 'http://localhost:5173',
+  // Adresse publique (liens des emails). Render la fournit dans RENDER_EXTERNAL_URL.
+  appUrl: process.env.APP_URL ?? process.env.RENDER_EXTERNAL_URL ?? 'http://localhost:5173',
+  // Derrière un proxy (Render, Nginx…), l'adresse IP du visiteur est dans X-Forwarded-For :
+  // indispensable pour limiter les tentatives de connexion par visiteur et non globalement.
+  trustProxy: Boolean(process.env.TRUST_PROXY ?? process.env.RENDER),
   uploadDir: process.env.UPLOAD_DIR ?? 'uploads',
   smtp: {
     host: process.env.SMTP_HOST ?? '',
