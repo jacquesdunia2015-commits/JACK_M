@@ -101,6 +101,15 @@ async function main() {
       )
     ).rows[0].id;
     await c.query('UPDATE tenants SET user_id = $1 WHERE id = $2', [portal, tenantIds[0]]);
+
+    // Une conversation de démonstration, avec un message non lu pour le bailleur
+    await c.query(
+      `INSERT INTO messages(owner_id, tenant_id, sender_role, body, read_at, created_at) VALUES
+        ($1, $2, 'bailleur', 'Bonjour Madame Kabeya, le robinet de la cuisine a-t-il bien été réparé ?', now() - interval '2 days', now() - interval '2 days'),
+        ($1, $2, 'locataire', 'Oui, le plombier est passé hier. Merci !', now() - interval '1 day', now() - interval '1 day'),
+        ($1, $2, 'locataire', 'Je voulais aussi savoir si je peux payer le loyer d''octobre par Mobile Money.', NULL, now() - interval '3 hours')`,
+      [owner, tenantIds[0]],
+    );
   });
   console.log('Données de démonstration créées.');
   console.log('  Bailleur   : demo@locagest.app / demo1234');

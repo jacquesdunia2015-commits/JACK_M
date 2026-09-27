@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
+import { useNotifications } from '../lib/notifications';
 
 const NAV = {
   bailleur: [
@@ -8,9 +9,14 @@ const NAV = {
     ['/proprietes', 'Propriétés', '🏠'],
     ['/locataires', 'Locataires', '👥'],
     ['/baux', 'Baux & garanties', '📄'],
+    ['/messages', 'Messages', '💬'],
+    ['/rapports', 'Rapports', '📈'],
     ['/alertes', 'Historique des alertes', '🔔'],
   ],
-  locataire: [['/', 'Mon bail', '📄']],
+  locataire: [
+    ['/', 'Mon bail', '📄'],
+    ['/messages', 'Messages', '💬'],
+  ],
   admin: [
     ['/', 'Administration', '⚙️'],
     ['/alertes', 'Historique des alertes', '🔔'],
@@ -19,6 +25,7 @@ const NAV = {
 
 export function Layout() {
   const { user, logout } = useAuth();
+  const { counts } = useNotifications();
   const [open, setOpen] = useState(false);
   if (!user) return null;
   const links = NAV[user.role];
@@ -37,6 +44,7 @@ export function Layout() {
         >
           <span aria-hidden>{icon}</span>
           {label}
+          <NavBadge to={to} counts={counts} />
         </NavLink>
       ))}
     </nav>
@@ -68,8 +76,11 @@ export function Layout() {
       {/* Mobile */}
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
         {brand}
-        <button className="btn-secondary px-3" onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Menu">
+        <button className="btn-secondary relative px-3" onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Menu">
           ☰
+          {counts.unreadMessages + counts.urgentGuarantees > 0 && (
+            <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-red-500 ring-2 ring-white" aria-hidden />
+          )}
         </button>
       </header>
       {open && (
@@ -92,5 +103,17 @@ export function Layout() {
         </div>
       </main>
     </div>
+  );
+}
+
+function NavBadge({ to, counts }: { to: string; counts: { unreadMessages: number; urgentGuarantees: number } }) {
+  const n = to === '/messages' ? counts.unreadMessages : to === '/baux' ? counts.urgentGuarantees : 0;
+  if (!n) return null;
+  const label = to === '/messages' ? `${n} message(s) non lu(s)` : `${n} garantie(s) à moins de 30 jours`;
+  return (
+    <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white" title={label}>
+      {n}
+      <span className="sr-only"> — {label}</span>
+    </span>
   );
 }

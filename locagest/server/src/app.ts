@@ -13,6 +13,9 @@ import { leasesRouter } from './routes/leases.js';
 import { dashboardRouter, alertsRouter } from './routes/dashboard.js';
 import { adminRouter } from './routes/admin.js';
 import { portalRouter } from './routes/portal.js';
+import { messagesRouter } from './routes/messages.js';
+import { reportsRouter } from './routes/reports.js';
+import { notificationsRouter } from './routes/notifications.js';
 
 export function createApp(opts: { webDist?: string } = {}) {
   const app = express();
@@ -32,6 +35,9 @@ export function createApp(opts: { webDist?: string } = {}) {
   app.use('/api/alerts', authenticate, alertsRouter);
   app.use('/api/admin', authenticate, adminRouter);
   app.use('/api/portal', authenticate, portalRouter);
+  app.use('/api/messages', authenticate, messagesRouter);
+  app.use('/api/reports', authenticate, reportsRouter);
+  app.use('/api/notifications', authenticate, notificationsRouter);
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'Route inconnue')));
 
   app.use('/uploads', express.static(path.resolve(config.uploadDir), { maxAge: '7d', fallthrough: false }));

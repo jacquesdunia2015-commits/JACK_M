@@ -60,3 +60,38 @@ ${lease.terms ? `<h2>Article 5 — Conditions particulières</h2><p>${esc(lease.
 <div class="sign"><div>Le bailleur</div><div>Le locataire</div></div>
 </body></html>`;
 }
+
+const METHODS: Record<string, string> = { especes: 'Espèces', mobile_money: 'Mobile Money', virement: 'Virement', autre: 'Autre' };
+const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+/** Reçu de paiement de loyer imprimable (§3.5). */
+export function renderReceipt({ payment, lease, landlord, tenant, property }: any): string {
+  const [y, m] = payment.period.split('-');
+  return `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Reçu n° ${String(payment.id).padStart(6, '0')}</title>
+<style>
+ body{font-family:Georgia,serif;max-width:640px;margin:40px auto;padding:0 24px;color:#111;line-height:1.5}
+ .box{border:2px solid #111;padding:28px} h1{margin:0 0 4px;font-size:22px;letter-spacing:.05em}
+ .amount{font-size:26px;font-weight:bold;margin:18px 0} table{width:100%;border-collapse:collapse;margin-top:12px}
+ td{padding:5px 0;vertical-align:top} td:first-child{color:#444;width:40%}
+ .sign{margin-top:48px;text-align:right} .no-print{text-align:center;margin-bottom:20px} @media print{.no-print{display:none}}
+</style></head><body>
+<div class="no-print"><button onclick="window.print()">Imprimer / Enregistrer en PDF</button></div>
+<div class="box">
+<h1>REÇU DE LOYER</h1>
+<div>N° ${String(payment.id).padStart(6, '0')} — émis le ${frDate(payment.paid_on)}</div>
+<p>Je soussigné(e) <strong>${esc(landlord.full_name)}</strong>, bailleur, reconnais avoir reçu de
+<strong>${esc(tenant.first_name)} ${esc(tenant.last_name)}</strong> la somme de :</p>
+<div class="amount">${fmtMoney(payment.amount, lease.currency)}</div>
+<table>
+<tr><td>Au titre du loyer de</td><td>${MONTHS[Number(m) - 1]} ${y}</td></tr>
+<tr><td>Loyer mensuel</td><td>${fmtMoney(lease.monthly_rent, lease.currency)}</td></tr>
+<tr><td>Logement</td><td>${esc(property.title)} — ${esc(formatAddress(property))}</td></tr>
+<tr><td>Mode de paiement</td><td>${METHODS[payment.method] ?? esc(payment.method)}${payment.reference ? ` (réf. ${esc(payment.reference)})` : ''}</td></tr>
+<tr><td>Bail</td><td>n° ${lease.id}</td></tr>
+</table>
+${payment.amount < lease.monthly_rent ? `<p><em>Paiement partiel : ce reçu ne vaut pas quittance pour la totalité du mois.</em></p>` : ''}
+<div class="sign">Le bailleur<br><br>${esc(landlord.full_name)}</div>
+</div>
+</body></html>`;
+}

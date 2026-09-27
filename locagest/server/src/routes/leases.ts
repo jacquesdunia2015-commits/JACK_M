@@ -8,7 +8,7 @@ import { audit } from '../lib/audit.js';
 import { LEASE_SELECT, withGuarantee } from '../lib/leases.js';
 import { addDays, addMonths, daysBetween, today } from '../lib/dates.js';
 import { leasePeriods, paymentState } from '../lib/alerts.js';
-import { renderContract } from '../lib/contract.js';
+import { renderContract, renderReceipt } from '../lib/contract.js';
 
 export const leasesRouter = Router();
 leasesRouter.use(requireRole('bailleur'));
@@ -225,6 +225,18 @@ leasesRouter.delete('/:id/payments/:paymentId', async (req, res) => {
   if (!r) throw notFound('Paiement');
   await audit(me.id, 'delete', 'payment', r.id);
   res.status(204).end();
+});
+
+/** Reçu imprimable d'un paiement. */
+leasesRouter.get('/:id/payments/:paymentId/receipt', async (req, res) => {
+  const me = currentUser(req);
+  const lease = await ownedLease(me.id, idParam(req));
+  const payment = await one('SELECT * FROM payments WHERE id = $1 AND lease_id = $2', [idParam(req, 'paymentId'), lease.id]);
+  if (!payment) throw notFound('Paiement');
+  const landlord = await one('SELECT full_name FROM users WHERE id = $1', [me.id]);
+  const tenant = await one('SELECT * FROM tenants WHERE id = $1', [lease.tenant_id]);
+  const property = await one('SELECT * FROM properties WHERE id = $1', [lease.property_id]);
+  res.type('html').send(renderReceipt({ payment, lease, landlord, tenant, property }));
 });
 
 export { schedule as leaseSchedule };

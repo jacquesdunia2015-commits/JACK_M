@@ -46,3 +46,11 @@
 @utility td {
   @apply px-3 py-3 text-sm text-slate-700;
 }
+
+/* Impression des rapports : seul le contenu principal est imprimé */
+@media print {
+  aside, header, .no-print { display: none !important; }
+  main { margin-left: 0 !important; padding: 0 !important; }
+  body { background: white; }
+  .card { box-shadow: none; break-inside: avoid; }
+}

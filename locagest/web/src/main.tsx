@@ -14,6 +14,9 @@ import { AlertsHistory } from './pages/Alerts';
 import { Admin } from './pages/Admin';
 import { Portal } from './pages/Portal';
 import { Account } from './pages/Account';
+import { Messages, PortalMessages } from './pages/Messages';
+import { Reports } from './pages/Reports';
+import { NotificationsProvider } from './lib/notifications';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -45,6 +48,9 @@ function AppRoutes() {
             <Route path="baux/:id" element={<LeaseDetail />} />
             <Route path="baux/:id/modifier" element={<LeaseForm />} />
             <Route path="alertes" element={<AlertsHistory />} />
+            <Route path="messages" element={<Messages />} />
+            <Route path="messages/:tenantId" element={<Messages />} />
+            <Route path="rapports" element={<Reports />} />
           </>
         )}
         {user.role === 'admin' && (
@@ -53,7 +59,12 @@ function AppRoutes() {
             <Route path="alertes" element={<AlertsHistory />} />
           </>
         )}
-        {user.role === 'locataire' && <Route index element={<Portal />} />}
+        {user.role === 'locataire' && (
+          <>
+            <Route index element={<Portal />} />
+            <Route path="messages" element={<PortalMessages />} />
+          </>
+        )}
         <Route path="compte" element={<Account />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
@@ -65,7 +76,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <NotificationsProvider>
+          <AppRoutes />
+        </NotificationsProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { api, openContract } from '../lib/api';
+import { api, openContract, openDocument } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
 import { LEASE_STATUS, LEVELS, LEVEL_ORDER, PAYMENT_METHODS, PAYMENT_STATES, address, date, money, month, todayISO, type Level } from '../lib/format';
 import { AlertBadge, Badge, Empty, ErrorBox, Field, Loading, PageHeader, Row } from '../components/ui';
@@ -406,6 +406,12 @@ function Payments({ lease, reload }: { lease: any; reload: () => Promise<void> }
                   <span>{date(p.paid_on)} · <span className="capitalize">{month(p.period)}</span></span>
                   <span className="text-slate-500">{PAYMENT_METHODS[p.method]}{p.reference ? ` · ${p.reference}` : ''}</span>
                   <span className="font-medium">{money(p.amount, lease.currency)}</span>
+                  <button
+                    onClick={() => openDocument(`/leases/${lease.id}/payments/${p.id}/receipt`).catch((e) => setError(e.message))}
+                    className="text-xs text-brand-700 hover:underline"
+                  >
+                    Reçu
+                  </button>
                   <button onClick={() => remove(p.id)} className="text-xs text-red-700 hover:underline" aria-label="Supprimer le paiement">✕</button>
                 </li>
               ))}

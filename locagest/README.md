@@ -1,8 +1,8 @@
 # LocaGest — SaaS de gestion de locataires (MVP)
 
 MVP développé à partir du **cahier des charges « SaaS de gestion de locataires » v1.0 (25 septembre 2026)**.
-Il couvre la **Phase 1 de la roadmap** (§8), plus le suivi des paiements de loyer (§3.5), qui alimente le
-tableau de bord.
+Il couvre la **Phase 1 de la roadmap** (§8) et une partie de la **Phase 2** : suivi des paiements,
+reçus, rapports exportables, messagerie intégrée et notifications in-app.
 
 Au cœur du produit, les **alertes de garantie à quatre couleurs** (§3.4) :
 
@@ -27,15 +27,18 @@ l'historique des alertes, pour l'audit.
 | 3.3 Baux | Création et modification, date d'expiration de la garantie (par défaut la fin du bail), montant de la garantie, termes, clause de renouvellement automatique ; **renouvellement** (l'ancien bail est archivé), **clôture** (la propriété redevient vacante), **contrat imprimable / PDF** généré depuis un modèle |
 | 3.4 Alertes de garantie | Code couleur, pulsation, tableau de bord temps réel, emails 30/14/7/0 jours, **historique d'alertes** |
 | 3.5 Paiements | Enregistrement (espèces, Mobile Money, virement), échéancier mensuel **Payé / Partiel / À venir / En retard / Impayé**, emails de retard **après 5, 10 et 15 jours**, graphique des revenus sur 12 mois |
-| 3.7 (base) | Indicateurs : taux d'occupation, encaissé du mois, loyers attendus, arriérés |
+| 3.5 Reçus | **Reçu de loyer imprimable / PDF** pour chaque paiement (mention « paiement partiel » si besoin) |
+| 3.7 Rapports | Indicateurs du tableau de bord ; **rapport mensuel** (loyers par bail, paiements reçus, occupation) et **rapport annuel** (attendu, encaissé, arriérés, occupation par mois) ; **export Excel (CSV)** et **impression PDF** |
+| 3.8 Communication | **Messagerie interne** bailleur ↔ locataire (historique conservé, accusés ✓ Envoyé / ✓✓ Lu), email « nouveau message » au destinataire (sans le contenu), **notifications in-app** : badges de messages non lus et de garanties à moins de 30 jours |
 | Espace locataire | Le bailleur ouvre un accès ; le locataire consulte son bail, l'état de sa garantie et ses loyers |
 | Administration | Statistiques de la plateforme, liste des bailleurs, **changement d'offre**, suspension de compte, déclenchement manuel des alertes |
 | 7. Offres | Limites appliquées : Starter 3 propriétés / 10 locataires, Pro 20 propriétés, Enterprise illimité |
 | 6. Sécurité | Mots de passe hachés (bcrypt), en-têtes de sécurité (helmet), isolation stricte des données entre bailleurs, **journal d'audit** des actions critiques |
 
-**Pas encore dans le MVP** (phases 2 à 4) : notifications push, SMS / WhatsApp, messagerie interne,
-multi-langue, annonces, rapports PDF/Excel, 2FA, application mobile, mode hors ligne, e-signature,
-inspections, scoring IA, marketplace, intégrations Mobile Money.
+**Pas encore dans le MVP** : notifications push (Firebase : il faut un projet et ses clés), multi-langue
+FR / EN / Lingala (la traduction en lingala doit être relue par un locuteur), SMS / WhatsApp, annonces,
+2FA, application mobile, mode hors ligne, e-signature, inspections, scoring IA, marketplace,
+intégrations Mobile Money.
 
 ## Démarrage rapide
 
@@ -77,7 +80,7 @@ prévoyez un volume persistant, ou S3 plus tard.
 ### Tests
 
 ```bash
-npm test             # 49 tests : règles d'alerte, API, droits d'accès, photos (base locagest_test)
+npm test             # 55 tests : règles d'alerte, API, droits d'accès, photos, messagerie, rapports, reçus (base locagest_test)
 npm run typecheck
 ```
 
@@ -91,7 +94,8 @@ locagest/
 │   ├── src/db/migrations/  schéma SQL versionné
 │   ├── src/lib/alerts.ts   règles métier : couleurs, paliers d'emails, statut des loyers
 │   ├── src/lib/notifier.ts tâche horaire d'envoi des alertes (idempotente)
-│   ├── src/routes/         auth, properties, tenants, leases (+ paiements), dashboard, admin, portal
+│   ├── src/routes/         auth, properties, tenants, leases (+ paiements, reçus), dashboard, reports,
+│   │                       messages, notifications, admin, portal
 │   └── test/               vitest + supertest
 └── web/                    React 19, TypeScript, Vite, Tailwind CSS 4, React Router
 ```
@@ -115,13 +119,17 @@ sont stockées sans heure. Une échéance ne glisse donc pas d'un jour selon le 
 | POST/DELETE | `/api/leases/:id/payments[/:paymentId]` | bailleur |
 | GET | `/api/dashboard` | bailleur |
 | GET | `/api/alerts`, `POST /api/alerts/run` (admin) | bailleur, admin |
+| GET | `/api/leases/:id/payments/:paymentId/receipt` | bailleur |
+| GET | `/api/reports/monthly?month=AAAA-MM`, `/api/reports/annual?year=AAAA` (`&format=csv`) | bailleur |
+| GET/POST | `/api/messages`, `/api/messages/:tenantId` | bailleur |
+| GET/POST | `/api/portal/messages` | locataire |
+| GET | `/api/notifications` (compteurs des badges) | bailleur, locataire |
 | GET | `/api/portal/leases` | locataire |
 | GET/PATCH | `/api/admin/stats`, `/api/admin/users[/:id]`, `/api/admin/audit` | admin |
 
-## Prochaines étapes suggérées (Phase 2)
+## Prochaines étapes suggérées
 
-1. Notifications SMS / WhatsApp (Twilio, WhatsApp Business) sur le même mécanisme que les emails
-2. Reçus de paiement PDF et rapports exportables (Excel / PDF)
+1. Fin de la Phase 2 : notifications push (Firebase Cloud Messaging) et multi-langue FR / EN / Lingala
+2. Notifications SMS / WhatsApp (Twilio, WhatsApp Business) sur le même mécanisme que les emails
 3. Stockage des photos et documents sur S3, contrats signés téléversés
-4. Multi-langue FR / EN / Lingala
-5. Paiement de l'abonnement (Mobile Money, carte) et changement d'offre en libre-service
+4. Paiement de l'abonnement (Mobile Money, carte) et changement d'offre en libre-service

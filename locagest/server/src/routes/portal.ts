@@ -3,8 +3,9 @@ import { query } from '../db/pool.js';
 import { currentUser, requireRole } from '../lib/auth.js';
 import { LEASE_SELECT, withGuarantee } from '../lib/leases.js';
 import { leaseSchedule } from './leases.js';
+import { portalMessagesRouter } from './messages.js';
 
-/** Espace locataire : consultation de ses baux, de sa garantie et de ses loyers. */
+/** Espace locataire : consultation de ses baux, de sa garantie et de ses loyers ; messagerie. */
 export const portalRouter = Router();
 portalRouter.use(requireRole('locataire'));
 
@@ -20,3 +21,5 @@ portalRouter.get('/leases', async (req, res) => {
   for (const l of rows) out.push({ ...withGuarantee(l), schedule: await leaseSchedule(l) });
   res.json({ landlord: landlord.rows[0] ?? null, leases: out });
 });
+
+portalRouter.use('/messages', portalMessagesRouter);

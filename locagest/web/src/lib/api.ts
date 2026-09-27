@@ -51,11 +51,26 @@ export async function api<T = any>(path: string, opts: { method?: string; body?:
   return (opts.raw ? res.text() : res.json()) as Promise<T>;
 }
 
-/** Ouvre le contrat HTML (authentifié) dans un nouvel onglet, prêt à imprimer. */
-export async function openContract(leaseId: number) {
+/** Ouvre un document HTML de l'API (authentifié) dans un nouvel onglet, prêt à imprimer. */
+export async function openDocument(path: string) {
   const win = window.open('', '_blank');
-  const html = await api<string>(`/leases/${leaseId}/contract`, { raw: true });
+  const html = await api<string>(path, { raw: true });
   const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
   if (win) win.location.href = url;
   else window.location.href = url;
+}
+
+export const openContract = (leaseId: number) => openDocument(`/leases/${leaseId}/contract`);
+
+/** Télécharge un fichier de l'API (authentifié), par exemple un export CSV. */
+export async function download(path: string, filename: string) {
+  const token = getToken();
+  const res = await fetch(`/api${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  if (!res.ok) throw new ApiError(res.status, `Téléchargement impossible (${res.status})`);
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

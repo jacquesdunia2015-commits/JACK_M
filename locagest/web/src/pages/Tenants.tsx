@@ -202,6 +202,7 @@ export function TenantDetail() {
         actions={
           <>
             {!hasActive && !t.blacklisted && <Link to={`/baux/nouveau?tenantId=${t.id}`} className="btn-primary">Créer un bail</Link>}
+            <Link to={`/messages/${t.id}`} className="btn-secondary">💬 Message</Link>
             <Link to={`/locataires/${t.id}/modifier`} className="btn-secondary">Modifier</Link>
             <button onClick={remove} className="btn-danger">Supprimer</button>
           </>
