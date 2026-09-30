@@ -231,4 +231,12 @@ export const sw: Dictionnaire = {
   'inscription.en_cours': 'Akaunti inafunguliwa…',
   'inscription.deja_compte': 'Tayari una akaunti?',
   'inscription.vers_connexion': 'Ingia',
+  'stock.niveau': 'Kiwango',
+  'stock.niveau_critique': 'Karibu kuisha',
+  'stock.niveau_bas': 'Imebaki kidogo',
+  'stock.niveau_suffisant': 'Inatosha',
+  'stock.couverture': 'Muda unaokadiriwa',
+  'stock.jours_abrege': 'siku',
+  'stock.tous': 'Zote',
+  'stock.regle': 'Rangi inakadiriwa kutokana na mauzo ya siku 30 zilizopita na kiwango cha kuagiza upya: machungwa ikiwa yamebaki mauzo ya chini ya wiki moja, njano chini ya wiki mbili.',
 };

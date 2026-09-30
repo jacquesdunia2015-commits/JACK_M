@@ -153,6 +153,49 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .tag.warn { background: var(--attention-clair); color: var(--attention); }
 .tag.danger { background: var(--alerte-clair); color: var(--alerte); }
 
+/* Niveaux de stock : rouge rupture, orange presque épuisé, jaune il en
+   reste peu, vert suffisant. La pastille double la couleur d'un libellé,
+   pour qui distingue mal les couleurs. */
+:root {
+  --niveau-rupture: #b3261e;    --niveau-rupture-clair: #fdecea;    --niveau-rupture-vif: #dc2626;
+  --niveau-critique: #b93d0a;   --niveau-critique-clair: #ffedd5;   --niveau-critique-vif: #f97316;
+  --niveau-bas: #7a5f00;        --niveau-bas-clair: #fef6c3;        --niveau-bas-vif: #eab308;
+  --niveau-suffisant: #12695a;  --niveau-suffisant-clair: #e3f5f0;  --niveau-suffisant-vif: #16a34a;
+}
+.niveau {
+  display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;
+  padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+}
+.niveau::before {
+  content: ''; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: currentColor;
+}
+.niveau.rupture { background: var(--niveau-rupture-clair); color: var(--niveau-rupture); }
+.niveau.critique { background: var(--niveau-critique-clair); color: var(--niveau-critique); }
+.niveau.bas { background: var(--niveau-bas-clair); color: var(--niveau-bas); }
+.niveau.suffisant { background: var(--niveau-suffisant-clair); color: var(--niveau-suffisant); }
+/* Texte foncé pour rester lisible, pastille et liseré vifs pour se
+   distinguer d'un coup d'œil (le rouge et l'orange foncés se ressemblent). */
+.niveau.rupture::before { background: var(--niveau-rupture-vif); }
+.niveau.critique::before { background: var(--niveau-critique-vif); }
+.niveau.bas::before { background: var(--niveau-bas-vif); }
+.niveau.suffisant::before { background: var(--niveau-suffisant-vif); }
+tr.niveau-rupture > td:first-child { box-shadow: inset 4px 0 0 var(--niveau-rupture-vif); }
+tr.niveau-critique > td:first-child { box-shadow: inset 4px 0 0 var(--niveau-critique-vif); }
+tr.niveau-bas > td:first-child { box-shadow: inset 4px 0 0 var(--niveau-bas-vif); }
+tr.niveau-suffisant > td:first-child { box-shadow: inset 4px 0 0 var(--niveau-suffisant-vif); }
+
+.niveaux { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+.niveaux a {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.4rem 0.75rem; border: 1px solid var(--bord); border-radius: 999px;
+  background: var(--blanc); color: var(--encre); font-size: 0.85rem;
+}
+.niveaux a:hover { background: var(--gris-clair); text-decoration: none; }
+.niveaux a.actif { border-color: var(--encre); font-weight: 600; }
+.niveaux strong { font-variant-numeric: tabular-nums; }
+.niveaux .niveau { padding: 0; background: none; font-size: 0; gap: 0; }
+.niveaux .niveau::before { width: 0.7rem; height: 0.7rem; }
+
 .banner {
   border-radius: var(--rayon); padding: 0.8rem 1rem; margin-bottom: 1.25rem;
   font-size: 0.9rem; border: 1px solid transparent;

@@ -231,4 +231,12 @@ export const bm: Dictionnaire = {
   'inscription.en_cours': 'Jatebɔ bɛ dayɛlɛ…',
   'inscription.deja_compte': 'I ye jatebɔ sɔrɔ kaban wa?',
   'inscription.vers_connexion': 'Don',
+  'stock.niveau': 'Hakɛ',
+  'stock.niveau_critique': 'A banni surunya',
+  'stock.niveau_bas': 'A tɔ ka dɔgɔ',
+  'stock.niveau_suffisant': 'A bɛ se',
+  'stock.couverture': 'Waati min bɛ jateminɛ',
+  'stock.jours_abrege': 'tile',
+  'stock.tous': 'U bɛɛ',
+  'stock.regle': 'Kulɛri bɛ jateminɛ ni tile 30 laban feereli ye ani ka segin ka san hakɛ ye: nɛrɛmugu ni min tolen tɛ se dɔgɔkun kelen ma, nɛrɛ ni a tɛ se dɔgɔkun fila ma.',
 };

@@ -231,4 +231,12 @@ export const hi: Dictionnaire = {
   'inscription.en_cours': 'खाता बनाया जा रहा है…',
   'inscription.deja_compte': 'पहले से खाता है?',
   'inscription.vers_connexion': 'साइन इन करें',
+  'stock.niveau': 'स्तर',
+  'stock.niveau_critique': 'लगभग ख़त्म',
+  'stock.niveau_bas': 'थोड़ा बचा है',
+  'stock.niveau_suffisant': 'पर्याप्त',
+  'stock.couverture': 'अनुमानित अवधि',
+  'stock.jours_abrege': 'दिन',
+  'stock.tous': 'सभी',
+  'stock.regle': 'रंग पिछले 30 दिनों की बिक्री और पुनः-ऑर्डर सीमा से अनुमानित है: एक सप्ताह से कम की बिक्री बचे तो नारंगी, दो सप्ताह से कम तो पीला।',
 };

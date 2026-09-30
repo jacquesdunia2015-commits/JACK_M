@@ -231,4 +231,12 @@ export const de: Dictionnaire = {
   'inscription.en_cours': 'Konto wird erstellt…',
   'inscription.deja_compte': 'Sie haben bereits ein Konto?',
   'inscription.vers_connexion': 'Anmelden',
+  'stock.niveau': 'Stufe',
+  'stock.niveau_critique': 'Fast aufgebraucht',
+  'stock.niveau_bas': 'Nur noch wenig',
+  'stock.niveau_suffisant': 'Ausreichend',
+  'stock.couverture': 'Geschätzte Reichweite',
+  'stock.jours_abrege': 'T',
+  'stock.tous': 'Alle',
+  'stock.regle': 'Farbe geschätzt aus den Verkäufen der letzten 30 Tage und dem Meldebestand: orange bei weniger als einer Woche Verkauf, gelb bei weniger als zwei Wochen.',
 };

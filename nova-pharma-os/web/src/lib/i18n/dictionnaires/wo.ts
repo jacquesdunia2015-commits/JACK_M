@@ -231,4 +231,12 @@ export const wo: Dictionnaire = {
   'inscription.en_cours': 'Kont bi ngi ubbiku…',
   'inscription.deja_compte': 'Am nga kont ba noppi?',
   'inscription.vers_connexion': 'Dugg',
+  'stock.niveau': 'Tolluwaay',
+  'stock.niveau_critique': 'Lu jege jeex',
+  'stock.niveau_bas': 'Des na tuuti',
+  'stock.niveau_suffisant': 'Doy na',
+  'stock.couverture': 'Diir bu ñu jàppe',
+  'stock.jours_abrege': 'fan',
+  'stock.tous': 'Lépp',
+  'stock.regle': 'Melo bi dañu koy natt ci jaay yi ci 30 fan yi weesu ak dayo bi ñuy jëndaat: oraas su desee lu yées benn ayu-bés ci jaay, mboq su desee lu yées ñaari ayu-bés.',
 };

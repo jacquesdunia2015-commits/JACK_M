@@ -231,4 +231,12 @@ export const rn: Dictionnaire = {
   'inscription.en_cours': 'Konte iriko iragururwa…',
   'inscription.deja_compte': 'Usanzwe ufise konte?',
   'inscription.vers_connexion': 'Injira',
+  'stock.niveau': 'Urugero',
+  'stock.niveau_critique': 'Hafi gushira',
+  'stock.niveau_bas': 'Hasigaye bike',
+  'stock.niveau_suffisant': 'Birakwiye',
+  'stock.couverture': 'Igihe bizomara',
+  'stock.jours_abrege': 'imis.',
+  'stock.tous': 'Vyose',
+  'stock.regle': 'Ibara rigenwa hisunzwe ivyadandajwe mu misi 30 iheze n\'urugero rwo gusubira kurangura: icunga nimba hasigaye ivyo kudandaza munsi y\'indwi imwe, umuhondo munsi y\'indwi zibiri.',
 };

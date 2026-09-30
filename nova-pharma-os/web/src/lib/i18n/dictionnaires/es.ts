@@ -231,4 +231,12 @@ export const es: Dictionnaire = {
   'inscription.en_cours': 'Creando la cuenta…',
   'inscription.deja_compte': '¿Ya tiene una cuenta?',
   'inscription.vers_connexion': 'Iniciar sesión',
+  'stock.niveau': 'Nivel',
+  'stock.niveau_critique': 'Casi agotado',
+  'stock.niveau_bas': 'Queda poco',
+  'stock.niveau_suffisant': 'Suficiente',
+  'stock.couverture': 'Cobertura estimada',
+  'stock.jours_abrege': 'd',
+  'stock.tous': 'Todos',
+  'stock.regle': 'Color estimado a partir de las ventas de los últimos 30 días y del punto de pedido: naranja si queda menos de una semana de ventas, amarillo si quedan menos de dos semanas.',
 };

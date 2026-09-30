@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 96 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 104 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -285,7 +285,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             96 tests de bout en bout
+│   └── test/             104 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français

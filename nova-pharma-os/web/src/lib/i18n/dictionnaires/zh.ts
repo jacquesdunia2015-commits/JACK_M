@@ -229,4 +229,12 @@ export const zh: Dictionnaire = {
   'inscription.en_cours': '正在创建账户…',
   'inscription.deja_compte': '已有账户？',
   'inscription.vers_connexion': '登录',
+  'stock.niveau': '级别',
+  'stock.niveau_critique': '即将售罄',
+  'stock.niveau_bas': '所剩不多',
+  'stock.niveau_suffisant': '充足',
+  'stock.couverture': '预计可售天数',
+  'stock.jours_abrege': '天',
+  'stock.tous': '全部',
+  'stock.regle': '颜色根据最近 30 天的销量和补货点估算：剩余不足一周销量为橙色，不足两周为黄色。',
 };

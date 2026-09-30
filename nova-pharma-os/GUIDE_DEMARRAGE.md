@@ -217,6 +217,30 @@ besoin.
 
 ---
 
+## Lire les couleurs du stock
+
+Dans *Stock et lots*, chaque produit porte une couleur, et les plus urgents
+remontent en haut de la liste :
+
+| Couleur | Signification | Quand |
+|---|---|---|
+| 🔴 **Rouge — Rupture** | Plus rien en stock | Quantité à zéro |
+| 🟠 **Orange — Presque épuisé** | À commander tout de suite | Moins d'**une semaine** de ventes, ou la moitié du seuil |
+| 🟡 **Jaune — Il en reste peu** | À prévoir dans la prochaine commande | Moins de **deux semaines** de ventes, ou le seuil atteint |
+| 🟢 **Vert — Suffisant** | Rien à faire | Au-delà |
+
+L'application **estime** combien de jours vont durer vos boîtes : elle regarde
+ce que vous avez vendu ces 30 derniers jours. Si vous vendez 3 boîtes par jour
+et qu'il en reste 15, cela fait environ 5 jours : orange. La colonne
+*Couverture estimée* affiche ce nombre de jours.
+
+Pour un produit qui ne s'est pas encore vendu, elle se fie au **seuil** que vous
+avez fixé dans le catalogue ; sans seuil non plus, 5 unités ou moins passent
+en orange et 10 ou moins en jaune. Cliquez sur une couleur, au-dessus du
+tableau, pour n'afficher que ces produits.
+
+---
+
 ## Créer des comptes
 
 Chaque compte se crée avec les trois mêmes informations : **un numéro de

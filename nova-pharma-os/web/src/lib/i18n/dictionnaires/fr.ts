@@ -248,6 +248,14 @@ export const fr = {
   'inscription.en_cours': 'Création du compte…',
   'inscription.deja_compte': 'Vous avez déjà un compte ?',
   'inscription.vers_connexion': 'Se connecter',
+  'stock.niveau': 'Niveau',
+  'stock.niveau_critique': 'Presque épuisé',
+  'stock.niveau_bas': 'Il en reste peu',
+  'stock.niveau_suffisant': 'Suffisant',
+  'stock.couverture': 'Couverture estimée',
+  'stock.jours_abrege': 'j',
+  'stock.tous': 'Tous',
+  'stock.regle': 'Couleur estimée d\'après les ventes des 30 derniers jours et le seuil de réapprovisionnement : orange s\'il reste moins d\'une semaine de ventes, jaune moins de deux semaines.',
 } as const;
 
 export type CleTraduction = keyof typeof fr;

@@ -237,4 +237,12 @@ export const swCD: Dictionnaire = {
   'inscription.en_cours': 'Akaunti inafunguliwa…',
   'inscription.deja_compte': 'Uko tayari na akaunti?',
   'inscription.vers_connexion': 'Kuingia',
+  'stock.niveau': 'Kiwango',
+  'stock.niveau_critique': 'Karibu kwisha',
+  'stock.niveau_bas': 'Imebakia kidogo',
+  'stock.niveau_suffisant': 'Inatosha',
+  'stock.couverture': 'Muda inakadiriwa',
+  'stock.jours_abrege': 'siku',
+  'stock.tous': 'Zote',
+  'stock.regle': 'Rangi inakadiriwa kufuatana na mauzo ya siku 30 zilizopita na kiwango cha kuagiza tena: machungwa kama imebakia mauzo ya chini ya juma moja, manjano chini ya majuma mbili.',
 };

@@ -231,4 +231,12 @@ export const rw: Dictionnaire = {
   'inscription.en_cours': 'Konti irimo gufungurwa…',
   'inscription.deja_compte': 'Usanzwe ufite konti?',
   'inscription.vers_connexion': 'Injira',
+  'stock.niveau': 'Urwego',
+  'stock.niveau_critique': 'Hafi gushira',
+  'stock.niveau_bas': 'Hasigaye bike',
+  'stock.niveau_suffisant': 'Birahagije',
+  'stock.couverture': 'Igihe bizamara',
+  'stock.jours_abrege': 'imin.',
+  'stock.tous': 'Byose',
+  'stock.regle': 'Ibara rigenwa hashingiwe ku byagurishijwe mu minsi 30 ishize no ku rugero rwo kongera gutumiza: icunga niba hasigaye ibyo kugurisha munsi y\'icyumweru kimwe, umuhondo munsi y\'ibyumweru bibiri.',
 };

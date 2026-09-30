@@ -231,4 +231,12 @@ export const en: Dictionnaire = {
   'inscription.en_cours': 'Creating the account…',
   'inscription.deja_compte': 'Already have an account?',
   'inscription.vers_connexion': 'Sign in',
+  'stock.niveau': 'Level',
+  'stock.niveau_critique': 'Almost out',
+  'stock.niveau_bas': 'Running low',
+  'stock.niveau_suffisant': 'Sufficient',
+  'stock.couverture': 'Estimated cover',
+  'stock.jours_abrege': 'd',
+  'stock.tous': 'All',
+  'stock.regle': 'Colour estimated from the last 30 days of sales and the reorder point: orange when less than one week of sales remains, yellow when less than two weeks.',
 };

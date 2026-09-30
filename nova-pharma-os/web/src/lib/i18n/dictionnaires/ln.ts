@@ -231,4 +231,12 @@ export const ln: Dictionnaire = {
   'inscription.en_cours': 'Compte ezali kofungwama…',
   'inscription.deja_compte': 'Ozali na compte kala?',
   'inscription.vers_connexion': 'Kota',
+  'stock.niveau': 'Ndenge',
+  'stock.niveau_critique': 'Pene esila',
+  'stock.niveau_bas': 'Etikali moke',
+  'stock.niveau_suffisant': 'Ekoki',
+  'stock.couverture': 'Mikolo oyo ekoki',
+  'stock.jours_abrege': 'mik.',
+  'stock.tous': 'Nyonso',
+  'stock.regle': 'Langi ezwami na biteki ya mikolo 30 oyo eleki mpe na ndelo ya kosomba lisusu: orange soki etikali biteki ya mikolo moke koleka poso moko, jaune soki moke koleka poso mibale.',
 };

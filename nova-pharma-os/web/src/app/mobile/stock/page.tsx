@@ -1,6 +1,7 @@
 import { apiSafe } from '@/lib/api';
 import { date, money, quantity } from '@/lib/format';
 import { traduire } from '@/lib/i18n';
+import { LIBELLE_NIVEAU, NIVEAUX, NiveauStock } from '@/lib/niveau-stock';
 
 interface LigneStock {
   product_id: string;
@@ -11,6 +12,7 @@ interface LigneStock {
   reorder_point: string;
   stock_value: string;
   nearest_expiry: string | null;
+  stock_level: NiveauStock;
 }
 
 export default async function PageStockMobile({
@@ -41,8 +43,10 @@ export default async function PageStockMobile({
         <p className="mob-vide">{t('general.aucune_donnee')}</p>
       ) : (
         <ul className="mob-liste">
-          {stock.slice(0, 60).map((l) => {
-            const bas = Number(l.available) <= Number(l.reorder_point);
+          {[...stock]
+            .sort((a, b) => NIVEAUX.indexOf(a.stock_level) - NIVEAUX.indexOf(b.stock_level))
+            .slice(0, 60)
+            .map((l) => {
             return (
               <li key={l.product_id}>
                 <div>
@@ -53,7 +57,7 @@ export default async function PageStockMobile({
                     {l.nearest_expiry ? ` · ${date(l.nearest_expiry)}` : ''}
                   </span>
                 </div>
-                {bas && <span className="mob-etat failed">{t('stock.stock_bas')}</span>}
+                <span className={`niveau ${l.stock_level}`}>{t(LIBELLE_NIVEAU[l.stock_level])}</span>
               </li>
             );
           })}

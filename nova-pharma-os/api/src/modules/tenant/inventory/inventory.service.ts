@@ -4,7 +4,17 @@ import { DatabaseService } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
 import { BusinessRuleException } from '../../../common/http/exceptions';
 import { NumberingService } from '../../../common/numbering/numbering.service';
+import { evaluerStock, JOURS_CONSOMMATION } from './niveau-stock';
 import { StockService } from './stock.service';
+
+/** Ligne renvoyée par la requête des niveaux de stock (quantités en texte). */
+interface PositionStock {
+  on_hand: string;
+  reorder_point: string;
+  expiring_quantity: string;
+  sales_last_30_days: string;
+  [colonne: string]: unknown;
+}
 
 @Injectable()
 export class InventoryService {
@@ -23,8 +33,8 @@ export class InventoryService {
     filters: { branchId?: string; search?: string; onlyIssues?: boolean } = {},
   ) {
     const branchId = filters.branchId ?? ctx.branchId;
-    return this.db.readTransaction(ctx, (tx) =>
-      tx.many(
+    const lignes = await this.db.readTransaction(ctx, (tx) =>
+      tx.many<PositionStock>(
         `SELECT p.id AS product_id, p.sku, p.name, p.unit, p.reorder_point,
                 p.sale_price, p.cost_price, p.expiry_alert_days,
                 COALESCE(sum(si.quantity), 0)           AS on_hand,
@@ -34,23 +44,53 @@ export class InventoryService {
                 min(pl.expiry_date) FILTER (WHERE si.quantity > 0) AS nearest_expiry,
                 COALESCE(sum(si.quantity) FILTER (
                   WHERE pl.expiry_date IS NOT NULL AND pl.expiry_date < CURRENT_DATE), 0)
-                  AS expired_quantity
+                  AS expired_quantity,
+                COALESCE(sum(si.quantity) FILTER (
+                  WHERE pl.expiry_date IS NOT NULL
+                    AND pl.expiry_date <= CURRENT_DATE + p.expiry_alert_days), 0)
+                  AS expiring_quantity,
+                ventes.quantite AS sales_last_30_days
            FROM products p
            LEFT JOIN stock_items si ON si.product_id = p.id
                 AND ($1::uuid IS NULL OR si.branch_id = $1)
            LEFT JOIN product_lots pl ON pl.id = si.lot_id
+           -- Ventes nettes des retours sur la période observée : c'est le
+           -- rythme réel de sortie, qui sert à estimer la couverture.
+           LEFT JOIN LATERAL (
+             SELECT COALESCE(-sum(sm.quantity), 0) AS quantite
+               FROM stock_movements sm
+              WHERE sm.product_id = p.id
+                AND sm.kind IN ('sale', 'sale_return')
+                AND sm.occurred_at >= now() - make_interval(days => $3::integer)
+                AND ($1::uuid IS NULL OR sm.branch_id = $1)
+           ) ventes ON true
           WHERE p.deleted_at IS NULL AND p.is_active
             AND ($2::text IS NULL OR p.name ILIKE '%'||$2||'%' OR p.sku ILIKE '%'||$2||'%')
-          GROUP BY p.id
-         HAVING $3::boolean IS NOT TRUE
-             OR COALESCE(sum(si.quantity), 0) <= GREATEST(p.reorder_point, 0)
-             OR COALESCE(sum(si.quantity) FILTER (
-                  WHERE pl.expiry_date IS NOT NULL
-                    AND pl.expiry_date <= CURRENT_DATE + p.expiry_alert_days), 0) > 0
+          GROUP BY p.id, ventes.quantite
           ORDER BY p.name LIMIT 500`,
-        [branchId ?? null, filters.search ?? null, filters.onlyIssues ?? null],
+        [branchId ?? null, filters.search ?? null, JOURS_CONSOMMATION],
       ),
     );
+
+    const evaluees = lignes.map((ligne) => {
+      const evaluation = evaluerStock({
+        enStock: Number(ligne.on_hand),
+        seuil: Number(ligne.reorder_point),
+        ventesPeriode: Number(ligne.sales_last_30_days),
+      });
+      return {
+        ...ligne,
+        stock_level: evaluation.niveau,
+        days_of_cover:
+          evaluation.couvertureJours === null ? null : Math.floor(evaluation.couvertureJours),
+      };
+    });
+
+    // « À traiter » : tout ce qui n'est pas au vert, et les lots proches
+    // de la péremption même quand la quantité suffit.
+    return filters.onlyIssues
+      ? evaluees.filter((l) => l.stock_level !== 'suffisant' || Number(l.expiring_quantity) > 0)
+      : evaluees;
   }
 
   /** File FEFO d'un produit : ordre exact de consommation des lots. */

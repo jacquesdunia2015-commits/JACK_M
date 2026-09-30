@@ -231,4 +231,12 @@ export const ar: Dictionnaire = {
   'inscription.en_cours': 'جارٍ إنشاء الحساب…',
   'inscription.deja_compte': 'لديك حساب بالفعل؟',
   'inscription.vers_connexion': 'تسجيل الدخول',
+  'stock.niveau': 'المستوى',
+  'stock.niveau_critique': 'على وشك النفاد',
+  'stock.niveau_bas': 'الكمية قليلة',
+  'stock.niveau_suffisant': 'كافٍ',
+  'stock.couverture': 'التغطية المقدّرة',
+  'stock.jours_abrege': 'يوم',
+  'stock.tous': 'الكل',
+  'stock.regle': 'اللون مقدَّر من مبيعات آخر 30 يومًا ومن حدّ إعادة الطلب: برتقالي إذا بقي أقل من أسبوع من المبيعات، وأصفر إذا بقي أقل من أسبوعين.',
 };

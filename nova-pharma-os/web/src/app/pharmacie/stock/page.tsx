@@ -3,12 +3,14 @@ import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, money, quantity } from '@/lib/format';
 import { traduire } from '@/lib/i18n';
+import { estNiveau, LIBELLE_NIVEAU, NIVEAUX, NiveauStock } from '@/lib/niveau-stock';
 
 interface LigneStock {
   product_id: string; sku: string; name: string; unit: string;
   reorder_point: string; on_hand: string; available: string;
   stock_value: string; lots: string; nearest_expiry: string | null;
   expired_quantity: string;
+  sales_last_30_days: string; stock_level: NiveauStock; days_of_cover: number | null;
 }
 
 interface Alerte {
@@ -20,9 +22,10 @@ interface Alerte {
 export default async function PageStock({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; niveau?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, niveau } = await searchParams;
+  const filtre = estNiveau(niveau) ? niveau : null;
   const { t } = await traduire();
   const requete = q ? `?search=${encodeURIComponent(q)}` : '';
 
@@ -32,6 +35,21 @@ export default async function PageStock({
   ]);
 
   const valeurTotale = stock.reduce((s, l) => s + Number(l.stock_value), 0);
+  const compte = Object.fromEntries(
+    NIVEAUX.map((n) => [n, stock.filter((l) => l.stock_level === n).length]),
+  ) as Record<NiveauStock, number>;
+  // Le plus urgent en tête : un produit en rupture ne doit pas se perdre
+  // entre deux produits bien approvisionnés.
+  const lignes = stock
+    .filter((l) => !filtre || l.stock_level === filtre)
+    .sort((a, b) => NIVEAUX.indexOf(a.stock_level) - NIVEAUX.indexOf(b.stock_level));
+  const lien = (n: NiveauStock | null) => {
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (n) params.set('niveau', n);
+    const chaine = params.toString();
+    return chaine ? `?${chaine}` : '?';
+  };
 
   return (
     <>
@@ -87,9 +105,23 @@ export default async function PageStock({
 
         <form style={{ marginBottom: '1rem', maxWidth: 360 }}>
           <input name="q" defaultValue={q ?? ''} placeholder={`${t('caisse.rechercher_produit')}…`} />
+          {filtre && <input type="hidden" name="niveau" value={filtre} />}
         </form>
 
-        {stock.length === 0 ? (
+        <nav className="niveaux" aria-label={t('stock.niveau')}>
+          <a href={lien(null)} className={filtre ? '' : 'actif'}>
+            {t('stock.tous')} <strong>{stock.length}</strong>
+          </a>
+          {NIVEAUX.map((n) => (
+            <a key={n} href={lien(n)} className={filtre === n ? 'actif' : ''}>
+              <span className={`niveau ${n}`} aria-hidden="true" />
+              {t(LIBELLE_NIVEAU[n])} <strong>{compte[n]}</strong>
+            </a>
+          ))}
+        </nav>
+        <p className="small muted" style={{ marginTop: 0 }}>{t('stock.regle')}</p>
+
+        {lignes.length === 0 ? (
           <Vide message={t('general.aucune_donnee')} />
         ) : (
           <div className="table-wrap">
@@ -97,7 +129,9 @@ export default async function PageStock({
               <thead>
                 <tr>
                   <th>{t('catalogue.produit')}</th>
+                  <th>{t('stock.niveau')}</th>
                   <th className="num">{t('stock.en_stock')}</th>
+                  <th className="num">{t('stock.couverture')}</th>
                   <th className="num">{t('stock.disponible')}</th>
                   <th className="num">{t('stock.seuil')}</th>
                   <th className="num">{t('stock.lots')}</th>
@@ -106,25 +140,26 @@ export default async function PageStock({
                 </tr>
               </thead>
               <tbody>
-                {stock.map((l) => {
-                  const enStock = Number(l.on_hand);
-                  const seuil = Number(l.reorder_point);
-                  const sousSeuil = seuil > 0 && enStock <= seuil;
+                {lignes.map((l) => {
                   return (
-                    <tr key={l.product_id}>
+                    <tr key={l.product_id} className={`niveau-${l.stock_level}`}>
                       <td>
                         {l.name}
                         <br />
                         <span className="small muted mono">{l.sku}</span>
                       </td>
+                      <td>
+                        <span className={`niveau ${l.stock_level}`}>
+                          {t(LIBELLE_NIVEAU[l.stock_level])}
+                        </span>
+                      </td>
                       <td className="num">
-                        {enStock <= 0 ? (
-                          <span className="tag danger">{t('stock.rupture')}</span>
-                        ) : (
-                          <span className={sousSeuil ? 'tag warn' : ''}>
-                            {quantity(l.on_hand)} {l.unit}
-                          </span>
-                        )}
+                        {quantity(l.on_hand)} {l.unit}
+                      </td>
+                      <td className="num small">
+                        {l.days_of_cover === null
+                          ? '—'
+                          : `≈ ${l.days_of_cover} ${t('stock.jours_abrege')}`}
                       </td>
                       <td className="num">{quantity(l.available)}</td>
                       <td className="num muted">{quantity(l.reorder_point)}</td>
