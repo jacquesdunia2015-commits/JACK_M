@@ -2,7 +2,7 @@ import Link from 'next/link';
 import FormulaireProduit from '@/components/FormulaireProduit';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
-import { money, quantity } from '@/lib/format';
+import { designation, money, quantity } from '@/lib/format';
 
 interface Produit {
   id: string; sku: string; name: string; commercial_name: string | null;
@@ -36,6 +36,17 @@ export default async function PageCatalogue({
         <h1>Catalogue</h1>
         <p>{data.pagination.total} référence(s) au catalogue.</p>
       </div>
+
+      <section className="card">
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <strong>Catalogue de référence Goma–Bukavu</strong>
+            <br />
+            <span className="small muted">100 médicaments et produits courants au Kivu, à ajouter en un clic avec des prix indicatifs.</span>
+          </div>
+          <Link href="/pharmacie/catalogue/reference" className="btn">Choisir et ajouter</Link>
+        </div>
+      </section>
 
       <section className="card" id="nouveau">
         <details className="depliable">
@@ -77,8 +88,7 @@ export default async function PageCatalogue({
                   return (
                     <tr key={p.id}>
                       <td>
-                        <Link href={`/pharmacie/stock/${p.id}`}><strong>{p.name}</strong></Link>
-                        {p.dosage ? ` ${p.dosage}` : ''}
+                        <Link href={`/pharmacie/stock/${p.id}`}><strong>{designation(p.name, p.dosage)}</strong></Link>
                         <div className="small muted">
                           <span className="mono">{p.sku}</span>
                           {p.packaging ? ` · ${p.packaging}` : ''}

@@ -5,6 +5,7 @@ import { RequestContext } from '../../../common/database/request-context';
 import { BusinessRuleException } from '../../../common/http/exceptions';
 import { NumberingService } from '../../../common/numbering/numbering.service';
 import { StockService } from '../inventory/stock.service';
+import { InvoicesService } from './invoices.service';
 import {
   CancelSaleDto,
   CreateSaleDto,
@@ -31,6 +32,7 @@ export class SalesService {
     private readonly stock: StockService,
     private readonly numbering: NumberingService,
     private readonly audit: AuditService,
+    private readonly invoices: InvoicesService,
   ) {}
 
   /**
@@ -224,7 +226,7 @@ export class SalesService {
              VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
             [
               organizationId, sale.id, line.product.id, allocation.lotId,
-              `${line.product.name}${line.product.dosage ? ` ${line.product.dosage}` : ''}`,
+              this.designation(line.product),
               allocation.quantity, line.unitPrice, allocation.unitCost,
               line.discountPercent, taxRate, this.round(taxAmount),
               this.round(net), sortOrder++,
@@ -292,7 +294,7 @@ export class SalesService {
       // ---- Facture ----
       let invoice = null;
       if (dto.issueInvoice || dto.channel === 'b2b' || creditAmount > 0) {
-        invoice = await this.issueInvoice(tx, ctx, sale.id, branchId, currency);
+        invoice = await this.invoices.ecrire(tx, ctx, sale.id);
       }
 
       await this.stock.refreshAlerts(tx, branchId);
@@ -427,11 +429,17 @@ export class SalesService {
                 b.code AS branch_code, c.name AS customer_name,
                 u.full_name AS sold_by_name,
                 (SELECT count(*) FROM sale_lines l WHERE l.sale_id = s.id) AS lines,
+                fa.id AS invoice_id, fa.number AS invoice_number,
                 count(*) OVER () AS total_count
            FROM sales s
            JOIN branches b ON b.id = s.branch_id
            LEFT JOIN customers c ON c.id = s.customer_id
            LEFT JOIN users u ON u.id = s.sold_by
+           LEFT JOIN LATERAL (
+             SELECT i.id, i.number FROM invoices i
+              WHERE i.sale_id = s.id AND i.kind = 'invoice' AND i.status <> 'cancelled'
+              ORDER BY i.created_at DESC LIMIT 1
+           ) fa ON true
           WHERE ($1::uuid IS NULL OR s.branch_id = $1)
             AND ($2::uuid IS NULL OR s.customer_id = $2)
             AND ($3::timestamptz IS NULL OR s.sold_at >= $3)
@@ -484,7 +492,11 @@ export class SalesService {
   private async loadSale(tx: Tx, id: string) {
     const sale = await tx.oneOrFail(
       `SELECT s.*, c.name AS customer_name, c.code AS customer_code,
-              u.full_name AS sold_by_name, b.name AS branch_name
+              c.phone AS customer_phone, c.email AS customer_email,
+              u.full_name AS sold_by_name, b.name AS branch_name,
+              (SELECT i.id FROM invoices i
+                WHERE i.sale_id = s.id AND i.kind = 'invoice' AND i.status <> 'cancelled'
+                ORDER BY i.created_at DESC LIMIT 1) AS invoice_id
          FROM sales s
          LEFT JOIN customers c ON c.id = s.customer_id
          LEFT JOIN users u ON u.id = s.sold_by
@@ -592,68 +604,18 @@ export class SalesService {
     };
   }
 
-  private async issueInvoice(
-    tx: Tx,
-    ctx: RequestContext,
-    saleId: string,
-    branchId: string,
-    currency: string,
-  ) {
-    const sale = await tx.oneOrFail<{
-      customer_id: string | null; subtotal: string; discount_total: string;
-      tax_total: string; total: string; amount_paid: string;
-    }>('SELECT * FROM sales WHERE id = $1', [saleId]);
-
-    const number = await this.numbering.next(tx, 'invoice', { branchId });
-    // Les montants sont castés explicitement : sans cela, PostgreSQL
-    // déduit le type « text » d'un paramètre comparé à un autre
-    // paramètre, et l'insertion échoue.
-    const invoice = await tx.oneOrFail<{ id: string; number: string }>(
-      `INSERT INTO invoices
-         (organization_id, branch_id, number, kind, status, customer_id, sale_id,
-          currency, issue_date, subtotal, discount_total, tax_total, total,
-          amount_paid, created_by)
-       VALUES ($1, $2, $3, 'invoice',
-               CASE WHEN $11::numeric >= $10::numeric THEN 'paid'::nova.invoice_status
-                    ELSE 'issued'::nova.invoice_status END,
-               $4, $5, $6, CURRENT_DATE,
-               $7::numeric, $8::numeric, $9::numeric, $10::numeric, $11::numeric, $12)
-       RETURNING id, number`,
-      [
-        ctx.organizationId,
-        branchId,
-        number,
-        sale.customer_id,
-        saleId,
-        currency,
-        sale.subtotal,
-        sale.discount_total,
-        sale.tax_total,
-        sale.total,
-        sale.amount_paid,
-        ctx.actorKind === 'user' ? ctx.actorId : null,
-      ],
-    );
-
-    await tx.query(
-      `INSERT INTO invoice_lines
-         (organization_id, invoice_id, product_id, description, quantity,
-          unit_price, discount_percent, tax_rate, line_total, sort_order)
-       SELECT organization_id, $2, product_id, description, quantity,
-              unit_price, discount_percent, tax_rate, line_total, sort_order
-         FROM sale_lines WHERE sale_id = $1`,
-      [saleId, invoice.id],
-    );
-
-    return invoice;
-  }
-
   private async currency(tx: Tx, organizationId: string): Promise<string> {
     const row = await tx.oneOrFail<{ currency: string }>(
       'SELECT currency FROM organizations WHERE id = $1',
       [organizationId],
     );
     return row.currency;
+  }
+
+  /** « Paracétamol 500 mg » : le dosage n'est ajouté que s'il ne figure pas déjà dans le nom. */
+  private designation(product: ResolvedProduct): string {
+    const { name, dosage } = product;
+    return dosage && !name.toLowerCase().includes(dosage.toLowerCase()) ? `${name} ${dosage}` : name;
   }
 
   private round(value: number): number {

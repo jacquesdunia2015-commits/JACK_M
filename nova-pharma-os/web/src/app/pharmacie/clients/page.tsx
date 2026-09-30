@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, money } from '@/lib/format';
@@ -137,6 +138,8 @@ export default async function PageClients({
                         {c.name}
                         <br />
                         <span className="small muted mono">{c.code}</span>
+                        {' · '}
+                        <Link href={`/pharmacie/factures?client=${c.id}`} className="small">Factures</Link>
                       </td>
                       <td>
                         <span className="tag">

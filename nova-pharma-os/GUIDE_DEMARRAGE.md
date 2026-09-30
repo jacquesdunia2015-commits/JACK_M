@@ -197,7 +197,10 @@ Vous voyez vos pharmacies clientes, leurs abonnements, votre revenu mensuel.
 
 Connectez-vous en **gérant**, puis, dans cet ordre :
 
-**1. Complétez le catalogue.** Ouvrez *Catalogue*, puis **Ajouter un produit
+**1. Complétez le catalogue.** Le plus rapide : *Catalogue* →
+**Catalogue de référence Goma–Bukavu** → *Choisir et ajouter*. Cent médicaments
+et produits courants au Kivu (voir plus bas) s'ajoutent en un clic. Pour un
+produit absent de cette liste, ouvrez *Catalogue*, puis **Ajouter un produit
 ou un médicament** : le nom, le dosage, la forme, le conditionnement, le prix
 de vente et le prix d'achat habituel. La référence est tirée du nom si vous la
 laissez vide. Cochez *Périssable* pour tout ce qui a une date de péremption, et
@@ -227,6 +230,78 @@ lot et la personne. Le stock affiché est exactement la somme de ces lignes.
 À partir de là, l'officine tourne. Le reste — clients à crédit, livraisons,
 rappels WhatsApp, encaissement Mobile Money — s'ajoute quand vous en avez
 besoin.
+
+---
+
+## Le catalogue de référence Goma–Bukavu
+
+Menu *Catalogue* → **Catalogue de référence Goma–Bukavu** (tous les forfaits).
+
+Cent médicaments et produits que l'on retrouve dans presque toutes les
+officines du Nord et du Sud-Kivu, rangés en seize familles : antipaludiques
+(artéméther-luméfantrine adulte et enfant, ASAQ, artésunate injectable,
+quinine…), antibiotiques, douleur et fièvre, vermifuges, SRO et zinc,
+estomac, toux et allergie, vitamines et fer, tension, diabète, peau, yeux,
+santé de la femme et planning familial, solutés, consommables de soins et
+tests rapides du paludisme.
+
+La sélection s'appuie sur la Liste nationale des médicaments essentiels de la
+RD Congo et sur les demandes les plus fréquentes au comptoir. Chaque produit
+arrive complet : nom, DCI, forme, conditionnement, unité de vente (plaquette,
+flacon, ampoule…), famille, et les repères *sur ordonnance*, *stupéfiant* ou
+*chaîne du froid*.
+
+**1.** Tout est coché d'office. Filtrez par famille et décochez ce que vous ne
+vendez pas.
+
+**2.** Vérifiez les prix. Ceux proposés sont **indicatifs, en dollars** : un
+ordre de grandeur de la région, à remplacer par les vôtres. Si votre pharmacie
+compte en francs congolais, les prix indicatifs ne sont pas repris : saisissez
+votre prix de vente pour chaque produit coché.
+
+**3.** *Ajouter … produit(s) à mon catalogue*. Un produit déjà présent (même
+référence ou même nom) n'est jamais créé deux fois.
+
+Il reste ensuite à enregistrer leur stock, comme pour tout produit (*Stock et
+lots* → *Enregistrer un achat*).
+
+## Établir, imprimer et partager la facture d'un client
+
+Menu *Factures* (tous les forfaits). Une vente a toujours son reçu. La
+**facture** se fait à la demande du client : pour son assurance, son employeur,
+ou simplement pour la garder.
+
+**À la caisse, juste après la vente.** Sous le message « Vente … enregistrée »,
+ouvrez **Établir la facture de la vente**. Tapez le nom et le téléphone du
+client :
+
+- s'il est **déjà dans votre fichier**, il vous est proposé dès les premières
+  lettres ou chiffres : cliquez dessus ;
+- sinon, il y est **ajouté** automatiquement. S'il revient avec son numéro écrit
+  autrement (« 0991 234 567 » ou « +243 991-234-567 »), il est reconnu ;
+- sans nom, la facture est établie pour un **client comptant**.
+
+**Plus tard.** Menu *Factures* → *Ventes récentes* → **Établir la facture**
+sur la bonne vente.
+
+La facture reçoit son numéro (FA-2026-000001…). Elle s'ouvre avec les mêmes
+boutons que les réquisitions :
+
+- **Ouvrir le PDF / imprimer** : la facture au logo de la pharmacie, avec le
+  client, chaque article avec son lot et sa date d'expiration, le total TTC,
+  le règlement, la monnaie rendue et le reste à payer. Un tampon indique
+  « PAYÉE » ou « ANNULÉE ». Le bas de page porte « Servi par » et une place
+  pour le cachet ;
+- **Partager le PDF** : depuis le téléphone, directement par WhatsApp, e-mail…
+- **WhatsApp** et **E-mail** : un message au client, le montant déjà écrit.
+
+Une vente n'a qu'**une** facture : la redemander rouvre la même. Une vente à
+crédit est facturée d'office. Sa facture montre ce qui reste dû et son
+échéance, selon le délai de crédit du client. Une vente annulée ne peut plus
+être facturée, et sa facture passe « annulée ».
+
+Pour retrouver les factures d'un client : *Clients* → lien **Factures** sous
+son nom, ou la recherche de la page *Factures* (numéro, nom ou téléphone).
 
 ---
 

@@ -99,3 +99,8 @@ export function statusTone(status: unknown): 'ok' | 'warn' | 'danger' | 'muted' 
     return 'danger';
   return 'muted';
 }
+
+/** « Paracétamol 500 mg » : le dosage n'est ajouté que s'il ne figure pas déjà dans le nom. */
+export function designation(nom: string, dosage: string | null | undefined): string {
+  return dosage && !nom.toLowerCase().includes(dosage.toLowerCase()) ? `${nom} ${dosage}` : nom;
+}

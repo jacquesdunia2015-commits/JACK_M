@@ -252,5 +252,6 @@ export const bm: Dictionnaire = {
   'stock.achete_30j': 'Sanna (tile 30)',
   'stock.vendu_30j': 'Feerelen (tile 30)',
   'nav.requisitions': 'Fɛnw ɲinini',
+  'nav.factures': 'Jatebɔsɛbɛnw',
   'stock.dernier_fournisseur': 'Feerekɛla laban',
 };

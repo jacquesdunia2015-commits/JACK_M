@@ -252,5 +252,6 @@ export const ar: Dictionnaire = {
   'stock.achete_30j': 'المشترى (30 يومًا)',
   'stock.vendu_30j': 'المباع (30 يومًا)',
   'nav.requisitions': 'طلبات الشراء',
+  'nav.factures': 'الفواتير',
   'stock.dernier_fournisseur': 'آخر مورد',
 };

@@ -6,7 +6,7 @@ import {
 import { RequestContext } from '../../../common/database/request-context';
 import { CatalogService } from './catalog.service';
 import {
-  CreateProductDto, ImportProductsDto, SearchProductsDto, UpdateProductDto,
+  CreateProductDto, ImporterReferenceDto, ImportProductsDto, SearchProductsDto, UpdateProductDto,
 } from './dto';
 
 @ApiTags('Espace pharmacie')
@@ -63,6 +63,24 @@ export class CatalogController {
   @ApiOperation({ summary: 'Archiver un produit' })
   archive(@Ctx() ctx: RequestContext, @Param('id') id: string) {
     return this.catalog.archive(ctx, id);
+  }
+
+  @Get('reference')
+  @RequirePermissions('catalog.read')
+  @ApiOperation({
+    summary: 'Catalogue de référence Goma–Bukavu',
+    description: '100 médicaments et produits courants au Kivu, avec prix indicatifs en dollars.',
+  })
+  reference(@Ctx() ctx: RequestContext) {
+    return this.catalog.reference(ctx);
+  }
+
+  @Post('reference/import')
+  @RequirePermissions('catalog.write')
+  @WriteOperation()
+  @ApiOperation({ summary: 'Reprendre des produits du catalogue de référence' })
+  importerReference(@Ctx() ctx: RequestContext, @Body() dto: ImporterReferenceDto) {
+    return this.catalog.importerReference(ctx, dto);
   }
 
   @Get('categories')

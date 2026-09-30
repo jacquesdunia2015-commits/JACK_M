@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 128 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 133 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -196,6 +196,33 @@ le prix de son catalogue au moment de la demande (migration 021). Elle relève d
 
 Le relais web `/api/proxy` transmet désormais les réponses binaires (PDF) avec leur type.
 
+## Factures clients
+
+Une vente peut recevoir **une** facture, émise à la demande du client (ou d'office pour
+une vente à crédit ou B2B). Le client est choisi dans le fichier, ou nommé sur le moment :
+il est alors retrouvé par son téléphone (normalisé au format international) ou créé. Le
+montant payé exclut la part à crédit, qui reste due jusqu'à l'échéance du client. Aucune
+migration : les tables `invoices` et `invoice_lines` existaient déjà.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET /api/invoices[?customerId=&search=]` | Factures, filtrées par client ou par numéro, nom, téléphone |
+| `POST /api/invoices` `{ saleId, customerId? \| customer? }` | Établit la facture d'une vente (renvoie l'existante si elle est déjà faite) |
+| `GET /api/invoices/:id`, `GET …/:id/pdf` | Détail (lignes avec lot et péremption, règlements) ; PDF au logo de la pharmacie |
+
+Lecture : `sales.read` ; émission : `sales.create` (vendeur et caissier compris). La mise en
+page PDF (en-tête de l'officine, formats, pied de page) est partagée avec les réquisitions
+(`api/src/common/pdf/mise-en-page.ts`).
+
+## Catalogue de référence Goma–Bukavu
+
+`GET /api/catalog/reference` renvoie 100 médicaments et produits courants au Kivu (DCI,
+forme, conditionnement, unité de vente, famille, repères ordonnance, stupéfiant, froid),
+avec des prix indicatifs en USD ; `POST /api/catalog/reference/import { items: [{ code,
+salePrice?, costPrice? }] }` en reprend tout ou partie. Hors USD, le prix de vente de la
+pharmacie est exigé. Un produit déjà présent (même référence ou même nom) est ignoré. La
+liste vit dans `api/src/modules/tenant/catalog/reference-kivu.ts`.
+
 ## Couleurs d'alerte
 
 L'API renvoie la couleur, l'écran l'affiche — une seule règle pour le bureau, le mobile
@@ -334,7 +361,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             128 tests de bout en bout
+│   └── test/             133 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français

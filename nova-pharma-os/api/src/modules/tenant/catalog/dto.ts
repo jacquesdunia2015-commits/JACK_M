@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
-  IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString, Min, MinLength,
+  ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString, Min,
+  MinLength, ValidateNested,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -77,4 +79,20 @@ export class SearchProductsDto {
 export class ImportProductsDto {
   @ApiProperty({ type: [CreateProductDto], description: 'Catalogue initial à importer.' })
   @IsArray() products!: CreateProductDto[];
+}
+
+/** Un produit du catalogue de référence à reprendre, au prix de la pharmacie. */
+export class ProduitReferenceChoisiDto {
+  @ApiProperty({ example: 'KV-PARA-500' }) @IsString() code!: string;
+  @ApiPropertyOptional({ description: 'Prix de vente de la pharmacie. Par défaut, le prix indicatif.' })
+  @IsOptional() @IsNumber() @Min(0) salePrice?: number;
+  @ApiPropertyOptional({ description: 'Prix d’achat. Par défaut, le prix indicatif.' })
+  @IsOptional() @IsNumber() @Min(0) costPrice?: number;
+}
+
+export class ImporterReferenceDto {
+  @ApiProperty({ type: [ProduitReferenceChoisiDto] })
+  @IsArray() @ArrayMinSize(1, { message: 'Choisissez au moins un produit.' }) @ArrayMaxSize(200)
+  @ValidateNested({ each: true }) @Type(() => ProduitReferenceChoisiDto)
+  items!: ProduitReferenceChoisiDto[];
 }

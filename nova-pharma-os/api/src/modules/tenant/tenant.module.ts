@@ -30,6 +30,8 @@ import { SuppliersController } from './purchasing/suppliers.controller';
 import { SuppliersService } from './purchasing/suppliers.service';
 import { ReportingController } from './reporting/reporting.controller';
 import { ReportingService } from './reporting/reporting.service';
+import { InvoicesController } from './sales/invoices.controller';
+import { InvoicesService } from './sales/invoices.service';
 import { SalesController } from './sales/sales.controller';
 import { SalesService } from './sales/sales.service';
 
@@ -48,6 +50,7 @@ import { SalesService } from './sales/sales.service';
     SuppliersController,
     RequisitionsController,
     SalesController,
+    InvoicesController,
     CustomersController,
     CashController,
     B2bController,
@@ -67,6 +70,7 @@ import { SalesService } from './sales/sales.service';
     SuppliersService,
     RequisitionsService,
     SalesService,
+    InvoicesService,
     CustomersService,
     CashService,
     B2bService,

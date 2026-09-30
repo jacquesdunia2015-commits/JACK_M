@@ -1,14 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AuditService } from '../../../common/audit/audit.service';
 import { DatabaseService, Tx } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
 import { EntitlementsService } from '../../../common/entitlements/entitlements.service';
 import {
   CreateProductDto,
+  ImporterReferenceDto,
   ImportProductsDto,
   SearchProductsDto,
   UpdateProductDto,
 } from './dto';
+import {
+  CATALOGUE_REFERENCE, CATEGORIES_REFERENCE, DEVISE_REFERENCE, ProduitReference,
+} from './reference-kivu';
 
 @Injectable()
 export class CatalogService {
@@ -167,6 +171,120 @@ export class CatalogService {
 
       return { created: created.length, skipped, importedSkus: created };
     });
+  }
+
+  /**
+   * Catalogue de référence, chaque produit marqué s'il figure déjà au
+   * catalogue de la pharmacie (même référence ou même nom).
+   */
+  async reference(ctx: RequestContext) {
+    return this.db.readTransaction(ctx, async (tx) => {
+      const { currency } = await tx.oneOrFail<{ currency: string }>(
+        'SELECT currency FROM organizations WHERE id = $1',
+        [ctx.organizationId],
+      );
+      const presents = await this.dejaPresents(tx, CATALOGUE_REFERENCE);
+      return {
+        referenceCurrency: DEVISE_REFERENCE,
+        currency,
+        categories: CATEGORIES_REFERENCE,
+        items: CATALOGUE_REFERENCE.map((p) => ({ ...p, inCatalog: presents.has(p.code) })),
+      };
+    });
+  }
+
+  /**
+   * Reprend des produits du catalogue de référence. Hors dollar, la
+   * pharmacie donne ses propres prix : un prix indicatif en dollars ne
+   * peut pas devenir un prix en francs.
+   */
+  async importerReference(ctx: RequestContext, dto: ImporterReferenceDto) {
+    const parCode = new Map(CATALOGUE_REFERENCE.map((p) => [p.code, p]));
+    const inconnus = dto.items.filter((i) => !parCode.has(i.code)).map((i) => i.code);
+    if (inconnus.length > 0) {
+      throw new BadRequestException(`Produits inconnus du catalogue de référence : ${inconnus.join(', ')}.`);
+    }
+
+    return this.db.transaction(ctx, async (tx) => {
+      const organizationId = ctx.organizationId as string;
+      const { currency } = await tx.oneOrFail<{ currency: string }>(
+        'SELECT currency FROM organizations WHERE id = $1',
+        [organizationId],
+      );
+      if (currency !== DEVISE_REFERENCE) {
+        const sansPrix = dto.items.filter((i) => i.salePrice === undefined).map((i) => i.code);
+        if (sansPrix.length > 0) {
+          throw new BadRequestException(
+            `Vos prix sont en ${currency} : indiquez le prix de vente de chaque produit ` +
+              `(les prix indicatifs sont en ${DEVISE_REFERENCE}). Manquant : ${sansPrix.join(', ')}.`,
+          );
+        }
+      }
+
+      const choisis = [...new Map(dto.items.map((i) => [i.code, i])).values()];
+      const presents = await this.dejaPresents(tx, choisis.map((i) => parCode.get(i.code) as ProduitReference));
+      const aCreer = choisis.filter((i) => !presents.has(i.code));
+      await this.entitlements.assertCanAdd(tx, organizationId, 'products', aCreer.length);
+
+      // Les catégories reçoivent leur nom lisible ; une catégorie créée
+      // plus tôt sous son seul code est renommée, une autre est laissée.
+      for (const code of new Set(aCreer.map((i) => (parCode.get(i.code) as ProduitReference).categoryCode))) {
+        await tx.query(
+          `INSERT INTO product_categories (organization_id, code, name) VALUES ($1, $2, $3)
+           ON CONFLICT (organization_id, code) DO UPDATE SET name = EXCLUDED.name
+            WHERE product_categories.name = product_categories.code`,
+          [organizationId, code, CATEGORIES_REFERENCE[code] ?? code],
+        );
+      }
+
+      const crees: string[] = [];
+      for (const choix of aCreer) {
+        const p = parCode.get(choix.code) as ProduitReference;
+        const enDollars = currency === DEVISE_REFERENCE;
+        await this.insertProduct(tx, ctx, {
+          sku: p.code,
+          name: p.name,
+          inn: p.inn ?? undefined,
+          categoryCode: p.categoryCode,
+          dosage: p.dosage ?? undefined,
+          dosageForm: p.dosageForm,
+          packaging: p.packaging,
+          unit: p.unit,
+          requiresPrescription: p.requiresPrescription,
+          isControlled: p.isControlled,
+          isColdChain: p.isColdChain,
+          hasExpiry: p.hasExpiry,
+          isBatchTracked: p.hasExpiry,
+          salePrice: choix.salePrice ?? p.salePrice,
+          costPrice: choix.costPrice ?? (enDollars ? p.costPrice : 0),
+        });
+        crees.push(p.code);
+      }
+
+      await this.audit.record(tx, {
+        action: 'catalog.reference_imported',
+        entity: 'product',
+        after: { created: crees.length, skipped: choisis.length - crees.length },
+      });
+      return {
+        created: crees.length,
+        skipped: choisis.filter((i) => presents.has(i.code)).map((i) => i.code),
+        importedSkus: crees,
+      };
+    });
+  }
+
+  /** Codes de référence déjà au catalogue, par référence ou par nom. */
+  private async dejaPresents(tx: Tx, produits: ProduitReference[]): Promise<Set<string>> {
+    const lignes = await tx.many<{ code: string }>(
+      `SELECT r.code
+         FROM unnest($1::text[], $2::text[]) AS r(code, nom)
+        WHERE EXISTS (SELECT 1 FROM products p
+                       WHERE p.deleted_at IS NULL
+                         AND (p.sku = r.code OR lower(p.name) = lower(r.nom)))`,
+      [produits.map((p) => p.code), produits.map((p) => p.name)],
+    );
+    return new Set(lignes.map((l) => l.code));
   }
 
   /** Référence tirée du nom : « Paracétamol 500 mg » → PARACETAMOL-500-MG. */

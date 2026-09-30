@@ -2,11 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import PartagePdf from '@/components/PartagePdf';
 
 /**
- * Documents d'une réquisition, pour un fournisseur ou pour tous : ouvrir le
- * PDF (pour l'imprimer), le partager depuis le téléphone (WhatsApp, e-mail…),
- * ou écrire directement au fournisseur avec le détail de la demande.
+ * Documents d'une réquisition, pour un fournisseur ou pour tous, avec le
+ * détail de la demande dans le message.
  */
 export function DocumentFournisseur({
   requisitionId,
@@ -19,53 +19,15 @@ export function DocumentFournisseur({
   fournisseur: { id: string; nom: string; telephone: string | null; email: string | null } | null;
   resume: string;
 }) {
-  const [message, setMessage] = useState<string | null>(null);
-  const url = `/api/proxy/purchasing/requisitions/${requisitionId}/pdf${fournisseur ? `?supplierId=${fournisseur.id}` : ''}`;
-  const nomFichier = `${numero}${fournisseur ? `-${fournisseur.nom.normalize('NFD').replace(/[^\w]+/g, '-')}` : ''}.pdf`;
-  const chiffres = fournisseur?.telephone?.replace(/\D/g, '');
-  const texte = `Bonjour${fournisseur ? ` ${fournisseur.nom}` : ''},\nVoici notre réquisition ${numero} :\n${resume}\nMerci de nous confirmer la disponibilité et le délai.`;
-
-  async function partager() {
-    setMessage(null);
-    try {
-      const reponse = await fetch(url);
-      if (!reponse.ok) throw new Error();
-      const blob = await reponse.blob();
-      const fichier = new File([blob], nomFichier, { type: 'application/pdf' });
-      const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
-      if (nav.canShare?.({ files: [fichier] })) {
-        await nav.share({ files: [fichier], title: `Réquisition ${numero}`, text: texte });
-        return;
-      }
-      // Sans partage de fichiers (ordinateur), on enregistre le PDF : il
-      // reste à le joindre au message WhatsApp ou à l'e-mail.
-      const lien = document.createElement('a');
-      lien.href = URL.createObjectURL(blob);
-      lien.download = nomFichier;
-      lien.click();
-      URL.revokeObjectURL(lien.href);
-      setMessage('PDF enregistré : joignez-le à votre message.');
-    } catch (erreur) {
-      if ((erreur as Error)?.name !== 'AbortError') setMessage('Partage impossible pour le moment.');
-    }
-  }
-
   return (
-    <div className="row" style={{ gap: '0.4rem' }}>
-      <a className="btn secondaire petit" href={url} target="_blank" rel="noreferrer">Ouvrir le PDF / imprimer</a>
-      <button type="button" className="secondaire petit" onClick={partager}>Partager le PDF</button>
-      {chiffres && (
-        <a className="btn secondaire petit" href={`https://wa.me/${chiffres}?text=${encodeURIComponent(texte)}`}
-          target="_blank" rel="noreferrer">WhatsApp</a>
-      )}
-      {fournisseur?.email && (
-        <a className="btn secondaire petit"
-          href={`mailto:${fournisseur.email}?subject=${encodeURIComponent(`Réquisition ${numero}`)}&body=${encodeURIComponent(texte)}`}>
-          E-mail
-        </a>
-      )}
-      {message && <span className="small muted">{message}</span>}
-    </div>
+    <PartagePdf
+      url={`/api/proxy/purchasing/requisitions/${requisitionId}/pdf${fournisseur ? `?supplierId=${fournisseur.id}` : ''}`}
+      nomFichier={`${numero}${fournisseur ? `-${fournisseur.nom.normalize('NFD').replace(/[^\w]+/g, '-')}` : ''}.pdf`}
+      titre={`Réquisition ${numero}`}
+      texte={`Bonjour${fournisseur ? ` ${fournisseur.nom}` : ''},\nVoici notre réquisition ${numero} :\n${resume}\nMerci de nous confirmer la disponibilité et le délai.`}
+      telephone={fournisseur?.telephone}
+      email={fournisseur?.email}
+    />
   );
 }
 

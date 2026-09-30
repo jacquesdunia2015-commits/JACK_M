@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../../common/audit/audit.service';
-import { DatabaseService } from '../../../common/database/database.service';
+import { DatabaseService, Tx } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
 import { BusinessRuleException } from '../../../common/http/exceptions';
 
@@ -18,6 +18,16 @@ export interface CustomerInput {
   creditLimit?: number;
   creditDays?: number;
   notes?: string;
+}
+
+/** Code client lisible : CLI-00001, CLI-00002… */
+export async function codeClientSuivant(tx: Tx, organizationId: string): Promise<string> {
+  const row = await tx.oneOrFail<{ code: string }>(
+    `SELECT 'CLI-' || lpad((count(*) + 1)::text, 5, '0') AS code
+       FROM customers WHERE organization_id = $1`,
+    [organizationId],
+  );
+  return row.code;
 }
 
 @Injectable()
@@ -54,15 +64,7 @@ export class CustomersService {
   async create(ctx: RequestContext, dto: CustomerInput) {
     return this.db.transaction(ctx, async (tx) => {
       // Un code lisible est généré si l'utilisateur n'en fournit pas.
-      const code =
-        dto.code ??
-        (
-          await tx.oneOrFail<{ code: string }>(
-            `SELECT COALESCE('CLI-' || lpad((count(*) + 1)::text, 5, '0'), 'CLI-00001') AS code
-               FROM customers WHERE organization_id = $1`,
-            [ctx.organizationId],
-          )
-        ).code;
+      const code = dto.code ?? (await codeClientSuivant(tx, ctx.organizationId as string));
 
       const customer = await tx.oneOrFail(
         `INSERT INTO customers

@@ -622,3 +622,20 @@ details.depliable[open] > summary { margin-bottom: 1rem; }
   display: grid; place-items: center; overflow: hidden; background: var(--blanc);
 }
 .logo-apercu img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* Facture de la dernière vente, sous le ticket de caisse */
+.facture-vente {
+  border: 1px solid var(--bord); border-radius: var(--rayon); background: var(--vert-clair);
+  padding: 0.75rem 0.9rem; margin-bottom: 1rem;
+}
+.facture-vente details.depliable[open] > summary { margin-bottom: 0.75rem; }
+
+/* Catalogue de référence : cases à cocher et prix modifiables */
+.reference-table td input[type='checkbox'] { width: 1.1rem; height: 1.1rem; }
+.reference-table td input.prix { width: 6.5rem; text-align: right; }
+.reference-table tr.present td { color: var(--gris); }
+.reference-barre {
+  position: sticky; bottom: 0; background: var(--blanc); border-top: 1px solid var(--bord);
+  padding: 0.75rem 0; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
+  justify-content: space-between; z-index: 2;
+}

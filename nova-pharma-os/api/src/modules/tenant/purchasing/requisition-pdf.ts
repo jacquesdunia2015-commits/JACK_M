@@ -1,15 +1,10 @@
 import PDFDocument from 'pdfkit';
+import {
+  ENCRE, EnteteOfficine, FOND_ENTETE, GRIS, TRAIT, VERT,
+  dateFr, ecrireEntete, ecrirePied, montant, nomOfficine as nomDe, quantite, tamponDe,
+} from '../../../common/pdf/mise-en-page';
 
-export interface EnteteOfficine {
-  legal_name: string;
-  trade_name: string | null;
-  address: string | null;
-  city: string | null;
-  phone: string | null;
-  email: string | null;
-  logo_data: string | null;
-  [colonne: string]: unknown;
-}
+export type { EnteteOfficine };
 
 export interface LignePdf {
   designation: string;
@@ -30,44 +25,6 @@ export interface GroupeFournisseur {
     pays: string | null;
   } | null;
   lignes: LignePdf[];
-}
-
-const VERT = '#0f7b6c';
-const ENCRE = '#10201d';
-const GRIS = '#5b6b68';
-const TRAIT = '#dbe3e1';
-
-/**
- * Montant lisible avec les polices standard du PDF : espace simple comme
- * séparateur de milliers. L'espace fine insécable de toLocaleString('fr')
- * n'existe pas dans ces polices et s'imprimerait comme un signe parasite.
- */
-function montant(valeur: number, devise: string | null): string {
-  const [entier, decimales] = valeur.toFixed(2).split('.');
-  const groupe = entier.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  return `${groupe},${decimales}${devise ? ` ${devise}` : ''}`;
-}
-
-function quantite(valeur: number): string {
-  const [entier, decimales] = (Number.isInteger(valeur) ? String(valeur) : valeur.toFixed(3).replace(/0+$/, '')).split('.');
-  const groupe = entier.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  return decimales ? `${groupe},${decimales}` : groupe;
-}
-
-function dateFr(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(`${date}T12:00:00Z`) : date;
-  return `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`;
-}
-
-/** Logo en data URL → image utilisable par le PDF (PNG ou JPEG). */
-function imageLogo(dataUrl: string | null): Buffer | null {
-  const m = dataUrl?.match(/^data:image\/(png|jpeg);base64,(.+)$/);
-  if (!m) return null;
-  try {
-    return Buffer.from(m[2], 'base64');
-  } catch {
-    return null;
-  }
 }
 
 /**
@@ -92,49 +49,17 @@ export function documentRequisition(entree: {
       Creator: 'NOVA PHARMA OS',
     },
   });
-  const morceaux: Buffer[] = [];
-  doc.on('data', (m: Buffer) => morceaux.push(m));
-  const fin = new Promise<Buffer>((resolve) => doc.on('end', () => resolve(Buffer.concat(morceaux))));
-
-  const logo = imageLogo(entree.officine.logo_data);
-  const nomOfficine = entree.officine.trade_name || entree.officine.legal_name;
+  const fin = tamponDe(doc);
+  const nomOfficine = nomDe(entree.officine);
   const largeur = doc.page.width - 96;
 
   entree.groupes.forEach((groupe, index) => {
     if (index > 0) doc.addPage();
-    const haut = 48;
-
-    // --- En-tête : logo et coordonnées de la pharmacie
-    let xTexte = 48;
-    if (logo) {
-      try {
-        doc.image(logo, 48, haut, { fit: [64, 64] });
-        xTexte = 128;
-      } catch {
-        xTexte = 48;
-      }
-    }
-    doc.fillColor(ENCRE).font('Helvetica-Bold').fontSize(15).text(nomOfficine, xTexte, haut, { width: 300 });
-    doc.font('Helvetica').fontSize(9).fillColor(GRIS);
-    const coordonnees = [
-      entree.officine.address,
-      entree.officine.city,
-      entree.officine.phone ? `Tél. ${entree.officine.phone}` : null,
-      entree.officine.email,
-    ].filter(Boolean) as string[];
-    for (const ligne of coordonnees) doc.text(ligne, xTexte, doc.y, { width: 300 });
-
-    doc.font('Helvetica-Bold').fontSize(18).fillColor(VERT)
-      .text('RÉQUISITION', 48, haut, { width: largeur, align: 'right' });
-    doc.font('Helvetica').fontSize(10).fillColor(ENCRE)
-      .text(`N° ${entree.numero}`, 48, doc.y + 2, { width: largeur, align: 'right' })
-      .text(`Date : ${dateFr(entree.date)}`, { width: largeur, align: 'right' });
-    if (entree.souhaiteeLe) {
-      doc.text(`Livraison souhaitée : ${dateFr(entree.souhaiteeLe)}`, { width: largeur, align: 'right' });
-    }
+    const references = [`N° ${entree.numero}`, `Date : ${dateFr(entree.date)}`];
+    if (entree.souhaiteeLe) references.push(`Livraison souhaitée : ${dateFr(entree.souhaiteeLe)}`);
+    let y = ecrireEntete(doc, entree.officine, 'RÉQUISITION', references);
 
     // --- Destinataire
-    let y = Math.max(doc.y, haut + 80) + 18;
     doc.roundedRect(48, y, largeur, 62, 6).lineWidth(0.8).strokeColor(TRAIT).stroke();
     doc.font('Helvetica').fontSize(8).fillColor(GRIS).text('À L’ATTENTION DE', 60, y + 9);
     if (groupe.fournisseur) {
@@ -160,7 +85,7 @@ export function documentRequisition(entree: {
       { titre: 'Montant', x: 456, l: largeur + 48 - 456, align: 'right' as const },
     ];
     const entete = () => {
-      doc.rect(48, y, largeur, 20).fill('#e6f4f1');
+      doc.rect(48, y, largeur, 20).fill(FOND_ENTETE);
       doc.font('Helvetica-Bold').fontSize(8.5).fillColor(VERT);
       for (const c of colonnes) doc.text(c.titre.toUpperCase(), c.x + 4, y + 6, { width: c.l - 8, align: c.align });
       y += 24;
@@ -219,15 +144,7 @@ export function documentRequisition(entree: {
       .text('Signature et cachet :', 330, ySignature);
     doc.moveTo(330, ySignature + 44).lineTo(48 + largeur, ySignature + 44).lineWidth(0.5).strokeColor(TRAIT).stroke();
 
-    // Le pied de page est sous la marge basse : sans lever cette marge le
-    // temps de l'écrire, le générateur ouvrirait une page blanche.
-    const margeBasse = doc.page.margins.bottom;
-    doc.page.margins.bottom = 0;
-    doc.font('Helvetica').fontSize(7.5).fillColor(GRIS).text(
-      `${nomOfficine} · Réquisition ${entree.numero} · établie avec NOVA PHARMA OS`,
-      48, doc.page.height - 40, { width: largeur, align: 'center', lineBreak: false },
-    );
-    doc.page.margins.bottom = margeBasse;
+    ecrirePied(doc, `${nomOfficine} · Réquisition ${entree.numero} · établie avec NOVA PHARMA OS`);
   });
 
   doc.end();

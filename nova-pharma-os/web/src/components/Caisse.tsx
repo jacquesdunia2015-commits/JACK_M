@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { money, quantity as fmtQty } from '@/lib/format';
+import Link from 'next/link';
+import { DocumentFacture, EmettreFacture, FactureEmise } from '@/components/Facture';
+import { designation, money, quantity as fmtQty } from '@/lib/format';
 
 interface Produit {
   id: string;
@@ -51,6 +53,9 @@ export default function Caisse({
   const [prescripteur, setPrescripteur] = useState('');
   const [message, setMessage] = useState<{ ton: string; texte: string } | null>(null);
   const [envoi, setEnvoi] = useState(false);
+  // Dernière vente encaissée, pour en établir la facture si le client la demande.
+  const [derniereVente, setDerniereVente] = useState<{ id: string; number: string; currency: string } | null>(null);
+  const [facture, setFacture] = useState<FactureEmise | null>(null);
   const champRecherche = useRef<HTMLInputElement>(null);
 
   const total = useMemo(
@@ -109,6 +114,8 @@ export default function Caisse({
     if (ticket.length === 0) return;
     setEnvoi(true);
     setMessage(null);
+    setDerniereVente(null);
+    setFacture(null);
 
     const montant = moyen === 'cash' && encaisse ? Number(encaisse) : total;
 
@@ -149,6 +156,7 @@ export default function Caisse({
           `Vente ${body.sale.number} enregistrée — ${money(body.sale.total)}` +
           (rendu > 0 ? ` · à rendre : ${money(rendu)}` : ''),
       });
+      setDerniereVente({ id: body.sale.id, number: body.sale.number, currency: body.sale.currency });
       setTicket([]);
       setEncaisse('');
       setPatient('');
@@ -210,7 +218,7 @@ export default function Caisse({
               >
                 <div>
                   <div className="pos-item-name">
-                    {produit.name} {produit.dosage ?? ''}
+                    {designation(produit.name, produit.dosage)}
                     {produit.requires_prescription && (
                       <span className="tag warn" style={{ marginLeft: '0.4rem' }}>
                         Ordonnance
@@ -238,6 +246,31 @@ export default function Caisse({
         </div>
 
         {message && <div className={`banner ${message.ton}`}>{message.texte}</div>}
+
+        {derniereVente && (
+          <div className="facture-vente">
+            {facture ? (
+              <>
+                <p style={{ marginTop: 0 }}>
+                  Facture <Link href={`/pharmacie/factures/${facture.invoice.id}`}><strong>{facture.invoice.number}</strong></Link>
+                  {facture.customer ? ` au nom de ${facture.customer.name}` : ' (client comptant)'} :
+                </p>
+                <DocumentFacture
+                  factureId={facture.invoice.id}
+                  numero={facture.invoice.number}
+                  total={facture.invoice.total}
+                  devise={facture.invoice.currency}
+                  client={facture.customer}
+                />
+              </>
+            ) : (
+              <details className="depliable">
+                <summary>Établir la facture de la vente {derniereVente.number}</summary>
+                <EmettreFacture venteId={derniereVente.id} onEmise={setFacture} />
+              </details>
+            )}
+          </div>
+        )}
 
         {ticket.length === 0 ? (
           <div className="empty">Le ticket est vide.</div>
