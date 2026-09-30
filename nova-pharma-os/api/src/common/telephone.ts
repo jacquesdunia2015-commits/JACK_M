@@ -10,6 +10,19 @@ import { registerDecorator, ValidationOptions } from 'class-validator';
  */
 
 /**
+ * Indicatifs des pays d'où viennent, le plus souvent, les fournisseurs des
+ * pharmacies de la région des Grands Lacs. Un numéro national (« 0772… »)
+ * d'un dépôt de Kampala doit recevoir +256, pas l'indicatif de la pharmacie.
+ */
+export const INDICATIFS_PAYS: Record<string, string> = {
+  CD: '+243', CG: '+242', RW: '+250', BI: '+257', UG: '+256', TZ: '+255',
+  KE: '+254', ZM: '+260', AO: '+244', CF: '+236', SS: '+211', CM: '+237',
+  ZA: '+27', NG: '+234', SN: '+221', CI: '+225', ML: '+223', MA: '+212',
+  EG: '+20', AE: '+971', IN: '+91', CN: '+86', BE: '+32', FR: '+33',
+  DE: '+49', NL: '+31', CH: '+41', GB: '+44', US: '+1',
+};
+
+/**
  * Chiffres internationaux d'un numéro, sans le « + » : 243991234567.
  *
  * Un numéro qui commence par 0 est un numéro national : le 0 tombe au

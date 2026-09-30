@@ -24,6 +24,8 @@ import { PaymentsController } from './payments/payments.controller';
 import { MobileMoneyService } from './payments/mobile-money.service';
 import { PurchasingController } from './purchasing/purchasing.controller';
 import { PurchasingService } from './purchasing/purchasing.service';
+import { SuppliersController } from './purchasing/suppliers.controller';
+import { SuppliersService } from './purchasing/suppliers.service';
 import { ReportingController } from './reporting/reporting.controller';
 import { ReportingService } from './reporting/reporting.service';
 import { SalesController } from './sales/sales.controller';
@@ -41,6 +43,7 @@ import { SalesService } from './sales/sales.service';
     CatalogController,
     InventoryController,
     PurchasingController,
+    SuppliersController,
     SalesController,
     CustomersController,
     CashController,
@@ -58,6 +61,7 @@ import { SalesService } from './sales/sales.service';
     StockService,
     InventoryService,
     PurchasingService,
+    SuppliersService,
     SalesService,
     CustomersService,
     CashService,

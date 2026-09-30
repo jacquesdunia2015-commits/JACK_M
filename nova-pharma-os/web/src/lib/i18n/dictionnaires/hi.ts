@@ -239,4 +239,5 @@ export const hi: Dictionnaire = {
   'stock.jours_abrege': 'दिन',
   'stock.tous': 'सभी',
   'stock.regle': 'रंग पिछले 30 दिनों की बिक्री और पुनः-ऑर्डर सीमा से अनुमानित है: एक सप्ताह से कम की बिक्री बचे तो नारंगी, दो सप्ताह से कम तो पीला।',
+  'nav.fournisseurs': 'आपूर्तिकर्ता',
 };

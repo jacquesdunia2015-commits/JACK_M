@@ -97,7 +97,7 @@ describe('Opérations pharmacie', () => {
       const res = await harness
         .post(
           '/purchasing/suppliers',
-          { code: 'UBI', name: 'Ubipharm RDC', leadTimeDays: 10 },
+          { code: 'UBI', name: 'Ubipharm RDC', phone: '0990000400', leadTimeDays: 10 },
           pharmacy.token,
         )
         .expect(201);

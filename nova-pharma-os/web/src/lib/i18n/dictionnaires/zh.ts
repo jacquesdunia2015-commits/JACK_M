@@ -237,4 +237,5 @@ export const zh: Dictionnaire = {
   'stock.jours_abrege': '天',
   'stock.tous': '全部',
   'stock.regle': '颜色根据最近 30 天的销量和补货点估算：剩余不足一周销量为橙色，不足两周为黄色。',
+  'nav.fournisseurs': '供应商',
 };

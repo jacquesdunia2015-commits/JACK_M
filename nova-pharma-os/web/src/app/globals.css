@@ -559,3 +559,12 @@ button.petit, .btn.petit { padding: 0.32rem 0.6rem; font-size: 0.8rem; }
   .doc-corps { padding: 1.1rem; }
   .doc-tete { flex-direction: column; }
 }
+
+/* Ajout d'un produit au catalogue d'un fournisseur : une ligne sur écran
+   large, qui se replie sur téléphone. */
+.catalogue-ajout {
+  display: grid; gap: 0 0.75rem; align-items: end; margin-bottom: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+}
+.catalogue-ajout button { width: 100%; }
+.offre-meilleure { background: var(--vert-clair); }

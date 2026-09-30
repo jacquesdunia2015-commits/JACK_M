@@ -239,4 +239,5 @@ export const bm: Dictionnaire = {
   'stock.jours_abrege': 'tile',
   'stock.tous': 'U bɛɛ',
   'stock.regle': 'Kulɛri bɛ jateminɛ ni tile 30 laban feereli ye ani ka segin ka san hakɛ ye: nɛrɛmugu ni min tolen tɛ se dɔgɔkun kelen ma, nɛrɛ ni a tɛ se dɔgɔkun fila ma.',
+  'nav.fournisseurs': 'Feerekɛlaw',
 };

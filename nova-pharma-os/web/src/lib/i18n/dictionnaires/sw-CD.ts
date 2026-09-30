@@ -245,4 +245,5 @@ export const swCD: Dictionnaire = {
   'stock.jours_abrege': 'siku',
   'stock.tous': 'Zote',
   'stock.regle': 'Rangi inakadiriwa kufuatana na mauzo ya siku 30 zilizopita na kiwango cha kuagiza tena: machungwa kama imebakia mauzo ya chini ya juma moja, manjano chini ya majuma mbili.',
+  'nav.fournisseurs': 'Wasambazaji',
 };

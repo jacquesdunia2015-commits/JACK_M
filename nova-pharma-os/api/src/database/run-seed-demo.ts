@@ -7,6 +7,7 @@ import { AuthService } from '../modules/auth/auth.service';
 import { OrganizationsService } from '../modules/platform/organizations/organizations.service';
 import { CatalogService } from '../modules/tenant/catalog/catalog.service';
 import { PurchasingService } from '../modules/tenant/purchasing/purchasing.service';
+import { SuppliersService } from '../modules/tenant/purchasing/suppliers.service';
 import { SalesService } from '../modules/tenant/sales/sales.service';
 import { CashService } from '../modules/tenant/cash/cash.service';
 import { CustomersService } from '../modules/tenant/customers/customers.service';
@@ -85,6 +86,7 @@ async function principal(): Promise<void> {
     const organizations = application.get(OrganizationsService);
     const catalog = application.get(CatalogService);
     const purchasing = application.get(PurchasingService);
+    const suppliers = application.get(SuppliersService);
     const sales = application.get(SalesService);
     const cash = application.get(CashService);
     const customers = application.get(CustomersService);
@@ -159,10 +161,11 @@ async function principal(): Promise<void> {
     );
 
     // --- Fournisseur et réception, avec des lots aux péremptions variées ---
-    const fournisseur = await purchasing.createSupplier(contexte, {
+    const fournisseur = await suppliers.create(contexte, {
       code: 'UBIPHARM',
       name: 'Ubipharm RDC',
       kind: 'wholesaler',
+      phone: '0990000300',
       city: 'Goma',
       paymentTermsDays: 30,
       leadTimeDays: 10,

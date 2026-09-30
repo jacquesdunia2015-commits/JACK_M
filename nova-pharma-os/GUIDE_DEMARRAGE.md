@@ -217,6 +217,41 @@ besoin.
 
 ---
 
+## Enregistrer vos fournisseurs et leurs prix
+
+Menu *Fournisseurs* (dans tous les forfaits, même Starter).
+
+**1. Enregistrez le dépôt.** Au bas de la page, *Enregistrer un fournisseur* :
+son nom et son **téléphone** suffisent. Ajoutez si vous l'avez son adresse
+e-mail, son **pays**, sa **ville**, son adresse, la personne à contacter et
+son délai de livraison. Tapez le numéro comme vous le composez : pour un dépôt
+de Kampala, choisissez *Ouganda* et l'application ajoute +256 d'elle-même.
+Deux fournisseurs ne peuvent pas avoir le même numéro : c'est presque toujours
+le même dépôt saisi deux fois.
+
+**2. Notez ce qu'il propose et à quel prix.** Sur la fiche du fournisseur,
+*Produits et prix* : le nom du produit ou du médicament, sa présentation
+(« boîte de 100 gélules »), le prix, la devise, la quantité minimum. Le
+produit n'a pas besoin d'être déjà dans votre catalogue ; s'il y est, choisissez-le
+dans la liste qui s'affiche pendant la frappe.
+
+- Cliquez sur un **prix** pour le modifier : la date du prix se met à jour.
+- Cliquez sur **Disponible** / **En rupture** quand le dépôt vous signale un
+  manque.
+- À chaque **réception** de marchandise, le prix réellement payé remplace
+  l'ancien, sans rien ressaisir.
+
+**3. Comparez.** En haut de la page *Fournisseurs*, tapez le nom d'un produit :
+tous les dépôts qui le proposent s'affichent, le moins cher d'abord. **Le moins
+cher de ceux qui l'ont en stock** est surligné en vert — un dépôt en rupture ne
+compte pas, même s'il est moins cher. On ne compare que des prix dans la même
+devise.
+
+Depuis la liste, le numéro de chaque dépôt s'appelle d'un clic, ou ouvre
+WhatsApp pour lui passer commande.
+
+---
+
 ## Lire les couleurs du stock
 
 Dans *Stock et lots*, chaque produit porte une couleur, et les plus urgents

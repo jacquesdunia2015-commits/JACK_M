@@ -239,4 +239,5 @@ export const sw: Dictionnaire = {
   'stock.jours_abrege': 'siku',
   'stock.tous': 'Zote',
   'stock.regle': 'Rangi inakadiriwa kutokana na mauzo ya siku 30 zilizopita na kiwango cha kuagiza upya: machungwa ikiwa yamebaki mauzo ya chini ya wiki moja, njano chini ya wiki mbili.',
+  'nav.fournisseurs': 'Wasambazaji',
 };

@@ -5,25 +5,6 @@ import {
   Min, MinLength, ValidateNested,
 } from 'class-validator';
 
-export class CreateSupplierDto {
-  @ApiProperty() @IsString() @MinLength(1) code!: string;
-  @ApiProperty() @IsString() @MinLength(2) name!: string;
-  @ApiPropertyOptional({ enum: ['manufacturer', 'wholesaler', 'semi_wholesaler', 'importer'] })
-  @IsOptional() @IsString() kind?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() contactName?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() email?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() phone?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() address?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() city?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() countryCode?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() taxId?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() currency?: string;
-  @ApiPropertyOptional({ default: 0 }) @IsOptional() @IsInt() @Min(0) paymentTermsDays?: number;
-  @ApiPropertyOptional({ default: 7 }) @IsOptional() @IsInt() @Min(0) leadTimeDays?: number;
-  @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) creditLimit?: number;
-  @ApiPropertyOptional() @IsOptional() @IsString() notes?: string;
-}
-
 export class PurchaseOrderLineDto {
   @ApiProperty() @IsString() productId!: string;
   @ApiProperty({ example: 100 }) @IsNumber() @Min(0.001) quantity!: number;

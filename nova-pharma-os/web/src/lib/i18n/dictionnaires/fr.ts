@@ -256,6 +256,7 @@ export const fr = {
   'stock.jours_abrege': 'j',
   'stock.tous': 'Tous',
   'stock.regle': 'Couleur estimée d\'après les ventes des 30 derniers jours et le seuil de réapprovisionnement : orange s\'il reste moins d\'une semaine de ventes, jaune moins de deux semaines.',
+  'nav.fournisseurs': 'Fournisseurs',
 } as const;
 
 export type CleTraduction = keyof typeof fr;

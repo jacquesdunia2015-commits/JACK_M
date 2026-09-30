@@ -75,6 +75,11 @@ export class Harness {
     return token ? req.set('Authorization', `Bearer ${token}`) : req;
   }
 
+  delete(path: string, token?: string) {
+    const req = this.http().delete(`/api${path}`);
+    return token ? req.set('Authorization', `Bearer ${token}`) : req;
+  }
+
   put(path: string, body: unknown = {}, token?: string) {
     const req = this.http().put(`/api${path}`).send(body as object);
     return token ? req.set('Authorization', `Bearer ${token}`) : req;

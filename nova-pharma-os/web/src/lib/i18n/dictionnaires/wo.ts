@@ -239,4 +239,5 @@ export const wo: Dictionnaire = {
   'stock.jours_abrege': 'fan',
   'stock.tous': 'Lépp',
   'stock.regle': 'Melo bi dañu koy natt ci jaay yi ci 30 fan yi weesu ak dayo bi ñuy jëndaat: oraas su desee lu yées benn ayu-bés ci jaay, mboq su desee lu yées ñaari ayu-bés.',
+  'nav.fournisseurs': 'Jaaykat yi',
 };

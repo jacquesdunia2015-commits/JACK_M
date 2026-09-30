@@ -239,4 +239,5 @@ export const pt: Dictionnaire = {
   'stock.jours_abrege': 'd',
   'stock.tous': 'Todos',
   'stock.regle': 'Cor estimada a partir das vendas dos últimos 30 dias e do ponto de encomenda: laranja se restar menos de uma semana de vendas, amarelo se restarem menos de duas semanas.',
+  'nav.fournisseurs': 'Fornecedores',
 };

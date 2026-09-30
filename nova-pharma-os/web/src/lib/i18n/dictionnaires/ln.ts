@@ -239,4 +239,5 @@ export const ln: Dictionnaire = {
   'stock.jours_abrege': 'mik.',
   'stock.tous': 'Nyonso',
   'stock.regle': 'Langi ezwami na biteki ya mikolo 30 oyo eleki mpe na ndelo ya kosomba lisusu: orange soki etikali biteki ya mikolo moke koleka poso moko, jaune soki moke koleka poso mibale.',
+  'nav.fournisseurs': 'Batekisi',
 };

@@ -4,7 +4,7 @@ import {
   Ctx, RequireModule, RequirePermissions, WriteOperation,
 } from '../../../common/auth/decorators';
 import { RequestContext } from '../../../common/database/request-context';
-import { CreatePurchaseOrderDto, CreateReceiptDto, CreateSupplierDto } from './dto';
+import { CreatePurchaseOrderDto, CreateReceiptDto } from './dto';
 import { PurchasingService } from './purchasing.service';
 
 @ApiTags('Espace pharmacie')
@@ -12,21 +12,6 @@ import { PurchasingService } from './purchasing.service';
 @RequireModule('purchasing')
 export class PurchasingController {
   constructor(private readonly purchasing: PurchasingService) {}
-
-  @Get('suppliers')
-  @RequirePermissions('suppliers.read')
-  @ApiOperation({ summary: 'Fournisseurs' })
-  suppliers(@Ctx() ctx: RequestContext, @Query('search') search?: string) {
-    return this.purchasing.listSuppliers(ctx, search);
-  }
-
-  @Post('suppliers')
-  @RequirePermissions('suppliers.write')
-  @WriteOperation()
-  @ApiOperation({ summary: 'Créer un fournisseur' })
-  createSupplier(@Ctx() ctx: RequestContext, @Body() dto: CreateSupplierDto) {
-    return this.purchasing.createSupplier(ctx, dto);
-  }
 
   @Get('orders')
   @RequirePermissions('purchasing.read')

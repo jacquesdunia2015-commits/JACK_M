@@ -239,4 +239,5 @@ export const rw: Dictionnaire = {
   'stock.jours_abrege': 'imin.',
   'stock.tous': 'Byose',
   'stock.regle': 'Ibara rigenwa hashingiwe ku byagurishijwe mu minsi 30 ishize no ku rugero rwo kongera gutumiza: icunga niba hasigaye ibyo kugurisha munsi y\'icyumweru kimwe, umuhondo munsi y\'ibyumweru bibiri.',
+  'nav.fournisseurs': 'Abatanga ibicuruzwa',
 };

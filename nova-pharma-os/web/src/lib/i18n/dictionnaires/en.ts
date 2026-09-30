@@ -239,4 +239,5 @@ export const en: Dictionnaire = {
   'stock.jours_abrege': 'd',
   'stock.tous': 'All',
   'stock.regle': 'Colour estimated from the last 30 days of sales and the reorder point: orange when less than one week of sales remains, yellow when less than two weeks.',
+  'nav.fournisseurs': 'Suppliers',
 };

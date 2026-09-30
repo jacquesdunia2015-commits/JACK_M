@@ -239,4 +239,5 @@ export const de: Dictionnaire = {
   'stock.jours_abrege': 'T',
   'stock.tous': 'Alle',
   'stock.regle': 'Farbe geschätzt aus den Verkäufen der letzten 30 Tage und dem Meldebestand: orange bei weniger als einer Woche Verkauf, gelb bei weniger als zwei Wochen.',
+  'nav.fournisseurs': 'Lieferanten',
 };

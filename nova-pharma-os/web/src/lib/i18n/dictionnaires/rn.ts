@@ -239,4 +239,5 @@ export const rn: Dictionnaire = {
   'stock.jours_abrege': 'imis.',
   'stock.tous': 'Vyose',
   'stock.regle': 'Ibara rigenwa hisunzwe ivyadandajwe mu misi 30 iheze n\'urugero rwo gusubira kurangura: icunga nimba hasigaye ivyo kudandaza munsi y\'indwi imwe, umuhondo munsi y\'indwi zibiri.',
+  'nav.fournisseurs': 'Abadandaza',
 };

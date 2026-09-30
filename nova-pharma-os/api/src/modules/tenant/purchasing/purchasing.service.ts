@@ -5,11 +5,7 @@ import { RequestContext } from '../../../common/database/request-context';
 import { BusinessRuleException } from '../../../common/http/exceptions';
 import { NumberingService } from '../../../common/numbering/numbering.service';
 import { StockService } from '../inventory/stock.service';
-import {
-  CreatePurchaseOrderDto,
-  CreateReceiptDto,
-  CreateSupplierDto,
-} from './dto';
+import { CreatePurchaseOrderDto, CreateReceiptDto } from './dto';
 
 @Injectable()
 export class PurchasingService {
@@ -19,54 +15,6 @@ export class PurchasingService {
     private readonly numbering: NumberingService,
     private readonly audit: AuditService,
   ) {}
-
-  // -------------------------------------------------------------------
-  // Fournisseurs
-  // -------------------------------------------------------------------
-  async listSuppliers(ctx: RequestContext, search?: string) {
-    return this.db.readTransaction(ctx, (tx) =>
-      tx.many(
-        `SELECT s.*,
-                (SELECT count(*) FROM purchase_orders po
-                  WHERE po.supplier_id = s.id) AS orders,
-                (SELECT COALESCE(sum(po.total - po.amount_paid), 0) FROM purchase_orders po
-                  WHERE po.supplier_id = s.id AND po.status <> 'cancelled') AS balance
-           FROM suppliers s
-          WHERE ($1::text IS NULL OR s.name ILIKE '%'||$1||'%' OR s.code ILIKE '%'||$1||'%')
-          ORDER BY s.name`,
-        [search ?? null],
-      ),
-    );
-  }
-
-  async createSupplier(ctx: RequestContext, dto: CreateSupplierDto) {
-    return this.db.transaction(ctx, async (tx) => {
-      const supplier = await tx.oneOrFail(
-        `INSERT INTO suppliers
-           (organization_id, code, name, kind, contact_name, email, phone, address,
-            city, country_code, tax_id, currency, payment_terms_days, lead_time_days,
-            credit_limit, notes)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
-                 COALESCE($12, (SELECT currency FROM organizations WHERE id = $1)),
-                 $13,$14,$15,$16)
-         RETURNING *`,
-        [
-          ctx.organizationId, dto.code, dto.name, dto.kind ?? 'wholesaler',
-          dto.contactName ?? null, dto.email ?? null, dto.phone ?? null,
-          dto.address ?? null, dto.city ?? null, dto.countryCode ?? null,
-          dto.taxId ?? null, dto.currency ?? null, dto.paymentTermsDays ?? 0,
-          dto.leadTimeDays ?? 7, dto.creditLimit ?? 0, dto.notes ?? null,
-        ],
-      );
-      await this.audit.record(tx, {
-        action: 'purchasing.supplier_created',
-        entity: 'supplier',
-        entityId: supplier.id as string,
-        after: { code: dto.code, name: dto.name },
-      });
-      return supplier;
-    });
-  }
 
   // -------------------------------------------------------------------
   // Commandes fournisseur
@@ -315,6 +263,18 @@ export class PurchasingService {
           await tx.query(
             'UPDATE products SET cost_price = $2 WHERE id = $1',
             [product.id, line.unitCost],
+          );
+
+          // Le catalogue du fournisseur suit aussi : le prix réellement payé
+          // est le plus fiable qui soit, et le produit est donc disponible.
+          await tx.query(
+            `INSERT INTO supplier_products
+               (organization_id, supplier_id, product_id, last_cost, is_available, price_updated_at)
+             VALUES ($1,$2,$3,$4,true,now())
+             ON CONFLICT (supplier_id, product_id)
+             DO UPDATE SET last_cost = EXCLUDED.last_cost, is_available = true,
+                           price_updated_at = now()`,
+            [organizationId, dto.supplierId, product.id, line.unitCost],
           );
 
           if (line.purchaseOrderLineId) {

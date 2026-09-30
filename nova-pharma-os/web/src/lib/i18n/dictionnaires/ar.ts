@@ -239,4 +239,5 @@ export const ar: Dictionnaire = {
   'stock.jours_abrege': 'يوم',
   'stock.tous': 'الكل',
   'stock.regle': 'اللون مقدَّر من مبيعات آخر 30 يومًا ومن حدّ إعادة الطلب: برتقالي إذا بقي أقل من أسبوع من المبيعات، وأصفر إذا بقي أقل من أسبوعين.',
+  'nav.fournisseurs': 'الموردون',
 };
