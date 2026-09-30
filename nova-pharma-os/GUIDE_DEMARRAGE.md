@@ -248,6 +248,22 @@ il n'existe donc **aucune inscription publique** pour eux. Seul un
 super-administrateur les crée, depuis le menu *Équipe* du back-office — le
 menu n'apparaît même pas pour les autres rôles.
 
+**Votre propre compte de super-administrateur — à faire dès l'installation.**
+Le tout premier super-administrateur n'est créé par personne : l'installation
+le livre, `admin@novapharmaos.com`, avec le mot de passe `NovaPharma2026!` —
+un mot de passe **public**, écrit dans ce guide. Remplacez-le par le vôtre :
+
+1. Connectez-vous au back-office avec `admin@novapharmaos.com`.
+2. Ouvrez *Équipe*, remplissez *Créer un compte interne* avec **votre** nom,
+   téléphone, adresse e-mail et mot de passe, rôle **Super administrateur**.
+3. Déconnectez-vous, puis reconnectez-vous avec votre nouveau compte.
+4. Dans *Équipe*, cliquez sur **Désactiver** en face de
+   `admin@novapharmaos.com`, puis en face de `support@…` et `commercial@…`
+   (mêmes mots de passe publics). Leurs sessions sont fermées aussitôt.
+
+Votre propre ligne affiche « vous » au lieu du bouton : on ne peut pas
+désactiver son propre compte, ce qui évite de s'enfermer dehors.
+
 > Pour fermer l'inscription publique (par exemple avant un lancement), démarrez
 > l'API avec `INSCRIPTION_PUBLIQUE=off`. Par sécurité, les inscriptions sont
 > aussi limitées à 20 par heure (`INSCRIPTION_LIMITE_PAR_HEURE`).

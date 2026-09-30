@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 95 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 96 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -181,6 +181,11 @@ ferme avec `INSCRIPTION_PUBLIQUE=off`, se limite globalement avec
 `INSCRIPTION_LIMITE_PAR_HEURE` (20 par défaut) et attribue le forfait
 `INSCRIPTION_FORFAIT` (`professional` par défaut) en période d'essai.
 
+Le premier super-administrateur n'a pas de formulaire : `run-seed.ts` le crée à
+l'installation (`admin@novapharmaos.com`, mot de passe `SEED_SUPER_ADMIN_PASSWORD`, à
+défaut `NovaPharma2026!`). Il sert à créer son propre compte depuis *Équipe*, puis
+est désactivé depuis cette même page.
+
 ---
 
 ## Accès du support aux données d'une pharmacie
@@ -280,7 +285,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             95 tests de bout en bout
+│   └── test/             96 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français

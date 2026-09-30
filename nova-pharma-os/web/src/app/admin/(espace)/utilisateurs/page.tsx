@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import ActivationCompteInterne from '@/components/ActivationCompteInterne';
 import FormulaireCompte from '@/components/FormulaireCompte';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
@@ -26,7 +27,7 @@ const ROLES = [
  */
 export default async function PageUtilisateursInternes() {
   const session = await readSession();
-  if (session?.role !== 'super_admin') redirect('/admin');
+  if (!session || session.role !== 'super_admin') redirect('/admin');
 
   const utilisateurs = await apiSafe<UtilisateurInterne[]>('/platform/users', []);
   const libelle = (code: string) => ROLES.find((r) => r.code === code)?.libelle ?? code;
@@ -74,9 +75,16 @@ export default async function PageUtilisateursInternes() {
                     <td className="small mono">{u.phone ?? '—'}</td>
                     <td className="small">{libelle(u.role)}</td>
                     <td>
-                      <span className={`tag ${u.is_active ? 'ok' : 'danger'}`}>
-                        {u.is_active ? 'Actif' : 'Désactivé'}
-                      </span>
+                      <div className="row" style={{ gap: '0.4rem', flexWrap: 'wrap' }}>
+                        <span className={`tag ${u.is_active ? 'ok' : 'danger'}`}>
+                          {u.is_active ? 'Actif' : 'Désactivé'}
+                        </span>
+                        {u.email === session.email.toLowerCase() ? (
+                          <span className="small muted">vous</span>
+                        ) : (
+                          <ActivationCompteInterne id={u.id} actif={u.is_active} nom={u.full_name} />
+                        )}
+                      </div>
                     </td>
                     <td className="num small">{dateTime(u.last_login_at)}</td>
                   </tr>

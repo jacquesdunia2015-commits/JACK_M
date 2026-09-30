@@ -242,5 +242,38 @@ describe('Création de comptes', () => {
         )
         .expect(403);
     });
+
+    it("un super-administrateur crée le sien, puis désactive un compte — jamais le sien", async () => {
+      // Le parcours de la mise en service : depuis le compte livré à
+      // l'installation, on crée son propre compte de super-administrateur…
+      const moi = `moi-${uniqueSlug('sa')}@novapharmaos.com`;
+      await harness
+        .post(
+          '/platform/users',
+          { fullName: 'Moi', phone: '0990000111', email: moi, password: 'MonSecret-2026!', role: 'super_admin' },
+          superAdmin.token,
+        )
+        .expect(201);
+      const session = await harness.loginPlatform(moi, 'MonSecret-2026!');
+
+      // … qui peut à son tour créer et désactiver des comptes internes.
+      const ancien = `ancien-${uniqueSlug('sa')}@novapharmaos.com`;
+      const cree = await harness
+        .post(
+          '/platform/users',
+          { fullName: 'Ancien', phone: '0990000112', email: ancien, password: 'Ancien-2026!', role: 'super_admin' },
+          session.token,
+        )
+        .expect(201);
+      await harness
+        .post(`/platform/users/${cree.body.id}/activation`, { isActive: false }, session.token)
+        .expect(201);
+      const refus = await harness.post('/auth/platform/login', { email: ancien, password: 'Ancien-2026!' });
+      expect([401, 403]).toContain(refus.status);
+
+      await harness
+        .post(`/platform/users/${session.user.id}/activation`, { isActive: false }, session.token)
+        .expect(400);
+    });
   });
 });
