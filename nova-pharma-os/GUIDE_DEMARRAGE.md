@@ -274,6 +274,53 @@ WhatsApp pour lui passer commande.
 
 ---
 
+## Réquisitionner auprès de vos fournisseurs
+
+Menu *Réquisitions* (tous les forfaits).
+
+**1. Mettez votre logo, une fois pour toutes.** En bas de la page, *Logo de la
+pharmacie* : une image PNG ou JPEG de 500 Ko au plus, carrée de préférence. Elle
+s'imprime en tête de chaque réquisition.
+
+**2. Créez la réquisition.** *Nouvelle réquisition* : pour chaque produit, tapez
+son nom et la quantité voulue. Les offres de vos fournisseurs s'affichent
+aussitôt sous la ligne, **la moins chère d'abord** — parmi celles qui sont
+disponibles et non périmées — avec la quantité minimum et la date d'expiration.
+L'application retient d'office la moins chère ; cliquez sur une autre offre pour
+la préférer. Si vous demandez moins que le minimum du fournisseur, elle vous le
+signale. Un produit sans offre peut attendre : « à choisir plus tard ».
+
+**3. Envoyez-la.** La page de la réquisition présente une section par
+fournisseur, avec son total estimé et quatre boutons :
+
+- **Ouvrir le PDF / imprimer** : le bon au logo de la pharmacie, avec les
+  coordonnées du fournisseur, les quantités, les prix de son catalogue et une
+  place pour la signature et le cachet ;
+- **Partager le PDF** : depuis un téléphone, l'envoie directement par WhatsApp,
+  e-mail ou toute autre application ; depuis un ordinateur, l'enregistre pour
+  le joindre à votre message ;
+- **WhatsApp** et **E-mail** : ouvrent un message au fournisseur, la liste des
+  produits déjà écrite.
+
+*Document complet* réunit tous les fournisseurs, un par page. Marquez ensuite la
+réquisition **envoyée**, puis **reçue** ; à la livraison, enregistrez l'achat dans
+*Stock et lots* comme d'habitude.
+
+## Les fournisseurs de chaque médicament
+
+Sur la fiche d'un produit (cliquez sur son nom dans *Stock et lots* ou
+*Catalogue*), la section **Fournisseurs de ce produit** compare les prix de tous
+les dépôts qui le proposent, avec minimum, fabrication, expiration et
+disponibilité ; le moins cher disponible et non périmé est surligné. Le
+formulaire en dessous ajoute un fournisseur pour ce produit, ou met à jour son
+prix. Le bouton **Réquisitionner** ouvre une réquisition avec ce produit.
+
+Chaque achat mis en stock garde son fournisseur : la colonne *Dernier
+fournisseur* de *Stock et lots* et la colonne *Fournisseur* des mouvements de la
+fiche le montrent.
+
+---
+
 ## Lire les couleurs du stock
 
 Dans *Stock et lots*, chaque produit porte une couleur, et les plus urgents

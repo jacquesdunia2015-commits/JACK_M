@@ -251,4 +251,6 @@ export const de: Dictionnaire = {
   'stock.ajouter_produit': 'Produkt hinzufügen',
   'stock.achete_30j': 'Gekauft (30 T)',
   'stock.vendu_30j': 'Verkauft (30 T)',
+  'nav.requisitions': 'Bestellanforderungen',
+  'stock.dernier_fournisseur': 'Letzter Lieferant',
 };

@@ -345,9 +345,12 @@ export class SuppliersService {
    * des dollars et des francs congolais. Une offre dont la date
    * d'expiration est passée ne compte pas comme disponible.
    */
-  async comparePrices(ctx: RequestContext, search: string) {
-    const terme = search?.trim();
-    if (!terme || terme.length < 2) {
+  async comparePrices(ctx: RequestContext, search?: string, productId?: string) {
+    const terme = search?.trim() ?? '';
+    // Par produit du catalogue : toutes ses offres, même libellées autrement
+    // chez chaque fournisseur. Sinon, par nom : au moins deux lettres.
+    const parProduit = productId && /^[0-9a-f-]{36}$/i.test(productId) ? productId : null;
+    if (!parProduit && terme.length < 2) {
       throw new BadRequestException('Saisissez au moins deux lettres du produit recherché.');
     }
     const offres = await this.db.readTransaction(ctx, (tx) =>
@@ -369,9 +372,14 @@ export class SuppliersService {
              FROM supplier_products sp
              JOIN suppliers s ON s.id = sp.supplier_id AND s.is_active
              LEFT JOIN products p ON p.id = sp.product_id
-            WHERE ${SANS_ACCENTS('COALESCE(p.name, sp.product_name)')}
-                    LIKE '%'||${SANS_ACCENTS('$1')}||'%'
-               OR p.sku ILIKE '%'||$1||'%'
+            WHERE CASE WHEN $2::uuid IS NOT NULL
+                       THEN sp.product_id = $2::uuid
+                            OR (sp.product_id IS NULL AND ${SANS_ACCENTS('sp.product_name')}
+                                = ${SANS_ACCENTS('(SELECT name FROM products WHERE id = $2::uuid)')})
+                       ELSE ${SANS_ACCENTS('COALESCE(p.name, sp.product_name)')}
+                              LIKE '%'||${SANS_ACCENTS('$1')}||'%'
+                            OR p.sku ILIKE '%'||$1||'%'
+                  END
          )
          SELECT o.*,
                 (o.is_available AND NOT o.is_expired
@@ -380,7 +388,7 @@ export class SuppliersService {
            FROM offres o
           ORDER BY lower(o.name), o.article, (o.is_available AND NOT o.is_expired) DESC, o.price
           LIMIT 300`,
-        [terme],
+        [terme, parProduit],
       ),
     );
     return offres.map(avecNiveauPeremption);

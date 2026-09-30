@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Ctx, RequirePermissions, WriteOperation } from '../../../common/auth/decorators';
 import { RequestContext } from '../../../common/database/request-context';
 import { TenantAdminService } from './admin.service';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, LogoDto } from './dto';
 
 @ApiTags('Espace pharmacie')
 @Controller('admin')
@@ -136,6 +136,29 @@ export class TenantAdminController {
   @ApiOperation({ summary: 'Modifier les paramètres' })
   updateSettings(@Ctx() ctx: RequestContext, @Body() body: Record<string, unknown>) {
     return this.admin.updateSettings(ctx, body);
+  }
+
+  @Get('logo')
+  @RequirePermissions('settings.read')
+  @ApiOperation({ summary: 'Logo de la pharmacie, imprimé sur ses documents' })
+  logo(@Ctx() ctx: RequestContext) {
+    return this.admin.logo(ctx);
+  }
+
+  @Put('logo')
+  @RequirePermissions('settings.write')
+  @WriteOperation()
+  @ApiOperation({ summary: 'Enregistrer le logo (PNG ou JPEG, 500 Ko au plus)' })
+  setLogo(@Ctx() ctx: RequestContext, @Body() body: LogoDto) {
+    return this.admin.setLogo(ctx, body.dataUrl);
+  }
+
+  @Delete('logo')
+  @RequirePermissions('settings.write')
+  @WriteOperation()
+  @ApiOperation({ summary: 'Retirer le logo' })
+  removeLogo(@Ctx() ctx: RequestContext) {
+    return this.admin.setLogo(ctx, null);
   }
 
   @Get('audit-logs')

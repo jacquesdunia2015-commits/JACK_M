@@ -251,4 +251,6 @@ export const ln: Dictionnaire = {
   'stock.ajouter_produit': 'Bakisa eloko',
   'stock.achete_30j': 'Esombami (mikolo 30)',
   'stock.vendu_30j': 'Etekami (mikolo 30)',
+  'nav.requisitions': 'Masengi ya biloko',
+  'stock.dernier_fournisseur': 'Motekisi ya nsuka',
 };

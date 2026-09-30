@@ -348,6 +348,44 @@ export class TenantAdminService {
     });
   }
 
+  // ---------------- Logo ----------------
+
+  async logo(ctx: RequestContext) {
+    return this.db.readTransaction(ctx, async (tx) => {
+      const org = await tx.oneOrFail<{ logo_data: string | null }>(
+        'SELECT logo_data FROM organizations WHERE id = $1',
+        [ctx.organizationId],
+      );
+      return { logo: org.logo_data };
+    });
+  }
+
+  /**
+   * Enregistre le logo imprimé sur les documents (réquisitions…). Le
+   * contenu est contrôlé, pas seulement l'en-tête : une image renommée en
+   * « .png » sans en être une serait refusée par le générateur de PDF.
+   */
+  async setLogo(ctx: RequestContext, dataUrl: string | null) {
+    if (dataUrl) {
+      const m = dataUrl.match(/^data:image\/(png|jpeg);base64,(.+)$/);
+      const octets = m ? Buffer.from(m[2], 'base64') : Buffer.alloc(0);
+      const png = octets.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      const jpeg = octets.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]));
+      if (!m || !(m[1] === 'png' ? png : jpeg)) {
+        throw new BadRequestException('Le fichier n’est pas une image PNG ou JPEG valide.');
+      }
+    }
+    return this.db.transaction(ctx, async (tx) => {
+      await tx.query('UPDATE organizations SET logo_data = $2 WHERE id = $1', [ctx.organizationId, dataUrl]);
+      await this.audit.record(tx, {
+        action: dataUrl ? 'admin.logo_updated' : 'admin.logo_removed',
+        entity: 'organization',
+        entityId: ctx.organizationId,
+      });
+      return { logo: dataUrl };
+    });
+  }
+
   /** Journal d'audit de la pharmacie, accès support compris. */
   async auditLogs(
     ctx: RequestContext,

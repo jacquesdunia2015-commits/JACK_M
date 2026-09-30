@@ -55,7 +55,9 @@ export class InventoryService {
                     AND pl.expiry_date <= CURRENT_DATE + p.expiry_alert_days), 0)
                   AS expiring_quantity,
                 ventes.quantite AS sales_last_30_days,
-                ventes.achats AS purchases_last_30_days
+                ventes.achats AS purchases_last_30_days,
+                dernier.supplier_id AS last_supplier_id,
+                dernier.supplier_name AS last_supplier_name
            FROM products p
            LEFT JOIN stock_items si ON si.product_id = p.id
                 AND ($1::uuid IS NULL OR si.branch_id = $1)
@@ -73,9 +75,20 @@ export class InventoryService {
                 AND sm.occurred_at >= now() - make_interval(days => $3::integer)
                 AND ($1::uuid IS NULL OR sm.branch_id = $1)
            ) ventes ON true
+           -- Le fournisseur du dernier achat entré en stock pour ce produit.
+           LEFT JOIN LATERAL (
+             SELECT s.id AS supplier_id, s.name AS supplier_name
+               FROM stock_movements sm
+               JOIN goods_receipts gr ON gr.id = sm.reference_id
+               JOIN suppliers s ON s.id = gr.supplier_id
+              WHERE sm.product_id = p.id AND sm.kind = 'reception'
+                AND sm.reference_kind = 'goods_receipt'
+                AND ($1::uuid IS NULL OR sm.branch_id = $1)
+              ORDER BY sm.occurred_at DESC LIMIT 1
+           ) dernier ON true
           WHERE p.deleted_at IS NULL AND p.is_active
             AND ($2::text IS NULL OR p.name ILIKE '%'||$2||'%' OR p.sku ILIKE '%'||$2||'%')
-          GROUP BY p.id, ventes.quantite, ventes.achats
+          GROUP BY p.id, ventes.quantite, ventes.achats, dernier.supplier_id, dernier.supplier_name
           ORDER BY p.name LIMIT 500`,
         [branchId ?? null, filters.search ?? null, JOURS_CONSOMMATION],
       ),
@@ -167,12 +180,16 @@ export class InventoryService {
         `SELECT m.id, m.kind::text AS kind, m.quantity, m.unit_cost, m.balance_after,
                 m.reference_kind, m.reference_id, m.reason, m.occurred_at,
                 p.sku, p.name AS product_name, pl.lot_number, pl.expiry_date,
-                b.code AS branch_code, u.full_name AS user_name
+                b.code AS branch_code, u.full_name AS user_name,
+                gr.number AS receipt_number, s.id AS supplier_id, s.name AS supplier_name
            FROM stock_movements m
            JOIN products p ON p.id = m.product_id
            JOIN branches b ON b.id = m.branch_id
            LEFT JOIN product_lots pl ON pl.id = m.lot_id
            LEFT JOIN users u ON u.id = m.user_id
+           -- Un achat garde son fournisseur : on retrouve de qui vient chaque entrée.
+           LEFT JOIN goods_receipts gr ON m.reference_kind = 'goods_receipt' AND gr.id = m.reference_id
+           LEFT JOIN suppliers s ON s.id = gr.supplier_id
           WHERE ($1::uuid IS NULL OR m.product_id = $1)
             AND ($2::uuid IS NULL OR m.branch_id = $2)
             AND ($3::text IS NULL OR m.kind::text = $3)

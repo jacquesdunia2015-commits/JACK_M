@@ -257,4 +257,6 @@ export const swCD: Dictionnaire = {
   'stock.ajouter_produit': 'Kuongeza bidhaa',
   'stock.achete_30j': 'Zilizonunuliwa (siku 30)',
   'stock.vendu_30j': 'Zilizouzwa (siku 30)',
+  'nav.requisitions': 'Maombi ya bidhaa',
+  'stock.dernier_fournisseur': 'Muuzaji wa mwisho',
 };

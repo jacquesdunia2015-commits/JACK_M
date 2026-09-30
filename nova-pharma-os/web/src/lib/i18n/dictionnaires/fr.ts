@@ -268,6 +268,8 @@ export const fr = {
   'stock.ajouter_produit': 'Ajouter un produit',
   'stock.achete_30j': 'Acheté (30 j)',
   'stock.vendu_30j': 'Vendu (30 j)',
+  'nav.requisitions': 'Réquisitions',
+  'stock.dernier_fournisseur': 'Dernier fournisseur',
 } as const;
 
 export type CleTraduction = keyof typeof fr;

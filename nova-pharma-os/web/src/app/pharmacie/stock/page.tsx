@@ -17,6 +17,7 @@ interface LigneStock {
   stock_value: string; lots: string; nearest_expiry: string | null;
   expired_quantity: string;
   sales_last_30_days: string; purchases_last_30_days: string;
+  last_supplier_id: string | null; last_supplier_name: string | null;
   stock_level: NiveauStock; days_of_cover: number | null;
   expiry_level: NiveauPeremption | null; days_to_expiry: number | null;
 }
@@ -181,6 +182,7 @@ export default async function PageStock({
                   <th>{t('catalogue.produit')}</th>
                   <th>{t('stock.niveau')}</th>
                   <th className="num">{t('stock.en_stock')}</th>
+                  <th>{t('stock.dernier_fournisseur')}</th>
                   <th className="num">{t('stock.achete_30j')}</th>
                   <th className="num">{t('stock.vendu_30j')}</th>
                   <th className="num">{t('stock.couverture')}</th>
@@ -207,6 +209,11 @@ export default async function PageStock({
                       </td>
                       <td className="num">
                         {quantity(l.on_hand)} {l.unit}
+                      </td>
+                      <td className="small">
+                        {l.last_supplier_id
+                          ? <Link href={`/pharmacie/fournisseurs/${l.last_supplier_id}`}>{l.last_supplier_name}</Link>
+                          : '—'}
                       </td>
                       <td className="num">{Number(l.purchases_last_30_days) ? `+${quantity(l.purchases_last_30_days)}` : '—'}</td>
                       <td className="num">{Number(l.sales_last_30_days) ? quantity(l.sales_last_30_days) : '—'}</td>

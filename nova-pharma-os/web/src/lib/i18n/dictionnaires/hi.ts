@@ -251,4 +251,6 @@ export const hi: Dictionnaire = {
   'stock.ajouter_produit': 'उत्पाद जोड़ें',
   'stock.achete_30j': 'खरीदा (30 दिन)',
   'stock.vendu_30j': 'बेचा (30 दिन)',
+  'nav.requisitions': 'माँग-पत्र',
+  'stock.dernier_fournisseur': 'अंतिम आपूर्तिकर्ता',
 };

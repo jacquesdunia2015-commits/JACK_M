@@ -251,4 +251,6 @@ export const wo: Dictionnaire = {
   'stock.ajouter_produit': 'Yokk benn produit',
   'stock.achete_30j': 'Jënd (30 fan)',
   'stock.vendu_30j': 'Jaay (30 fan)',
+  'nav.requisitions': 'Laaj yu jënd',
+  'stock.dernier_fournisseur': 'Jaaykat bu mujj',
 };

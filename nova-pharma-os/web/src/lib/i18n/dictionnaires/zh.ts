@@ -249,4 +249,6 @@ export const zh: Dictionnaire = {
   'stock.ajouter_produit': '添加产品',
   'stock.achete_30j': '采购（30 天）',
   'stock.vendu_30j': '销售（30 天）',
+  'nav.requisitions': '请购单',
+  'stock.dernier_fournisseur': '最近供应商',
 };

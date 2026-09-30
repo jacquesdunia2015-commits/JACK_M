@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 122 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 128 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -80,7 +80,7 @@ createdb nova_dev
 cd api
 npm install
 cp .env.example .env               # ajustez DATABASE_URL
-npm run migrate                    # applique les 20 migrations
+npm run migrate                    # applique les 21 migrations
 npm run seed                       # crée les comptes internes
 npm run start:dev                  # http://localhost:3001/api
 
@@ -180,6 +180,21 @@ Le module `suppliers` est inclus dans **tous les forfaits** (migration 019) ; le
 et réceptions restent au module `purchasing`. Une réception met à jour le prix du
 fournisseur (prix et date d'expiration) pour les produits reçus. Une offre périmée n'est
 jamais signalée comme la moins chère ; la recherche ignore la casse et les accents.
+
+## Réquisitions
+
+Une réquisition liste les produits à acheter et le fournisseur choisi pour chacun, avec
+le prix de son catalogue au moment de la demande (migration 021). Elle relève du module
+`suppliers`, donc de tous les forfaits.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET/POST /api/purchasing/requisitions`, `GET/PATCH …/:id` | Réquisitions, lignes, statut (brouillon → envoyée → reçue, ou annulée) |
+| `GET …/:id/pdf[?supplierId=]` | PDF au logo de la pharmacie, un fournisseur par page (pdfkit) |
+| `GET …/suppliers/price-comparison?productId=` | Offres de tous les fournisseurs pour un produit du catalogue |
+| `GET/PUT/DELETE /api/admin/logo` | Logo PNG ou JPEG (500 Ko au plus, contenu vérifié) |
+
+Le relais web `/api/proxy` transmet désormais les réponses binaires (PDF) avec leur type.
 
 ## Couleurs d'alerte
 
@@ -311,7 +326,7 @@ relançables à la main depuis le back-office après un incident.
 
 ```
 nova-pharma-os/
-├── db/migrations/        20 migrations SQL, appliquées dans l'ordre et une seule fois
+├── db/migrations/        21 migrations SQL, appliquées dans l'ordre et une seule fois
 ├── api/                  NestJS — API métier et back-office SaaS
 │   ├── src/common/       socle : base, contexte tenant, auth, quotas, audit, numérotation
 │   ├── src/modules/
@@ -319,7 +334,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             122 tests de bout en bout
+│   └── test/             128 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français

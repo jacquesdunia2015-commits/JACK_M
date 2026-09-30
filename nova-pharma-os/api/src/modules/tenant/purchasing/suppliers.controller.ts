@@ -33,8 +33,12 @@ export class SuppliersController {
   @Get('price-comparison')
   @RequirePermissions('suppliers.read')
   @ApiOperation({ summary: "Comparer les prix d'un produit entre fournisseurs" })
-  comparePrices(@Ctx() ctx: RequestContext, @Query('search') search: string) {
-    return this.suppliers.comparePrices(ctx, search);
+  comparePrices(
+    @Ctx() ctx: RequestContext,
+    @Query('search') search?: string,
+    @Query('productId') productId?: string,
+  ) {
+    return this.suppliers.comparePrices(ctx, search, productId);
   }
 
   @Get(':id')

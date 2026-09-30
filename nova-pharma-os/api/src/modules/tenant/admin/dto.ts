@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -55,4 +56,15 @@ export class CreateUserDto {
   @IsOptional()
   @IsUUID()
   defaultBranchId?: string;
+}
+
+/** Logo de la pharmacie, en data URL (PNG ou JPEG). */
+export class LogoDto {
+  @ApiProperty({ example: 'data:image/png;base64,iVBORw0KGgo…' })
+  @IsString()
+  @Matches(/^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/, {
+    message: 'Le logo doit être une image PNG ou JPEG.',
+  })
+  @MaxLength(700_000, { message: 'Logo trop lourd : 500 Ko au plus.' })
+  dataUrl!: string;
 }

@@ -251,4 +251,6 @@ export const pt: Dictionnaire = {
   'stock.ajouter_produit': 'Adicionar um produto',
   'stock.achete_30j': 'Comprado (30 d)',
   'stock.vendu_30j': 'Vendido (30 d)',
+  'nav.requisitions': 'Requisições',
+  'stock.dernier_fournisseur': 'Último fornecedor',
 };

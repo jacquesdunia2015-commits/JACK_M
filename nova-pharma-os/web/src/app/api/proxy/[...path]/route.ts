@@ -34,11 +34,15 @@ async function forward(request: NextRequest, path: string[]) {
     cache: 'no-store',
   });
 
-  const text = await response.text();
-  return new NextResponse(text, {
-    status: response.status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  // Le corps est relayé tel quel, avec son type : du JSON le plus souvent,
+  // un PDF pour les documents à imprimer ou à partager.
+  const corps = await response.arrayBuffer();
+  const entetes: Record<string, string> = {
+    'Content-Type': response.headers.get('content-type') ?? 'application/json',
+  };
+  const disposition = response.headers.get('content-disposition');
+  if (disposition) entetes['Content-Disposition'] = disposition;
+  return new NextResponse(corps, { status: response.status, headers: entetes });
 }
 
 type Params = { params: Promise<{ path: string[] }> };

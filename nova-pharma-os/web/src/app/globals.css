@@ -603,3 +603,22 @@ details.depliable[open] > summary::before { content: '−'; }
 details.depliable[open] > summary { margin-bottom: 1rem; }
 
 .mob-niveaux { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; }
+
+/* Offres des fournisseurs sous une ligne de réquisition : un bouton par
+   offre, la retenue encadrée, les inutilisables estompées. */
+.offres-liste { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.offre {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.5rem;
+  padding: 0.4rem 0.65rem; border: 1px solid var(--bord); border-radius: var(--rayon);
+  background: var(--blanc); color: var(--encre); font-weight: 400; font-size: 0.84rem; text-align: left;
+}
+.offre:hover { background: var(--gris-clair); }
+.offre.choisie { border-color: var(--vert); box-shadow: inset 0 0 0 1px var(--vert); background: var(--vert-clair); }
+.offre.indisponible { opacity: 0.6; }
+
+/* Aperçu du logo de la pharmacie. */
+.logo-apercu {
+  width: 64px; height: 64px; border: 1px dashed var(--bord); border-radius: var(--rayon);
+  display: grid; place-items: center; overflow: hidden; background: var(--blanc);
+}
+.logo-apercu img { max-width: 100%; max-height: 100%; object-fit: contain; }

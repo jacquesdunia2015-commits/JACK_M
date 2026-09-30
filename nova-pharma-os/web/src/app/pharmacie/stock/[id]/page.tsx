@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import FournisseursProduit, { OffreProduit } from '@/components/FournisseursProduit';
 import Stat from '@/components/Stat';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
@@ -10,6 +11,7 @@ interface Mouvement {
   id: string; kind: string; quantity: string; unit_cost: string; balance_after: string;
   reference_kind: string | null; reason: string | null; occurred_at: string;
   lot_number: string | null; expiry_date: string | null; user_name: string | null;
+  supplier_id: string | null; supplier_name: string | null;
 }
 
 interface Fiche {
@@ -42,7 +44,11 @@ const LIBELLES: Record<string, string> = {
  */
 export default async function PageFicheStock({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const fiche = await apiSafe<Fiche | null>(`/inventory/products/${id}/history`, null);
+  const [fiche, offres, fournisseurs] = await Promise.all([
+    apiSafe<Fiche | null>(`/inventory/products/${id}/history`, null),
+    apiSafe<OffreProduit[]>(`/purchasing/suppliers/price-comparison?productId=${id}`, []),
+    apiSafe<{ id: string; name: string; currency: string | null; is_active: boolean }[]>('/purchasing/suppliers', []),
+  ]);
   if (!fiche) notFound();
   const t = fiche.totals;
   const chiffre = (valeur: string) => quantity(valeur);
@@ -69,7 +75,20 @@ export default async function PageFicheStock({ params }: { params: Promise<{ id:
       <div className="row" style={{ marginBottom: '1.25rem' }}>
         <Link className="btn" href={`/pharmacie/stock?achat=${fiche.id}#achat`}>Enregistrer un achat</Link>
         <Link className="btn secondaire" href="/pharmacie/caisse">Vendre à la caisse</Link>
+        <Link className="btn secondaire" href={`/pharmacie/requisitions?produit=${fiche.id}#nouvelle`}>Réquisitionner</Link>
       </div>
+
+      <section className="card">
+        <div className="card-head">
+          <h2>Fournisseurs de ce produit</h2>
+          <span className="hint">Prix comparés : le moins cher disponible et non périmé est surligné</span>
+        </div>
+        <FournisseursProduit
+          produitId={fiche.id}
+          offres={offres}
+          fournisseurs={fournisseurs.filter((f) => f.is_active)}
+        />
+      </section>
 
       <section className="card">
         <div className="card-head">
@@ -87,6 +106,7 @@ export default async function PageFicheStock({ params }: { params: Promise<{ id:
                   <th>Mouvement</th>
                   <th className="num">Quantité</th>
                   <th className="num">Stock après</th>
+                  <th>Fournisseur</th>
                   <th>Lot</th>
                   <th className="num">Péremption</th>
                   <th>Par</th>
@@ -104,6 +124,11 @@ export default async function PageFicheStock({ params }: { params: Promise<{ id:
                       </td>
                       <td className="num"><strong>{q > 0 ? '+' : ''}{quantity(m.quantity)}</strong></td>
                       <td className="num">{quantity(m.balance_after)}</td>
+                      <td className="small">
+                        {m.supplier_id
+                          ? <Link href={`/pharmacie/fournisseurs/${m.supplier_id}`}>{m.supplier_name}</Link>
+                          : '—'}
+                      </td>
                       <td className="mono small">{m.lot_number ?? '—'}</td>
                       <td className="num small">{dateCourte(m.expiry_date)}</td>
                       <td className="small">{m.user_name ?? '—'}</td>
