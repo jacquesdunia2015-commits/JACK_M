@@ -3,6 +3,9 @@ import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, dateTime, money } from '@/lib/format';
 import { statutFacture } from '@/lib/factures';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Facture {
   id: string; number: string; status: string; currency: string; issue_date: string;
@@ -24,6 +27,7 @@ export default async function PageFactures({
 }: {
   searchParams: Promise<{ q?: string; client?: string }>;
 }) {
+  if (!(await droits()).peut('sales.read')) return <AccesReserve titre={(await traduire()).t('nav.factures')} />;
   const { q, client } = await searchParams;
   const params = new URLSearchParams();
   if (q) params.set('search', q);

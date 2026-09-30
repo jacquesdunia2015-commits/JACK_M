@@ -5,9 +5,12 @@ import { useState } from 'react';
 import { money } from '@/lib/format';
 
 export default function OuvertureCaisse({
+  devise = 'USD',
   sessionOuverte,
   lectureSeule,
 }: {
+  /** Devise de la pharmacie, pour les montants affichés. */
+  devise?: string;
   sessionOuverte: { id: string; expected_cash: string } | null;
   lectureSeule: boolean;
 }) {
@@ -101,7 +104,7 @@ export default function OuvertureCaisse({
           />
         </div>
         <span className="muted small" style={{ marginTop: '1.5rem' }}>
-          Attendu : <strong>{money(sessionOuverte.expected_cash)}</strong>
+          Attendu : <strong>{money(sessionOuverte.expected_cash, devise)}</strong>
         </span>
         <div className="spacer" />
         <button

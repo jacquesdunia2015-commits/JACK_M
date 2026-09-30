@@ -169,6 +169,12 @@ export const rn: Dictionnaire = {
   'statut.resolu': 'Vyatunganijwe',
 
   'general.aucune_donnee': 'Nta makuru.',
+
+  'general.acces_reserve': 'Kwinjira birabujijwe',
+
+  'general.acces_reserve_detail': 'Uruhara rwawe ntirukuronsa uburenganzira kuri iyi paje. Saba umuyobozi wa farumasi akuguhe uburenganzira mu Mugwi.',
+
+  'bord.raccourcis_role': 'Ivyo uruhara rwawe rukwemerera gukora.',
   'general.chargement': 'Birapakirwa…',
   'general.lecture_seule': 'Konti yo gusoma gusa',
   'general.abonnement_suspendu': 'Ikwiyandikisha cahagaritswe',

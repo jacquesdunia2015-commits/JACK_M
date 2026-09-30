@@ -5,6 +5,9 @@ import { apiSafe } from '@/lib/api';
 import { dateCourte } from '@/lib/peremption';
 import { nomPays } from '@/lib/pays';
 import { STATUTS_REQUISITION as STATUTS } from '@/lib/requisitions';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Ligne {
   id: string; product_id: string | null; sku: string | null; product_name: string;
@@ -25,6 +28,7 @@ const qte = (v: string) => Number(v).toLocaleString('fr-FR', { maximumFractionDi
 
 /** Une réquisition : ce qui est demandé à chaque fournisseur, et son document. */
 export default async function PageRequisition({ params }: { params: Promise<{ id: string }> }) {
+  if (!(await droits()).peut('suppliers.read')) return <AccesReserve titre={(await traduire()).t('nav.requisitions')} />;
   const { id } = await params;
   const [r, fournisseurs] = await Promise.all([
     apiSafe<Requisition | null>(`/purchasing/requisitions/${id}`, null),

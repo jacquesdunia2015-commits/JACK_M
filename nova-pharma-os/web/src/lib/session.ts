@@ -14,6 +14,8 @@ export interface SessionData {
   role?: string;
   readonly?: boolean;
   locale?: string;
+  /** Devise de la pharmacie (USD, CDF…), pour afficher les montants. */
+  currency?: string;
 }
 
 /**

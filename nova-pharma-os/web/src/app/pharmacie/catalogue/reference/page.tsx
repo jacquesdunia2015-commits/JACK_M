@@ -2,6 +2,9 @@ import Link from 'next/link';
 import ImportReference, { ProduitReference } from '@/components/ImportReference';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Reference {
   referenceCurrency: string;
@@ -15,6 +18,7 @@ interface Reference {
  * au Kivu, à reprendre en un clic au lieu de les saisir un à un.
  */
 export default async function PageCatalogueReference() {
+  if (!(await droits()).peut('catalog.write')) return <AccesReserve titre={(await traduire()).t('nav.catalogue')} />;
   const ref = await apiSafe<Reference | null>('/catalog/reference', null);
 
   return (

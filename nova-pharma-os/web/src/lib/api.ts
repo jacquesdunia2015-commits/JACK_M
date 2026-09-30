@@ -44,11 +44,21 @@ export async function api<T = unknown>(
   return body as T;
 }
 
-/** Variante tolérante : renvoie `fallback` plutôt que de faire échouer la page. */
+/**
+ * Variante tolérante : renvoie `fallback` plutôt que de faire échouer la page.
+ *
+ * L'échec reste tracé dans le journal du serveur : toujours pour une panne
+ * (API injoignable, erreur 5xx), et pour tout refus quand NOVA_TRACE_API=1.
+ * Un droit manquant (402, 403) est un cas normal : la page s'affiche vide.
+ */
 export async function apiSafe<T>(path: string, fallback: T): Promise<T> {
   try {
     return await api<T>(path);
-  } catch {
+  } catch (erreur) {
+    const statut = erreur instanceof ApiError ? erreur.status : 0;
+    if (statut === 0 || statut >= 500 || process.env.NOVA_TRACE_API === '1') {
+      console.warn(`[api] GET ${path} → ${statut || 'injoignable'} ${(erreur as Error).message}`);
+    }
     return fallback;
   }
 }

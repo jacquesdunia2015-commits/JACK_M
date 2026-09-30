@@ -169,6 +169,12 @@ export const sw: Dictionnaire = {
   'statut.resolu': 'Imetatuliwa',
 
   'general.aucune_donnee': 'Hakuna taarifa.',
+
+  'general.acces_reserve': 'Ufikiaji umezuiliwa',
+
+  'general.acces_reserve_detail': 'Jukumu lako halikupi ufikiaji wa ukurasa huu. Muombe meneja wa famasia akufungulie kutoka Timu.',
+
+  'bord.raccourcis_role': 'Haya ndiyo jukumu lako linakuruhusu kufanya.',
   'general.chargement': 'Inapakia…',
   'general.lecture_seule': 'Akaunti ya kusoma tu',
   'general.abonnement_suspendu': 'Uandikishaji umesimamishwa',

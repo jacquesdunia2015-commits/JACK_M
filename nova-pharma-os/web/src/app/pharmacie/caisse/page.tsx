@@ -4,6 +4,9 @@ import { apiSafe } from '@/lib/api';
 import { dateTime, money } from '@/lib/format';
 import { traduire } from '@/lib/i18n';
 import { readSession } from '@/lib/session';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { deviseSession } from '@/lib/devise';
 
 interface EtatCaisse {
   session: {
@@ -17,6 +20,8 @@ interface EtatCaisse {
 }
 
 export default async function PageCaisse() {
+  const devise = await deviseSession();
+  if (!(await droits()).peut('sales.create')) return <AccesReserve titre={(await traduire()).t('nav.caisse')} />;
   const session = await readSession();
   const { t } = await traduire();
   const etat = await apiSafe<EtatCaisse>('/cash/current', { session: null, summary: null });
@@ -32,19 +37,19 @@ export default async function PageCaisse() {
         <div className="grid grid-4" style={{ marginBottom: '1.25rem' }}>
           <div className="stat">
             <div className="stat-label">{t('caisse.attendu')}</div>
-            <div className="stat-value">{money(etat.session.expected_cash)}</div>
+            <div className="stat-value">{money(etat.session.expected_cash, devise)}</div>
             <div className="stat-note">
-              {t('caisse.fonds_initial')} {money(etat.session.opening_float)}
+              {t('caisse.fonds_initial')} {money(etat.session.opening_float, devise)}
             </div>
           </div>
           <div className="stat">
             <div className="stat-label">{t('caisse.ventes_encaissees')}</div>
-            <div className="stat-value">{money(etat.summary?.sales)}</div>
+            <div className="stat-value">{money(etat.summary?.sales, devise)}</div>
             <div className="stat-note">{etat.summary?.movements ?? 0} mouvement(s)</div>
           </div>
           <div className="stat">
             <div className="stat-label">{t('caisse.sorties')}</div>
-            <div className="stat-value">{money(etat.summary?.cash_out)}</div>
+            <div className="stat-value">{money(etat.summary?.cash_out, devise)}</div>
           </div>
           <div className="stat">
             <div className="stat-label">{t('caisse.ouverte_depuis')}</div>
@@ -57,11 +62,12 @@ export default async function PageCaisse() {
       ) : null}
 
       <OuvertureCaisse
+        devise={devise}
         sessionOuverte={etat.session}
         lectureSeule={Boolean(session?.readonly)}
       />
 
-      <Caisse sessionCaisse={etat.session} lectureSeule={Boolean(session?.readonly)} />
+      <Caisse sessionCaisse={etat.session} lectureSeule={Boolean(session?.readonly)} devise={devise} />
     </>
   );
 }

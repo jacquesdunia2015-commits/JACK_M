@@ -4,6 +4,9 @@ import { EmettreFacture } from '@/components/Facture';
 import { apiSafe } from '@/lib/api';
 import { date, dateTime, money, quantity } from '@/lib/format';
 import { MOYENS_PAIEMENT } from '@/lib/factures';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface DetailVente {
   sale: {
@@ -21,6 +24,7 @@ interface DetailVente {
 
 /** Une vente, et l'établissement de sa facture si le client la demande. */
 export default async function PageVente({ params }: { params: Promise<{ id: string }> }) {
+  if (!(await droits()).peut('sales.read')) return <AccesReserve titre={(await traduire()).t('nav.factures')} />;
   const { id } = await params;
   const v = await apiSafe<DetailVente | null>(`/sales/${id}`, null);
   if (!v) notFound();

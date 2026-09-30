@@ -62,6 +62,7 @@ export async function ouvrirSession(
     organizationId: body.user.organizationId,
     role: body.user.role,
     readonly: body.user.readonly,
+    currency: body.user.currency ?? undefined,
   };
 
   const result = NextResponse.json({

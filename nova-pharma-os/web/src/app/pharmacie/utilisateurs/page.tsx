@@ -2,6 +2,9 @@ import FormulaireCompte from '@/components/FormulaireCompte';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { dateTime } from '@/lib/format';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Utilisateur {
   id: string; email: string; full_name: string; phone: string | null;
@@ -15,6 +18,7 @@ interface Role {
 }
 
 export default async function PageUtilisateurs() {
+  if (!(await droits()).peut('users.read')) return <AccesReserve titre={(await traduire()).t('nav.equipe')} />;
   const [utilisateurs, roles] = await Promise.all([
     apiSafe<Utilisateur[]>('/admin/users', []),
     apiSafe<Role[]>('/admin/roles', []),

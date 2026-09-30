@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { money } from '@/lib/format';
+import ChoixClient, { ClientChoisi } from '@/components/ChoixClient';
+import { money, quantity } from '@/lib/format';
 
 interface Produit {
   id: string;
@@ -57,9 +58,12 @@ export interface LibellesVente {
  *    aucun frais pour la pharmacie.
  */
 export default function VenteMobile({
+  devise = 'USD',
   libelles,
   lectureSeule,
 }: {
+  /** Devise de la pharmacie, pour les montants affichés. */
+  devise?: string;
   libelles: LibellesVente;
   lectureSeule: boolean;
 }) {
@@ -67,6 +71,7 @@ export default function VenteMobile({
   const [resultats, setResultats] = useState<Produit[]>([]);
   const [ticket, setTicket] = useState<Ligne[]>([]);
   const [moyen, setMoyen] = useState('cash');
+  const [client, setClient] = useState<ClientChoisi | null>(null);
   const [patient, setPatient] = useState('');
   const [prescripteur, setPrescripteur] = useState('');
   const [telephone, setTelephone] = useState('');
@@ -137,6 +142,7 @@ export default function VenteMobile({
         body: JSON.stringify({
           lines: ticket.map((l) => ({ productId: l.produit.id, quantity: l.quantite })),
           payments: [{ method: moyen, amount: total }],
+          ...(client ? { customerId: client.id } : {}),
           ...(ordonnanceRequise
             ? {
                 prescription: {
@@ -162,9 +168,10 @@ export default function VenteMobile({
       setTicket([]);
       setPatient('');
       setPrescripteur('');
+      setClient(null);
       setMessage({
         ton: 'ok',
-        texte: `${libelles.venteEnregistree} — ${corps.sale.number} · ${money(corps.sale.total)}`,
+        texte: `${libelles.venteEnregistree} — ${corps.sale.number} · ${money(corps.sale.total, devise)}`,
       });
     } catch {
       setMessage({ ton: 'danger', texte: 'Le service est injoignable.' });
@@ -204,7 +211,7 @@ export default function VenteMobile({
     const corps = await reponse.json();
     setMessage(
       reponse.ok
-        ? { ton: 'ok', texte: `${corps.reference} · ${money(corps.amount)}` }
+        ? { ton: 'ok', texte: `${corps.reference} · ${money(corps.amount, devise)}` }
         : { ton: 'danger', texte: corps.message ?? 'Confirmation refusée.' },
     );
     if (reponse.ok) {
@@ -226,7 +233,7 @@ export default function VenteMobile({
         category: 'receipt',
         entity: 'sale',
         entityId: venteId,
-        variables: { numero: venteNumero, montant: money(venteTotal) },
+        variables: { numero: venteNumero, montant: money(venteTotal, devise) },
       }),
     });
     const corps = await reponse.json();
@@ -261,7 +268,7 @@ export default function VenteMobile({
               <button onClick={() => ajouter(p)}>
                 <strong>{p.name}</strong>
                 <span className="mob-note">
-                  {money(p.sale_price)} · {p.available}
+                  {money(p.sale_price, devise)} · {quantity(p.available)}
                 </span>
               </button>
             </li>
@@ -290,7 +297,7 @@ export default function VenteMobile({
                 </button>
               </span>
               <span className="mob-ticket-prix">
-                {money(Number(l.produit.sale_price) * l.quantite)}
+                {money(Number(l.produit.sale_price) * l.quantite, devise)}
               </span>
             </li>
           ))}
@@ -317,7 +324,7 @@ export default function VenteMobile({
         <>
           <div className="mob-total">
             <span>{libelles.total}</span>
-            <b>{money(total)}</b>
+            <b>{money(total, devise)}</b>
           </div>
 
           <div className="mob-moyens">
@@ -336,7 +343,13 @@ export default function VenteMobile({
             ))}
           </div>
 
-          <button className="mob-bouton" onClick={encaisser} disabled={envoi}>
+          {moyen === 'credit' && (
+            <div className="mob-client">
+              <ChoixClient client={client} onChange={setClient} devise={devise} id="mob-client" />
+            </div>
+          )}
+
+          <button className="mob-bouton" onClick={encaisser} disabled={envoi || (moyen === 'credit' && !client)}>
             {envoi ? libelles.enregistrement : libelles.encaisser}
           </button>
         </>

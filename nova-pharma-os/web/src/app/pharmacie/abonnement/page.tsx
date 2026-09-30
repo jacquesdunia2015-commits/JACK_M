@@ -2,6 +2,9 @@ import Etiquette from '@/components/Etiquette';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, daysUntil, money } from '@/lib/format';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Abonnement {
   subscription: {
@@ -31,6 +34,7 @@ const LIBELLES_QUOTA: Record<string, string> = {
 };
 
 export default async function PageAbonnement() {
+  if (!(await droits()).peut('billing.read')) return <AccesReserve titre={(await traduire()).t('nav.abonnement')} />;
   const [abo, quotas] = await Promise.all([
     apiSafe<Abonnement>('/account/subscription', {
       subscription: null,

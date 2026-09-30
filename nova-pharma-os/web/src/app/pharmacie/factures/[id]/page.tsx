@@ -1,9 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DocumentFacture } from '@/components/Facture';
+import ReglementFacture from '@/components/ReglementFacture';
 import { apiSafe } from '@/lib/api';
 import { date, dateTime, money, quantity } from '@/lib/format';
 import { MOYENS_PAIEMENT, statutFacture } from '@/lib/factures';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface DetailFacture {
   invoice: {
@@ -26,6 +30,7 @@ interface DetailFacture {
 
 /** Une facture client : son contenu et son PDF à imprimer ou partager. */
 export default async function PageFacture({ params }: { params: Promise<{ id: string }> }) {
+  if (!(await droits()).peut('sales.read')) return <AccesReserve titre={(await traduire()).t('nav.factures')} />;
   const { id } = await params;
   const f = await apiSafe<DetailFacture | null>(`/invoices/${id}`, null);
   if (!f) notFound();
@@ -58,6 +63,16 @@ export default async function PageFacture({ params }: { params: Promise<{ id: st
           </p>
         )}
       </section>
+
+      {c && Number(i.balance) > 0 && i.status !== 'cancelled' && (await droits()).peut('payments.write') && (
+        <section className="card">
+          <div className="card-head">
+            <h2>Encaisser un règlement</h2>
+            <span className="hint">Reste dû : {money(i.balance, i.currency)}</span>
+          </div>
+          <ReglementFacture factureId={i.id} clientId={c.id} reste={Number(i.balance)} />
+        </section>
+      )}
 
       <div className="grid grid-2">
         <section className="card">

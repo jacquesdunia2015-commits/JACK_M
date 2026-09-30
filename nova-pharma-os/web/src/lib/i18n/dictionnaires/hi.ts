@@ -169,6 +169,12 @@ export const hi: Dictionnaire = {
   'statut.resolu': 'हल हुआ',
 
   'general.aucune_donnee': 'कोई डेटा नहीं।',
+
+  'general.acces_reserve': 'सीमित पहुँच',
+
+  'general.acces_reserve_detail': 'आपकी भूमिका से इस पृष्ठ तक पहुँच नहीं है। फ़ार्मेसी प्रबंधक से टीम में अनुमति देने को कहें।',
+
+  'bord.raccourcis_role': 'आपकी भूमिका से आप ये कर सकते हैं।',
   'general.chargement': 'लोड हो रहा है…',
   'general.lecture_seule': 'केवल पढ़ने वाला खाता',
   'general.abonnement_suspendu': 'सदस्यता निलंबित',

@@ -169,6 +169,12 @@ export const rw: Dictionnaire = {
   'statut.resolu': 'Byakemutse',
 
   'general.aucune_donnee': 'Nta makuru.',
+
+  'general.acces_reserve': 'Kwinjira bibujijwe',
+
+  'general.acces_reserve_detail': 'Uruhare rwawe ntirugufasha kugera kuri iyi paji. Saba umuyobozi wa farumasi akuguhe uburenganzira muri Itsinda.',
+
+  'bord.raccourcis_role': 'Dore ibyo uruhare rwawe rugufasha gukora.',
   'general.chargement': 'Birapakirwa…',
   'general.lecture_seule': 'Konti yo gusoma gusa',
   'general.abonnement_suspendu': 'Ifatabuguzi ryahagaritswe',

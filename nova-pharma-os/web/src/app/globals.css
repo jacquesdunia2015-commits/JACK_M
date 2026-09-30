@@ -639,3 +639,18 @@ details.depliable[open] > summary { margin-bottom: 1rem; }
   padding: 0.75rem 0; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
   justify-content: space-between; z-index: 2;
 }
+
+/* Raccourcis du tableau de bord, pour les rôles sans accès aux rapports */
+.card.raccourci {
+  display: flex; justify-content: space-between; align-items: center;
+  text-decoration: none; color: var(--encre); margin-bottom: 0;
+}
+.card.raccourci:hover { border-color: var(--vert); color: var(--vert-fonce); }
+
+/* Fil d'un ticket de support */
+.fil-ticket { display: grid; gap: 0.6rem; }
+.message-ticket { border: 1px solid var(--bord); border-radius: var(--rayon); padding: 0.6rem 0.8rem; max-width: 46rem; }
+.message-ticket.pharmacie { background: var(--blanc); }
+.message-ticket.support { background: var(--vert-clair); margin-left: auto; }
+.message-ticket.interne { background: var(--attention-clair); border-style: dashed; }
+.mob-client { margin: 0.5rem 0 0.75rem; }

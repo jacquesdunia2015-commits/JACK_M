@@ -10,6 +10,9 @@ import { estNiveau, LIBELLE_NIVEAU, NIVEAUX, NiveauStock } from '@/lib/niveau-st
 import {
   CLASSE_PEREMPTION, CLE_PEREMPTION, estNiveauPeremption, NIVEAUX_PEREMPTION, NiveauPeremption,
 } from '@/lib/peremption';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { deviseSession } from '@/lib/devise';
 
 interface LigneStock {
   product_id: string; sku: string; name: string; unit: string;
@@ -33,6 +36,8 @@ export default async function PageStock({
 }: {
   searchParams: Promise<{ q?: string; niveau?: string; peremption?: string; achat?: string }>;
 }) {
+  const devise = await deviseSession();
+  if (!(await droits()).peut('inventory.read')) return <AccesReserve titre={(await traduire()).t('nav.stock')} />;
   const { q, niveau, peremption, achat } = await searchParams;
   const filtre = estNiveau(niveau) ? niveau : null;
   const filtrePeremption = estNiveauPeremption(peremption) ? peremption : null;
@@ -137,7 +142,7 @@ export default async function PageStock({
       <section className="card">
         <div className="card-head">
           <h2>{t('stock.positions')}</h2>
-          <span className="hint">{t('stock.valeur_totale')} : {money(valeurTotale)}</span>
+          <span className="hint">{t('stock.valeur_totale')} : {money(valeurTotale, devise)}</span>
         </div>
 
         <form style={{ marginBottom: '1rem', maxWidth: 360 }}>
@@ -234,7 +239,7 @@ export default async function PageStock({
                           suffixeJours={t('stock.jours_abrege')}
                         />
                       </td>
-                      <td className="num">{money(l.stock_value)}</td>
+                      <td className="num">{money(l.stock_value, devise)}</td>
                     </tr>
                   );
                 })}

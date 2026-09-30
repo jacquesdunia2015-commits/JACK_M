@@ -7,6 +7,9 @@ import CatalogueFournisseur, {
 import FormulaireFournisseur, { FicheFournisseur } from '@/components/FormulaireFournisseur';
 import { apiSafe } from '@/lib/api';
 import { lienWhatsApp, nomPays } from '@/lib/pays';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Fournisseur extends FicheFournisseur {
   id: string; name: string; code: string; is_active: boolean; currency: string | null;
@@ -15,6 +18,7 @@ interface Fournisseur extends FicheFournisseur {
 
 /** Fiche d'un fournisseur : coordonnées, catalogue et prix. */
 export default async function PageFournisseur({ params }: { params: Promise<{ id: string }> }) {
+  if (!(await droits()).peut('suppliers.read')) return <AccesReserve titre={(await traduire()).t('nav.fournisseurs')} />;
   const { id } = await params;
   const [fournisseur, catalogue] = await Promise.all([
     apiSafe<Fournisseur | null>(`/purchasing/suppliers/${id}`, null),

@@ -169,6 +169,12 @@ export const en: Dictionnaire = {
   'statut.resolu': 'Resolved',
 
   'general.aucune_donnee': 'No data.',
+
+  'general.acces_reserve': 'Restricted access',
+
+  'general.acces_reserve_detail': 'Your role does not give access to this page. Ask the pharmacy manager to grant it from Team.',
+
+  'bord.raccourcis_role': 'Here is what your role lets you do.',
   'general.chargement': 'Loading…',
   'general.lecture_seule': 'Read-only account',
   'general.abonnement_suspendu': 'Subscription suspended',

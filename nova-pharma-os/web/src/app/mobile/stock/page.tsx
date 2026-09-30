@@ -3,6 +3,7 @@ import { date, money, quantity } from '@/lib/format';
 import { traduire } from '@/lib/i18n';
 import { LIBELLE_NIVEAU, NIVEAUX, NiveauStock } from '@/lib/niveau-stock';
 import { CLASSE_PEREMPTION, CLE_PEREMPTION, NiveauPeremption } from '@/lib/peremption';
+import { deviseSession } from '@/lib/devise';
 
 interface LigneStock {
   product_id: string;
@@ -22,6 +23,7 @@ export default async function PageStockMobile({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
+  const devise = await deviseSession();
   const { q } = await searchParams;
   const { t } = await traduire();
   const requete = q ? `?search=${encodeURIComponent(q)}` : '';
@@ -55,7 +57,7 @@ export default async function PageStockMobile({
                   <strong>{l.name}</strong>
                   <span className="mob-note">
                     {quantity(l.available)} {t('stock.disponible').toLowerCase()} ·{' '}
-                    {money(l.stock_value)}
+                    {money(l.stock_value, devise)}
                     {l.nearest_expiry ? ` · ${date(l.nearest_expiry)}` : ''}
                   </span>
                 </div>

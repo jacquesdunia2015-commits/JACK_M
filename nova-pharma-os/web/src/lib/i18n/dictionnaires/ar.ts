@@ -169,6 +169,12 @@ export const ar: Dictionnaire = {
   'statut.resolu': 'محلول',
 
   'general.aucune_donnee': 'لا توجد بيانات.',
+
+  'general.acces_reserve': 'وصول مقيد',
+
+  'general.acces_reserve_detail': 'دورك لا يتيح الوصول إلى هذه الصفحة. اطلب من مدير الصيدلية منحك الإذن من قسم الفريق.',
+
+  'bord.raccourcis_role': 'إليك ما يسمح لك به دورك.',
   'general.chargement': 'جارٍ التحميل…',
   'general.lecture_seule': 'حساب للقراءة فقط',
   'general.abonnement_suspendu': 'الاشتراك موقوف',

@@ -204,8 +204,11 @@ produit absent de cette liste, ouvrez *Catalogue*, puis **Ajouter un produit
 ou un médicament** : le nom, le dosage, la forme, le conditionnement, le prix
 de vente et le prix d'achat habituel. La référence est tirée du nom si vous la
 laissez vide. Cochez *Périssable* pour tout ce qui a une date de péremption, et
-*Délivré sur ordonnance* quand c'est le cas. (La modification et la suppression
-d'un produit depuis cet écran ne sont pas encore disponibles.)
+*Délivré sur ordonnance* quand c'est le cas. Pour corriger un produit plus tard
+(son prix surtout), ouvrez sa fiche (cliquez sur son nom) : **Modifier le
+produit** change le nom, le dosage, les prix, le seuil de réapprovisionnement,
+l'alerte de péremption ; **Archiver le produit** le retire de la caisse et du
+catalogue sans effacer son historique.
 
 **2. Enregistrez un achat.** Ouvrez *Stock et lots*, puis **Enregistrer un
 achat (entrée en stock)**. Prenez une facture réelle et saisissez-la ligne par
@@ -599,6 +602,30 @@ avec les instructions.
 > de savoir à quelle vente il correspond et de ne jamais le compter deux fois.
 
 ---
+
+## Vos clients, leurs crédits et leurs règlements
+
+Menu *Clients* → **Ajouter un client** : un particulier, ou un client
+professionnel (clinique, ONG, autre pharmacie) avec son plafond et son délai
+de crédit. Une vente « Crédit client » inscrit la somme à son encours et
+produit une facture « à régler ». Quand le client paie, ouvrez cette facture
+(*Factures*, ou le lien **Factures** sous son nom) : **Encaisser un
+règlement**, montant et moyen (espèces, Mobile Money…). La facture passe
+« partiellement réglée » puis « réglée », et l'encours du client baisse
+d'autant. La balance âgée en haut de *Clients* montre depuis combien de temps
+chaque somme est due.
+
+## Écrire au support
+
+Menu *Support* → **Écrire au support NOVA PHARMA OS** : l'objet, la nature
+(question, panne, idée…) et ce qui s'est passé. Cochez *Urgent* si la vente
+est bloquée. Le ticket reçoit une référence ; ouvrez-le pour lire les
+réponses de l'équipe et répondre à votre tour.
+
+Chaque personne ne voit dans le menu que ce que son rôle lui permet : le
+vendeur, par exemple, a la caisse, le stock, le catalogue, les factures et
+les clients. Une page ouverte sans le droit nécessaire affiche « Accès
+réservé ».
 
 ## Retrouver les guides dans l'application
 

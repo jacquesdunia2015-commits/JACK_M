@@ -11,6 +11,7 @@ export default async function PageVenteMobile() {
       <h1 className="mob-titre">{t('mobile.vendre')}</h1>
       <VenteMobile
         lectureSeule={Boolean(session?.readonly)}
+        devise={session?.currency ?? 'USD'}
         libelles={{
           rechercher: t('caisse.rechercher_produit'),
           aide: t('caisse.aide_recherche'),

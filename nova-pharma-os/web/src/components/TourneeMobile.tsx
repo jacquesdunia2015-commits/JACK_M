@@ -43,9 +43,12 @@ const SUITE: Record<string, string | null> = {
  * moment, à la remise du colis.
  */
 export default function TourneeMobile({
+  devise = 'USD',
   livraisons: initiales,
   libelles,
 }: {
+  /** Devise de la pharmacie, pour les montants affichés. */
+  devise?: string;
   livraisons: Livraison[];
   libelles: LibellesTournee;
 }) {
@@ -113,7 +116,7 @@ export default function TourneeMobile({
                 </p>
               )}
               {l.amount_due && Number(l.amount_due) > 0 && (
-                <p className="mob-note">{money(l.amount_due)}</p>
+                <p className="mob-note">{money(l.amount_due, devise)}</p>
               )}
 
               <div className="mob-actions">

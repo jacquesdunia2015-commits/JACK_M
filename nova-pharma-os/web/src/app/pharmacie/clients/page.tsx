@@ -1,7 +1,12 @@
 import Link from 'next/link';
+import NouveauClient from '@/components/NouveauClient';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, money } from '@/lib/format';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
+import { deviseSession } from '@/lib/devise';
 
 interface Client {
   id: string; code: string; kind: string; name: string; phone: string | null;
@@ -21,6 +26,8 @@ export default async function PageClients({
 }: {
   searchParams: Promise<{ q?: string; kind?: string }>;
 }) {
+  const devise = await deviseSession();
+  if (!(await droits()).peut('customers.read')) return <AccesReserve titre={(await traduire()).t('nav.clients')} />;
   const { q, kind } = await searchParams;
   const params = new URLSearchParams();
   if (q) params.set('search', q);
@@ -65,25 +72,34 @@ export default async function PageClients({
                       <br />
                       <span className="small muted mono">{b.code}</span>
                     </td>
-                    <td className="num">{money(b.not_due)}</td>
-                    <td className="num">{money(b.days_1_30)}</td>
-                    <td className="num">{money(b.days_31_60)}</td>
-                    <td className="num">{money(b.days_61_90)}</td>
+                    <td className="num">{money(b.not_due, devise)}</td>
+                    <td className="num">{money(b.days_1_30, devise)}</td>
+                    <td className="num">{money(b.days_31_60, devise)}</td>
+                    <td className="num">{money(b.days_61_90, devise)}</td>
                     <td className="num">
                       {Number(b.days_over_90) > 0 ? (
-                        <span className="tag danger">{money(b.days_over_90)}</span>
+                        <span className="tag danger">{money(b.days_over_90, devise)}</span>
                       ) : (
-                        money(b.days_over_90)
+                        money(b.days_over_90, devise)
                       )}
                     </td>
                     <td className="num">
-                      <strong>{money(b.outstanding_balance)}</strong>
+                      <strong>{money(b.outstanding_balance, devise)}</strong>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        </section>
+      )}
+
+      {(await droits()).peut('customers.write') && (
+        <section className="card">
+          <details className="depliable" open={clients.length === 0}>
+            <summary>Ajouter un client</summary>
+            <NouveauClient />
+          </details>
         </section>
       )}
 
@@ -153,17 +169,17 @@ export default async function PageClients({
                       </td>
                       <td className="small">{c.phone ?? '—'}</td>
                       <td className="num">{c.purchases}</td>
-                      <td className="num">{money(c.lifetime_value)}</td>
+                      <td className="num">{money(c.lifetime_value, devise)}</td>
                       <td className="num">
                         {encours > 0 ? (
                           <span className={tendu ? 'tag danger' : 'tag warn'}>
-                            {money(encours)}
+                            {money(encours, devise)}
                           </span>
                         ) : (
-                          money(0)
+                          money(0, devise)
                         )}
                       </td>
-                      <td className="num muted">{money(c.credit_limit)}</td>
+                      <td className="num muted">{money(c.credit_limit, devise)}</td>
                       <td className="num small">{date(c.last_purchase_at)}</td>
                     </tr>
                   );

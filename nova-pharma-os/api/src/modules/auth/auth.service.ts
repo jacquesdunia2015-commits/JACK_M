@@ -28,6 +28,9 @@ interface SessionInfo {
   userAgent?: string | null;
 }
 
+/** Délai pendant lequel un jeton tout juste remplacé reste accepté. */
+const DELAI_ROTATION_MS = 30_000;
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -112,6 +115,8 @@ export class AuthService {
       userAgent: session.userAgent,
     };
 
+    // Devise de la pharmacie : l'interface affiche les montants dans celle-ci.
+    let devise: string | null = null;
     const tokens = await this.db.transaction(context, async (tx) => {
       await tx.query(
         `UPDATE users
@@ -124,6 +129,11 @@ export class AuthService {
         entity: 'user',
         entityId: user.id,
       });
+      const organisation = await tx.one<{ currency: string }>(
+        'SELECT currency FROM organizations WHERE id = $1',
+        [user.organization_id],
+      );
+      devise = organisation?.currency ?? null;
       return this.issueTokens(
         tx,
         {
@@ -151,6 +161,7 @@ export class AuthService {
         readonly: access.readonly,
         subscriptionStatus: access.subscriptionStatus,
         modules: access.modules,
+        currency: devise,
       },
     };
   }
@@ -240,14 +251,28 @@ export class AuthService {
         platform_user_id: string | null;
         expires_at: Date;
         revoked_at: Date | null;
+        replaced_by: string | null;
       }>(
-        `SELECT id, organization_id, user_id, platform_user_id, expires_at, revoked_at
+        `SELECT id, organization_id, user_id, platform_user_id, expires_at, revoked_at, replaced_by
            FROM refresh_tokens WHERE token_hash = $1`,
         [hash],
       ),
     );
 
-    if (!stored || stored.revoked_at || new Date(stored.expires_at) <= new Date()) {
+    // Une page ouvre souvent plusieurs requêtes à la fois : si deux d'entre
+    // elles renouvellent la session au même instant, la seconde présente un
+    // jeton que la première vient de remplacer. On le tolère quelques
+    // secondes, et seulement s'il a été remplacé par rotation : un jeton
+    // révoqué par une déconnexion (sans successeur) reste refusé.
+    const remplaceALInstant =
+      stored?.revoked_at !== null &&
+      stored?.replaced_by !== null &&
+      Date.now() - new Date(stored?.revoked_at as Date).getTime() < DELAI_ROTATION_MS;
+    if (
+      !stored ||
+      (stored.revoked_at && !remplaceALInstant) ||
+      new Date(stored.expires_at) <= new Date()
+    ) {
       throw new UnauthorizedException('Jeton de rafraîchissement invalide ou expiré.');
     }
 
@@ -276,7 +301,7 @@ export class AuthService {
       const tokens = await this.issueTokens(tx, payload, session);
       await tx.query(
         `UPDATE refresh_tokens
-            SET revoked_at = now(),
+            SET revoked_at = COALESCE(revoked_at, now()),
                 replaced_by = (SELECT id FROM refresh_tokens
                                 WHERE token_hash = $2)
           WHERE id = $1`,

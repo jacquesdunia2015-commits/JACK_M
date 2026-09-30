@@ -175,6 +175,12 @@ export const swCD: Dictionnaire = {
   'statut.resolu': 'Imemalizika',
 
   'general.aucune_donnee': 'Hakuna kitu.',
+
+  'general.acces_reserve': 'Ufikiaji umezuiliwa',
+
+  'general.acces_reserve_detail': 'Kazi yako haikupatie ruhusa ya ukurasa huu. Omba meneja wa famasia akufungulie kutoka Timu.',
+
+  'bord.raccourcis_role': 'Hivi ndivyo kazi yako inakuruhusu kufanya.',
   'general.chargement': 'Inapakia…',
   'general.lecture_seule': 'Compte ya kusoma tu',
   'general.abonnement_suspendu': 'Abonnement imesimamishwa',

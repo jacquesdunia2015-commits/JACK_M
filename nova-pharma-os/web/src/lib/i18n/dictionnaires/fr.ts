@@ -186,6 +186,9 @@ export const fr = {
 
   // --- Messages généraux ---
   'general.aucune_donnee': 'Aucune donnée.',
+  'general.acces_reserve': 'Accès réservé',
+  'general.acces_reserve_detail': 'Votre rôle ne donne pas accès à cette page. Demandez au gérant de la pharmacie de vous l\'ouvrir depuis Équipe.',
+  'bord.raccourcis_role': 'Voici ce que votre rôle vous permet de faire.',
   'general.chargement': 'Chargement…',
   'general.lecture_seule': 'Compte en lecture seule',
   'general.abonnement_suspendu': 'Abonnement suspendu',

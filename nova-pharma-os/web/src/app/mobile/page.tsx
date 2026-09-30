@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { apiSafe } from '@/lib/api';
 import { money } from '@/lib/format';
 import { traduire } from '@/lib/i18n';
+import { deviseSession } from '@/lib/devise';
 
 interface Dashboard {
   today: { sales: number; revenue: number; averageBasket: number };
@@ -18,6 +19,7 @@ interface Livraison {
 }
 
 export default async function AccueilMobile() {
+  const devise = await deviseSession();
   const { t } = await traduire();
   const [bord, tournee] = await Promise.all([
     apiSafe<Dashboard | null>('/reports/dashboard', null),
@@ -34,7 +36,7 @@ export default async function AccueilMobile() {
 
       <div className="mob-chiffres">
         <div className="mob-chiffre">
-          <span className="mob-chiffre-valeur">{money(bord?.today.revenue ?? 0)}</span>
+          <span className="mob-chiffre-valeur">{money(bord?.today.revenue ?? 0, devise)}</span>
           <span className="mob-chiffre-note">{t('bord.ventes_jour')}</span>
         </div>
         <div className="mob-chiffre">
@@ -43,7 +45,7 @@ export default async function AccueilMobile() {
         </div>
         <div className="mob-chiffre">
           <span className="mob-chiffre-valeur">
-            {bord?.cashSession ? money(bord.cashSession.expectedCash) : '—'}
+            {bord?.cashSession ? money(bord.cashSession.expectedCash, devise) : '—'}
           </span>
           <span className="mob-chiffre-note">{t('bord.caisse')}</span>
         </div>

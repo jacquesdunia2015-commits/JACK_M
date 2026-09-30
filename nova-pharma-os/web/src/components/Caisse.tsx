@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import ChoixClient, { ClientChoisi } from '@/components/ChoixClient';
 import { DocumentFacture, EmettreFacture, FactureEmise } from '@/components/Facture';
 import { designation, money, quantity as fmtQty } from '@/lib/format';
 
@@ -38,9 +39,12 @@ const MOYENS = [
 ];
 
 export default function Caisse({
+  devise = 'USD',
   sessionCaisse,
   lectureSeule,
 }: {
+  /** Devise de la pharmacie, pour les montants affichés. */
+  devise?: string;
   sessionCaisse: SessionCaisse | null;
   lectureSeule: boolean;
 }) {
@@ -48,6 +52,8 @@ export default function Caisse({
   const [resultats, setResultats] = useState<Produit[]>([]);
   const [ticket, setTicket] = useState<LigneTicket[]>([]);
   const [moyen, setMoyen] = useState('cash');
+  // Client de la vente : obligatoire à crédit, pour savoir qui doit la somme.
+  const [client, setClient] = useState<ClientChoisi | null>(null);
   const [encaisse, setEncaisse] = useState('');
   const [patient, setPatient] = useState('');
   const [prescripteur, setPrescripteur] = useState('');
@@ -118,6 +124,16 @@ export default function Caisse({
     setFacture(null);
 
     const montant = moyen === 'cash' && encaisse ? Number(encaisse) : total;
+    if (moyen === 'cash' && encaisse && montant < total) {
+      setMessage({ ton: 'danger', texte: `Montant reçu insuffisant : il manque ${money(total - montant, devise)}.` });
+      setEnvoi(false);
+      return;
+    }
+    if (moyen === 'credit' && !client) {
+      setMessage({ ton: 'danger', texte: 'Choisissez le client à qui la vente est faite à crédit.' });
+      setEnvoi(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/proxy/sales', {
@@ -129,6 +145,7 @@ export default function Caisse({
             quantity: l.quantite,
           })),
           payments: [{ method: moyen, amount: Math.max(montant, total) }],
+          ...(client ? { customerId: client.id } : {}),
           ...(ordonnanceRequise
             ? {
                 prescription: {
@@ -153,14 +170,15 @@ export default function Caisse({
       setMessage({
         ton: 'info',
         texte:
-          `Vente ${body.sale.number} enregistrée — ${money(body.sale.total)}` +
-          (rendu > 0 ? ` · à rendre : ${money(rendu)}` : ''),
+          `Vente ${body.sale.number} enregistrée — ${money(body.sale.total, devise)}` +
+          (rendu > 0 ? ` · à rendre : ${money(rendu, devise)}` : ''),
       });
       setDerniereVente({ id: body.sale.id, number: body.sale.number, currency: body.sale.currency });
       setTicket([]);
       setEncaisse('');
       setPatient('');
       setPrescripteur('');
+      setClient(null);
     } catch {
       setMessage({ ton: 'danger', texte: 'Le service est injoignable.' });
     } finally {
@@ -229,7 +247,7 @@ export default function Caisse({
                     {produit.sku} · {dispo > 0 ? `${fmtQty(dispo)} en stock` : 'rupture'}
                   </div>
                 </div>
-                <strong>{money(produit.sale_price)}</strong>
+                <strong>{money(produit.sale_price, devise)}</strong>
               </div>
             );
           })}
@@ -280,7 +298,7 @@ export default function Caisse({
               <div className="ticket-line" key={ligne.produit.id}>
                 <div>
                   <div style={{ fontWeight: 600 }}>{ligne.produit.name}</div>
-                  <div className="small muted">{money(ligne.produit.sale_price)} l&apos;unité</div>
+                  <div className="small muted">{money(ligne.produit.sale_price, devise)} l&apos;unité</div>
                 </div>
                 <div className="qty">
                   <button
@@ -307,14 +325,14 @@ export default function Caisse({
                   </button>
                 </div>
                 <strong className="mono">
-                  {money(ligne.quantite * Number(ligne.produit.sale_price))}
+                  {money(ligne.quantite * Number(ligne.produit.sale_price), devise)}
                 </strong>
               </div>
             ))}
 
             <div className="ticket-total">
               <span>Total</span>
-              <span className="mono">{money(total)}</span>
+              <span className="mono">{money(total, devise)}</span>
             </div>
 
             {ordonnanceRequise && (
@@ -352,6 +370,13 @@ export default function Caisse({
               </select>
             </div>
 
+            {moyen === 'credit' && (
+              <div className="field">
+                <label htmlFor="choix-client">Client</label>
+                <ChoixClient client={client} onChange={setClient} devise={devise} />
+              </div>
+            )}
+
             {moyen === 'cash' && (
               <div className="field">
                 <label htmlFor="encaisse">Montant reçu</label>
@@ -365,7 +390,7 @@ export default function Caisse({
                 />
                 {Number(encaisse) > total && (
                   <p className="small" style={{ marginTop: '0.3rem', marginBottom: 0 }}>
-                    À rendre : <strong>{money(Number(encaisse) - total)}</strong>
+                    À rendre : <strong>{money(Number(encaisse) - total, devise)}</strong>
                   </p>
                 )}
               </div>
@@ -376,7 +401,7 @@ export default function Caisse({
               disabled={envoi}
               style={{ width: '100%', marginTop: '0.5rem' }}
             >
-              {envoi ? 'Enregistrement…' : `Encaisser ${money(total)}`}
+              {envoi ? 'Enregistrement…' : `Encaisser ${money(total, devise)}`}
             </button>
           </>
         )}

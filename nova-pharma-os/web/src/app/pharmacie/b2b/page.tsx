@@ -2,6 +2,9 @@ import Etiquette from '@/components/Etiquette';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, money } from '@/lib/format';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Commande {
   id: string; number: string; status: string; currency: string;
@@ -16,6 +19,7 @@ interface Devis {
 }
 
 export default async function PageB2b() {
+  if (!(await droits()).peut('b2b.read')) return <AccesReserve titre={(await traduire()).t('nav.b2b')} />;
   const [commandes, devis] = await Promise.all([
     apiSafe<Commande[]>('/b2b/orders', []),
     apiSafe<Devis[]>('/b2b/quotes', []),

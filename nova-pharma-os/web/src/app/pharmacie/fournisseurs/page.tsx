@@ -5,6 +5,9 @@ import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { dateCourte, NiveauPeremption } from '@/lib/peremption';
 import { lienWhatsApp, nomPays } from '@/lib/pays';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Fournisseur {
   id: string; name: string; phone: string | null; email: string | null;
@@ -36,6 +39,7 @@ export default async function PageFournisseurs({
 }: {
   searchParams: Promise<{ q?: string; produit?: string }>;
 }) {
+  if (!(await droits()).peut('suppliers.read')) return <AccesReserve titre={(await traduire()).t('nav.fournisseurs')} />;
   const { q, produit } = await searchParams;
   const recherche = produit?.trim() ?? '';
   const [fournisseurs, offres] = await Promise.all([

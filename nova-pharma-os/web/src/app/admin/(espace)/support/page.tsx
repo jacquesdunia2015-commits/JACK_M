@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Etiquette from '@/components/Etiquette';
 import Stat from '@/components/Stat';
 import Vide from '@/components/Vide';
@@ -82,9 +83,9 @@ export default async function PageSupportAdmin() {
                     !['resolved', 'closed'].includes(t.status);
                   return (
                     <tr key={t.id}>
-                      <td className="mono">{t.reference}</td>
+                      <td className="mono"><Link href={`/admin/support/${t.id}`}>{t.reference}</Link></td>
                       <td className="small">{t.organization_name}</td>
-                      <td>{t.subject}</td>
+                      <td><Link href={`/admin/support/${t.id}`}>{t.subject}</Link></td>
                       <td>
                         <span
                           className={`tag ${

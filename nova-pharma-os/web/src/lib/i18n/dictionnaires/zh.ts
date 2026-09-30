@@ -168,6 +168,12 @@ export const zh: Dictionnaire = {
   'statut.resolu': '已解决',
 
   'general.aucune_donnee': '暂无数据。',
+
+  'general.acces_reserve': '访问受限',
+
+  'general.acces_reserve_detail': '您的角色无权访问此页面。请药店经理在“团队”中为您开通。',
+
+  'bord.raccourcis_role': '以下是您的角色可以执行的操作。',
   'general.chargement': '加载中…',
   'general.lecture_seule': '只读账号',
   'general.abonnement_suspendu': '订阅已暂停',

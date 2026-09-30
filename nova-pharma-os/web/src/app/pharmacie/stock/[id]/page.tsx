@@ -1,11 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import FournisseursProduit, { OffreProduit } from '@/components/FournisseursProduit';
+import ModifierProduit, { ProduitModifiable } from '@/components/ModifierProduit';
 import Stat from '@/components/Stat';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { dateTime, quantity } from '@/lib/format';
 import { dateCourte } from '@/lib/peremption';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Mouvement {
   id: string; kind: string; quantity: string; unit_cost: string; balance_after: string;
@@ -43,11 +47,14 @@ const LIBELLES: Record<string, string> = {
  * l'expliquer ligne par ligne.
  */
 export default async function PageFicheStock({ params }: { params: Promise<{ id: string }> }) {
+  if (!(await droits()).peut('inventory.read')) return <AccesReserve titre={(await traduire()).t('nav.stock')} />;
   const { id } = await params;
-  const [fiche, offres, fournisseurs] = await Promise.all([
+  const { peut } = await droits();
+  const [fiche, offres, fournisseurs, detail] = await Promise.all([
     apiSafe<Fiche | null>(`/inventory/products/${id}/history`, null),
     apiSafe<OffreProduit[]>(`/purchasing/suppliers/price-comparison?productId=${id}`, []),
     apiSafe<{ id: string; name: string; currency: string | null; is_active: boolean }[]>('/purchasing/suppliers', []),
+    peut('catalog.write') ? apiSafe<{ product: ProduitModifiable } | null>(`/catalog/products/${id}`, null) : Promise.resolve(null),
   ]);
   if (!fiche) notFound();
   const t = fiche.totals;
@@ -77,6 +84,15 @@ export default async function PageFicheStock({ params }: { params: Promise<{ id:
         <Link className="btn secondaire" href="/pharmacie/caisse">Vendre à la caisse</Link>
         <Link className="btn secondaire" href={`/pharmacie/requisitions?produit=${fiche.id}#nouvelle`}>Réquisitionner</Link>
       </div>
+
+      {detail && (
+        <section className="card">
+          <details className="depliable">
+            <summary>Modifier le produit (prix, nom, seuil, ordonnance) ou l&apos;archiver</summary>
+            <ModifierProduit produit={detail.product} peutArchiver={peut('catalog.delete')} />
+          </details>
+        </section>
+      )}
 
       <section className="card">
         <div className="card-head">

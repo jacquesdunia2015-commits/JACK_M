@@ -169,6 +169,12 @@ export const ln: Dictionnaire = {
   'statut.resolu': 'Esilisami',
 
   'general.aucune_donnee': 'Eloko te.',
+
+  'general.acces_reserve': 'Nzela ekangami',
+
+  'general.acces_reserve_detail': 'Mosala na yo epesi yo nzela te na lokasa oyo. Senga mokambi ya famasi afungolela yo na Ekipi.',
+
+  'bord.raccourcis_role': 'Tala oyo mosala na yo epesi yo nzela ya kosala.',
   'general.chargement': 'Ezali kofungwama…',
   'general.lecture_seule': 'Compte ya kotanga kaka',
   'general.abonnement_suspendu': 'Abonnement etɛlɛmisami',

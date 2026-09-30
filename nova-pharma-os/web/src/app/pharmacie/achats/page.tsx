@@ -2,6 +2,9 @@ import Etiquette from '@/components/Etiquette';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, money, quantity } from '@/lib/format';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Commande {
   id: string; number: string; status: string; currency: string;
@@ -16,6 +19,7 @@ interface Suggestion {
 }
 
 export default async function PageAchats() {
+  if (!(await droits()).peut('purchasing.read')) return <AccesReserve titre={(await traduire()).t('nav.achats')} />;
   const [commandes, suggestions] = await Promise.all([
     apiSafe<Commande[]>('/purchasing/orders', []),
     apiSafe<Suggestion[]>('/purchasing/replenishment', []),

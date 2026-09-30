@@ -169,6 +169,12 @@ export const pt: Dictionnaire = {
   'statut.resolu': 'Resolvido',
 
   'general.aucune_donnee': 'Sem dados.',
+
+  'general.acces_reserve': 'Acesso restrito',
+
+  'general.acces_reserve_detail': 'A sua função não dá acesso a esta página. Peça ao gerente da farmácia que o conceda em Equipa.',
+
+  'bord.raccourcis_role': 'Eis o que a sua função lhe permite fazer.',
   'general.chargement': 'A carregar…',
   'general.lecture_seule': 'Conta só de leitura',
   'general.abonnement_suspendu': 'Assinatura suspensa',

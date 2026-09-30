@@ -1,5 +1,6 @@
 import TourneeMobile, { Livraison } from '@/components/TourneeMobile';
 import { apiSafe } from '@/lib/api';
+import { deviseSession } from '@/lib/devise';
 import { traduire } from '@/lib/i18n';
 
 export default async function PageTournee() {
@@ -11,6 +12,7 @@ export default async function PageTournee() {
       <h1 className="mob-titre">{t('mobile.tournee')}</h1>
       <TourneeMobile
         livraisons={livraisons}
+        devise={await deviseSession()}
         libelles={{
           aucune: t('mobile.aucune_livraison'),
           prisEnCharge: t('mobile.pris_en_charge'),

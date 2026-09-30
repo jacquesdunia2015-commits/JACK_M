@@ -169,6 +169,12 @@ export const wo: Dictionnaire = {
   'statut.resolu': 'Saafara nañu ko',
 
   'general.aucune_donnee': 'Amul dara.',
+
+  'general.acces_reserve': 'Duggu gu ñu tëj',
+
+  'general.acces_reserve_detail': 'Sa liggéey jox la sañ-sañ ci xët wii. Laajal njiitu farmasi bi mu ubbil la ko ci Mbooloo.',
+
+  'bord.raccourcis_role': 'Lii la sa liggéey may nga def.',
   'general.chargement': 'Mungi yeb…',
   'general.lecture_seule': 'Kont bu jàng rekk',
   'general.abonnement_suspendu': 'Abonemaa bi taxaw na',

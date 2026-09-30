@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 133 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 135 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -80,7 +80,7 @@ createdb nova_dev
 cd api
 npm install
 cp .env.example .env               # ajustez DATABASE_URL
-npm run migrate                    # applique les 21 migrations
+npm run migrate                    # applique les 22 migrations
 npm run seed                       # crée les comptes internes
 npm run start:dev                  # http://localhost:3001/api
 
@@ -195,6 +195,21 @@ le prix de son catalogue au moment de la demande (migration 021). Elle relève d
 | `GET/PUT/DELETE /api/admin/logo` | Logo PNG ou JPEG (500 Ko au plus, contenu vérifié) |
 
 Le relais web `/api/proxy` transmet désormais les réponses binaires (PDF) avec leur type.
+
+## Session et droits dans l'interface
+
+- **Renouvellement de session** (`web/src/middleware.ts`) : le jeton d'accès de l'API vit
+  15 minutes (`JWT_ACCESS_TTL`), la session web 8 heures. Avant chaque page ou appel du
+  relais, un jeton qui expire dans moins d'une minute est échangé contre un neuf
+  (`POST /api/auth/refresh`) et le cookie réécrit. L'API tolère 30 secondes un jeton de
+  rafraîchissement tout juste remplacé, pour les requêtes parallèles d'une même page ; un
+  jeton révoqué par une déconnexion reste refusé. Une session morte renvoie à la connexion.
+- **Menu selon le rôle** : `GET /api/auth/me` donne permissions et modules ; le menu n'affiche
+  que les entrées utilisables, et une page ouverte sans le droit affiche « Accès réservé ».
+- **Devise** : la connexion renvoie la devise de la pharmacie, gardée dans la session ; tous
+  les montants de l'espace pharmacie et du mobile s'affichent dans celle-ci (USD, CDF…).
+- `NOVA_TRACE_API=1` côté web trace chaque refus de l'API dans le journal du serveur ; les
+  pannes (API injoignable, 5xx) y sont toujours tracées.
 
 ## Factures clients
 
@@ -353,7 +368,7 @@ relançables à la main depuis le back-office après un incident.
 
 ```
 nova-pharma-os/
-├── db/migrations/        21 migrations SQL, appliquées dans l'ordre et une seule fois
+├── db/migrations/        22 migrations SQL, appliquées dans l'ordre et une seule fois
 ├── api/                  NestJS — API métier et back-office SaaS
 │   ├── src/common/       socle : base, contexte tenant, auth, quotas, audit, numérotation
 │   ├── src/modules/
@@ -361,7 +376,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             133 tests de bout en bout
+│   └── test/             135 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français

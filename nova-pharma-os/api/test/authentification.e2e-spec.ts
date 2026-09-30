@@ -44,6 +44,25 @@ describe('Authentification pharmacie', () => {
     await harness.stop();
   });
 
+  it('renouvelle la session, tolère deux renouvellements simultanés, refuse après déconnexion', async () => {
+    const connexion = await harness.post('/auth/login', { email, password: PASSWORD }).expect(201);
+    const jeton = connexion.body.refreshToken as string;
+
+    // Deux requêtes d'une même page renouvellent au même instant.
+    const [a, b] = await Promise.all([
+      harness.post('/auth/refresh', { refreshToken: jeton }),
+      harness.post('/auth/refresh', { refreshToken: jeton }),
+    ]);
+    expect([a.status, b.status]).toEqual([201, 201]);
+    await harness.get('/catalog/products', a.body.accessToken).expect(200);
+
+    // Le jeton renouvelé sert à son tour ; après déconnexion, plus rien.
+    const suivant = await harness.post('/auth/refresh', { refreshToken: a.body.refreshToken }).expect(201);
+    await harness.post('/auth/logout', { refreshToken: suivant.body.refreshToken }, suivant.body.accessToken).expect(201);
+    await harness.post('/auth/refresh', { refreshToken: suivant.body.refreshToken }).expect(401);
+    await harness.post('/auth/refresh', { refreshToken: 'jeton-inventé' }).expect(401);
+  });
+
   it('un mot de passe erroné est refusé proprement, sans erreur interne', async () => {
     const res = await harness
       .post('/auth/login', { email, password: 'MauvaisMotDePasse1' })

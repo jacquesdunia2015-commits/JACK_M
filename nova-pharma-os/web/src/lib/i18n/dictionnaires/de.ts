@@ -169,6 +169,12 @@ export const de: Dictionnaire = {
   'statut.resolu': 'Gelöst',
 
   'general.aucune_donnee': 'Keine Daten.',
+
+  'general.acces_reserve': 'Eingeschränkter Zugang',
+
+  'general.acces_reserve_detail': 'Ihre Rolle gewährt keinen Zugriff auf diese Seite. Bitten Sie die Apothekenleitung, ihn unter Team freizugeben.',
+
+  'bord.raccourcis_role': 'Das können Sie mit Ihrer Rolle tun.',
   'general.chargement': 'Wird geladen…',
   'general.lecture_seule': 'Nur-Lese-Konto',
   'general.abonnement_suspendu': 'Abonnement gesperrt',

@@ -7,6 +7,9 @@ import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { dateCourte } from '@/lib/peremption';
 import { STATUTS_REQUISITION as STATUTS } from '@/lib/requisitions';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Requisition {
   id: string; number: string; status: string; needed_by: string | null; created_at: string;
@@ -23,6 +26,7 @@ export default async function PageRequisitions({
 }: {
   searchParams: Promise<{ produit?: string }>;
 }) {
+  if (!(await droits()).peut('suppliers.read')) return <AccesReserve titre={(await traduire()).t('nav.requisitions')} />;
   const { produit } = await searchParams;
   const [requisitions, catalogue, fournisseurs, logo] = await Promise.all([
     apiSafe<Requisition[]>('/purchasing/requisitions', []),

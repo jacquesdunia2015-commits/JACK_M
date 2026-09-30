@@ -169,6 +169,12 @@ export const bm: Dictionnaire = {
   'statut.resolu': 'A ɲɛnabɔra',
 
   'general.aucune_donnee': 'Foyi tɛ yen.',
+
+  'general.acces_reserve': 'Donni dantigɛlen',
+
+  'general.acces_reserve_detail': 'I ka baara tɛ i to ka se nin ɲɛ ma. Farimasi ɲɛmɔgɔ ɲininka a ka a da wuli i ye Jɛkulu kɔnɔ.',
+
+  'bord.raccourcis_role': 'I ka baara b\'a to i ka se ka nin kɛ.',
   'general.chargement': 'A bɛ jigin…',
   'general.lecture_seule': 'Kalan dɔrɔn kɔntɔ',
   'general.abonnement_suspendu': 'Abɔnɔmani jɔra',

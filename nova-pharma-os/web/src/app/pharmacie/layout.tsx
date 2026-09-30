@@ -4,6 +4,7 @@ import Logo from '@/components/Logo';
 import Navigation, { LienNav } from '@/components/Navigation';
 import SelecteurLangue from '@/components/SelecteurLangue';
 import { apiSafe } from '@/lib/api';
+import { droits } from '@/lib/droits';
 import { traduire } from '@/lib/i18n';
 import { readSession } from '@/lib/session';
 
@@ -26,22 +27,29 @@ export default async function LayoutPharmacie({
   const { t, langue } = await traduire();
   const onboarding = await apiSafe<Onboarding | null>('/onboarding', null);
 
-  const liens: LienNav[] = [
+  const { peut, aModule } = await droits();
+  // Chaque entrée n'apparaît qu'à qui peut s'en servir : son rôle et le
+  // forfait de la pharmacie.
+  const entrees: (LienNav & { droit?: string[]; module?: string })[] = [
     { href: '/pharmacie', label: t('nav.tableau_de_bord'), icone: '▤', groupe: t('nav.exploitation') },
-    { href: '/pharmacie/caisse', label: t('nav.caisse'), icone: '▦', groupe: t('nav.exploitation') },
-    { href: '/pharmacie/stock', label: t('nav.stock'), icone: '▥', groupe: t('nav.exploitation') },
-    { href: '/pharmacie/catalogue', label: t('nav.catalogue'), icone: '▧', groupe: t('nav.exploitation') },
-    { href: '/pharmacie/achats', label: t('nav.achats'), icone: '▨', groupe: t('nav.approvisionnement') },
-    { href: '/pharmacie/fournisseurs', label: t('nav.fournisseurs'), icone: '▦', groupe: t('nav.approvisionnement') },
-    { href: '/pharmacie/requisitions', label: t('nav.requisitions'), icone: '▤', groupe: t('nav.approvisionnement') },
-    { href: '/pharmacie/factures', label: t('nav.factures'), icone: '▤', groupe: t('nav.commerce') },
-    { href: '/pharmacie/clients', label: t('nav.clients'), icone: '▩', groupe: t('nav.commerce') },
-    { href: '/pharmacie/b2b', label: t('nav.b2b'), icone: '▤', groupe: t('nav.commerce') },
-    { href: '/pharmacie/utilisateurs', label: t('nav.equipe'), icone: '▣', groupe: t('nav.administration') },
-    { href: '/pharmacie/abonnement', label: t('nav.abonnement'), icone: '▢', groupe: t('nav.administration') },
-    { href: '/pharmacie/support', label: t('nav.support'), icone: '▷', groupe: t('nav.administration') },
+    { href: '/pharmacie/caisse', label: t('nav.caisse'), icone: '▦', groupe: t('nav.exploitation'), droit: ['sales.create', 'cash.read'] },
+    { href: '/pharmacie/stock', label: t('nav.stock'), icone: '▥', groupe: t('nav.exploitation'), droit: ['inventory.read'] },
+    { href: '/pharmacie/catalogue', label: t('nav.catalogue'), icone: '▧', groupe: t('nav.exploitation'), droit: ['catalog.read'] },
+    { href: '/pharmacie/achats', label: t('nav.achats'), icone: '▨', groupe: t('nav.approvisionnement'), droit: ['purchasing.read'], module: 'purchasing' },
+    { href: '/pharmacie/fournisseurs', label: t('nav.fournisseurs'), icone: '▦', groupe: t('nav.approvisionnement'), droit: ['suppliers.read'] },
+    { href: '/pharmacie/requisitions', label: t('nav.requisitions'), icone: '▤', groupe: t('nav.approvisionnement'), droit: ['suppliers.read'] },
+    { href: '/pharmacie/factures', label: t('nav.factures'), icone: '▤', groupe: t('nav.commerce'), droit: ['sales.read'] },
+    { href: '/pharmacie/clients', label: t('nav.clients'), icone: '▩', groupe: t('nav.commerce'), droit: ['customers.read'] },
+    { href: '/pharmacie/b2b', label: t('nav.b2b'), icone: '▤', groupe: t('nav.commerce'), droit: ['b2b.read'], module: 'b2b' },
+    { href: '/pharmacie/utilisateurs', label: t('nav.equipe'), icone: '▣', groupe: t('nav.administration'), droit: ['users.read'] },
+    { href: '/pharmacie/abonnement', label: t('nav.abonnement'), icone: '▢', groupe: t('nav.administration'), droit: ['billing.read'] },
+    { href: '/pharmacie/support', label: t('nav.support'), icone: '▷', groupe: t('nav.administration'), droit: ['support.read'] },
     { href: '/pharmacie/documentation', label: t('nav.documents'), icone: '▢', groupe: t('nav.administration') },
   ];
+  const liens: LienNav[] = entrees
+    .filter((e) => (!e.droit || peut(...e.droit)) && (!e.module || aModule(e.module)))
+    .map(({ droit, module, ...lien }) => lien);
+
 
   return (
     <div className="shell">

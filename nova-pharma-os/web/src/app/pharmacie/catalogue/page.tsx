@@ -3,6 +3,10 @@ import FormulaireProduit from '@/components/FormulaireProduit';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { designation, money, quantity } from '@/lib/format';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
+import { deviseSession } from '@/lib/devise';
 
 interface Produit {
   id: string; sku: string; name: string; commercial_name: string | null;
@@ -17,6 +21,8 @@ export default async function PageCatalogue({
 }: {
   searchParams: Promise<{ q?: string; page?: string }>;
 }) {
+  const devise = await deviseSession();
+  if (!(await droits()).peut('catalog.read')) return <AccesReserve titre={(await traduire()).t('nav.catalogue')} />;
   const { q, page } = await searchParams;
   const params = new URLSearchParams({ pageSize: '50' });
   if (q) params.set('q', q);
@@ -103,9 +109,9 @@ export default async function PageCatalogue({
                       </td>
                       <td className="small">{p.inn ?? '—'}</td>
                       <td className="small">{p.category_name ?? '—'}</td>
-                      <td className="num">{money(p.cost_price)}</td>
+                      <td className="num">{money(p.cost_price, devise)}</td>
                       <td className="num">
-                        <strong>{money(p.sale_price)}</strong>
+                        <strong>{money(p.sale_price, devise)}</strong>
                       </td>
                       <td className="num">
                         {marge.toFixed(0)} %

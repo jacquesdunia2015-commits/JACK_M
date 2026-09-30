@@ -1,8 +1,13 @@
 import AccesSupport, { Grant } from '@/components/AccesSupport';
 import Etiquette from '@/components/Etiquette';
+import Link from 'next/link';
+import { NouveauTicket } from '@/components/Tickets';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { dateTime } from '@/lib/format';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
 
 interface Ticket {
   id: string; reference: string; subject: string; category: string;
@@ -15,6 +20,7 @@ interface Article {
 }
 
 export default async function PageSupport() {
+  if (!(await droits()).peut('support.read')) return <AccesReserve titre={(await traduire()).t('nav.support')} />;
   const [tickets, grants, kb] = await Promise.all([
     apiSafe<Ticket[]>('/account/support/tickets', []),
     apiSafe<Grant[]>('/account/support-access', []),
@@ -48,6 +54,15 @@ export default async function PageSupport() {
         <AccesSupport grants={grants} />
       </section>
 
+      {(await droits()).peut('support.write') && (
+        <section className="card">
+          <details className="depliable" open={tickets.length === 0}>
+            <summary>Écrire au support NOVA PHARMA OS</summary>
+            <NouveauTicket />
+          </details>
+        </section>
+      )}
+
       <section className="card">
         <div className="card-head">
           <h2>Mes tickets</h2>
@@ -72,8 +87,8 @@ export default async function PageSupport() {
               <tbody>
                 {tickets.map((t) => (
                   <tr key={t.id}>
-                    <td className="mono">{t.reference}</td>
-                    <td>{t.subject}</td>
+                    <td className="mono"><Link href={`/pharmacie/support/${t.id}`}>{t.reference}</Link></td>
+                    <td><Link href={`/pharmacie/support/${t.id}`}>{t.subject}</Link></td>
                     <td>
                       <span
                         className={`tag ${
