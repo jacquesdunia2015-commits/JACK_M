@@ -12,6 +12,7 @@ import { EntitlementsModule } from './common/entitlements/entitlements.module';
 import { NumberingModule } from './common/numbering/numbering.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
+import { InscriptionModule } from './modules/inscription/inscription.module';
 import { PlatformModule } from './modules/platform/platform.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { TenantModule } from './modules/tenant/tenant.module';
@@ -27,6 +28,7 @@ import { TenantModule } from './modules/tenant/tenant.module';
     AuthModule,
     HealthModule,
     PlatformModule,
+    InscriptionModule,
     TenantModule,
     JobsModule,
   ],

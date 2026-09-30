@@ -2,9 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { AuditService } from '../../../common/audit/audit.service';
 import { DatabaseService } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
+import { normaliserTelephone } from '../../../common/telephone';
 import { AuthService } from '../../auth/auth.service';
-
-const ROLES = ['super_admin', 'support_admin', 'commercial'] as const;
+import { CreatePlatformUserDto, ROLES_INTERNES } from './dto';
 
 /** Utilisateurs internes NOVA PHARMA OS. */
 @Injectable()
@@ -17,31 +17,37 @@ export class PlatformUsersService {
   async list(ctx: RequestContext) {
     return this.db.readTransaction(ctx, (tx) =>
       tx.many(
-        `SELECT id, email, full_name, role, locale, is_active, last_login_at, created_at
+        `SELECT id, email, full_name, phone, role, locale, is_active, last_login_at, created_at
            FROM platform_users ORDER BY full_name`,
       ),
     );
   }
 
-  async create(
-    ctx: RequestContext,
-    dto: { email: string; fullName: string; password: string; role: string },
-  ) {
-    if (!ROLES.includes(dto.role as (typeof ROLES)[number])) {
+  async create(ctx: RequestContext, dto: CreatePlatformUserDto) {
+    // La requête HTTP est déjà validée (CreatePlatformUserDto) ; ce double
+    // contrôle protège les appels internes, qui ne passent pas par elle.
+    if (!ROLES_INTERNES.includes(dto.role)) {
       throw new BadRequestException(
-        `Rôle interne invalide. Valeurs acceptées : ${ROLES.join(', ')}.`,
+        `Rôle interne invalide. Valeurs acceptées : ${ROLES_INTERNES.join(', ')}.`,
+      );
+    }
+    const telephone = normaliserTelephone(dto.phone);
+    if (!telephone) {
+      throw new BadRequestException(
+        'Numéro de téléphone invalide : indiquez-le avec l’indicatif du pays ou en commençant par 0.',
       );
     }
     return this.db.transaction(ctx, async (tx) => {
       const user = await tx.oneOrFail(
-        `INSERT INTO platform_users (email, full_name, password_hash, role)
-         VALUES ($1,$2,$3,$4)
-         RETURNING id, email, full_name, role, is_active, created_at`,
+        `INSERT INTO platform_users (email, full_name, password_hash, role, phone)
+         VALUES ($1,$2,$3,$4,$5)
+         RETURNING id, email, full_name, phone, role, is_active, created_at`,
         [
           dto.email.toLowerCase(),
           dto.fullName,
           AuthService.hashPassword(dto.password),
           dto.role,
+          telephone,
         ],
       );
       await this.audit.recordPlatform(tx, {

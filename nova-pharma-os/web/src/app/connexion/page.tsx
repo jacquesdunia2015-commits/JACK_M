@@ -31,6 +31,11 @@ export default async function Connexion() {
         <FormulaireConnexion space="pharmacy" libelles={libellesConnexion(t)} />
 
         <p className="auth-switch">
+          {t('inscription.lien')}{' '}
+          <Link href="/inscription">{t('inscription.lien_action')}</Link>
+        </p>
+
+        <p className="auth-switch">
           {t('connexion.vers_admin')}{' '}
           <Link href="/admin/connexion">{t('app.back_office')}</Link>
         </p>

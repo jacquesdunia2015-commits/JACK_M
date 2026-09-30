@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 83 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 95 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -80,7 +80,7 @@ createdb nova_dev
 cd api
 npm install
 cp .env.example .env               # ajustez DATABASE_URL
-npm run migrate                    # applique les 15 migrations
+npm run migrate                    # applique les 18 migrations
 npm run seed                       # crée les comptes internes
 npm run start:dev                  # http://localhost:3001/api
 
@@ -159,6 +159,27 @@ lecture des cinq tables qu'elles consultent. Elles ne dépendent donc pas d'un
 administrateur superutilisateur — ce qui compte chez un hébergeur, où l'administrateur
 n'est qu'un compte ordinaire soumis lui aussi au cloisonnement forcé. L'API refuse de
 démarrer si son rôle de connexion peut endosser `nova_derogation`.
+
+---
+
+## Création des comptes
+
+Tout compte se crée avec un **téléphone**, une **adresse e-mail** et un **mot de
+passe** (8 caractères minimum). Le téléphone est enregistré au format international
+(E.164), avec l'indicatif du pays de la pharmacie : `0991 234 567` saisi à Bukavu
+devient `+243991234567`.
+
+| Compte | Créé par | Point d'entrée |
+|---|---|---|
+| Pharmacie + son administrateur | La personne elle-même | `POST /api/auth/register` — page `/inscription` |
+| Membre de l'équipe | Administrateur de la pharmacie (`users.write`) | `POST /api/admin/users` — page *Équipe* |
+| Compte interne (super_admin, support_admin, commercial) | Super-administrateur uniquement | `POST /api/platform/users` — back-office *Équipe* |
+
+L'inscription publique ne peut créer **que** une pharmacie et son administrateur : un
+champ `role` est rejeté, et le compte obtenu n'ouvre pas le back-office. Elle se
+ferme avec `INSCRIPTION_PUBLIQUE=off`, se limite globalement avec
+`INSCRIPTION_LIMITE_PAR_HEURE` (20 par défaut) et attribue le forfait
+`INSCRIPTION_FORFAIT` (`professional` par défaut) en période d'essai.
 
 ---
 
@@ -251,7 +272,7 @@ relançables à la main depuis le back-office après un incident.
 
 ```
 nova-pharma-os/
-├── db/migrations/        17 migrations SQL, appliquées dans l'ordre et une seule fois
+├── db/migrations/        18 migrations SQL, appliquées dans l'ordre et une seule fois
 ├── api/                  NestJS — API métier et back-office SaaS
 │   ├── src/common/       socle : base, contexte tenant, auth, quotas, audit, numérotation
 │   ├── src/modules/
@@ -259,7 +280,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             83 tests de bout en bout
+│   └── test/             95 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français

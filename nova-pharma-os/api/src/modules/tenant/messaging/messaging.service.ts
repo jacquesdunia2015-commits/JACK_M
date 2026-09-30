@@ -3,6 +3,7 @@ import { AuditService } from '../../../common/audit/audit.service';
 import { DatabaseService, Tx } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
 import { BusinessRuleException } from '../../../common/http/exceptions';
+import { chiffresTelephone } from '../../../common/telephone';
 
 export type Canal = 'sms' | 'whatsapp';
 
@@ -416,23 +417,14 @@ export function remplir(
  *
  * Les numéros saisis au comptoir prennent toutes les formes : « 0991 234
  * 567 », « +243991234567 », « 243-99-123-45-67 ». Les liens wa.me
- * n'acceptent que la dernière forme, en chiffres seuls.
+ * n'acceptent que la dernière forme, en chiffres seuls. La règle est
+ * commune à toute l'application : voir common/telephone.ts.
  */
 export function normaliserNumero(
   brut: string | null | undefined,
   indicatifParDefaut = '+243',
 ): string | null {
-  if (!brut) return null;
-  const chiffres = brut.replace(/[^\d+]/g, '');
-  if (!chiffres) return null;
-
-  const indicatif = indicatifParDefaut.replace(/\D/g, '');
-  if (chiffres.startsWith('+')) return chiffres.slice(1);
-  if (chiffres.startsWith('00')) return chiffres.slice(2);
-  // Un zéro initial est le zéro national : il tombe au profit de l'indicatif.
-  if (chiffres.startsWith('0')) return indicatif + chiffres.slice(1);
-  if (chiffres.startsWith(indicatif)) return chiffres;
-  return indicatif + chiffres;
+  return chiffresTelephone(brut, indicatifParDefaut);
 }
 
 /** Lien à ouvrir depuis le téléphone du vendeur, message déjà rempli. */

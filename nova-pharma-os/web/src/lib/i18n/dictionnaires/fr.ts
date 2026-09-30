@@ -232,6 +232,22 @@ export const fr = {
   'doc.ouvrir': 'Ouvrir',
   'doc.retour': 'Retour aux documents',
   'doc.introuvable': 'Document introuvable.',
+  'inscription.lien': 'Pas encore de compte ?',
+  'inscription.lien_action': 'Créer un compte',
+  'inscription.titre': 'Créer le compte de votre pharmacie',
+  'inscription.sous_titre': 'Essai gratuit, sans engagement. Vous serez l\'administrateur de votre officine.',
+  'inscription.officine': 'Nom de la pharmacie',
+  'inscription.ville': 'Ville',
+  'inscription.nom': 'Votre nom complet',
+  'inscription.telephone': 'Numéro de téléphone',
+  'inscription.aide_telephone': 'Avec l\'indicatif du pays (+243…), ou en commençant par 0.',
+  'inscription.aide_mot_de_passe': '8 caractères au minimum.',
+  'inscription.confirmation': 'Confirmez le mot de passe',
+  'inscription.confirmation_differente': 'Les deux mots de passe ne sont pas identiques.',
+  'inscription.bouton': 'Créer mon compte',
+  'inscription.en_cours': 'Création du compte…',
+  'inscription.deja_compte': 'Vous avez déjà un compte ?',
+  'inscription.vers_connexion': 'Se connecter',
 } as const;
 
 export type CleTraduction = keyof typeof fr;

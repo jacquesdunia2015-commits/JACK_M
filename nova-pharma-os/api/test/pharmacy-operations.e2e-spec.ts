@@ -667,6 +667,7 @@ describe('Opérations pharmacie', () => {
           {
             email: `vendeur@${organizationId.slice(0, 8)}.cd`,
             fullName: 'Vendeur',
+            phone: '0990000200',
             password: 'Nova2026Agent!',
             roleCodes: ['vendeur'],
           },

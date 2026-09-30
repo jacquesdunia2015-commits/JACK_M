@@ -217,6 +217,43 @@ besoin.
 
 ---
 
+## Créer des comptes
+
+Chaque compte se crée avec les trois mêmes informations : **un numéro de
+téléphone, une adresse e-mail et un mot de passe** (8 caractères au
+minimum). On se connecte avec l'adresse e-mail ; le téléphone sert à joindre
+la personne. Tapez le numéro comme vous le composez — `0991 234 567` — :
+l'application ajoute d'elle-même l'indicatif du pays (+243 en RD Congo).
+
+Qui crée quoi :
+
+| Compte | Qui le crée | Où |
+|---|---|---|
+| **Une nouvelle pharmacie** et son administrateur | La personne elle-même | Page de connexion → *Créer un compte* |
+| **Un membre de l'équipe** (vendeur, caissier, livreur…) | L'administrateur de la pharmacie | Espace pharmacie → *Équipe* → *Ajouter un membre* |
+| **Un compte interne** NOVA PHARMA OS (support, commercial, super-administrateur) | Un super-administrateur uniquement | Back-office → *Équipe* |
+
+**Une nouvelle pharmacie.** Sur la page de connexion, cliquez sur *Créer un compte*.
+Indiquez le nom de l'officine, votre
+nom, votre téléphone, votre adresse e-mail et votre mot de passe (deux fois).
+La pharmacie est créée en période d'essai, vous en êtes l'administrateur, et
+vous entrez directement dans votre espace.
+
+**Un membre de l'équipe.** Ouvrez *Équipe*, remplissez *Ajouter un membre*,
+choisissez son rôle, puis *Créer le compte*. Donnez-lui son mot de passe
+**de vive voix**, jamais par écrit.
+
+**Un compte interne.** Ces comptes voient toutes les pharmacies clientes :
+il n'existe donc **aucune inscription publique** pour eux. Seul un
+super-administrateur les crée, depuis le menu *Équipe* du back-office — le
+menu n'apparaît même pas pour les autres rôles.
+
+> Pour fermer l'inscription publique (par exemple avant un lancement), démarrez
+> l'API avec `INSCRIPTION_PUBLIQUE=off`. Par sécurité, les inscriptions sont
+> aussi limitées à 20 par heure (`INSCRIPTION_LIMITE_PAR_HEURE`).
+
+---
+
 ## Mettre votre logo
 
 Déposez votre image ici :

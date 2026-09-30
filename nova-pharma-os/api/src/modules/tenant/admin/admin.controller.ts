@@ -3,6 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Ctx, RequirePermissions, WriteOperation } from '../../../common/auth/decorators';
 import { RequestContext } from '../../../common/database/request-context';
 import { TenantAdminService } from './admin.service';
+import { CreateUserDto } from './dto';
 
 @ApiTags('Espace pharmacie')
 @Controller('admin')
@@ -52,14 +53,7 @@ export class TenantAdminController {
     summary: 'Créer un utilisateur',
     description: "Refusé au-delà du nombre d'utilisateurs inclus au forfait.",
   })
-  createUser(
-    @Ctx() ctx: RequestContext,
-    @Body()
-    body: {
-      email: string; fullName: string; password: string; phone?: string;
-      roleCodes?: string[]; branchIds?: string[]; defaultBranchId?: string;
-    },
-  ) {
+  createUser(@Ctx() ctx: RequestContext, @Body() body: CreateUserDto) {
     return this.admin.createUser(ctx, body);
   }
 

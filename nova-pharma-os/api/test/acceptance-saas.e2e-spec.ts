@@ -135,6 +135,7 @@ describe("Critères d'acceptation — commercialisation SaaS", () => {
           {
             email: `vendeur${i}@${starter.slug}.cd`,
             fullName: `Vendeur ${i}`,
+            phone: '0990000100',
             password: 'Nova2026Agent!',
             roleCodes: ['vendeur'],
           },
@@ -148,6 +149,7 @@ describe("Critères d'acceptation — commercialisation SaaS", () => {
         {
           email: `vendeur3@${starter.slug}.cd`,
           fullName: 'Vendeur 3',
+          phone: '0990000100',
           password: 'Nova2026Agent!',
         },
         owner.token,
@@ -185,6 +187,7 @@ describe("Critères d'acceptation — commercialisation SaaS", () => {
         {
           email: `vendeur3@${starter.slug}.cd`,
           fullName: 'Vendeur 3',
+          phone: '0990000100',
           password: 'Nova2026Agent!',
         },
         owner.token,

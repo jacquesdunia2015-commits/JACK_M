@@ -4,6 +4,7 @@ import { AccessContextService } from '../../../common/auth/access-context.servic
 import { DatabaseService } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
 import { EntitlementsService } from '../../../common/entitlements/entitlements.service';
+import { normaliserTelephone } from '../../../common/telephone';
 import { AuthService } from '../../auth/auth.service';
 
 /** Administration de l'espace pharmacie : branches, utilisateurs, rôles. */
@@ -93,6 +94,27 @@ export class TenantAdminService {
       // Le nombre de comptes actifs est plafonné par le forfait.
       await this.entitlements.assertCanAdd(tx, ctx.organizationId as string, 'users');
 
+      // Le téléphone est enregistré au format international, avec
+      // l'indicatif du pays de la pharmacie : un « 0991… » saisi à Bukavu
+      // devient +243991…. Les appels internes (amorçage) peuvent l'omettre ;
+      // la requête HTTP, elle, l'exige (voir CreateUserDto).
+      let telephone: string | null = null;
+      if (dto.phone) {
+        const pays = await tx.one<{ phone_prefix: string | null }>(
+          `SELECT cs.phone_prefix
+             FROM organizations o
+             JOIN country_settings cs ON cs.code = o.country_code
+            WHERE o.id = $1`,
+          [ctx.organizationId],
+        );
+        telephone = normaliserTelephone(dto.phone, pays?.phone_prefix ?? '+243');
+        if (!telephone) {
+          throw new BadRequestException(
+            'Numéro de téléphone invalide : indiquez-le avec l’indicatif du pays ou en commençant par 0.',
+          );
+        }
+      }
+
       const defaultBranchId =
         dto.defaultBranchId ??
         (
@@ -107,10 +129,10 @@ export class TenantAdminService {
            (organization_id, email, full_name, password_hash, phone,
             default_branch_id, must_change_password)
          VALUES ($1,$2,$3,$4,$5,$6,true)
-         RETURNING id, email, full_name, is_active, created_at`,
+         RETURNING id, email, full_name, phone, is_active, created_at`,
         [
           ctx.organizationId, dto.email.toLowerCase(), dto.fullName,
-          AuthService.hashPassword(dto.password), dto.phone ?? null, defaultBranchId,
+          AuthService.hashPassword(dto.password), telephone, defaultBranchId,
         ],
       );
 

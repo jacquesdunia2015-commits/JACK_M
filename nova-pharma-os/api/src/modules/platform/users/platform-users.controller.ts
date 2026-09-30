@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Ctx, PlatformRoles } from '../../../common/auth/decorators';
 import { RequestContext } from '../../../common/database/request-context';
+import { CreatePlatformUserDto } from './dto';
 import { PlatformUsersService } from './platform-users.service';
 
 @ApiTags('Back-office SaaS')
@@ -18,10 +19,7 @@ export class PlatformUsersController {
 
   @Post()
   @ApiOperation({ summary: 'Créer un utilisateur interne' })
-  create(
-    @Ctx() ctx: RequestContext,
-    @Body() body: { email: string; fullName: string; password: string; role: string },
-  ) {
+  create(@Ctx() ctx: RequestContext, @Body() body: CreatePlatformUserDto) {
     return this.users.create(ctx, body);
   }
 

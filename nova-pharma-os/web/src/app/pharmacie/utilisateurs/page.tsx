@@ -1,3 +1,4 @@
+import FormulaireCompte from '@/components/FormulaireCompte';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { dateTime } from '@/lib/format';
@@ -26,6 +27,23 @@ export default async function PageUtilisateurs() {
         <p>Comptes, rôles et permissions de la pharmacie.</p>
       </div>
 
+      {/* La liste des rôles n'est lisible qu'avec la permission de gérer
+          l'équipe : sans elle, le formulaire n'aurait aucun sens. */}
+      {roles.length > 0 && (
+        <section className="card">
+          <div className="card-head">
+            <h2>Ajouter un membre</h2>
+            <span className="hint">Il se connectera avec son e-mail et ce mot de passe</span>
+          </div>
+          <FormulaireCompte
+            destination="/api/proxy/admin/users"
+            champRole="roleCodes"
+            roles={roles.map((r) => ({ code: r.code, libelle: r.name }))}
+            roleParDefaut={roles.find((r) => r.code === 'vendeur')?.code}
+          />
+        </section>
+      )}
+
       <section className="card">
         <div className="card-head">
           <h2>Utilisateurs</h2>
@@ -40,6 +58,7 @@ export default async function PageUtilisateurs() {
                 <tr>
                   <th>Nom</th>
                   <th>Adresse e-mail</th>
+                  <th>Téléphone</th>
                   <th>Rôles</th>
                   <th>Branches</th>
                   <th>Statut</th>
@@ -58,6 +77,7 @@ export default async function PageUtilisateurs() {
                       )}
                     </td>
                     <td className="small">{u.email}</td>
+                    <td className="small mono">{u.phone ?? '—'}</td>
                     <td className="small">
                       {u.roles.length > 0 ? u.roles.join(', ') : '—'}
                     </td>
