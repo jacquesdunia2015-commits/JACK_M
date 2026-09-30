@@ -24,6 +24,20 @@ export async function runMigrations(
   const result: MigrationResult = { applied: [], skipped: [] };
 
   try {
+    // Les migrations agissent en opérateur de la plateforme : c'est le
+    // contexte qui autorise l'écriture des référentiels (pays, forfaits,
+    // permissions). Tant que l'administrateur était superutilisateur, ce
+    // contexte ne servait à rien — un superutilisateur ignore toute
+    // politique. Chez un hébergeur, l'administrateur n'est que le
+    // propriétaire de la base, et le cloisonnement forcé s'applique à lui :
+    // sans ce contexte, la première migration qui écrit un référentiel
+    // échoue et l'application ne démarre jamais.
+    //
+    // Ce contexte n'ouvre aucune table métier de pharmacie. Une migration
+    // future qui devrait modifier des données de pharmacie existantes
+    // devra poser elle-même le contexte de chaque organisation.
+    await client.query(`SELECT set_config('nova.platform', 'on', false)`);
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS schema_migrations (
         filename    text PRIMARY KEY,

@@ -425,14 +425,20 @@ export class AuthService {
     await this.db.transaction(
       { organizationId, actorKind: 'system', platform: false, readonly: false },
       (tx) =>
+        // Types explicites : $2 sert à la fois de valeur et de terme de
+        // comparaison, et PostgreSQL refusait d'en déduire le type — chaque
+        // mot de passe erroné finissait en erreur 500, que l'interface
+        // affichait comme « Connexion impossible » au lieu de
+        // « Identifiants incorrects », et le verrouillage après plusieurs
+        // échecs ne s'appliquait jamais.
         tx.query(
           `UPDATE users
-              SET failed_login_count = $2,
-                  locked_until = CASE WHEN $2 >= $3
-                                      THEN now() + ($4 || ' minutes')::interval
+              SET failed_login_count = $2::integer,
+                  locked_until = CASE WHEN $2::integer >= $3::integer
+                                      THEN now() + make_interval(mins => $4::integer)
                                       ELSE locked_until END
             WHERE id = $1`,
-          [userId, next, MAX_FAILED_LOGINS, String(LOCK_MINUTES)],
+          [userId, next, MAX_FAILED_LOGINS, LOCK_MINUTES],
         ),
     );
   }

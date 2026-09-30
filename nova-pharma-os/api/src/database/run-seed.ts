@@ -38,6 +38,11 @@ async function main(): Promise<void> {
   await client.connect();
 
   try {
+    // Les comptes internes vivent dans une table réservée au back-office :
+    // on les crée donc en opérateur de la plateforme. Voir migrator.ts —
+    // chez un hébergeur, l'administrateur est soumis au cloisonnement.
+    await client.query(`SELECT set_config('nova.platform', 'on', false)`);
+
     const created: string[] = [];
     const kept: string[] = [];
 

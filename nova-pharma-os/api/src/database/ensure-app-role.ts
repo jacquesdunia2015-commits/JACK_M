@@ -43,12 +43,36 @@ async function principal(): Promise<void> {
     // identifiant, et le mot de passe comme littéral.
     const nom = await identifiant(client, role);
     const secret = await litteral(client, motDePasse);
-    const attributs = `LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE PASSWORD ${secret}`;
+
+    // Un superutilisateur peut réaffirmer chaque attribut, et remettre
+    // d'aplomb un rôle qu'on aurait élargi. Un simple propriétaire de base
+    // — le cas chez un hébergeur — n'a pas le droit de nommer SUPERUSER ni
+    // BYPASSRLS, même pour les refuser : il ne pose que la connexion et le
+    // mot de passe. Les attributs réels sont vérifiés juste après, dans
+    // les deux cas.
+    const { rows: moi } = await client.query<{ rolsuper: boolean }>(
+      'SELECT rolsuper FROM pg_roles WHERE rolname = current_user',
+    );
+    const attributs = moi[0]?.rolsuper
+      ? `LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE PASSWORD ${secret}`
+      : `LOGIN PASSWORD ${secret}`;
 
     if (rows.length === 0) {
       await client.query(`CREATE ROLE ${nom} WITH ${attributs}`);
     } else {
       await client.query(`ALTER ROLE ${nom} WITH ${attributs}`);
+    }
+
+    const { rows: etat } = await client.query<{
+      rolsuper: boolean;
+      rolbypassrls: boolean;
+    }>('SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = $1', [role]);
+    if (etat[0]?.rolsuper || etat[0]?.rolbypassrls) {
+      throw new Error(
+        `Le rôle « ${role} » peut contourner le cloisonnement et ce compte ` +
+          "n'a pas le droit de le corriger. Retirez-lui SUPERUSER et BYPASSRLS " +
+          'avec un compte superutilisateur.',
+      );
     }
 
     // Les droits sur les tables sont posés par la migration 009 ; ils ne

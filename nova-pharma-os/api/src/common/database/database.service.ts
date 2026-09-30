@@ -82,20 +82,33 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       role: string;
       superutilisateur: boolean;
       contourne_rls: boolean;
+      derogation: boolean;
     }>(
-      `SELECT rolname AS role,
-              rolsuper AS superutilisateur,
-              rolbypassrls AS contourne_rls
-         FROM pg_roles WHERE rolname = current_user`,
+      `SELECT r.rolname AS role,
+              r.rolsuper AS superutilisateur,
+              r.rolbypassrls AS contourne_rls,
+              -- nova_derogation lit toutes les pharmacies (migration 017) ;
+              -- quiconque peut l'endosser franchit donc le cloisonnement.
+              -- C'est le cas de l'administrateur chez un hébergeur, où il
+              -- n'est pas superutilisateur et passerait le contrôle
+              -- précédent.
+              EXISTS (
+                SELECT 1 FROM pg_roles d
+                 WHERE d.rolname = 'nova_derogation'
+                   AND pg_has_role(current_user, d.oid, 'MEMBER')
+              ) AS derogation
+         FROM pg_roles r WHERE r.rolname = current_user`,
     );
 
     const role = rows[0];
     if (!role) return;
 
-    if (role.superutilisateur || role.contourne_rls) {
+    if (role.superutilisateur || role.contourne_rls || role.derogation) {
       const raison = role.superutilisateur
         ? 'est superutilisateur'
-        : 'porte l’attribut BYPASSRLS';
+        : role.contourne_rls
+          ? 'porte l’attribut BYPASSRLS'
+          : 'peut endosser le rôle nova_derogation';
       throw new Error(
         `Refus de démarrer : le rôle « ${role.role} » ${raison}, ` +
           'il ignore donc les politiques de cloisonnement et chaque pharmacie ' +

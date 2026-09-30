@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 78 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 83 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -153,6 +153,13 @@ des compteurs de quota — jamais le contenu.
 | `nova.organization_quota_usage` | Facturer les options exige de connaître la consommation | Des nombres uniquement ; refuse tout appel hors contexte back-office |
 | `support_access_grants` | Un agent doit parfois intervenir | Voir ci-dessous |
 
+Les deux fonctions appartiennent à un rôle dédié, `nova_derogation`, **sans droit de
+connexion** : on ne l'exerce qu'à travers elles, et une politique ne lui ouvre que la
+lecture des cinq tables qu'elles consultent. Elles ne dépendent donc pas d'un
+administrateur superutilisateur — ce qui compte chez un hébergeur, où l'administrateur
+n'est qu'un compte ordinaire soumis lui aussi au cloisonnement forcé. L'API refuse de
+démarrer si son rôle de connexion peut endosser `nova_derogation`.
+
 ---
 
 ## Accès du support aux données d'une pharmacie
@@ -244,7 +251,7 @@ relançables à la main depuis le back-office après un incident.
 
 ```
 nova-pharma-os/
-├── db/migrations/        16 migrations SQL, appliquées dans l'ordre et une seule fois
+├── db/migrations/        17 migrations SQL, appliquées dans l'ordre et une seule fois
 ├── api/                  NestJS — API métier et back-office SaaS
 │   ├── src/common/       socle : base, contexte tenant, auth, quotas, audit, numérotation
 │   ├── src/modules/
@@ -252,7 +259,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             78 tests de bout en bout
+│   └── test/             83 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
