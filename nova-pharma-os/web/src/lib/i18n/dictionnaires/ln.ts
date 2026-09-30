@@ -246,4 +246,9 @@ export const ln: Dictionnaire = {
   'peremption.a_surveiller': 'Ya kokengela',
   'peremption.eloignee': 'Mokolo ya mosika',
   'peremption.regle': 'Langi ya mokolo ya kosila oyo ekomi pene: orange na kati ya ntango ya likebi ya eloko (mikolo 90), jaune na kati ya ntango yango mbala mibale, motane soki mokolo eleki.',
+  'stock.enregistrer_achat': 'Koma esombeli (kokotisa na stock)',
+  'stock.aide_saisie': 'Biteki ekomamaka na kaisi:',
+  'stock.ajouter_produit': 'Bakisa eloko',
+  'stock.achete_30j': 'Esombami (mikolo 30)',
+  'stock.vendu_30j': 'Etekami (mikolo 30)',
 };

@@ -246,4 +246,9 @@ export const de: Dictionnaire = {
   'peremption.a_surveiller': 'Beobachten',
   'peremption.eloignee': 'Fernes Datum',
   'peremption.regle': 'Farbe des nächsten Verfallsdatums: orange innerhalb der Warnfrist des Produkts (standardmäßig 90 Tage), gelb innerhalb der doppelten Frist, rot nach Ablauf des Datums.',
+  'stock.enregistrer_achat': 'Einkauf erfassen (Wareneingang)',
+  'stock.aide_saisie': 'Verkäufe werden an der Kasse erfasst:',
+  'stock.ajouter_produit': 'Produkt hinzufügen',
+  'stock.achete_30j': 'Gekauft (30 T)',
+  'stock.vendu_30j': 'Verkauft (30 T)',
 };

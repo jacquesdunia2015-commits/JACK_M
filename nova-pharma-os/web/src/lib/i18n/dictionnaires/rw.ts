@@ -246,4 +246,9 @@ export const rw: Dictionnaire = {
   'peremption.a_surveiller': 'Byo gukurikirana',
   'peremption.eloignee': 'Itariki ya kure',
   'peremption.regle': 'Ibara ry\'itariki y\'irangira iri hafi: icunga mu gihe cyo kuburira cy\'igicuruzwa (iminsi 90 bisanzwe), umuhondo mu gihe cyikubye kabiri, umutuku itariki imaze kurenga.',
+  'stock.enregistrer_achat': 'Andika ibyaguzwe (kwinjiza mu bubiko)',
+  'stock.aide_saisie': 'Ibyagurishijwe byandikirwa kuri kesi:',
+  'stock.ajouter_produit': 'Ongeraho igicuruzwa',
+  'stock.achete_30j': 'Byaguzwe (iminsi 30)',
+  'stock.vendu_30j': 'Byagurishijwe (iminsi 30)',
 };

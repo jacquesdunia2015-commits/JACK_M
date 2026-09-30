@@ -1,16 +1,21 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   Ctx, RequireModule, RequirePermissions, WriteOperation,
 } from '../../../common/auth/decorators';
 import { RequestContext } from '../../../common/database/request-context';
+import { StockEntryDto } from '../purchasing/dto';
+import { PurchasingService } from '../purchasing/purchasing.service';
 import { InventoryService } from './inventory.service';
 
 @ApiTags('Espace pharmacie')
 @Controller('inventory')
 @RequireModule('inventory')
 export class InventoryController {
-  constructor(private readonly inventory: InventoryService) {}
+  constructor(
+    private readonly inventory: InventoryService,
+    private readonly purchasing: PurchasingService,
+  ) {}
 
   @Get('stock')
   @RequirePermissions('inventory.read')
@@ -71,6 +76,17 @@ export class InventoryController {
     return this.inventory.acknowledgeAlert(ctx, id);
   }
 
+  @Get('products/:productId/history')
+  @RequirePermissions('inventory.read')
+  @ApiOperation({ summary: 'Fiche de stock : achats, ventes et mouvements d’un produit' })
+  productHistory(
+    @Ctx() ctx: RequestContext,
+    @Param('productId', ParseUUIDPipe) productId: string,
+    @Query('branchId') branchId?: string,
+  ) {
+    return this.inventory.productHistory(ctx, productId, branchId);
+  }
+
   @Get('movements')
   @RequirePermissions('inventory.read')
   @ApiOperation({ summary: 'Journal des mouvements de stock' })
@@ -84,6 +100,19 @@ export class InventoryController {
     return this.inventory.movements(ctx, {
       productId, branchId, kind, limit: limit ? Number(limit) : undefined,
     });
+  }
+
+  /**
+   * Enregistrer un achat : ajoute au stock la quantité achetée, avec son
+   * lot, sa date de péremption et son prix. Module « inventory », donc
+   * disponible dans tous les forfaits, contrairement aux commandes.
+   */
+  @Post('receptions')
+  @RequirePermissions('purchasing.receive')
+  @WriteOperation()
+  @ApiOperation({ summary: 'Enregistrer un achat (entrée en stock)' })
+  receiveStock(@Ctx() ctx: RequestContext, @Body() dto: StockEntryDto) {
+    return this.purchasing.receiveStock(ctx, dto);
   }
 
   @Post('adjustments')

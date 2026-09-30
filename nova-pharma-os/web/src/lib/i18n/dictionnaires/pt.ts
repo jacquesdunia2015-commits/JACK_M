@@ -246,4 +246,9 @@ export const pt: Dictionnaire = {
   'peremption.a_surveiller': 'A vigiar',
   'peremption.eloignee': 'Data distante',
   'peremption.regle': 'Cor da data de validade mais próxima: laranja dentro do prazo de alerta do produto (90 dias por defeito), amarelo dentro do dobro desse prazo, vermelho depois de passada a data.',
+  'stock.enregistrer_achat': 'Registar uma compra (entrada em stock)',
+  'stock.aide_saisie': 'As vendas registam-se na caixa:',
+  'stock.ajouter_produit': 'Adicionar um produto',
+  'stock.achete_30j': 'Comprado (30 d)',
+  'stock.vendu_30j': 'Vendido (30 d)',
 };

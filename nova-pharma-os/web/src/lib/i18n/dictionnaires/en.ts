@@ -246,4 +246,9 @@ export const en: Dictionnaire = {
   'peremption.a_surveiller': 'To watch',
   'peremption.eloignee': 'Distant date',
   'peremption.regle': 'Colour of the nearest expiry date: orange within the product\'s alert period (90 days by default), yellow within twice that period, red once the date has passed.',
+  'stock.enregistrer_achat': 'Record a purchase (stock in)',
+  'stock.aide_saisie': 'Sales are recorded at the till:',
+  'stock.ajouter_produit': 'Add a product',
+  'stock.achete_30j': 'Bought (30 d)',
+  'stock.vendu_30j': 'Sold (30 d)',
 };

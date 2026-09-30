@@ -246,4 +246,9 @@ export const bm: Dictionnaire = {
   'peremption.a_surveiller': 'K\'a kɔlɔsi',
   'peremption.eloignee': 'Don jan',
   'peremption.regle': 'Banni don surunnen kulɛri: nɛrɛmugu fɛn ka lasɔmini waati kɔnɔ (tile 90), nɛrɛ o waati siɲɛ fila kɔnɔ, bilen ni don tɛmɛna.',
+  'stock.enregistrer_achat': 'San sɛbɛn (ka don maracogo la)',
+  'stock.aide_saisie': 'Feereliw bɛ sɛbɛn wari kɛsu la:',
+  'stock.ajouter_produit': 'Fɛn fara a kan',
+  'stock.achete_30j': 'Sanna (tile 30)',
+  'stock.vendu_30j': 'Feerelen (tile 30)',
 };

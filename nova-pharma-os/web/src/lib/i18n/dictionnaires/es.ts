@@ -246,4 +246,9 @@ export const es: Dictionnaire = {
   'peremption.a_surveiller': 'A vigilar',
   'peremption.eloignee': 'Fecha lejana',
   'peremption.regle': 'Color de la fecha de caducidad más próxima: naranja dentro del plazo de alerta del producto (90 días por defecto), amarillo dentro del doble de ese plazo, rojo una vez pasada la fecha.',
+  'stock.enregistrer_achat': 'Registrar una compra (entrada en stock)',
+  'stock.aide_saisie': 'Las ventas se registran en la caja:',
+  'stock.ajouter_produit': 'Añadir un producto',
+  'stock.achete_30j': 'Comprado (30 d)',
+  'stock.vendu_30j': 'Vendido (30 d)',
 };

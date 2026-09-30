@@ -577,4 +577,29 @@ button.petit, .btn.petit { padding: 0.32rem 0.6rem; font-size: 0.8rem; }
 td:not(.num) > .peremption { align-items: flex-start; }
 .peremption-jours { font-weight: 500; opacity: 0.85; margin-left: 0.25rem; }
 .peremption-jours::before { content: '· '; }
+/* Case à cocher et son libellé sur une ligne. */
+.case { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; cursor: pointer; }
+.case input { width: auto; margin: 0; }
+
+/* Saisie d'un achat : une ligne par produit, repliée sur téléphone. */
+.lignes-achat { display: grid; gap: 0.6rem; }
+.ligne-achat {
+  display: grid; gap: 0 0.75rem; align-items: end; margin: 0; padding: 0.6rem 0.75rem 0;
+  border: 1px solid var(--bord); border-radius: var(--rayon);
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+.ligne-achat legend { font-size: 0.78rem; color: var(--gris); padding: 0 0.3rem; }
+.ligne-achat-nom { grid-column: span 2; }
+@media (max-width: 520px) { .ligne-achat-nom { grid-column: auto; } }
+
+/* Panneau dépliable (« Enregistrer un achat », « Ajouter un produit »). */
+details.depliable > summary {
+  cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 0.4rem;
+  font-weight: 600; color: var(--vert);
+}
+details.depliable > summary::-webkit-details-marker { display: none; }
+details.depliable > summary::before { content: '+'; font-size: 1.1rem; line-height: 1; }
+details.depliable[open] > summary::before { content: '−'; }
+details.depliable[open] > summary { margin-bottom: 1rem; }
+
 .mob-niveaux { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; }

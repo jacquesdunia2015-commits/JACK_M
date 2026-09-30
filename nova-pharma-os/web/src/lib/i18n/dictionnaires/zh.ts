@@ -244,4 +244,9 @@ export const zh: Dictionnaire = {
   'peremption.a_surveiller': '需关注',
   'peremption.eloignee': '有效期较远',
   'peremption.regle': '最近有效期的颜色：在产品提醒期内（默认 90 天）为橙色，在两倍提醒期内为黄色，过期后为红色。',
+  'stock.enregistrer_achat': '登记采购（入库）',
+  'stock.aide_saisie': '销售在收银台登记：',
+  'stock.ajouter_produit': '添加产品',
+  'stock.achete_30j': '采购（30 天）',
+  'stock.vendu_30j': '销售（30 天）',
 };

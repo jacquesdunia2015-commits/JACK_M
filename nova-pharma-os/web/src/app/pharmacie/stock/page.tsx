@@ -1,3 +1,5 @@
+import Link from 'next/link';
+import EntreeStock, { FournisseurAchat, ProduitAchat } from '@/components/EntreeStock';
 import Etiquette from '@/components/Etiquette';
 import Peremption from '@/components/Peremption';
 import Vide from '@/components/Vide';
@@ -14,7 +16,8 @@ interface LigneStock {
   reorder_point: string; on_hand: string; available: string;
   stock_value: string; lots: string; nearest_expiry: string | null;
   expired_quantity: string;
-  sales_last_30_days: string; stock_level: NiveauStock; days_of_cover: number | null;
+  sales_last_30_days: string; purchases_last_30_days: string;
+  stock_level: NiveauStock; days_of_cover: number | null;
   expiry_level: NiveauPeremption | null; days_to_expiry: number | null;
 }
 
@@ -27,17 +30,19 @@ interface Alerte {
 export default async function PageStock({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; niveau?: string; peremption?: string }>;
+  searchParams: Promise<{ q?: string; niveau?: string; peremption?: string; achat?: string }>;
 }) {
-  const { q, niveau, peremption } = await searchParams;
+  const { q, niveau, peremption, achat } = await searchParams;
   const filtre = estNiveau(niveau) ? niveau : null;
   const filtrePeremption = estNiveauPeremption(peremption) ? peremption : null;
   const { t } = await traduire();
   const requete = q ? `?search=${encodeURIComponent(q)}` : '';
 
-  const [stock, alertes] = await Promise.all([
+  const [stock, alertes, catalogue, fournisseurs] = await Promise.all([
     apiSafe<LigneStock[]>(`/inventory/stock${requete}`, []),
     apiSafe<Alerte[]>('/inventory/alerts', []),
+    apiSafe<{ data: ProduitAchat[] }>('/catalog/products?pageSize=200', { data: [] }),
+    apiSafe<(FournisseurAchat & { is_active: boolean })[]>('/purchasing/suppliers', []),
   ]);
 
   const valeurTotale = stock.reduce((s, l) => s + Number(l.stock_value), 0);
@@ -71,6 +76,23 @@ export default async function PageStock({
         <h1>{t('stock.titre')}</h1>
         <p>{t('stock.sous_titre')}</p>
       </div>
+
+      <section className="card" id="achat">
+        <details className="depliable" open={Boolean(achat)}>
+          <summary>{t('stock.enregistrer_achat')}</summary>
+          <EntreeStock
+            produits={catalogue.data}
+            fournisseurs={fournisseurs.filter((f) => f.is_active)}
+            produitInitial={achat}
+          />
+        </details>
+        <p className="small muted" style={{ margin: '0.75rem 0 0' }}>
+          {t('stock.aide_saisie')}{' '}
+          <Link href="/pharmacie/caisse">{t('nav.caisse')}</Link>
+          {' · '}
+          <Link href="/pharmacie/catalogue#nouveau">{t('stock.ajouter_produit')}</Link>
+        </p>
+      </section>
 
       {alertes.length > 0 && (
         <section className="card">
@@ -159,6 +181,8 @@ export default async function PageStock({
                   <th>{t('catalogue.produit')}</th>
                   <th>{t('stock.niveau')}</th>
                   <th className="num">{t('stock.en_stock')}</th>
+                  <th className="num">{t('stock.achete_30j')}</th>
+                  <th className="num">{t('stock.vendu_30j')}</th>
                   <th className="num">{t('stock.couverture')}</th>
                   <th className="num">{t('stock.disponible')}</th>
                   <th className="num">{t('stock.seuil')}</th>
@@ -172,7 +196,7 @@ export default async function PageStock({
                   return (
                     <tr key={l.product_id} className={`niveau-${l.stock_level}`}>
                       <td>
-                        {l.name}
+                        <Link href={`/pharmacie/stock/${l.product_id}`}>{l.name}</Link>
                         <br />
                         <span className="small muted mono">{l.sku}</span>
                       </td>
@@ -184,6 +208,8 @@ export default async function PageStock({
                       <td className="num">
                         {quantity(l.on_hand)} {l.unit}
                       </td>
+                      <td className="num">{Number(l.purchases_last_30_days) ? `+${quantity(l.purchases_last_30_days)}` : '—'}</td>
+                      <td className="num">{Number(l.sales_last_30_days) ? quantity(l.sales_last_30_days) : '—'}</td>
                       <td className="num small">
                         {l.days_of_cover === null
                           ? '—'

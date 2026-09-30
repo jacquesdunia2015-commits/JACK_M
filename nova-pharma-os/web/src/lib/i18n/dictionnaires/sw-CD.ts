@@ -252,4 +252,9 @@ export const swCD: Dictionnaire = {
   'peremption.a_surveiller': 'Ya kuchunga',
   'peremption.eloignee': 'Tarehe ya mbali',
   'peremption.regle': 'Rangi ya tarehe ya mwisho iliyo karibu zaidi: machungwa ndani ya muda wa onyo wa bidhaa (siku 90 kwa kawaida), manjano ndani ya mara mbili ya muda huo, nyekundu tarehe ikisha pita.',
+  'stock.enregistrer_achat': 'Kuandika manunuzi (kuingiza katika stoki)',
+  'stock.aide_saisie': 'Mauzo inaandikwa kwa kasa:',
+  'stock.ajouter_produit': 'Kuongeza bidhaa',
+  'stock.achete_30j': 'Zilizonunuliwa (siku 30)',
+  'stock.vendu_30j': 'Zilizouzwa (siku 30)',
 };

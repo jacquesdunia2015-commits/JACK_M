@@ -246,4 +246,9 @@ export const hi: Dictionnaire = {
   'peremption.a_surveiller': 'नज़र रखें',
   'peremption.eloignee': 'दूर की तारीख',
   'peremption.regle': 'निकटतम समाप्ति तिथि का रंग: उत्पाद की चेतावनी अवधि (डिफ़ॉल्ट 90 दिन) में नारंगी, उसकी दोगुनी अवधि में पीला, तिथि बीत जाने पर लाल।',
+  'stock.enregistrer_achat': 'खरीद दर्ज करें (स्टॉक में जोड़ें)',
+  'stock.aide_saisie': 'बिक्री कैश काउंटर पर दर्ज होती है:',
+  'stock.ajouter_produit': 'उत्पाद जोड़ें',
+  'stock.achete_30j': 'खरीदा (30 दिन)',
+  'stock.vendu_30j': 'बेचा (30 दिन)',
 };

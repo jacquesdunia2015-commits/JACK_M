@@ -27,7 +27,7 @@ export class CatalogService {
         `SELECT p.id, p.sku, p.name, p.commercial_name, p.dosage, p.dosage_form,
                 p.packaging, p.unit, p.sale_price, p.wholesale_price, p.cost_price,
                 p.requires_prescription, p.is_controlled, p.is_cold_chain,
-                p.is_batch_tracked, p.reorder_point, p.expiry_alert_days, p.is_active,
+                p.is_batch_tracked, p.has_expiry, p.reorder_point, p.expiry_alert_days, p.is_active,
                 c.code AS category_code, c.name AS category_name,
                 m.inn,
                 COALESCE(stock.on_hand, 0) AS on_hand,
@@ -117,6 +117,9 @@ export class CatalogService {
     return this.db.transaction(ctx, async (tx) => {
       // Le nombre de références est plafonné par le forfait.
       await this.entitlements.assertCanAdd(tx, ctx.organizationId as string, 'products');
+      // Au comptoir, on connaît le nom du médicament, rarement une référence :
+      // on la tire du nom plutôt que de bloquer la saisie.
+      if (!dto.sku?.trim()) dto.sku = await this.referenceLibre(tx, dto.name);
       const product = await this.insertProduct(tx, ctx, dto);
       await this.audit.record(tx, {
         action: 'catalog.product_created',
@@ -142,9 +145,10 @@ export class CatalogService {
       const skipped: { sku: string; reason: string }[] = [];
 
       for (const item of dto.products) {
+        if (!item.sku?.trim()) item.sku = await this.referenceLibre(tx, item.name);
         const exists = await tx.one('SELECT id FROM products WHERE sku = $1', [item.sku]);
         if (exists) {
-          skipped.push({ sku: item.sku, reason: 'Référence déjà présente.' });
+          skipped.push({ sku: item.sku as string, reason: 'Référence déjà présente.' });
           continue;
         }
         const product = await this.insertProduct(tx, ctx, item);
@@ -163,6 +167,25 @@ export class CatalogService {
 
       return { created: created.length, skipped, importedSkus: created };
     });
+  }
+
+  /** Référence tirée du nom : « Paracétamol 500 mg » → PARACETAMOL-500-MG. */
+  private async referenceLibre(tx: Tx, nom: string): Promise<string> {
+    const base =
+      nom
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 24)
+        .replace(/-+$/g, '') || 'PRODUIT';
+    for (let i = 1; i <= 50; i += 1) {
+      const reference = i === 1 ? base : `${base}-${i}`;
+      const prise = await tx.one('SELECT 1 FROM products WHERE sku = $1', [reference]);
+      if (!prise) return reference;
+    }
+    return `${base}-${Date.now().toString(36).toUpperCase()}`;
   }
 
   private async insertProduct(tx: Tx, ctx: RequestContext, dto: CreateProductDto) {

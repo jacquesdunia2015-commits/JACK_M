@@ -161,7 +161,7 @@ Le vendeur et le livreur sont faits pour l'**application mobile** : ouvrez
 Vous y trouvez un catalogue de 18 produits courants d'une officine de Bukavu,
 et **un stock à zéro**. Ce n'est pas un oubli : un stock inventé vous ferait
 vendre des boîtes qui ne sont pas sur l'étagère. Le stock se remplit à votre
-première réception réelle — voir « Vos trois premiers gestes » plus bas.
+premier achat réel — voir « Vos premiers gestes » plus bas.
 
 ### Pharmacie de démonstration — pour s'exercer
 
@@ -193,23 +193,36 @@ Vous voyez vos pharmacies clientes, leurs abonnements, votre revenu mensuel.
 
 ---
 
-## Vos trois premiers gestes dans NOVA SANTÉ PHARMA
+## Vos premiers gestes dans NOVA SANTÉ PHARMA
 
 Connectez-vous en **gérant**, puis, dans cet ordre :
 
-**1. Corrigez le catalogue.** Ouvrez *Catalogue*. Supprimez ce que vous ne
-vendez pas, ajoutez ce qui manque, et surtout **ajustez les prix** : ceux
-livrés sont des ordres de grandeur, pas vos prix.
+**1. Complétez le catalogue.** Ouvrez *Catalogue*, puis **Ajouter un produit
+ou un médicament** : le nom, le dosage, la forme, le conditionnement, le prix
+de vente et le prix d'achat habituel. La référence est tirée du nom si vous la
+laissez vide. Cochez *Périssable* pour tout ce qui a une date de péremption, et
+*Délivré sur ordonnance* quand c'est le cas. (La modification et la suppression
+d'un produit depuis cet écran ne sont pas encore disponibles.)
 
-**2. Enregistrez une réception.** Ouvrez *Achats → Réception*. Prenez une
-facture fournisseur réelle et saisissez-la : le fournisseur, chaque produit,
-son **numéro de lot** et sa **date de péremption**. C'est ce geste qui crée
-le stock. L'application refusera un produit périssable sans date de
-péremption — c'est voulu.
+**2. Enregistrez un achat.** Ouvrez *Stock et lots*, puis **Enregistrer un
+achat (entrée en stock)**. Prenez une facture réelle et saisissez-la ligne par
+ligne : chaque produit, la **quantité achetée**, le prix d'achat, le **numéro
+de lot** et la **date de péremption**. *Ajouter un produit à cet achat* ajoute
+une ligne ; le total s'affiche en bas. Le fournisseur est facultatif : sans
+lui, l'achat est rangé dans « achats divers ». C'est ce geste qui crée le
+stock, dans tous les forfaits. L'application refuse un produit périssable
+sans date de péremption, et un double clic n'enregistre jamais l'achat deux
+fois.
 
-**3. Faites une vente.** Ouvrez *Ventes*. Le stock que vous venez de recevoir
+**3. Faites une vente.** Ouvrez *Caisse*. Le stock que vous venez de recevoir
 apparaît. À la sortie, l'application prend d'elle-même le lot qui périme le
 plus tôt : vous n'avez rien à surveiller.
+
+**4. Suivez ce qui entre et ce qui sort.** Dans *Stock et lots*, les colonnes
+*Acheté (30 j)* et *Vendu (30 j)* donnent les quantités du mois. Cliquez sur le
+nom d'un produit : sa fiche montre le total acheté, le total vendu, les autres
+mouvements (casse, périmés, inventaire) et chaque mouvement, avec la date, le
+lot et la personne. Le stock affiché est exactement la somme de ces lignes.
 
 À partir de là, l'officine tourne. Le reste — clients à crédit, livraisons,
 rappels WhatsApp, encaissement Mobile Money — s'ajoute quand vous en avez

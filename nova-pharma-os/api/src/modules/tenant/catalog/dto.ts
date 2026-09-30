@@ -4,8 +4,11 @@ import {
 } from 'class-validator';
 
 export class CreateProductDto {
-  @ApiProperty({ example: 'PARA-500-CP20' })
-  @IsString() @MinLength(1) sku!: string;
+  @ApiPropertyOptional({
+    example: 'PARA-500-CP20',
+    description: 'Référence interne ; tirée du nom si elle est laissée vide.',
+  })
+  @IsOptional() @IsString() @MinLength(1) sku?: string;
 
   @ApiProperty({ example: 'Paracétamol 500 mg' })
   @IsString() @MinLength(2) name!: string;

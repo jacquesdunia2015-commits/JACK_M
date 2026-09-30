@@ -246,4 +246,9 @@ export const rn: Dictionnaire = {
   'peremption.a_surveiller': 'Vyo kuraba',
   'peremption.eloignee': 'Itarike ya kure',
   'peremption.regle': 'Ibara ry\'itarike y\'iherezo iri hafi: icunga mu gihe co kuburira c\'igicuruzwa (imisi 90 nk\'ibisanzwe), umuhondo mu gihe gikubye kabiri, umutuku itarike imaze kurenga.',
+  'stock.enregistrer_achat': 'Andika ivyaguzwe (kwinjiza mu bubiko)',
+  'stock.aide_saisie': 'Ivyadandajwe vyandikirwa kuri kesi:',
+  'stock.ajouter_produit': 'Ongerako igicuruzwa',
+  'stock.achete_30j': 'Vyaguzwe (imisi 30)',
+  'stock.vendu_30j': 'Vyadandajwe (imisi 30)',
 };

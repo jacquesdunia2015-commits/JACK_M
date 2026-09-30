@@ -246,4 +246,9 @@ export const sw: Dictionnaire = {
   'peremption.a_surveiller': 'Ya kuangaliwa',
   'peremption.eloignee': 'Tarehe ya mbali',
   'peremption.regle': 'Rangi ya tarehe ya mwisho iliyo karibu zaidi: machungwa ndani ya muda wa tahadhari wa bidhaa (siku 90 kwa kawaida), njano ndani ya mara mbili ya muda huo, nyekundu tarehe ikishapita.',
+  'stock.enregistrer_achat': 'Rekodi ununuzi (kuingiza stoo)',
+  'stock.aide_saisie': 'Mauzo hurekodiwa kwenye kasha:',
+  'stock.ajouter_produit': 'Ongeza bidhaa',
+  'stock.achete_30j': 'Zilizonunuliwa (siku 30)',
+  'stock.vendu_30j': 'Zilizouzwa (siku 30)',
 };

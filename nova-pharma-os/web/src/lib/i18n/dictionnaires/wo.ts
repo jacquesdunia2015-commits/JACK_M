@@ -246,4 +246,9 @@ export const wo: Dictionnaire = {
   'peremption.a_surveiller': 'Ñu wara ko topp',
   'peremption.eloignee': 'Bés bu sore',
   'peremption.regle': 'Melo bés bi gëna jege ci jeexital: oraas ci biir diiru artu bu produit bi (90 fan), mboq ci biir ñaari yoon diir boobu, xonq su bés bi weesoo.',
+  'stock.enregistrer_achat': 'Bindal jënd (dugal ci stock)',
+  'stock.aide_saisie': 'Jaay yi ñu ngi leen di bind ci kees bi:',
+  'stock.ajouter_produit': 'Yokk benn produit',
+  'stock.achete_30j': 'Jënd (30 fan)',
+  'stock.vendu_30j': 'Jaay (30 fan)',
 };

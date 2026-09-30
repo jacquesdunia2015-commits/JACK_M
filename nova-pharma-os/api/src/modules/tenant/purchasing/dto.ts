@@ -63,3 +63,25 @@ export class CreateReceiptDto {
   })
   @IsOptional() @IsBoolean() validate?: boolean;
 }
+
+/**
+ * Entrée en stock d'un achat, sans commande préalable : ce que la pharmacie
+ * a acheté, en quelle quantité, à quel prix. Le fournisseur est facultatif —
+ * un achat au marché ou chez un confrère n'en a pas toujours.
+ */
+export class StockEntryDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() branchId?: string;
+
+  @ApiPropertyOptional({ description: 'Fournisseur ; « achats divers » si absent.' })
+  @IsOptional() @IsString() supplierId?: string;
+
+  @ApiPropertyOptional() @IsOptional() @IsString() supplierInvoiceNumber?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() receivedDate?: string;
+  @ApiPropertyOptional({ description: "Clé d'idempotence : un double clic n'entre pas deux fois." })
+  @IsOptional() @IsString() idempotencyKey?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() notes?: string;
+
+  @ApiProperty({ type: [ReceiptLineDto] })
+  @IsArray() @ArrayMinSize(1) @ValidateNested({ each: true }) @Type(() => ReceiptLineDto)
+  lines!: ReceiptLineDto[];
+}

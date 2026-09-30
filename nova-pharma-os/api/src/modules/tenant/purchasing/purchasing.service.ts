@@ -5,7 +5,7 @@ import { RequestContext } from '../../../common/database/request-context';
 import { BusinessRuleException } from '../../../common/http/exceptions';
 import { NumberingService } from '../../../common/numbering/numbering.service';
 import { StockService } from '../inventory/stock.service';
-import { CreatePurchaseOrderDto, CreateReceiptDto } from './dto';
+import { CreatePurchaseOrderDto, CreateReceiptDto, StockEntryDto } from './dto';
 
 @Injectable()
 export class PurchasingService {
@@ -15,6 +15,37 @@ export class PurchasingService {
     private readonly numbering: NumberingService,
     private readonly audit: AuditService,
   ) {}
+
+  // -------------------------------------------------------------------
+  // Entrée en stock d'un achat, pour tous les forfaits
+  // -------------------------------------------------------------------
+  /**
+   * Même chemin qu'une réception — lots, péremption, coût, catalogue du
+   * fournisseur — sans exiger de commande ni de fournisseur connu. Sans
+   * fournisseur, l'achat est rattaché à une fiche « achats divers », créée
+   * au premier besoin, pour que chaque entrée garde une origine.
+   */
+  async receiveStock(ctx: RequestContext, dto: StockEntryDto) {
+    const supplierId = dto.supplierId || (await this.fournisseurDivers(ctx));
+    return this.receive(ctx, { ...dto, supplierId, validate: true });
+  }
+
+  private async fournisseurDivers(ctx: RequestContext): Promise<string> {
+    return this.db.transaction(ctx, async (tx) => {
+      await tx.query(
+        `INSERT INTO suppliers (organization_id, code, name, kind, currency, notes)
+         VALUES ($1, 'DIVERS', 'Achats divers (sans fournisseur précisé)', 'wholesaler',
+                 (SELECT currency FROM organizations WHERE id = $1),
+                 'Créé automatiquement pour les achats saisis sans fournisseur.')
+         ON CONFLICT (organization_id, code) DO NOTHING`,
+        [ctx.organizationId],
+      );
+      const divers = await tx.oneOrFail<{ id: string }>(
+        `SELECT id FROM suppliers WHERE code = 'DIVERS'`,
+      );
+      return divers.id;
+    });
+  }
 
   // -------------------------------------------------------------------
   // Commandes fournisseur

@@ -54,24 +54,28 @@ export class InventoryService {
                   WHERE pl.expiry_date IS NOT NULL
                     AND pl.expiry_date <= CURRENT_DATE + p.expiry_alert_days), 0)
                   AS expiring_quantity,
-                ventes.quantite AS sales_last_30_days
+                ventes.quantite AS sales_last_30_days,
+                ventes.achats AS purchases_last_30_days
            FROM products p
            LEFT JOIN stock_items si ON si.product_id = p.id
                 AND ($1::uuid IS NULL OR si.branch_id = $1)
            LEFT JOIN product_lots pl ON pl.id = si.lot_id
-           -- Ventes nettes des retours sur la période observée : c'est le
-           -- rythme réel de sortie, qui sert à estimer la couverture.
+           -- Sur la période observée : les ventes nettes des retours, rythme
+           -- réel de sortie qui sert à estimer la couverture, et les achats
+           -- entrés en stock.
            LEFT JOIN LATERAL (
-             SELECT COALESCE(-sum(sm.quantity), 0) AS quantite
+             SELECT COALESCE(-sum(sm.quantity) FILTER (
+                      WHERE sm.kind IN ('sale', 'sale_return')), 0) AS quantite,
+                    COALESCE(sum(sm.quantity) FILTER (WHERE sm.kind = 'reception'), 0) AS achats
                FROM stock_movements sm
               WHERE sm.product_id = p.id
-                AND sm.kind IN ('sale', 'sale_return')
+                AND sm.kind IN ('sale', 'sale_return', 'reception')
                 AND sm.occurred_at >= now() - make_interval(days => $3::integer)
                 AND ($1::uuid IS NULL OR sm.branch_id = $1)
            ) ventes ON true
           WHERE p.deleted_at IS NULL AND p.is_active
             AND ($2::text IS NULL OR p.name ILIKE '%'||$2||'%' OR p.sku ILIKE '%'||$2||'%')
-          GROUP BY p.id, ventes.quantite
+          GROUP BY p.id, ventes.quantite, ventes.achats
           ORDER BY p.name LIMIT 500`,
         [branchId ?? null, filters.search ?? null, JOURS_CONSOMMATION],
       ),
@@ -182,6 +186,44 @@ export class InventoryService {
         ],
       ),
     );
+  }
+
+  /**
+   * Fiche de stock d'un produit : combien on en a acheté, vendu, corrigé,
+   * depuis toujours et sur les 30 derniers jours, puis chaque mouvement.
+   * Le stock actuel est la somme exacte de ces mouvements.
+   */
+  async productHistory(ctx: RequestContext, productId: string, branchId?: string) {
+    const branche = branchId ?? ctx.branchId ?? null;
+    const [resume, mouvements] = await Promise.all([
+      this.db.readTransaction(ctx, async (tx) => {
+        const produit = await tx.oneOrFail(
+          `SELECT id, sku, name, unit, sale_price, cost_price, reorder_point, has_expiry
+             FROM products WHERE id = $1 AND deleted_at IS NULL`,
+          [productId],
+          'Produit introuvable.',
+        );
+        const totaux = await tx.oneOrFail(
+          `SELECT COALESCE(sum(quantity) FILTER (WHERE kind = 'reception'), 0) AS purchased,
+                  COALESCE(-sum(quantity) FILTER (WHERE kind IN ('sale', 'sale_return')), 0) AS sold,
+                  COALESCE(sum(quantity) FILTER (
+                    WHERE kind NOT IN ('reception', 'sale', 'sale_return')), 0) AS other,
+                  COALESCE(sum(quantity) FILTER (
+                    WHERE kind = 'reception' AND occurred_at >= now() - interval '30 days'), 0)
+                    AS purchased_30_days,
+                  COALESCE(-sum(quantity) FILTER (
+                    WHERE kind IN ('sale', 'sale_return') AND occurred_at >= now() - interval '30 days'), 0)
+                    AS sold_30_days,
+                  COALESCE(sum(quantity), 0) AS on_hand
+             FROM stock_movements
+            WHERE product_id = $1 AND ($2::uuid IS NULL OR branch_id = $2)`,
+          [productId, branche],
+        );
+        return { ...produit, totals: totaux };
+      }),
+      this.movements(ctx, { productId, branchId: branche ?? undefined, limit: 200 }),
+    ]);
+    return { ...resume, movements: mouvements };
   }
 
   // -------------------------------------------------------------------

@@ -1,3 +1,5 @@
+import Link from 'next/link';
+import FormulaireProduit from '@/components/FormulaireProduit';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { money, quantity } from '@/lib/format';
@@ -35,6 +37,13 @@ export default async function PageCatalogue({
         <p>{data.pagination.total} référence(s) au catalogue.</p>
       </div>
 
+      <section className="card" id="nouveau">
+        <details className="depliable">
+          <summary>Ajouter un produit ou un médicament</summary>
+          <FormulaireProduit />
+        </details>
+      </section>
+
       <section className="card">
         <form style={{ marginBottom: '1rem', maxWidth: 400 }}>
           <input
@@ -68,7 +77,7 @@ export default async function PageCatalogue({
                   return (
                     <tr key={p.id}>
                       <td>
-                        <strong>{p.name}</strong>
+                        <Link href={`/pharmacie/stock/${p.id}`}><strong>{p.name}</strong></Link>
                         {p.dosage ? ` ${p.dosage}` : ''}
                         <div className="small muted">
                           <span className="mono">{p.sku}</span>

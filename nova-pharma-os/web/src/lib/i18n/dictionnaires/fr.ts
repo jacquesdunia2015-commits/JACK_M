@@ -263,6 +263,11 @@ export const fr = {
   'peremption.a_surveiller': 'À surveiller',
   'peremption.eloignee': 'Date éloignée',
   'peremption.regle': 'Couleur de la date d\'expiration la plus proche : orange dans le délai d\'alerte du produit (90 jours par défaut), jaune sous le double de ce délai, rouge une fois la date passée.',
+  'stock.enregistrer_achat': 'Enregistrer un achat (entrée en stock)',
+  'stock.aide_saisie': 'Les ventes se saisissent à la caisse :',
+  'stock.ajouter_produit': 'Ajouter un produit',
+  'stock.achete_30j': 'Acheté (30 j)',
+  'stock.vendu_30j': 'Vendu (30 j)',
 } as const;
 
 export type CleTraduction = keyof typeof fr;

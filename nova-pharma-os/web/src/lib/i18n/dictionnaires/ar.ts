@@ -246,4 +246,9 @@ export const ar: Dictionnaire = {
   'peremption.a_surveiller': 'تحت المراقبة',
   'peremption.eloignee': 'تاريخ بعيد',
   'peremption.regle': 'لون أقرب تاريخ انتهاء: برتقالي ضمن مهلة التنبيه للمنتج (90 يومًا افتراضيًا)، أصفر ضمن ضعف هذه المهلة، أحمر بعد مرور التاريخ.',
+  'stock.enregistrer_achat': 'تسجيل عملية شراء (إدخال إلى المخزون)',
+  'stock.aide_saisie': 'تُسجَّل المبيعات في الصندوق:',
+  'stock.ajouter_produit': 'إضافة منتج',
+  'stock.achete_30j': 'المشترى (30 يومًا)',
+  'stock.vendu_30j': 'المباع (30 يومًا)',
 };
