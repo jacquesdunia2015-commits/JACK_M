@@ -1,9 +1,13 @@
 import Etiquette from '@/components/Etiquette';
+import Peremption from '@/components/Peremption';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, money, quantity } from '@/lib/format';
 import { traduire } from '@/lib/i18n';
 import { estNiveau, LIBELLE_NIVEAU, NIVEAUX, NiveauStock } from '@/lib/niveau-stock';
+import {
+  CLASSE_PEREMPTION, CLE_PEREMPTION, estNiveauPeremption, NIVEAUX_PEREMPTION, NiveauPeremption,
+} from '@/lib/peremption';
 
 interface LigneStock {
   product_id: string; sku: string; name: string; unit: string;
@@ -11,6 +15,7 @@ interface LigneStock {
   stock_value: string; lots: string; nearest_expiry: string | null;
   expired_quantity: string;
   sales_last_30_days: string; stock_level: NiveauStock; days_of_cover: number | null;
+  expiry_level: NiveauPeremption | null; days_to_expiry: number | null;
 }
 
 interface Alerte {
@@ -22,10 +27,11 @@ interface Alerte {
 export default async function PageStock({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; niveau?: string }>;
+  searchParams: Promise<{ q?: string; niveau?: string; peremption?: string }>;
 }) {
-  const { q, niveau } = await searchParams;
+  const { q, niveau, peremption } = await searchParams;
   const filtre = estNiveau(niveau) ? niveau : null;
+  const filtrePeremption = estNiveauPeremption(peremption) ? peremption : null;
   const { t } = await traduire();
   const requete = q ? `?search=${encodeURIComponent(q)}` : '';
 
@@ -38,15 +44,23 @@ export default async function PageStock({
   const compte = Object.fromEntries(
     NIVEAUX.map((n) => [n, stock.filter((l) => l.stock_level === n).length]),
   ) as Record<NiveauStock, number>;
+  const comptePeremption = Object.fromEntries(
+    NIVEAUX_PEREMPTION.map((n) => [n, stock.filter((l) => l.expiry_level === n).length]),
+  ) as Record<NiveauPeremption, number>;
+  const libellesPeremption = Object.fromEntries(
+    NIVEAUX_PEREMPTION.map((n) => [n, t(CLE_PEREMPTION[n])]),
+  ) as Record<NiveauPeremption, string>;
   // Le plus urgent en tête : un produit en rupture ne doit pas se perdre
   // entre deux produits bien approvisionnés.
   const lignes = stock
     .filter((l) => !filtre || l.stock_level === filtre)
+    .filter((l) => !filtrePeremption || l.expiry_level === filtrePeremption)
     .sort((a, b) => NIVEAUX.indexOf(a.stock_level) - NIVEAUX.indexOf(b.stock_level));
-  const lien = (n: NiveauStock | null) => {
+  const lien = (n: NiveauStock | null, p: NiveauPeremption | null = filtrePeremption) => {
     const params = new URLSearchParams();
     if (q) params.set('q', q);
     if (n) params.set('niveau', n);
+    if (p) params.set('peremption', p);
     const chaine = params.toString();
     return chaine ? `?${chaine}` : '?';
   };
@@ -106,6 +120,7 @@ export default async function PageStock({
         <form style={{ marginBottom: '1rem', maxWidth: 360 }}>
           <input name="q" defaultValue={q ?? ''} placeholder={`${t('caisse.rechercher_produit')}…`} />
           {filtre && <input type="hidden" name="niveau" value={filtre} />}
+          {filtrePeremption && <input type="hidden" name="peremption" value={filtrePeremption} />}
         </form>
 
         <nav className="niveaux" aria-label={t('stock.niveau')}>
@@ -120,6 +135,19 @@ export default async function PageStock({
           ))}
         </nav>
         <p className="small muted" style={{ marginTop: 0 }}>{t('stock.regle')}</p>
+
+        <nav className="niveaux" aria-label={t('peremption.titre')}>
+          <a href={lien(filtre, null)} className={filtrePeremption ? '' : 'actif'}>
+            {t('peremption.titre')} : {t('stock.tous')}
+          </a>
+          {NIVEAUX_PEREMPTION.map((n) => (
+            <a key={n} href={lien(filtre, n)} className={filtrePeremption === n ? 'actif' : ''}>
+              <span className={`niveau ${CLASSE_PEREMPTION[n]}`} aria-hidden="true" />
+              {libellesPeremption[n]} <strong>{comptePeremption[n]}</strong>
+            </a>
+          ))}
+        </nav>
+        <p className="small muted" style={{ marginTop: 0 }}>{t('peremption.regle')}</p>
 
         {lignes.length === 0 ? (
           <Vide message={t('general.aucune_donnee')} />
@@ -164,7 +192,15 @@ export default async function PageStock({
                       <td className="num">{quantity(l.available)}</td>
                       <td className="num muted">{quantity(l.reorder_point)}</td>
                       <td className="num">{l.lots}</td>
-                      <td className="num">{date(l.nearest_expiry)}</td>
+                      <td className="num small">
+                        <Peremption
+                          date={l.nearest_expiry}
+                          niveau={l.expiry_level}
+                          jours={l.days_to_expiry}
+                          libelles={libellesPeremption}
+                          suffixeJours={t('stock.jours_abrege')}
+                        />
+                      </td>
                       <td className="num">{money(l.stock_value)}</td>
                     </tr>
                   );

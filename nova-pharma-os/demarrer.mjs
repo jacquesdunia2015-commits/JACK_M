@@ -203,6 +203,11 @@ async function demarrerBase() {
     password: MOT_DE_PASSE_BASE,
     port: PORT_BASE,
     persistent: true,
+    // UTF-8, comme chez un hébergeur : sans cela, la base s'initialise en
+    // SQL_ASCII et les recherches se trompent sur les lettres accentuées
+    // (« metro » ne trouverait pas « Métronidazole »). Le classement « C »
+    // existe sur tous les systèmes, Windows compris.
+    initdbFlags: ['--encoding=UTF8', '--locale=C'],
     onLog: () => {},
     onError: () => {},
   });

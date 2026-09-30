@@ -1,3 +1,4 @@
+import { niveauPeremption } from '../src/common/niveau-peremption';
 import { evaluerStock } from '../src/modules/tenant/inventory/niveau-stock';
 import { Harness, Session, uniqueSlug } from './harness';
 
@@ -49,6 +50,24 @@ describe('Niveau de stock', () => {
     });
   });
 
+  describe('couleur de la péremption', () => {
+    it('rouge passée, orange dans le délai, jaune sous le double, vert au-delà', () => {
+      expect(niveauPeremption(-1)).toBe('perime');
+      expect(niveauPeremption(0)).toBe('proche');
+      expect(niveauPeremption(90)).toBe('proche');
+      expect(niveauPeremption(91)).toBe('a_surveiller');
+      expect(niveauPeremption(180)).toBe('a_surveiller');
+      expect(niveauPeremption(181)).toBe('eloignee');
+      expect(niveauPeremption(null)).toBeNull();
+    });
+
+    it('suit le délai d’alerte propre au produit', () => {
+      expect(niveauPeremption(40, 30)).toBe('a_surveiller');
+      expect(niveauPeremption(61, 30)).toBe('eloignee');
+      expect(niveauPeremption(100, 0)).toBe('a_surveiller'); // délai absent : 90 jours
+    });
+  });
+
   describe('API', () => {
     const harness = new Harness();
     const PASSWORD = 'Pharmacie2026!';
@@ -95,6 +114,9 @@ describe('Niveau de stock', () => {
             products: [
               produit('NIV-RUPT'), produit('NIV-VITE'), produit('NIV-MOYEN'),
               produit('NIV-SEUIL', 40), produit('NIV-CALME'),
+              { sku: 'EXP-PROCHE', name: 'Produit EXP-PROCHE', salePrice: 1, costPrice: 0.5 },
+              { sku: 'EXP-SURV', name: 'Produit EXP-SURV', salePrice: 1, costPrice: 0.5 },
+              { sku: 'EXP-LOIN', name: 'Produit EXP-LOIN', salePrice: 1, costPrice: 0.5 },
             ],
           },
           pharmacy.token,
@@ -129,6 +151,26 @@ describe('Niveau de stock', () => {
       await vendre('NIV-MOYEN', 60);  // reste 25, 2 par jour : 12 jours
       await entrer('NIV-SEUIL', 30);  // seuil 40, aucune vente
       await entrer('NIV-CALME', 50);  // ni seuil ni vente
+
+      // Lots périssables : 30, 120 et 400 jours avant expiration.
+      const dansNJours = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+      const fournisseur = await harness
+        .post('/purchasing/suppliers', { name: 'Dépôt Test', phone: '0990000600' }, pharmacy.token)
+        .expect(201);
+      await harness
+        .post(
+          '/purchasing/receipts',
+          {
+            supplierId: fournisseur.body.id,
+            lines: [
+              { productId: ids['EXP-PROCHE'], lotNumber: 'L1', expiryDate: dansNJours(30), quantity: 50, unitCost: 0.5 },
+              { productId: ids['EXP-SURV'], lotNumber: 'L2', expiryDate: dansNJours(120), quantity: 50, unitCost: 0.5 },
+              { productId: ids['EXP-LOIN'], lotNumber: 'L3', expiryDate: dansNJours(400), quantity: 50, unitCost: 0.5 },
+            ],
+          },
+          pharmacy.token,
+        )
+        .expect(201);
     }, 90_000);
 
     afterAll(async () => {
@@ -152,6 +194,18 @@ describe('Niveau de stock', () => {
       expect(seuil.days_of_cover).toBeNull();
 
       expect((await niveauDe('NIV-CALME')).stock_level).toBe('suffisant');
+    });
+
+    it('colore la péremption la plus proche de chaque produit', async () => {
+      expect((await niveauDe('EXP-PROCHE')).expiry_level).toBe('proche');
+      expect((await niveauDe('EXP-PROCHE')).days_to_expiry).toBe(30);
+      expect((await niveauDe('EXP-SURV')).expiry_level).toBe('a_surveiller');
+      expect((await niveauDe('EXP-LOIN')).expiry_level).toBe('eloignee');
+      expect((await niveauDe('NIV-CALME')).expiry_level).toBeNull(); // sans date
+
+      const bord = await harness.get('/reports/dashboard', pharmacy.token).expect(200);
+      const lot = bord.body.expiringSoon.find((l: { sku: string }) => l.sku === 'EXP-PROCHE');
+      expect(lot.expiry_level).toBe('proche');
     });
 
     it('« à traiter » écarte les produits au vert', async () => {

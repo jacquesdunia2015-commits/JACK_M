@@ -240,4 +240,10 @@ export const pt: Dictionnaire = {
   'stock.tous': 'Todos',
   'stock.regle': 'Cor estimada a partir das vendas dos últimos 30 dias e do ponto de encomenda: laranja se restar menos de uma semana de vendas, amarelo se restarem menos de duas semanas.',
   'nav.fournisseurs': 'Fornecedores',
+  'peremption.titre': 'Validade',
+  'peremption.perime': 'Vencido',
+  'peremption.proche': 'Vence em breve',
+  'peremption.a_surveiller': 'A vigiar',
+  'peremption.eloignee': 'Data distante',
+  'peremption.regle': 'Cor da data de validade mais próxima: laranja dentro do prazo de alerta do produto (90 dias por defeito), amarelo dentro do dobro desse prazo, vermelho depois de passada a data.',
 };

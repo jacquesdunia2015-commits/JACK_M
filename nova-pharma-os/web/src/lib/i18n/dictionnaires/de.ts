@@ -240,4 +240,10 @@ export const de: Dictionnaire = {
   'stock.tous': 'Alle',
   'stock.regle': 'Farbe geschätzt aus den Verkäufen der letzten 30 Tage und dem Meldebestand: orange bei weniger als einer Woche Verkauf, gelb bei weniger als zwei Wochen.',
   'nav.fournisseurs': 'Lieferanten',
+  'peremption.titre': 'Verfall',
+  'peremption.perime': 'Abgelaufen',
+  'peremption.proche': 'Läuft bald ab',
+  'peremption.a_surveiller': 'Beobachten',
+  'peremption.eloignee': 'Fernes Datum',
+  'peremption.regle': 'Farbe des nächsten Verfallsdatums: orange innerhalb der Warnfrist des Produkts (standardmäßig 90 Tage), gelb innerhalb der doppelten Frist, rot nach Ablauf des Datums.',
 };

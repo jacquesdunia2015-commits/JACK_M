@@ -184,6 +184,85 @@ describe('Fournisseurs', () => {
       .expect(200);
   });
 
+  it("enregistre les dates de fabrication et d'expiration de chaque produit", async () => {
+    const res = await harness
+      .post(
+        `/purchasing/suppliers/${kampala}/products`,
+        {
+          productName: 'Métronidazole 250 mg', presentation: 'Boîte de 1000', price: 12,
+          manufactureDate: '2026-01-15', expiryDate: '2029-01-14',
+        },
+        pharmacie.token,
+      )
+      .expect(201);
+    let fiche = await harness.get(`/purchasing/suppliers/${kampala}`, pharmacie.token).expect(200);
+    let ligne = fiche.body.products.find((p: { id: string }) => p.id === res.body.id);
+    expect(ligne).toMatchObject({ manufacture_date: '2026-01-15', expiry_date: '2029-01-14', is_expired: false });
+
+    // Expiration avant fabrication, fabrication future, date mal écrite : refusées.
+    const avant = await harness
+      .post(
+        `/purchasing/suppliers/${kampala}/products`,
+        { productName: 'Ibuprofène 400 mg', price: 3, manufactureDate: '2026-05-01', expiryDate: '2026-04-01' },
+        pharmacie.token,
+      )
+      .expect(400);
+    expect(avant.body.message).toContain('expiration doit suivre');
+    await harness
+      .post(
+        `/purchasing/suppliers/${kampala}/products`,
+        { productName: 'Ibuprofène 400 mg', price: 3, manufactureDate: '2099-01-01' },
+        pharmacie.token,
+      )
+      .expect(400);
+    await harness
+      .post(
+        `/purchasing/suppliers/${kampala}/products`,
+        { productName: 'Ibuprofène 400 mg', price: 3, expiryDate: '14/01/2029' },
+        pharmacie.token,
+      )
+      .expect(400);
+
+    // Modifier une date, en vider une, ou une modification incohérente.
+    await harness
+      .patch(`/purchasing/suppliers/${kampala}/products/${res.body.id}`, { expiryDate: '2025-12-31' }, pharmacie.token)
+      .expect(400);
+    await harness
+      .patch(
+        `/purchasing/suppliers/${kampala}/products/${res.body.id}`,
+        { expiryDate: '2025-12-31', clearManufactureDate: true },
+        pharmacie.token,
+      )
+      .expect(200);
+    fiche = await harness.get(`/purchasing/suppliers/${kampala}`, pharmacie.token).expect(200);
+    ligne = fiche.body.products.find((p: { id: string }) => p.id === res.body.id);
+    expect(ligne).toMatchObject({
+      manufacture_date: null, expiry_date: '2025-12-31', is_expired: true, expiry_level: 'perime',
+    });
+  });
+
+  it("une offre périmée n'est jamais « la moins chère »", async () => {
+    // Shalom propose le même article plus cher, mais pas périmé.
+    await harness
+      .post(
+        `/purchasing/suppliers/${shalom}/products`,
+        { productName: 'Métronidazole 250 mg', presentation: 'Boîte de 1000', price: 15, expiryDate: '2028-06-30' },
+        pharmacie.token,
+      )
+      .expect(201);
+    const res = await harness
+      .get('/purchasing/suppliers/price-comparison?search=metro', pharmacie.token)
+      .expect(200);
+    const offres = res.body.filter((o: { name: string }) => o.name.startsWith('Métronidazole'));
+    expect(offres.map((o: { supplier_name: string; is_cheapest: boolean; is_expired: boolean }) =>
+      [o.supplier_name, o.is_cheapest, o.is_expired])).toEqual([
+      ['Dépôt pharmaceutique Shalom', true, false],
+      ['Kampala Pharma Distributors', false, true],
+    ]);
+    expect(offres[0].expiry_date).toBe('2028-06-30');
+    expect(offres.map((o: { expiry_level: string }) => o.expiry_level)).toEqual(['eloignee', 'perime']);
+  });
+
   it('Starter : fournisseurs oui, commandes non ; un vendeur ne voit pas les fournisseurs', async () => {
     // Module hors forfait : 402, l'invitation à changer de forfait.
     await harness.get('/purchasing/orders', pharmacie.token).expect(402);
@@ -223,7 +302,7 @@ describe('Fournisseurs', () => {
     await harness
       .post(
         '/purchasing/receipts',
-        { supplierId: fournisseur.body.id, lines: [{ productId: sro, quantity: 50, unitCost: 0.27 }] },
+        { supplierId: fournisseur.body.id, lines: [{ productId: sro, quantity: 50, unitCost: 0.27, expiryDate: '2028-09-30' }] },
         pro.token,
       )
       .expect(201);
@@ -231,5 +310,7 @@ describe('Fournisseurs', () => {
     expect(fiche.body.products).toHaveLength(1);
     expect(Number(fiche.body.products[0].price)).toBe(0.27);
     expect(fiche.body.products[0].is_available).toBe(true);
+    // La date d'expiration du lot reçu est reprise.
+    expect(fiche.body.products[0].expiry_date).toBe('2028-09-30');
   });
 });

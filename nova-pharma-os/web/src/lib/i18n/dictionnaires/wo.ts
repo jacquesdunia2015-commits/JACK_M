@@ -240,4 +240,10 @@ export const wo: Dictionnaire = {
   'stock.tous': 'Lépp',
   'stock.regle': 'Melo bi dañu koy natt ci jaay yi ci 30 fan yi weesu ak dayo bi ñuy jëndaat: oraas su desee lu yées benn ayu-bés ci jaay, mboq su desee lu yées ñaari ayu-bés.',
   'nav.fournisseurs': 'Jaaykat yi',
+  'peremption.titre': 'Jeexital',
+  'peremption.perime': 'Jeex na',
+  'peremption.proche': 'Dina jeex ci kanam',
+  'peremption.a_surveiller': 'Ñu wara ko topp',
+  'peremption.eloignee': 'Bés bu sore',
+  'peremption.regle': 'Melo bés bi gëna jege ci jeexital: oraas ci biir diiru artu bu produit bi (90 fan), mboq ci biir ñaari yoon diir boobu, xonq su bés bi weesoo.',
 };

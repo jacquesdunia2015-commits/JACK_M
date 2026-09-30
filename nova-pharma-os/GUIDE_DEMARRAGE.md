@@ -231,21 +231,30 @@ le même dépôt saisi deux fois.
 
 **2. Notez ce qu'il propose et à quel prix.** Sur la fiche du fournisseur,
 *Produits et prix* : le nom du produit ou du médicament, sa présentation
-(« boîte de 100 gélules »), le prix, la devise, la quantité minimum. Le
+(« boîte de 100 gélules »), le prix, la devise, la quantité minimum, et les
+**dates de fabrication et d'expiration** du lot qu'il vous annonce. Le
 produit n'a pas besoin d'être déjà dans votre catalogue ; s'il y est, choisissez-le
 dans la liste qui s'affiche pendant la frappe.
 
-- Cliquez sur un **prix** pour le modifier : la date du prix se met à jour.
+- **Modifier**, sur une ligne, change le prix et les dates ; la date du prix
+  se met à jour.
+- La date d'expiration prend la même couleur que dans votre stock (voir
+  *Lire les couleurs du stock*). L'application refuse une expiration
+  antérieure à la fabrication, ou une fabrication dans le futur.
 - Cliquez sur **Disponible** / **En rupture** quand le dépôt vous signale un
   manque.
-- À chaque **réception** de marchandise, le prix réellement payé remplace
-  l'ancien, sans rien ressaisir.
+- À chaque **réception** de marchandise, le prix réellement payé et la date
+  d'expiration du lot reçu remplacent les anciens, sans rien ressaisir.
 
 **3. Comparez.** En haut de la page *Fournisseurs*, tapez le nom d'un produit :
 tous les dépôts qui le proposent s'affichent, le moins cher d'abord. **Le moins
-cher de ceux qui l'ont en stock** est surligné en vert — un dépôt en rupture ne
-compte pas, même s'il est moins cher. On ne compare que des prix dans la même
-devise.
+cher de ceux qui l'ont en stock** est surligné en vert — un dépôt en rupture,
+ou dont le produit est **périmé**, ne compte pas, même s'il est moins cher. Les
+dates de fabrication et d'expiration de chaque offre s'affichent à côté du prix :
+à prix égal, préférez la date la plus éloignée. On ne compare que des prix dans
+la même devise.
+
+La recherche ignore les accents : « metro » trouve « Métronidazole ».
 
 Depuis la liste, le numéro de chaque dépôt s'appelle d'un clic, ou ouvre
 WhatsApp pour lui passer commande.
@@ -273,6 +282,25 @@ Pour un produit qui ne s'est pas encore vendu, elle se fie au **seuil** que vous
 avez fixé dans le catalogue ; sans seuil non plus, 5 unités ou moins passent
 en orange et 10 ou moins en jaune. Cliquez sur une couleur, au-dessus du
 tableau, pour n'afficher que ces produits.
+
+### Les couleurs des dates d'expiration
+
+La colonne *Péremption la plus proche* suit la même logique, pour le lot qui
+expire le premier :
+
+| Couleur | Signification | Quand (réglage par défaut) |
+|---|---|---|
+| 🔴 **Rouge — Périmé** | À retirer de la vente | Date passée |
+| 🟠 **Orange — Expire bientôt** | À écouler en priorité, ou à retourner au fournisseur | Dans les **90 jours** |
+| 🟡 **Jaune — À surveiller** | À garder à l'œil | Dans les **180 jours** |
+| 🟢 **Vert — Date éloignée** | Rien à faire | Au-delà |
+
+Les 90 jours peuvent être changés **produit par produit** (délai d'alerte de
+péremption, fixé à l'import du catalogue — l'écran *Catalogue* ne le modifie pas
+encore) : le jaune suit toujours le double de ce délai. Les
+mêmes couleurs apparaissent sur le tableau de bord, dans l'application mobile
+et chez vos fournisseurs. Une seconde rangée de boutons, au-dessus du tableau,
+filtre les produits par couleur de péremption.
 
 ---
 
@@ -576,6 +604,12 @@ redémarrage. Relancez l'application : elle affiche toujours l'adresse du moment
 ### Je veux tout recommencer à zéro
 Supprimez le dossier **`donnees`** qui se trouve dans `nova-pharma-os`, puis
 relancez. Attention : **cela efface toutes les données saisies**.
+
+### La recherche ne trouve pas un mot accentué
+Les bases créées sur votre ordinateur avant la version d'octobre 2026 ne gèrent
+pas bien les accents. Si vous n'y avez saisi que des essais, recommencez à zéro
+(ci-dessus) : la nouvelle base est créée correctement. La version hébergée n'est
+pas concernée.
 
 ---
 

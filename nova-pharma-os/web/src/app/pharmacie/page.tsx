@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import Peremption from '@/components/Peremption';
 import Stat from '@/components/Stat';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
 import { date, money, percent, quantity } from '@/lib/format';
 import { traduire } from '@/lib/i18n';
+import { CLE_PEREMPTION, NIVEAUX_PEREMPTION, NiveauPeremption } from '@/lib/peremption';
 import { readSession } from '@/lib/session';
 
 interface Dashboard {
@@ -17,6 +19,7 @@ interface Dashboard {
   expiringSoon: {
     sku: string; name: string; lot_number: string; expiry_date: string;
     quantity: string; days_left: number; value_at_risk: string;
+    expiry_level: NiveauPeremption | null;
   }[];
 }
 
@@ -24,6 +27,9 @@ export default async function TableauDeBord() {
   const session = await readSession();
   const { t } = await traduire();
   const data = await apiSafe<Dashboard | null>('/reports/dashboard', null);
+  const libellesPeremption = Object.fromEntries(
+    NIVEAUX_PEREMPTION.map((n) => [n, t(CLE_PEREMPTION[n])]),
+  ) as Record<NiveauPeremption, string>;
 
   if (!data) {
     return (
@@ -177,13 +183,13 @@ export default async function TableauDeBord() {
                       <td className="mono small">{l.lot_number}</td>
                       <td className="num">{quantity(l.quantity)}</td>
                       <td className="num">
-                        {date(l.expiry_date)}
-                        <br />
-                        <span
-                          className={`small ${l.days_left < 30 ? 'tag danger' : 'muted'}`}
-                        >
-                          {l.days_left} {t('general.jours')}
-                        </span>
+                        <Peremption
+                          date={l.expiry_date}
+                          niveau={l.expiry_level}
+                          jours={l.days_left}
+                          libelles={libellesPeremption}
+                          suffixeJours={t('stock.jours_abrege')}
+                        />
                       </td>
                       <td className="num">{money(l.value_at_risk)}</td>
                     </tr>

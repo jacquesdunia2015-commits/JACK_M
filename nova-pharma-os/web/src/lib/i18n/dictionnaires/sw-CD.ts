@@ -246,4 +246,10 @@ export const swCD: Dictionnaire = {
   'stock.tous': 'Zote',
   'stock.regle': 'Rangi inakadiriwa kufuatana na mauzo ya siku 30 zilizopita na kiwango cha kuagiza tena: machungwa kama imebakia mauzo ya chini ya juma moja, manjano chini ya majuma mbili.',
   'nav.fournisseurs': 'Wasambazaji',
+  'peremption.titre': 'Mwisho wa matumizi',
+  'peremption.perime': 'Imepita tarehe',
+  'peremption.proche': 'Inakwisha hivi karibuni',
+  'peremption.a_surveiller': 'Ya kuchunga',
+  'peremption.eloignee': 'Tarehe ya mbali',
+  'peremption.regle': 'Rangi ya tarehe ya mwisho iliyo karibu zaidi: machungwa ndani ya muda wa onyo wa bidhaa (siku 90 kwa kawaida), manjano ndani ya mara mbili ya muda huo, nyekundu tarehe ikisha pita.',
 };

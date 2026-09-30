@@ -4,6 +4,7 @@ import { DatabaseService } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
 import { BusinessRuleException } from '../../../common/http/exceptions';
 import { NumberingService } from '../../../common/numbering/numbering.service';
+import { niveauPeremption } from '../../../common/niveau-peremption';
 import { evaluerStock, JOURS_CONSOMMATION } from './niveau-stock';
 import { StockService } from './stock.service';
 
@@ -13,6 +14,8 @@ interface PositionStock {
   reorder_point: string;
   expiring_quantity: string;
   sales_last_30_days: string;
+  days_to_expiry: number | null;
+  expiry_alert_days: number;
   [colonne: string]: unknown;
 }
 
@@ -42,6 +45,8 @@ export class InventoryService {
                 COALESCE(sum(si.quantity * si.average_cost), 0) AS stock_value,
                 count(DISTINCT si.lot_id) FILTER (WHERE si.quantity > 0) AS lots,
                 min(pl.expiry_date) FILTER (WHERE si.quantity > 0) AS nearest_expiry,
+                min(pl.expiry_date) FILTER (WHERE si.quantity > 0) - CURRENT_DATE
+                  AS days_to_expiry,
                 COALESCE(sum(si.quantity) FILTER (
                   WHERE pl.expiry_date IS NOT NULL AND pl.expiry_date < CURRENT_DATE), 0)
                   AS expired_quantity,
@@ -81,6 +86,8 @@ export class InventoryService {
       return {
         ...ligne,
         stock_level: evaluation.niveau,
+        // Couleur de la péremption la plus proche parmi les lots en stock.
+        expiry_level: niveauPeremption(ligne.days_to_expiry, ligne.expiry_alert_days),
         days_of_cover:
           evaluation.couvertureJours === null ? null : Math.floor(evaluation.couvertureJours),
       };

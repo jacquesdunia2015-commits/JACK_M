@@ -240,4 +240,10 @@ export const ln: Dictionnaire = {
   'stock.tous': 'Nyonso',
   'stock.regle': 'Langi ezwami na biteki ya mikolo 30 oyo eleki mpe na ndelo ya kosomba lisusu: orange soki etikali biteki ya mikolo moke koleka poso moko, jaune soki moke koleka poso mibale.',
   'nav.fournisseurs': 'Batekisi',
+  'peremption.titre': 'Mokolo ya kosila',
+  'peremption.perime': 'Esili',
+  'peremption.proche': 'Ekosila noki',
+  'peremption.a_surveiller': 'Ya kokengela',
+  'peremption.eloignee': 'Mokolo ya mosika',
+  'peremption.regle': 'Langi ya mokolo ya kosila oyo ekomi pene: orange na kati ya ntango ya likebi ya eloko (mikolo 90), jaune na kati ya ntango yango mbala mibale, motane soki mokolo eleki.',
 };

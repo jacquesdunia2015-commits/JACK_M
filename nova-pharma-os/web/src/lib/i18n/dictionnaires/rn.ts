@@ -240,4 +240,10 @@ export const rn: Dictionnaire = {
   'stock.tous': 'Vyose',
   'stock.regle': 'Ibara rigenwa hisunzwe ivyadandajwe mu misi 30 iheze n\'urugero rwo gusubira kurangura: icunga nimba hasigaye ivyo kudandaza munsi y\'indwi imwe, umuhondo munsi y\'indwi zibiri.',
   'nav.fournisseurs': 'Abadandaza',
+  'peremption.titre': 'Itarike y\'iherezo',
+  'peremption.perime': 'Vyararenganye',
+  'peremption.proche': 'Birahera vuba',
+  'peremption.a_surveiller': 'Vyo kuraba',
+  'peremption.eloignee': 'Itarike ya kure',
+  'peremption.regle': 'Ibara ry\'itarike y\'iherezo iri hafi: icunga mu gihe co kuburira c\'igicuruzwa (imisi 90 nk\'ibisanzwe), umuhondo mu gihe gikubye kabiri, umutuku itarike imaze kurenga.',
 };

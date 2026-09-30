@@ -240,4 +240,10 @@ export const hi: Dictionnaire = {
   'stock.tous': 'सभी',
   'stock.regle': 'रंग पिछले 30 दिनों की बिक्री और पुनः-ऑर्डर सीमा से अनुमानित है: एक सप्ताह से कम की बिक्री बचे तो नारंगी, दो सप्ताह से कम तो पीला।',
   'nav.fournisseurs': 'आपूर्तिकर्ता',
+  'peremption.titre': 'समाप्ति',
+  'peremption.perime': 'समाप्त',
+  'peremption.proche': 'जल्द समाप्त',
+  'peremption.a_surveiller': 'नज़र रखें',
+  'peremption.eloignee': 'दूर की तारीख',
+  'peremption.regle': 'निकटतम समाप्ति तिथि का रंग: उत्पाद की चेतावनी अवधि (डिफ़ॉल्ट 90 दिन) में नारंगी, उसकी दोगुनी अवधि में पीला, तिथि बीत जाने पर लाल।',
 };

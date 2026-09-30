@@ -240,4 +240,10 @@ export const en: Dictionnaire = {
   'stock.tous': 'All',
   'stock.regle': 'Colour estimated from the last 30 days of sales and the reorder point: orange when less than one week of sales remains, yellow when less than two weeks.',
   'nav.fournisseurs': 'Suppliers',
+  'peremption.titre': 'Expiry',
+  'peremption.perime': 'Expired',
+  'peremption.proche': 'Expires soon',
+  'peremption.a_surveiller': 'To watch',
+  'peremption.eloignee': 'Distant date',
+  'peremption.regle': 'Colour of the nearest expiry date: orange within the product\'s alert period (90 days by default), yellow within twice that period, red once the date has passed.',
 };

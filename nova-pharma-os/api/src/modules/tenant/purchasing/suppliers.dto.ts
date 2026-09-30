@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
-  IsBoolean, IsEmail, IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Length,
+  IsBoolean, IsDateString, IsEmail, IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Length,
   Matches, Min, MinLength, ValidateIf,
 } from 'class-validator';
 import { EstTelephone } from '../../../common/telephone';
@@ -71,6 +71,14 @@ export class SupplierProductDto {
   @IsNumber({}, { message: 'Prix invalide.' }) @Min(0) price!: number;
 
   @ApiPropertyOptional({ example: 'USD' }) @IsOptional() @Length(3, 3) currency?: string;
+  @ApiPropertyOptional({ example: '2026-03-01', description: 'Date de fabrication du lot proposé.' })
+  @IsOptional() @IsDateString({ strict: true }, { message: 'Date de fabrication invalide (AAAA-MM-JJ).' })
+  manufactureDate?: string;
+
+  @ApiPropertyOptional({ example: '2028-02-28', description: "Date d'expiration du lot proposé." })
+  @IsOptional() @IsDateString({ strict: true }, { message: "Date d'expiration invalide (AAAA-MM-JJ)." })
+  expiryDate?: string;
+
   @ApiPropertyOptional({ default: 1 }) @IsOptional() @IsNumber() @Min(0.001) minOrderQuantity?: number;
   @ApiPropertyOptional({ default: true }) @IsOptional() @IsBoolean() isAvailable?: boolean;
   @ApiPropertyOptional({ default: false }) @IsOptional() @IsBoolean() isPreferred?: boolean;
@@ -80,6 +88,21 @@ export class SupplierProductDto {
 
 export class UpdateSupplierProductDto {
   @ApiPropertyOptional() @IsOptional() @IsString() presentation?: string;
+
+  @ApiPropertyOptional({ example: '2026-03-01', description: 'Date de fabrication du lot proposé.' })
+  @IsOptional() @IsDateString({ strict: true }, { message: 'Date de fabrication invalide (AAAA-MM-JJ).' })
+  manufactureDate?: string;
+
+  @ApiPropertyOptional({ example: '2028-02-28', description: "Date d'expiration du lot proposé." })
+  @IsOptional() @IsDateString({ strict: true }, { message: "Date d'expiration invalide (AAAA-MM-JJ)." })
+  expiryDate?: string;
+
+  @ApiPropertyOptional({ description: 'Vide la date de fabrication.' })
+  @IsOptional() @IsBoolean() clearManufactureDate?: boolean;
+
+  @ApiPropertyOptional({ description: "Vide la date d'expiration." })
+  @IsOptional() @IsBoolean() clearExpiryDate?: boolean;
+
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) price?: number;
   @ApiPropertyOptional() @IsOptional() @Length(3, 3) currency?: string;
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0.001) minOrderQuantity?: number;

@@ -240,4 +240,10 @@ export const rw: Dictionnaire = {
   'stock.tous': 'Byose',
   'stock.regle': 'Ibara rigenwa hashingiwe ku byagurishijwe mu minsi 30 ishize no ku rugero rwo kongera gutumiza: icunga niba hasigaye ibyo kugurisha munsi y\'icyumweru kimwe, umuhondo munsi y\'ibyumweru bibiri.',
   'nav.fournisseurs': 'Abatanga ibicuruzwa',
+  'peremption.titre': 'Itariki y\'irangira',
+  'peremption.perime': 'Byarengeje igihe',
+  'peremption.proche': 'Birarangira vuba',
+  'peremption.a_surveiller': 'Byo gukurikirana',
+  'peremption.eloignee': 'Itariki ya kure',
+  'peremption.regle': 'Ibara ry\'itariki y\'irangira iri hafi: icunga mu gihe cyo kuburira cy\'igicuruzwa (iminsi 90 bisanzwe), umuhondo mu gihe cyikubye kabiri, umutuku itariki imaze kurenga.',
 };

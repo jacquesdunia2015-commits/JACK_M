@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../../common/database/database.service';
+import { niveauPeremption } from '../../../common/niveau-peremption';
 import { RequestContext } from '../../../common/database/request-context';
 
 @Injectable()
@@ -111,7 +112,7 @@ export class ReportingService {
       );
 
       const expiring = await tx.many(
-        `SELECT p.sku, p.name, pl.lot_number, pl.expiry_date,
+        `SELECT p.sku, p.name, pl.lot_number, pl.expiry_date, p.expiry_alert_days,
                 si.quantity, (pl.expiry_date - CURRENT_DATE) AS days_left,
                 si.quantity * si.average_cost AS value_at_risk
            FROM stock_items si
@@ -175,7 +176,10 @@ export class ReportingService {
           margin: this.round(Number(row.margin)),
         })),
         timeline,
-        expiringSoon: expiring,
+        expiringSoon: expiring.map((lot) => ({
+          ...lot,
+          expiry_level: niveauPeremption(lot.days_left as number, lot.expiry_alert_days as number),
+        })),
       };
     });
   }

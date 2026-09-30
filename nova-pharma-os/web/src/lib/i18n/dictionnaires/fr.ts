@@ -257,6 +257,12 @@ export const fr = {
   'stock.tous': 'Tous',
   'stock.regle': 'Couleur estimée d\'après les ventes des 30 derniers jours et le seuil de réapprovisionnement : orange s\'il reste moins d\'une semaine de ventes, jaune moins de deux semaines.',
   'nav.fournisseurs': 'Fournisseurs',
+  'peremption.titre': 'Péremption',
+  'peremption.perime': 'Périmé',
+  'peremption.proche': 'Expire bientôt',
+  'peremption.a_surveiller': 'À surveiller',
+  'peremption.eloignee': 'Date éloignée',
+  'peremption.regle': 'Couleur de la date d\'expiration la plus proche : orange dans le délai d\'alerte du produit (90 jours par défaut), jaune sous le double de ce délai, rouge une fois la date passée.',
 } as const;
 
 export type CleTraduction = keyof typeof fr;

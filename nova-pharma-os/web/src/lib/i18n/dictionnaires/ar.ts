@@ -240,4 +240,10 @@ export const ar: Dictionnaire = {
   'stock.tous': 'الكل',
   'stock.regle': 'اللون مقدَّر من مبيعات آخر 30 يومًا ومن حدّ إعادة الطلب: برتقالي إذا بقي أقل من أسبوع من المبيعات، وأصفر إذا بقي أقل من أسبوعين.',
   'nav.fournisseurs': 'الموردون',
+  'peremption.titre': 'انتهاء الصلاحية',
+  'peremption.perime': 'منتهي الصلاحية',
+  'peremption.proche': 'ينتهي قريبًا',
+  'peremption.a_surveiller': 'تحت المراقبة',
+  'peremption.eloignee': 'تاريخ بعيد',
+  'peremption.regle': 'لون أقرب تاريخ انتهاء: برتقالي ضمن مهلة التنبيه للمنتج (90 يومًا افتراضيًا)، أصفر ضمن ضعف هذه المهلة، أحمر بعد مرور التاريخ.',
 };

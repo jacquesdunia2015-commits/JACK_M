@@ -240,4 +240,10 @@ export const es: Dictionnaire = {
   'stock.tous': 'Todos',
   'stock.regle': 'Color estimado a partir de las ventas de los últimos 30 días y del punto de pedido: naranja si queda menos de una semana de ventas, amarillo si quedan menos de dos semanas.',
   'nav.fournisseurs': 'Proveedores',
+  'peremption.titre': 'Caducidad',
+  'peremption.perime': 'Caducado',
+  'peremption.proche': 'Caduca pronto',
+  'peremption.a_surveiller': 'A vigilar',
+  'peremption.eloignee': 'Fecha lejana',
+  'peremption.regle': 'Color de la fecha de caducidad más próxima: naranja dentro del plazo de alerta del producto (90 días por defecto), amarillo dentro del doble de ese plazo, rojo una vez pasada la fecha.',
 };

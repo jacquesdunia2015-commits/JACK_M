@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable } from '@nestjs/comm
 import { AuditService } from '../../../common/audit/audit.service';
 import { DatabaseService, Tx } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
+import { niveauPeremption } from '../../../common/niveau-peremption';
 import { INDICATIFS_PAYS, normaliserTelephone } from '../../../common/telephone';
 import {
   CreateSupplierDto,
@@ -9,6 +10,18 @@ import {
   UpdateSupplierDto,
   UpdateSupplierProductDto,
 } from './suppliers.dto';
+
+/**
+ * Expression SQL qui compare sans casse ni accents : « metro » trouve
+ * « Métronidazole ». L'extension unaccent n'est pas toujours installable
+ * chez un hébergeur ; translate() couvre les lettres du français. Les
+ * majuscules accentuées sont traduites explicitement : sous un classement
+ * « C », lower() ne transforme que les lettres sans accent.
+ */
+const ACCENTS = 'àâäáãåéèêëíìîïóòôöõúùûüçñÿÀÂÄÁÃÅÉÈÊËÍÌÎÏÓÒÔÖÕÚÙÛÜÇÑŸ';
+const SANS = 'aaaaaaeeeeiiiiooooouuuucnyaaaaaaeeeeiiiiooooouuuucny';
+const SANS_ACCENTS = (expression: string) =>
+  `translate(lower(${expression}), '${ACCENTS}', '${SANS}')`;
 
 /**
  * Répertoire des fournisseurs et catalogue de chacun.
@@ -41,8 +54,9 @@ export class SuppliersService {
                   WHERE po.supplier_id = s.id AND po.status <> 'cancelled') AS balance
            FROM suppliers s
           WHERE ($1::text IS NULL
-                 OR s.name ILIKE '%'||$1||'%' OR s.code ILIKE '%'||$1||'%'
-                 OR s.city ILIKE '%'||$1||'%' OR s.phone LIKE '%'||$1||'%')
+                 OR ${SANS_ACCENTS('s.name')} LIKE '%'||${SANS_ACCENTS('$1')}||'%'
+                 OR ${SANS_ACCENTS('s.city')} LIKE '%'||${SANS_ACCENTS('$1')}||'%'
+                 OR s.code ILIKE '%'||$1||'%' OR s.phone LIKE '%'||$1||'%')
           ORDER BY s.is_active DESC, s.name`,
         [search?.trim() || null],
       ),
@@ -60,6 +74,10 @@ export class SuppliersService {
         `SELECT sp.id, sp.product_id, sp.presentation, sp.last_cost AS price, sp.currency,
                 sp.min_order_quantity, sp.is_available, sp.is_preferred,
                 sp.supplier_reference, sp.notes, sp.price_updated_at,
+                to_char(sp.manufacture_date, 'YYYY-MM-DD') AS manufacture_date,
+                to_char(sp.expiry_date, 'YYYY-MM-DD') AS expiry_date,
+                (sp.expiry_date IS NOT NULL AND sp.expiry_date < CURRENT_DATE) AS is_expired,
+                sp.expiry_date - CURRENT_DATE AS days_to_expiry, p.expiry_alert_days,
                 COALESCE(p.name, sp.product_name) AS name, p.sku
            FROM supplier_products sp
            LEFT JOIN products p ON p.id = sp.product_id
@@ -67,7 +85,7 @@ export class SuppliersService {
           ORDER BY sp.is_available DESC, lower(COALESCE(p.name, sp.product_name))`,
         [id],
       );
-      return { ...supplier, products };
+      return { ...supplier, products: products.map(avecNiveauPeremption) };
     });
   }
 
@@ -166,6 +184,7 @@ export class SuppliersService {
         'Fournisseur introuvable.',
       );
       const devise = dto.currency?.toUpperCase() ?? supplier.currency;
+      verifierDates(dto.manufactureDate, dto.expiryDate);
 
       let ligne: Record<string, unknown>;
       if (dto.productId) {
@@ -179,9 +198,19 @@ export class SuppliersService {
         ligne = await tx.oneOrFail(
           `INSERT INTO supplier_products
              (organization_id, supplier_id, product_id, presentation, last_cost, currency,
-              min_order_quantity, is_available, is_preferred, supplier_reference, notes)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+              min_order_quantity, is_available, is_preferred, supplier_reference, notes,
+              manufacture_date, expiry_date)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+           -- Des dates saisies décrivent un nouveau lot : elles remplacent
+           -- ensemble les anciennes, pour ne jamais marier la fabrication
+           -- d'un lot à l'expiration d'un autre.
            ON CONFLICT (supplier_id, product_id) DO UPDATE SET
+             manufacture_date = CASE WHEN $12::date IS NULL AND $13::date IS NULL
+                                     THEN supplier_products.manufacture_date
+                                     ELSE EXCLUDED.manufacture_date END,
+             expiry_date = CASE WHEN $12::date IS NULL AND $13::date IS NULL
+                                THEN supplier_products.expiry_date
+                                ELSE EXCLUDED.expiry_date END,
              presentation = COALESCE(EXCLUDED.presentation, supplier_products.presentation),
              last_cost = EXCLUDED.last_cost, currency = EXCLUDED.currency,
              min_order_quantity = EXCLUDED.min_order_quantity,
@@ -194,6 +223,7 @@ export class SuppliersService {
             ctx.organizationId, supplierId, dto.productId, dto.presentation ?? null,
             dto.price, devise, dto.minOrderQuantity ?? 1, dto.isAvailable ?? true,
             dto.isPreferred ?? false, dto.supplierReference ?? null, dto.notes ?? null,
+            dto.manufactureDate ?? null, dto.expiryDate ?? null,
           ],
         );
       } else {
@@ -213,13 +243,15 @@ export class SuppliersService {
         ligne = await tx.oneOrFail(
           `INSERT INTO supplier_products
              (organization_id, supplier_id, product_name, presentation, last_cost, currency,
-              min_order_quantity, is_available, supplier_reference, notes)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+              min_order_quantity, is_available, supplier_reference, notes,
+              manufacture_date, expiry_date)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
            RETURNING *`,
           [
             ctx.organizationId, supplierId, nom, dto.presentation ?? null, dto.price, devise,
             dto.minOrderQuantity ?? 1, dto.isAvailable ?? true,
             dto.supplierReference ?? null, dto.notes ?? null,
+            dto.manufactureDate ?? null, dto.expiryDate ?? null,
           ],
         );
       }
@@ -229,7 +261,10 @@ export class SuppliersService {
         action: 'purchasing.supplier_product_saved',
         entity: 'supplier',
         entityId: supplierId,
-        after: { productId: dto.productId, productName: dto.productName, price: dto.price },
+        after: {
+          productId: dto.productId, productName: dto.productName, price: dto.price,
+          manufactureDate: dto.manufactureDate, expiryDate: dto.expiryDate,
+        },
       });
       return ligne;
     });
@@ -248,6 +283,13 @@ export class SuppliersService {
         'Article introuvable chez ce fournisseur.',
       );
       const prixChange = dto.price !== undefined && Number(avant.last_cost) !== dto.price;
+      const fabrication = dto.clearManufactureDate ? null : dto.manufactureDate;
+      const expiration = dto.clearExpiryDate ? null : dto.expiryDate;
+      // L'ordre se vérifie avec les dates qui resteront après la modification.
+      verifierDates(
+        fabrication === undefined ? iso(avant.manufacture_date) : fabrication,
+        expiration === undefined ? iso(avant.expiry_date) : expiration,
+      );
       const apres = await this.miseAJour(tx, 'supplier_products', lineId, {
         presentation: dto.presentation,
         last_cost: dto.price,
@@ -257,6 +299,8 @@ export class SuppliersService {
         is_preferred: dto.isPreferred,
         supplier_reference: dto.supplierReference,
         notes: dto.notes,
+        manufacture_date: fabrication,
+        expiry_date: expiration,
         ...(prixChange ? { price_updated_at: new Date() } : {}),
       });
       if (dto.isPreferred) await this.seulPrefere(tx, apres);
@@ -264,8 +308,14 @@ export class SuppliersService {
         action: 'purchasing.supplier_product_updated',
         entity: 'supplier',
         entityId: supplierId,
-        before: { price: avant.last_cost, available: avant.is_available },
-        after: { price: apres.last_cost, available: apres.is_available },
+        before: {
+          price: avant.last_cost, available: avant.is_available,
+          manufactureDate: iso(avant.manufacture_date), expiryDate: iso(avant.expiry_date),
+        },
+        after: {
+          price: apres.last_cost, available: apres.is_available,
+          manufactureDate: iso(apres.manufacture_date), expiryDate: iso(apres.expiry_date),
+        },
       });
       return apres;
     });
@@ -292,20 +342,25 @@ export class SuppliersService {
    * Où acheter un produit, et à quel prix : chaque offre des fournisseurs
    * actifs, la moins chère d'abord. La moins chère des offres disponibles
    * est signalée pour chaque article et chaque devise — on ne compare pas
-   * des dollars et des francs congolais.
+   * des dollars et des francs congolais. Une offre dont la date
+   * d'expiration est passée ne compte pas comme disponible.
    */
   async comparePrices(ctx: RequestContext, search: string) {
     const terme = search?.trim();
     if (!terme || terme.length < 2) {
       throw new BadRequestException('Saisissez au moins deux lettres du produit recherché.');
     }
-    return this.db.readTransaction(ctx, (tx) =>
+    const offres = await this.db.readTransaction(ctx, (tx) =>
       tx.many(
         `WITH offres AS (
            SELECT sp.id, sp.product_id, p.sku,
                   COALESCE(p.name, sp.product_name) AS name, sp.presentation,
                   sp.last_cost AS price, sp.currency, sp.min_order_quantity,
                   sp.is_available, sp.price_updated_at,
+                  to_char(sp.manufacture_date, 'YYYY-MM-DD') AS manufacture_date,
+                  to_char(sp.expiry_date, 'YYYY-MM-DD') AS expiry_date,
+                  (sp.expiry_date IS NOT NULL AND sp.expiry_date < CURRENT_DATE) AS is_expired,
+                  sp.expiry_date - CURRENT_DATE AS days_to_expiry, p.expiry_alert_days,
                   s.id AS supplier_id, s.name AS supplier_name, s.city AS supplier_city,
                   s.country_code AS supplier_country, s.phone AS supplier_phone,
                   COALESCE(sp.product_id::text,
@@ -314,18 +369,21 @@ export class SuppliersService {
              FROM supplier_products sp
              JOIN suppliers s ON s.id = sp.supplier_id AND s.is_active
              LEFT JOIN products p ON p.id = sp.product_id
-            WHERE COALESCE(p.name, sp.product_name) ILIKE '%'||$1||'%'
+            WHERE ${SANS_ACCENTS('COALESCE(p.name, sp.product_name)')}
+                    LIKE '%'||${SANS_ACCENTS('$1')}||'%'
                OR p.sku ILIKE '%'||$1||'%'
          )
          SELECT o.*,
-                (o.is_available AND o.price = min(o.price) FILTER (WHERE o.is_available)
+                (o.is_available AND NOT o.is_expired
+                 AND o.price = min(o.price) FILTER (WHERE o.is_available AND NOT o.is_expired)
                    OVER (PARTITION BY o.article, o.currency)) AS is_cheapest
            FROM offres o
-          ORDER BY lower(o.name), o.article, o.is_available DESC, o.price
+          ORDER BY lower(o.name), o.article, (o.is_available AND NOT o.is_expired) DESC, o.price
           LIMIT 300`,
         [terme],
       ),
     );
+    return offres.map(avecNiveauPeremption);
   }
 
   // -------------------------------------------------------------------
@@ -420,4 +478,46 @@ export class SuppliersService {
       [id, ...fournis.map(([, v]) => v)],
     );
   }
+}
+
+/** Date SQL (Date JS ou texte) au format AAAA-MM-JJ, ou null. */
+function iso(valeur: unknown): string | null {
+  if (!valeur) return null;
+  if (valeur instanceof Date) {
+    // Une colonne « date » arrive à minuit heure locale : on lit donc la
+    // date locale, pas l'UTC, pour ne pas reculer d'un jour.
+    const mois = String(valeur.getMonth() + 1).padStart(2, '0');
+    const jour = String(valeur.getDate()).padStart(2, '0');
+    return `${valeur.getFullYear()}-${mois}-${jour}`;
+  }
+  return String(valeur).slice(0, 10);
+}
+
+/**
+ * Fabrication dans le passé, expiration après la fabrication. Vérifié ici
+ * pour un message clair ; la base porte la même règle (migration 020).
+ */
+function verifierDates(fabrication?: string | null, expiration?: string | null) {
+  const aujourdhui = iso(new Date()) as string;
+  if (fabrication && fabrication > aujourdhui) {
+    throw new BadRequestException('La date de fabrication ne peut pas être dans le futur.');
+  }
+  if (fabrication && expiration && expiration <= fabrication) {
+    throw new BadRequestException("La date d'expiration doit suivre la date de fabrication.");
+  }
+}
+
+/**
+ * Couleur de la date d'expiration d'une offre. Un article rattaché à un
+ * produit de la pharmacie suit le délai d'alerte de ce produit ; un article
+ * libre, le délai par défaut.
+ */
+function avecNiveauPeremption<T extends Record<string, unknown>>(ligne: T) {
+  return {
+    ...ligne,
+    expiry_level: niveauPeremption(
+      ligne.days_to_expiry as number | null,
+      ligne.expiry_alert_days as number | null,
+    ),
+  };
 }

@@ -238,4 +238,10 @@ export const zh: Dictionnaire = {
   'stock.tous': '全部',
   'stock.regle': '颜色根据最近 30 天的销量和补货点估算：剩余不足一周销量为橙色，不足两周为黄色。',
   'nav.fournisseurs': '供应商',
+  'peremption.titre': '有效期',
+  'peremption.perime': '已过期',
+  'peremption.proche': '即将过期',
+  'peremption.a_surveiller': '需关注',
+  'peremption.eloignee': '有效期较远',
+  'peremption.regle': '最近有效期的颜色：在产品提醒期内（默认 90 天）为橙色，在两倍提醒期内为黄色，过期后为红色。',
 };

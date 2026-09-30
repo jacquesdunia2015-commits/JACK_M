@@ -27,7 +27,10 @@ export default async function globalSetup(): Promise<void> {
       [testDbName],
     );
     await client.query(`DROP DATABASE IF EXISTS ${testDbName}`);
-    await client.query(`CREATE DATABASE ${testDbName}`);
+    // UTF-8 comme en production, quel que soit l'encodage du serveur local.
+    await client.query(
+      `CREATE DATABASE ${testDbName} ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE template0`,
+    );
   } finally {
     await client.end();
   }

@@ -269,12 +269,18 @@ export class PurchasingService {
           // est le plus fiable qui soit, et le produit est donc disponible.
           await tx.query(
             `INSERT INTO supplier_products
-               (organization_id, supplier_id, product_id, last_cost, is_available, price_updated_at)
-             VALUES ($1,$2,$3,$4,true,now())
+               (organization_id, supplier_id, product_id, last_cost, is_available, price_updated_at,
+              expiry_date)
+             VALUES ($1,$2,$3,$4,true,now(),$5)
              ON CONFLICT (supplier_id, product_id)
              DO UPDATE SET last_cost = EXCLUDED.last_cost, is_available = true,
-                           price_updated_at = now()`,
-            [organizationId, dto.supplierId, product.id, line.unitCost],
+                           price_updated_at = now(),
+                           -- Nouveau lot reçu : son expiration remplace l'ancienne, et
+                           -- la fabrication notée, qui était celle d'un autre lot, tombe.
+                           manufacture_date = CASE WHEN EXCLUDED.expiry_date IS NULL
+                                                   THEN supplier_products.manufacture_date END,
+                           expiry_date = COALESCE(EXCLUDED.expiry_date, supplier_products.expiry_date)`,
+            [organizationId, dto.supplierId, product.id, line.unitCost, line.expiryDate ?? null],
           );
 
           if (line.purchaseOrderLineId) {

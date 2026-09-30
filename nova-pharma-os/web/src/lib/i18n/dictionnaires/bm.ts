@@ -240,4 +240,10 @@ export const bm: Dictionnaire = {
   'stock.tous': 'U bɛɛ',
   'stock.regle': 'Kulɛri bɛ jateminɛ ni tile 30 laban feereli ye ani ka segin ka san hakɛ ye: nɛrɛmugu ni min tolen tɛ se dɔgɔkun kelen ma, nɛrɛ ni a tɛ se dɔgɔkun fila ma.',
   'nav.fournisseurs': 'Feerekɛlaw',
+  'peremption.titre': 'Banni waati',
+  'peremption.perime': 'A bannen don',
+  'peremption.proche': 'A bɛna ban sɔɔni',
+  'peremption.a_surveiller': 'K\'a kɔlɔsi',
+  'peremption.eloignee': 'Don jan',
+  'peremption.regle': 'Banni don surunnen kulɛri: nɛrɛmugu fɛn ka lasɔmini waati kɔnɔ (tile 90), nɛrɛ o waati siɲɛ fila kɔnɔ, bilen ni don tɛmɛna.',
 };

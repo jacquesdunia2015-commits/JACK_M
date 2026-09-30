@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import FormulaireFournisseur from '@/components/FormulaireFournisseur';
+import Peremption from '@/components/Peremption';
 import Vide from '@/components/Vide';
 import { apiSafe } from '@/lib/api';
+import { dateCourte, NiveauPeremption } from '@/lib/peremption';
 import { lienWhatsApp, nomPays } from '@/lib/pays';
 
 interface Fournisseur {
@@ -14,6 +16,8 @@ interface Offre {
   id: string; name: string; sku: string | null; presentation: string | null;
   price: string; currency: string | null; min_order_quantity: string;
   is_available: boolean; is_cheapest: boolean; price_updated_at: string;
+  manufacture_date: string | null; expiry_date: string | null; is_expired: boolean;
+  expiry_level: NiveauPeremption | null; days_to_expiry: number | null;
   supplier_id: string; supplier_name: string; supplier_city: string | null;
   supplier_phone: string | null; article: string;
 }
@@ -51,7 +55,9 @@ export default async function PageFournisseurs({
       <section className="card">
         <div className="card-head">
           <h2>Comparer les prix</h2>
-          <span className="hint">Le moins cher des fournisseurs qui l&apos;ont en stock est surligné</span>
+          <span className="hint">
+            Le moins cher des fournisseurs qui l&apos;ont en stock, et non périmé, est surligné
+          </span>
         </div>
         <form style={{ marginBottom: '1rem', maxWidth: 420 }}>
           <input name="produit" defaultValue={recherche} placeholder="Nom du produit ou du médicament…" />
@@ -68,13 +74,15 @@ export default async function PageFournisseurs({
                     <th>Produit</th>
                     <th>Fournisseur</th>
                     <th className="num">Prix</th>
-                    <th className="num">Minimum</th>
+                    <th className="num">Fabrication</th>
+                    <th className="num">Expiration</th>
                     <th>Disponibilité</th>
                     <th className="num">Prix du</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {offres.map((o) => (
+                  {offres.map((o) => {
+                    return (
                     <tr key={o.id} className={o.is_cheapest ? 'offre-meilleure' : ''}>
                       <td>
                         {o.name}
@@ -88,8 +96,14 @@ export default async function PageFournisseurs({
                       <td className="num">
                         <strong>{prix(o.price, o.currency)}</strong>
                         {o.is_cheapest && <><br /><span className="tag ok">Le moins cher</span></>}
+                        {Number(o.min_order_quantity) > 1 && (
+                          <><br /><span className="small muted">min. {Number(o.min_order_quantity)}</span></>
+                        )}
                       </td>
-                      <td className="num small">{Number(o.min_order_quantity)}</td>
+                      <td className="num small">{dateCourte(o.manufacture_date)}</td>
+                      <td className="num small">
+                        <Peremption date={o.expiry_date} niveau={o.expiry_level} jours={o.days_to_expiry} />
+                      </td>
                       <td>
                         <span className={`tag ${o.is_available ? 'ok' : 'danger'}`}>
                           {o.is_available ? 'Disponible' : 'En rupture'}
@@ -97,7 +111,8 @@ export default async function PageFournisseurs({
                       </td>
                       <td className="num small">{new Date(o.price_updated_at).toLocaleDateString('fr-FR')}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -2,6 +2,7 @@ import { apiSafe } from '@/lib/api';
 import { date, money, quantity } from '@/lib/format';
 import { traduire } from '@/lib/i18n';
 import { LIBELLE_NIVEAU, NIVEAUX, NiveauStock } from '@/lib/niveau-stock';
+import { CLASSE_PEREMPTION, CLE_PEREMPTION, NiveauPeremption } from '@/lib/peremption';
 
 interface LigneStock {
   product_id: string;
@@ -13,6 +14,7 @@ interface LigneStock {
   stock_value: string;
   nearest_expiry: string | null;
   stock_level: NiveauStock;
+  expiry_level: NiveauPeremption | null;
 }
 
 export default async function PageStockMobile({
@@ -57,7 +59,14 @@ export default async function PageStockMobile({
                     {l.nearest_expiry ? ` · ${date(l.nearest_expiry)}` : ''}
                   </span>
                 </div>
-                <span className={`niveau ${l.stock_level}`}>{t(LIBELLE_NIVEAU[l.stock_level])}</span>
+                <span className="mob-niveaux">
+                  <span className={`niveau ${l.stock_level}`}>{t(LIBELLE_NIVEAU[l.stock_level])}</span>
+                  {l.expiry_level && l.expiry_level !== 'eloignee' && (
+                    <span className={`niveau ${CLASSE_PEREMPTION[l.expiry_level]}`}>
+                      {t(CLE_PEREMPTION[l.expiry_level])}
+                    </span>
+                  )}
+                </span>
               </li>
             );
           })}

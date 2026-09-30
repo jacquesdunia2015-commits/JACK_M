@@ -567,4 +567,14 @@ button.petit, .btn.petit { padding: 0.32rem 0.6rem; font-size: 0.8rem; }
   grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
 }
 .catalogue-ajout button { width: 100%; }
+.catalogue-ajout-nom { grid-column: span 2; }
+@media (max-width: 520px) { .catalogue-ajout-nom { grid-column: auto; } }
 .offre-meilleure { background: var(--vert-clair); }
+
+/* Date d'expiration et sa pastille, l'une sous l'autre ; alignées à
+   droite dans une colonne de dates. */
+.peremption { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; }
+td:not(.num) > .peremption { align-items: flex-start; }
+.peremption-jours { font-weight: 500; opacity: 0.85; margin-left: 0.25rem; }
+.peremption-jours::before { content: '· '; }
+.mob-niveaux { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; }

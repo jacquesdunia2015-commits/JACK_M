@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 113 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 118 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -80,7 +80,7 @@ createdb nova_dev
 cd api
 npm install
 cp .env.example .env               # ajustez DATABASE_URL
-npm run migrate                    # applique les 19 migrations
+npm run migrate                    # applique les 20 migrations
 npm run seed                       # crée les comptes internes
 npm run start:dev                  # http://localhost:3001/api
 
@@ -166,7 +166,8 @@ démarrer si son rôle de connexion peut endosser `nova_derogation`.
 
 Chaque pharmacie tient la fiche de ses fournisseurs — dépôt, téléphone (normalisé avec
 l'indicatif du pays du dépôt), e-mail, pays, ville, adresse — et le **catalogue de
-chacun** : produits proposés, présentation, prix, devise, disponibilité, date du prix.
+chacun** : produits proposés, présentation, prix, devise, disponibilité, date du prix,
+dates de fabrication et d'expiration du lot annoncé (migration 020).
 Un article peut désigner un produit du catalogue de la pharmacie ou un simple nom.
 
 | Point d'entrée | Rôle |
@@ -177,7 +178,21 @@ Un article peut désigner un produit du catalogue de la pharmacie ou un simple n
 
 Le module `suppliers` est inclus dans **tous les forfaits** (migration 019) ; les commandes
 et réceptions restent au module `purchasing`. Une réception met à jour le prix du
-fournisseur pour les produits reçus.
+fournisseur (prix et date d'expiration) pour les produits reçus. Une offre périmée n'est
+jamais signalée comme la moins chère ; la recherche ignore la casse et les accents.
+
+## Couleurs d'alerte
+
+L'API renvoie la couleur, l'écran l'affiche — une seule règle pour le bureau, le mobile
+et les tests.
+
+| Champ | Règle | Code |
+|---|---|---|
+| `stock_level` | Rupture · < 7 j de ventes ou ½ seuil · < 14 j ou seuil · au-delà | `inventory/niveau-stock.ts` |
+| `expiry_level` | Date passée · ≤ délai d'alerte du produit (90 j) · ≤ 2 × ce délai · au-delà | `common/niveau-peremption.ts` |
+
+`expiry_level` est présent sur les positions de stock, les lots du tableau de bord, le
+catalogue des fournisseurs et la comparaison des prix.
 
 ---
 
@@ -296,7 +311,7 @@ relançables à la main depuis le back-office après un incident.
 
 ```
 nova-pharma-os/
-├── db/migrations/        19 migrations SQL, appliquées dans l'ordre et une seule fois
+├── db/migrations/        20 migrations SQL, appliquées dans l'ordre et une seule fois
 ├── api/                  NestJS — API métier et back-office SaaS
 │   ├── src/common/       socle : base, contexte tenant, auth, quotas, audit, numérotation
 │   ├── src/modules/
@@ -304,7 +319,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             113 tests de bout en bout
+│   └── test/             118 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français

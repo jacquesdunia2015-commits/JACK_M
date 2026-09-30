@@ -50,7 +50,7 @@ export default async function PageFournisseur({ params }: { params: Promise<{ id
         <div className="card-head">
           <h2>Produits et prix</h2>
           <span className="hint">
-            Cliquez sur un prix pour le modifier, sur la disponibilité pour la changer
+            « Modifier » change le prix et les dates ; un clic sur la disponibilité la bascule
           </span>
         </div>
         <CatalogueFournisseur
