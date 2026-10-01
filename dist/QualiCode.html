@@ -10,7 +10,7 @@
 <!-- Empreinte de la version publiée. Remplacée automatiquement au déploiement
      par le commit et la date : c'est ce qui permet de savoir, en ouvrant le
      site, si l'on voit bien la dernière version et non une page en cache. -->
-<meta name="qc-version" content="97ed015 · fichier unique · 16/09/2026">
+<meta name="qc-version" content="a7efc54 · fichier unique · 01/10/2026">
 <meta name="qc-org-nom" content="APSA">
 <meta name="qc-org-drapeau" content="cd"><!-- cd = RD Congo, rw = Rwanda, bj = Bénin, vide = aucun -->
 <!-- Logo officiel de l'organisation : déposez le fichier dans
@@ -1648,6 +1648,7 @@ const translations = {
     lic_btn: "Abonnement", lic_title: "Licence et abonnement",
     lic_trial_badge: "Essai : {n} j restants", lic_expired_badge: "Licence expirée",
     storage_not_durable: "Ce navigateur peut effacer vos projets pour libérer de la place. Installez QualiCode (bouton 📲) et exportez votre projet après chaque séance de travail.",
+    open_older_warning: "Ce fichier (enregistré le {file}) est plus ANCIEN que la version de « {name} » déjà présente dans ce navigateur (modifiée le {stored}). L'ouvrir remplacera ce travail plus récent. Si vous voulez le garder, annulez et exportez d'abord la version actuelle (Accueil ▸ Enregistrer). Ouvrir quand même ?",
     save_failed_short: "NON ENREGISTRÉ",
     save_failed: "L'enregistrement a échoué : votre travail n'est PAS sauvegardé. Exportez votre projet maintenant (Fichier ▸ Exporter le projet) avant de fermer cette fenêtre. Cause la plus fréquente : espace disque saturé ou navigation privée.",
     lic_free_badge: "Accès libre jusqu'au {date}",
@@ -1971,6 +1972,7 @@ const translations = {
     lic_btn: "Subscription", lic_title: "License & subscription",
     lic_trial_badge: "Trial: {n} d left", lic_expired_badge: "License expired",
     storage_not_durable: "This browser may erase your projects to free up space. Install QualiCode (📲 button) and export your project after every working session.",
+    open_older_warning: "This file (saved {file}) is OLDER than the version of “{name}” already stored in this browser (modified {stored}). Opening it will replace that more recent work. To keep it, cancel and export the current version first (Home ▸ Save). Open anyway?",
     save_failed_short: "NOT SAVED",
     save_failed: "Saving failed: your work is NOT saved. Export your project now (File ▸ Export project) before closing this window. Most common cause: the disk is full, or you are browsing in private mode.",
     lic_free_badge: "Free access until {date}",
@@ -2487,6 +2489,20 @@ function redoAction() {
   return true;
 }
 
+/**
+ * Remplace le projet courant — SEULE manière de le faire.
+ *
+ * L'historique d'annulation contient des instantanés du projet PRÉCÉDENT. Le
+ * conserver après un changement de projet ferait « annuler » vers le contenu
+ * d'un autre projet : les documents du projet ouvert étaient remplacés par ceux
+ * du précédent, puis la sauvegarde automatique enregistrait le résultat sous le
+ * nom du projet ouvert. Un corpus disparaissait sur un simple Ctrl+Z.
+ */
+function remplacerProjet(projet) {
+  state.project = projet;
+  clearUndoHistory();
+}
+
 function canUndo() { return _undoStack.length > 0; }
 function canRedo() { return _redoStack.length > 0; }
 
@@ -2618,7 +2634,7 @@ function getMemo(targetType, targetId) {
   return state.project.memos.find(m => m.targetType === targetType && m.targetId === targetId);
 }
 
-return { uid, emptyProject, setOnSaved, setOnSaveError, demanderStockageDurable, estimationStockage, scheduleSave, persistNow, loadProjectById, listProjects, deleteProjectById, loadPersisted, savePrefs, loadPrefs, normalizeProject, childCodes, codeWithDescendants, segmentsOfCode, segmentsOfDoc, pushUndoSnapshot, clearUndoHistory, undoAction, redoAction, canUndo, canRedo, addDocument, addGroup, addCode, addSegment, deleteSegment, trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode, saveQuery, deleteQuery, upsertMemo, getMemo, CODE_COLORS, state, getDoc, getCode, getGroup, getSegment };
+return { uid, emptyProject, setOnSaved, setOnSaveError, demanderStockageDurable, estimationStockage, scheduleSave, persistNow, loadProjectById, listProjects, deleteProjectById, loadPersisted, savePrefs, loadPrefs, normalizeProject, childCodes, codeWithDescendants, segmentsOfCode, segmentsOfDoc, pushUndoSnapshot, clearUndoHistory, undoAction, redoAction, remplacerProjet, canUndo, canRedo, addDocument, addGroup, addCode, addSegment, deleteSegment, trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode, saveQuery, deleteQuery, upsertMemo, getMemo, CODE_COLORS, state, getDoc, getCode, getGroup, getSegment };
 })();
 
 __QC["analysis"] = (function () {
@@ -6991,7 +7007,7 @@ const {
   addDocument, addGroup, addCode, addSegment, deleteSegment,
   trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode,
   upsertMemo, getMemo,
-  pushUndoSnapshot, undoAction, redoAction, canUndo, canRedo, clearUndoHistory,
+  pushUndoSnapshot, undoAction, redoAction, canUndo, canRedo, clearUndoHistory, remplacerProjet,
   saveQuery, deleteQuery,
   demanderStockageDurable, estimationStockage,
 } = __QC["state"];
@@ -7087,7 +7103,7 @@ async function init() {
   protegerLesDonnees();
 
   if (!(await loadPersisted())) {
-    state.project = buildSampleProject();
+    remplacerProjet(buildSampleProject());
     persistNow();
   }
   // Abonnement : essai 5 jours puis clé de licence ; l'export reste possible
@@ -7278,7 +7294,8 @@ function bindRibbon() {
   // --- Accueil ---
   $("#btnNewProject").onclick = () => {
     promptModal(t("new_project_title"), t("project_name_q") + " — " + t("new_version_hint"), "", name => {
-      state.project = emptyProject(name);
+      remplacerProjet(emptyProject(name));
+      updateUndoButtons();
       state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
       state.ui.currentDocId = null; state.ui.selectedCodeId = null;
       persistNow();
@@ -7317,14 +7334,30 @@ function bindRibbon() {
     }
     const p = await readProjectFile(file);
     if (!p) return;
-    state.project = p;
-    state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
-    state.ui.currentDocId = null; state.ui.selectedCodeId = null;
-    state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
-    childCodes(null).forEach(c => expandedCodes.add(c.id));
-    persistNow();
-    renderAll();
-    toast(t("project_loaded") + " : " + state.project.name);
+    const ouvrir = () => {
+      remplacerProjet(p);
+      updateUndoButtons();
+      state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
+      state.ui.currentDocId = null; state.ui.selectedCodeId = null;
+      state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
+      childCodes(null).forEach(c => expandedCodes.add(c.id));
+      persistNow();
+      renderAll();
+      toast(t("project_loaded") + " : " + state.project.name);
+    };
+    // Un projet portant le même identifiant REMPLACE celui du navigateur. Si le
+    // fichier est plus ancien que la version enregistrée — une sauvegarde de
+    // lundi rouverte mercredi —, le travail des jours intermédiaires serait
+    // écrasé sans un mot. On prévient, et on laisse décider.
+    const present = listProjects().find(e => e.id === p.id);
+    if (present && present.modified && p.modified && present.modified > p.modified) {
+      const date = iso => new Date(iso).toLocaleString();
+      confirmModal(t("open_older_warning")
+        .replace("{file}", date(p.modified)).replace("{name}", present.name)
+        .replace("{stored}", date(present.modified)), ouvrir);
+    } else {
+      ouvrir();
+    }
   });
   $("#btnMyProjects").onclick = openMyProjects;
   $("#btnProtect").onclick = openProtectModal;
@@ -7343,7 +7376,8 @@ function bindRibbon() {
   });
   $("#btnSampleProject").onclick = () => {
     confirmModal(t("new_version_hint"), () => {
-      state.project = buildSampleProject();
+      remplacerProjet(buildSampleProject());
+      updateUndoButtons();
       state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
       state.ui.currentDocId = state.project.documents[0]?.id ?? null;
       state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
@@ -9178,7 +9212,7 @@ function openBarChart() {
    Mes projets : bibliothèque locale multi-projets
 ================================================================ */
 function switchToProject(project) {
-  state.project = project;
+  remplacerProjet(project);
   state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
   state.ui.currentDocId = project.documents[0]?.id ?? null;
   state.ui.selectedCodeId = null;
