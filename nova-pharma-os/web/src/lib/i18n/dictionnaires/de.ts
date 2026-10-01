@@ -38,6 +38,7 @@ export const de: Dictionnaire = {
   'nav.reservations': 'Reservierungen',
   'nav.b2b': 'B2B-Bestellungen',
   'nav.tiers_payant': 'Kostenträger',
+  'nav.mobile_money': 'Mobile Money',
   'nav.traitements': 'Dauerbehandlungen',
   'nav.fidelite': 'Treueprogramm',
   'nav.rapports': 'Berichte',

@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 213 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 217 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -555,6 +555,25 @@ table ajoutée par une migration future est donc sauvegardée sans rien modifier
   hexadécimal, colonnes JSON et tableaux restitués à l'identique. Vérifié par
   `sauvegarde-complete.e2e-spec.ts`.
 
+## Mobile Money confirmé par le SMS de l'opérateur (migration 031)
+
+Le raccordement direct aux opérateurs exige un contrat et des frais par transaction. En
+attendant, la preuve d'un versement est le SMS que l'opérateur envoie au téléphone
+marchand — exploité gratuitement de deux façons (page *Mobile Money*, `payments.*`) :
+
+- **SMS collé** : `POST /api/payments/mobile-money/:id/confirm-sms`. NOVA lit montant,
+  devise, numéro, opérateur et identifiant de transaction (`sms-operateur.ts`, repères
+  tolérants aux formulations M-Pesa, Orange Money, Airtel Money, Afrimoney) ; montant ou
+  opérateur différent → refus ; l'identifiant est repris du SMS, sans faute de frappe.
+- **Transfert automatique** : une application Android gratuite de transfert de SMS envoie
+  chaque SMS à `POST /api/public/mobile-money/sms/:jeton` (relais web
+  `/api/public/mobile-money/sms/...`). Le jeton est montré une fois ; seule son empreinte
+  est gardée (`mobile_money_sms_links`). Un seul versement attendu correspond (montant,
+  devise, opérateur, numéro, 7 jours) : il est confirmé ; sinon le SMS attend dans
+  `mobile_money_sms` (à rapprocher ou écarter). Envois d'argent ignorés, transaction déjà
+  encaissée → `duplicate`.
+- Quand un contrat opérateur sera signé, son adaptateur appellera le même rapprochement.
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -747,7 +766,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             213 tests de bout en bout
+│   └── test/             217 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -776,6 +795,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
+| `mobile-money-sms.e2e-spec.ts` | Lecture des SMS d'opérateurs, confirmation par SMS collé (montant vérifié), transfert automatique, doublons, SMS ambigus |
 | `sauvegarde-complete.e2e-spec.ts` | Sauvegarde de toutes les tables, restauration exacte malgré cycles de clés, autoréférences, photo binaire et JSON |
 | `previsions.e2e-spec.ts` | Produit saisonnier prévu plus haut qu'un produit régulier au même rythme, quantité à commander, fiabilité, export Excel |
 | `reservations.e2e-spec.ts` | Page invisible avant publication, disponibilité sans quantités, réservation et photo sans compte, abus refusés, statut et WhatsApp, suivi client |

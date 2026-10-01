@@ -933,6 +933,17 @@ gagnés et rend les points utilisés.
 
 ## Encaisser par Mobile Money
 
+**Confirmer avec le SMS de l'opérateur.** Menu *Mobile Money* : quand le client
+a payé, ouvrez le SMS reçu sur le téléphone marchand, copiez-le, puis **Coller
+le SMS** sur la ligne du versement. NOVA vérifie que le montant correspond et
+reprend lui-même l'identifiant de transaction.
+
+**Confirmation automatique, gratuite.** Dans *Confirmation automatique par le
+téléphone marchand*, créez le lien secret, installez sur ce téléphone Android
+une application gratuite de transfert de SMS, et collez-y le lien. Chaque
+versement attendu se confirme alors tout seul ; un SMS ambigu (deux clients du
+même montant) attend que vous le rapprochiez.
+
 Après une vente, appuyez sur **Encaisser Mobile Money**. L'application affiche
 ce qu'il faut dire au client :
 

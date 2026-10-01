@@ -38,6 +38,7 @@ export const es: Dictionnaire = {
   'nav.reservations': 'Reservas',
   'nav.b2b': 'Pedidos B2B',
   'nav.tiers_payant': 'Terceros pagadores',
+  'nav.mobile_money': 'Dinero móvil',
   'nav.traitements': 'Tratamientos crónicos',
   'nav.fidelite': 'Fidelización',
   'nav.rapports': 'Informes',

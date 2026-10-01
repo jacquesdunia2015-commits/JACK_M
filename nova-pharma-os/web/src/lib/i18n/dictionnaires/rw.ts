@@ -38,6 +38,7 @@ export const rw: Dictionnaire = {
   'nav.reservations': 'Ibyatumijwe',
   'nav.b2b': 'Ibicuruzwa ku bwinshi',
   'nav.tiers_payant': 'Ubwishingizi',
+  'nav.mobile_money': 'Amafaranga kuri telefoni',
   'nav.traitements': 'Imiti ya buri gihe',
   'nav.fidelite': 'Ibihembo by’abakiriya',
   'nav.rapports': 'Raporo',

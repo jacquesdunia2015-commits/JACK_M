@@ -38,6 +38,7 @@ export const zh: Dictionnaire = {
   'nav.reservations': '预订',
   'nav.b2b': 'B2B 订单',
   'nav.tiers_payant': '第三方支付',
+  'nav.mobile_money': '移动支付',
   'nav.traitements': '慢病用药提醒',
   'nav.fidelite': '会员积分',
   'nav.rapports': '报表',

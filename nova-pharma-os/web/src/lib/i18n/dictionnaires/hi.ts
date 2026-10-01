@@ -38,6 +38,7 @@ export const hi: Dictionnaire = {
   'nav.reservations': 'आरक्षण',
   'nav.b2b': 'B2B ऑर्डर',
   'nav.tiers_payant': 'तृतीय-पक्ष भुगतानकर्ता',
+  'nav.mobile_money': 'मोबाइल मनी',
   'nav.traitements': 'नियमित उपचार',
   'nav.fidelite': 'लॉयल्टी',
   'nav.rapports': 'रिपोर्ट',

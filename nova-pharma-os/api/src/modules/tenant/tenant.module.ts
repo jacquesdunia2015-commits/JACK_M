@@ -25,6 +25,8 @@ import { OnboardingService } from './onboarding/onboarding.service';
 import { PayersController } from './payers/payers.controller';
 import { PayersService } from './payers/payers.service';
 import { PaymentsController } from './payments/payments.controller';
+import { SmsMobileMoneyController, SmsTransfertController } from './payments/sms-mobile-money.controller';
+import { SmsMobileMoneyService } from './payments/sms-mobile-money.service';
 import { MobileMoneyService } from './payments/mobile-money.service';
 import { PurchasingController } from './purchasing/purchasing.controller';
 import { PurchasingService } from './purchasing/purchasing.service';
@@ -81,6 +83,8 @@ import { TraitementsService } from './traitements/traitements.service';
     B2bController,
     DeliveryController,
     MessagingController,
+    SmsMobileMoneyController,
+    SmsTransfertController,
     PaymentsController,
     ReportingController,
     TenantAdminController,
@@ -110,6 +114,7 @@ import { TraitementsService } from './traitements/traitements.service';
     DeliveryService,
     MessagingService,
     MobileMoneyService,
+    SmsMobileMoneyService,
     ReportingService,
     TenantAdminService,
     OnboardingService,

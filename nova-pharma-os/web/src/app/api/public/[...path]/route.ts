@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { API_URL } from '@/lib/api';
 
 /**
- * Relais des pages publiques des pharmacies : sans session ni jeton, et
- * limité aux points d'entrée publics de l'API (`/public/pharmacies/...`).
+ * Relais des pages publiques des pharmacies et des SMS transférés par le
+ * téléphone marchand : sans session ni jeton, et limité à ces points
+ * d'entrée publics de l'API (`/public/pharmacies/...`, `/public/mobile-money/sms/...`).
  */
 async function forward(request: NextRequest, path: string[]) {
-  if (path[0] !== 'pharmacies' || path.some((p) => p === '..' || p.includes('/'))) {
+  const autorise = path[0] === 'pharmacies' || (path[0] === 'mobile-money' && path[1] === 'sms' && request.method === 'POST');
+  if (!autorise || path.some((p) => p === '..' || p.includes('/'))) {
     return NextResponse.json({ message: 'Introuvable.' }, { status: 404 });
   }
   const response = await fetch(`${API_URL}/public/${path.map(encodeURIComponent).join('/')}${request.nextUrl.search}`, {

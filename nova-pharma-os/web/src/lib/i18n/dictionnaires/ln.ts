@@ -38,6 +38,7 @@ export const ln: Dictionnaire = {
   'nav.reservations': 'Ba commande ya liboso',
   'nav.b2b': 'Ba commande ya munene',
   'nav.tiers_payant': 'Mituelle mpe asirans',
+  'nav.mobile_money': 'Mbongo na telefone',
   'nav.traitements': 'Minganga ya ntango molai',
   'nav.fidelite': 'Mbano ya bakiliya',
   'nav.rapports': 'Ba rapports',

@@ -38,6 +38,7 @@ export const sw: Dictionnaire = {
   'nav.reservations': 'Maagizo ya awali',
   'nav.b2b': 'Maagizo ya jumla',
   'nav.tiers_payant': 'Bima na mifuko ya afya',
+  'nav.mobile_money': 'Pesa kwa simu',
   'nav.traitements': 'Matibabu ya kudumu',
   'nav.fidelite': 'Uaminifu wa wateja',
   'nav.rapports': 'Ripoti',

@@ -46,6 +46,7 @@ export const fr = {
   'nav.reservations': 'Réservations',
   'nav.b2b': 'Commandes B2B',
   'nav.tiers_payant': 'Tiers payant',
+  'nav.mobile_money': 'Mobile Money',
   'nav.traitements': 'Traitements suivis',
   'nav.fidelite': 'Fidélité',
   'nav.rapports': 'Rapports',

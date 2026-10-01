@@ -38,6 +38,7 @@ export const ar: Dictionnaire = {
   'nav.reservations': 'الحجوزات',
   'nav.b2b': 'طلبات الجملة',
   'nav.tiers_payant': 'الجهات الضامنة',
+  'nav.mobile_money': 'المال عبر الهاتف',
   'nav.traitements': 'العلاجات المزمنة',
   'nav.fidelite': 'برنامج الولاء',
   'nav.rapports': 'التقارير',
