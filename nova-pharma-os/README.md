@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 155 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 158 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -263,6 +263,32 @@ relevés : `customers.credit`.
   présentées ; une vente annulée sort d'un relevé en brouillon, et l'annulation est
   refusée une fois le relevé présenté.
 
+## Caisse hors connexion
+
+La caisse continue de vendre pendant une coupure d'Internet et envoie les ventes au
+retour du réseau.
+
+- **Catalogue gardé par le poste** : `GET /api/sales/offline-catalog` (prix,
+  codes-barres, lots vendables avec leur péremption, taux du jour), rechargé à
+  l'ouverture de la caisse, toutes les 5 minutes et après chaque envoi. Hors connexion,
+  le poste ne vend que les lots qui ne seront pas périmés le jour de la vente, et
+  déduit lui-même ce qu'il a vendu sans que l'API le sache. Au-delà de 24 heures, le
+  catalogue gardé est trop ancien : plus de vente sans réseau.
+- **Ventes en attente** (`web/src/lib/hors-ligne.ts`, stockage du navigateur) :
+  seulement au comptant (espèces en dollars ou en francs, Mobile Money, carte) — le
+  crédit et le tiers payant attendent le réseau. Chaque vente garde son identifiant
+  d'opération, le prix et le taux affichés au client, l'identifiant du poste et son
+  heure réelle (`soldAt`, au plus 7 jours plus tôt).
+- **Envoi** au retour du réseau (événement `online`, puis toutes les 20 secondes),
+  dans l'ordre. L'API ne crée jamais de doublon (identifiant d'opération). Une vente
+  refusée (stock vendu ailleurs entre-temps…) reste sur le poste « à régulariser » :
+  réessayer après correction, ou abandonner. Une session expirée garde les ventes
+  jusqu'à la reconnexion.
+- La **clôture** de caisse est bloquée tant que le poste a des ventes non envoyées.
+- Le service worker garde la dernière version de la page Caisse : un poste rechargé
+  pendant la coupure peut continuer d'encaisser. Il ne sert toujours aucune donnée de
+  l'API depuis son cache.
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -455,7 +481,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             155 tests de bout en bout
+│   └── test/             158 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -481,6 +507,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `acceptance-saas.e2e-spec.ts` | Les 17 critères d'acceptation du cahier des charges |
 | `caisse-devises.e2e-spec.ts` | Taux du jour, paiement en francs ou mêlé, monnaie rendue arrondie, caisse et annulation par devise |
 | `tiers-payant.e2e-spec.ts` | Organismes, bénéficiaires, partage sous plafonds, relevé PDF, annulation, règlement |
+| `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `pharmacy-operations.e2e-spec.ts` | FEFO, stock, caisse, crédit, B2B, inventaire, mise en route |
 | `tenant-isolation.e2e-spec.ts` | L'isolation tient au niveau base, sans le code applicatif |
 | `messaging-payments.e2e-spec.ts` | Un message ne part pas deux fois, un versement Mobile Money ne s'encaisse pas deux fois |
@@ -494,8 +521,9 @@ Conformément à la priorité commerciale du cahier des charges, ces éléments 
 
 - **Applications natives Flutter** (magasinier, client) — l'application mobile
   installable couvre aujourd'hui le vendeur et le livreur : vente au comptoir,
-  tournée, preuve de remise. Ce qui manque au natif : la vente hors ligne et le
-  lecteur de code-barres.
+  tournée, preuve de remise. La caisse de l'espace pharmacie vend déjà pendant les
+  coupures ; l'application mobile du vendeur pas encore, ni le lecteur de code-barres
+  par la caméra.
 - **Passerelle d'envoi automatique** — SMS et WhatsApp partent aujourd'hui du
   téléphone du vendeur, gratuitement. Le mode « gateway » est prévu dans le modèle
   et dans les réglages ; il reste à écrire l'appel HTTP et à souscrire un compte.

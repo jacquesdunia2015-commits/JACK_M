@@ -56,6 +56,23 @@ export class SalesService {
       );
     }
 
+    // Vente encaissée hors connexion : elle garde son heure réelle, dans
+    // une fenêtre raisonnable.
+    let soldAt: Date | null = null;
+    if (dto.soldAt) {
+      if (!dto.clientOperationId) {
+        throw new BadRequestException('Une vente datée après coup exige clientOperationId.');
+      }
+      soldAt = new Date(dto.soldAt);
+      const ecart = Date.now() - soldAt.getTime();
+      if (ecart < -5 * 60_000 || ecart > 7 * 86_400_000) {
+        throw new BusinessRuleException(
+          'Heure de vente hors limites : une vente hors connexion doit être envoyée dans les 7 jours.',
+          { soldAt: dto.soldAt },
+        );
+      }
+    }
+
     return this.db.transaction(ctx, async (tx) => {
       // Rejeu d'une vente encaissée hors ligne : on renvoie l'existante.
       if (dto.clientOperationId) {
@@ -279,9 +296,10 @@ export class SalesService {
             tax_total, total, amount_paid, change_given, cost_total,
             client_operation_id, device_id, sold_by, notes,
             change_currency, change_amount,
-            payer_id, payer_member_id, coverage_percent, payer_share, patient_share, authorization_number)
+            payer_id, payer_member_id, coverage_percent, payer_share, patient_share, authorization_number,
+            sold_at)
          VALUES ($1,$2,$3,$4,'completed',$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,
-                 $22,$23,$24,$25,$26,$27)
+                 $22,$23,$24,$25,$26,$27, COALESCE($28::timestamptz, now()))
          RETURNING id, number`,
         [
           organizationId, branchId, session?.id ?? null, number,
@@ -295,6 +313,7 @@ export class SalesService {
           priseEnCharge?.percent ?? null, priseEnCharge?.payerShare ?? 0,
           priseEnCharge ? priseEnCharge.patientShare : null,
           dto.coverage?.authorizationNumber?.trim() || null,
+          soldAt ? soldAt.toISOString() : null,
         ],
       );
 
@@ -402,6 +421,50 @@ export class SalesService {
 
       const loaded = await this.loadSale(tx, sale.id);
       return { ...loaded, invoice, duplicate: false };
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // Catalogue hors connexion
+  // -------------------------------------------------------------------
+  /**
+   * Ce qu'il faut au poste pour encaisser pendant une coupure : prix,
+   * codes-barres et, pour chaque produit, ses lots vendables avec leur date
+   * de péremption — le poste ne vend jamais un lot qui expire pendant la
+   * coupure, et décompte lui-même ce qu'il a vendu.
+   */
+  async offlineCatalog(ctx: RequestContext, branchId?: string) {
+    const branche = branchId ?? ctx.branchId;
+    if (!branche) {
+      throw new BadRequestException("Aucune branche sélectionnée : précisez branchId ou l'en-tête X-Branch-Id.");
+    }
+    return this.db.readTransaction(ctx, async (tx) => {
+      const devise = await this.currency(tx, ctx.organizationId as string);
+      const produits = await tx.many(
+        `SELECT p.id, p.sku, p.name, p.dosage, p.sale_price, p.requires_prescription,
+                COALESCE((SELECT array_agg(b.barcode) FROM product_barcodes b WHERE b.product_id = p.id), '{}') AS barcodes,
+                COALESCE((
+                  SELECT json_agg(json_build_object('e', pl.expiry_date, 'q', si.quantity - si.reserved_quantity)
+                                  ORDER BY pl.expiry_date NULLS LAST)
+                    FROM stock_items si
+                    LEFT JOIN product_lots pl ON pl.id = si.lot_id
+                   WHERE si.branch_id = $1 AND si.product_id = p.id
+                     AND si.quantity - si.reserved_quantity > 0
+                     AND COALESCE(pl.is_quarantined, false) = false
+                     AND (pl.expiry_date IS NULL OR pl.expiry_date >= CURRENT_DATE)
+                ), '[]'::json) AS lots
+           FROM products p
+          WHERE p.deleted_at IS NULL AND p.is_active
+          ORDER BY p.name`,
+        [branche],
+      );
+      const taux = await tx.one(
+        `SELECT id, base_currency, quote_currency, rate, change_rounding, created_at
+           FROM exchange_rates WHERE base_currency = $1 OR quote_currency = $1
+          ORDER BY created_at DESC LIMIT 1`,
+        [devise],
+      );
+      return { generatedAt: new Date().toISOString(), branchId: branche, currency: devise, rate: taux, products: produits };
     });
   }
 

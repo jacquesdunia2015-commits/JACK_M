@@ -2,11 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import ChoixBeneficiaire, { Beneficiaire } from '@/components/ChoixBeneficiaire';
 import ChoixClient, { ClientChoisi } from '@/components/ChoixClient';
 import { DocumentFacture, EmettreFacture, FactureEmise } from '@/components/Facture';
 import { designation, money, quantity as fmtQty } from '@/lib/format';
 import { TauxDuJour, aPayer, arrondirMonnaie, autreDevise, convertir } from '@/lib/devises';
+import {
+  AGE_MAX_CATALOGUE_H, CatalogueHorsLigne, EVENEMENT_FILE, VenteEnAttente, ageCatalogueHeures,
+  disponibleHorsLigne, identifiantPoste, lireCatalogue, lireFile, mettreEnFile, rafraichirCatalogue,
+  rechercherHorsLigne, remettreEnAttente, retirerDeFile, synchroniser,
+} from '@/lib/hors-ligne';
 
 interface Produit {
   id: string;
@@ -42,7 +48,7 @@ const MOYENS = [
 
 export default function Caisse({
   devise = 'USD',
-  taux = null,
+  taux: tauxServeur = null,
   sessionCaisse,
   lectureSeule,
 }: {
@@ -53,6 +59,13 @@ export default function Caisse({
   sessionCaisse: SessionCaisse | null;
   lectureSeule: boolean;
 }) {
+  // Caisse hors connexion : catalogue gardé sur le poste, ventes en attente
+  // d'envoi, état du réseau tel que la caisse le constate.
+  const router = useRouter();
+  const [horsLigne, setHorsLigne] = useState(false);
+  const [catalogue, setCatalogue] = useState<CatalogueHorsLigne | null>(null);
+  const [file, setFile] = useState<VenteEnAttente[]>([]);
+  const taux = tauxServeur ?? catalogue?.rate ?? null;
   const autre = autreDevise(taux, devise);
   const [recherche, setRecherche] = useState('');
   const [resultats, setResultats] = useState<Produit[]>([]);
@@ -130,18 +143,83 @@ export default function Caisse({
     ? arrondirMonnaie(convertir(surplus, devise, deviseMonnaie, taux), deviseMonnaie, taux)
     : 0;
 
+  // Produits trouvés dans le catalogue gardé, avec la quantité encore
+  // vendable sur ce poste (lots non périmés, ventes en attente déduites).
+  const chercherSurLePoste = useCallback((terme: string) => {
+    const c = lireCatalogue();
+    if (!c) { setResultats([]); return; }
+    const enAttente = lireFile();
+    setResultats(rechercherHorsLigne(terme, c).map((p) => ({
+      id: p.id, sku: p.sku, name: p.name, dosage: p.dosage, sale_price: p.sale_price,
+      requires_prescription: p.requires_prescription, nearest_expiry: p.lots[0]?.e ?? null,
+      available: String(disponibleHorsLigne(p, enAttente)),
+    })));
+  }, []);
+
   const chercher = useCallback(async (terme: string) => {
     if (terme.trim().length < 2) {
       setResultats([]);
       return;
     }
-    const response = await fetch(
-      `/api/proxy/catalog/products?q=${encodeURIComponent(terme)}&pageSize=25`,
-    );
-    if (!response.ok) return;
-    const body = await response.json();
-    setResultats(body.data ?? []);
-  }, []);
+    if (horsLigne) { chercherSurLePoste(terme); return; }
+    try {
+      const response = await fetch(
+        `/api/proxy/catalog/products?q=${encodeURIComponent(terme)}&pageSize=25`,
+      );
+      if (!response.ok) return;
+      const body = await response.json();
+      setResultats(body.data ?? []);
+    } catch {
+      setHorsLigne(true);
+      chercherSurLePoste(terme);
+    }
+  }, [horsLigne, chercherSurLePoste]);
+
+  // Au retour du réseau, les ventes gardées partent d'elles-mêmes.
+  const envoyerFile = useCallback(async () => {
+    if (lireFile().every((v) => v.etat !== 'en_attente')) return;
+    const r = await synchroniser();
+    setFile(lireFile());
+    if (r.envoyees > 0) {
+      setHorsLigne(false);
+      setMessage({
+        ton: r.refusees ? 'warn' : 'info',
+        texte: `${r.envoyees} vente(s) faite(s) hors connexion envoyée(s)` +
+          (r.refusees ? ` ; ${r.refusees} à régulariser (voir ci-dessous).` : '.'),
+      });
+      void rafraichirCatalogue().then((c) => c && setCatalogue(c));
+      router.refresh();
+    } else if (r.session) {
+      setMessage({ ton: 'warn', texte: 'Votre session a expiré : reconnectez-vous pour envoyer les ventes gardées sur ce poste.' });
+    }
+  }, [router]);
+
+  useEffect(() => {
+    setCatalogue(lireCatalogue());
+    setFile(lireFile());
+    setHorsLigne(!navigator.onLine);
+    const rafraichir = async () => {
+      const c = await rafraichirCatalogue();
+      if (c) { setCatalogue(c); setHorsLigne(false); void envoyerFile(); }
+      else if (!navigator.onLine) setHorsLigne(true);
+    };
+    void rafraichir();
+    const surFile = () => setFile(lireFile());
+    const enLigne = () => { void rafraichir(); };
+    const coupe = () => setHorsLigne(true);
+    window.addEventListener(EVENEMENT_FILE, surFile);
+    window.addEventListener('online', enLigne);
+    window.addEventListener('offline', coupe);
+    const catalogueMinuteur = setInterval(rafraichir, 5 * 60_000);
+    const envoiMinuteur = setInterval(() => { void envoyerFile(); }, 20_000);
+    return () => {
+      window.removeEventListener(EVENEMENT_FILE, surFile);
+      window.removeEventListener('online', enLigne);
+      window.removeEventListener('offline', coupe);
+      clearInterval(catalogueMinuteur);
+      clearInterval(envoiMinuteur);
+    };
+  }, [envoyerFile]);
 
   useEffect(() => {
     const minuteur = setTimeout(() => void chercher(recherche), 220);
@@ -215,11 +293,7 @@ export default function Caisse({
       return;
     }
 
-    try {
-      const response = await fetch('/api/proxy/sales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+    const corps = {
           lines: ticket.map((l) => ({
             productId: l.produit.id,
             quantity: l.quantite,
@@ -241,8 +315,29 @@ export default function Caisse({
           // Une clé d'opération protège d'un double encaissement en cas
           // de clic répété ou de réseau instable.
           clientOperationId: `pos-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        }),
-      });
+    };
+
+    if (horsLigne) {
+      garderSurLePoste(corps);
+      setEnvoi(false);
+      return;
+    }
+
+    try {
+      let response: Response;
+      try {
+        response = await fetch('/api/proxy/sales', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(corps),
+        });
+      } catch {
+        // Réseau coupé pendant l'envoi : la vente est gardée avec la même
+        // clé d'opération — si l'API l'avait reçue, elle ne sera pas doublée.
+        setHorsLigne(true);
+        garderSurLePoste(corps);
+        return;
+      }
       const body = await response.json();
 
       if (!response.ok) {
@@ -258,20 +353,81 @@ export default function Caisse({
           (rendu > 0 ? ` · à rendre : ${money(rendu, body.sale.change_currency ?? devise)}` : ''),
       });
       setDerniereVente({ id: body.sale.id, number: body.sale.number, currency: body.sale.currency });
-      setTicket([]);
-      setEncaisse('');
-      setEncaisseAutre('');
-      setTiersPayant(false);
-      setBeneficiaire(null);
-      setBon('');
-      setPatient('');
-      setPrescripteur('');
-      setClient(null);
+      // Attendu en caisse et ventes encaissées à jour.
+      router.refresh();
+      viderTicket();
     } catch {
       setMessage({ ton: 'danger', texte: 'Le service est injoignable.' });
     } finally {
       setEnvoi(false);
     }
+  }
+
+  function viderTicket() {
+    setTicket([]);
+    setEncaisse('');
+    setEncaisseAutre('');
+    setTiersPayant(false);
+    setBeneficiaire(null);
+    setBon('');
+    setPatient('');
+    setPrescripteur('');
+    setClient(null);
+  }
+
+  /**
+   * Garde la vente sur le poste pendant une coupure. Seulement au comptant
+   * (espèces, Mobile Money, carte) : le crédit et le tiers payant ont besoin
+   * de l'API pour vérifier encours et plafonds. Le prix et le taux affichés
+   * au client voyagent avec la vente.
+   */
+  function garderSurLePoste(corps: { lines: { productId: string; quantity: number }[]; [cle: string]: unknown }) {
+    const c = lireCatalogue();
+    if (!c || ageCatalogueHeures(c) > AGE_MAX_CATALOGUE_H) {
+      setMessage({ ton: 'danger', texte: 'Pas de réseau, et le catalogue gardé sur ce poste est absent ou trop ancien : impossible de vendre hors connexion.' });
+      return;
+    }
+    if (couvert || moyen === 'credit') {
+      setMessage({ ton: 'danger', texte: 'Hors connexion, la vente se règle au comptant : le crédit et le tiers payant reviendront avec le réseau.' });
+      return;
+    }
+    const enAttente = lireFile();
+    for (const l of ticket) {
+      const p = c.products.find((x) => x.id === l.produit.id);
+      const dispo = p ? disponibleHorsLigne(p, enAttente) : 0;
+      if (l.quantite > dispo) {
+        setMessage({ ton: 'danger', texte: `Hors connexion, il reste ${dispo} « ${l.produit.name} » vendable(s) sur ce poste.` });
+        return;
+      }
+    }
+    const heure = new Date();
+    const vente: VenteEnAttente = {
+      id: corps.clientOperationId as string,
+      corps: {
+        ...corps,
+        lines: ticket.map((l) => ({ productId: l.produit.id, quantity: l.quantite, unitPrice: Number(l.produit.sale_price) })),
+        soldAt: heure.toISOString(),
+        deviceId: identifiantPoste(),
+        notes: `Vente encaissée hors connexion le ${heure.toLocaleString('fr-FR')}`,
+      },
+      creeLe: heure.toISOString(),
+      total,
+      devise,
+      libelle: `HL-${heure.toTimeString().slice(0, 8).replace(/:/g, '')}`,
+      etat: 'en_attente',
+    };
+    if (!mettreEnFile(vente)) {
+      setMessage({ ton: 'danger', texte: 'Le stockage de ce poste est plein : vente non gardée.' });
+      return;
+    }
+    setFile(lireFile());
+    setMessage({
+      ton: 'warn',
+      texte: `Hors connexion : vente ${vente.libelle} gardée sur ce poste — ${money(total, devise)}` +
+        (monnaie > 0 ? ` · à rendre : ${money(monnaie, deviseMonnaie)}` : '') +
+        '. Elle sera envoyée dès le retour du réseau.',
+    });
+    viderTicket();
   }
 
   if (!sessionCaisse) {
@@ -351,6 +507,40 @@ export default function Caisse({
           <span className="hint">{sessionCaisse.register_code}</span>
         </div>
 
+        {horsLigne && (
+          <div className="banner warn hors-ligne">
+            <strong>Hors connexion</strong>
+            Les ventes au comptant sont gardées sur ce poste et partiront au retour du réseau.
+            {catalogue ? ` Stock gardé à ${new Date(catalogue.generatedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}.` : ' Aucun catalogue gardé sur ce poste.'}
+          </div>
+        )}
+        {file.some((v) => v.etat === 'en_attente') && (
+          <div className="banner info">
+            {file.filter((v) => v.etat === 'en_attente').length} vente(s) hors connexion en attente d’envoi
+            {!horsLigne && (
+              <> · <button type="button" className="lien" onClick={() => void envoyerFile()}>envoyer maintenant</button></>
+            )}
+          </div>
+        )}
+        {file.filter((v) => v.etat === 'a_regulariser').map((v) => (
+          <div key={v.id} className="banner danger">
+            <strong>Vente {v.libelle} à régulariser</strong>
+            {v.erreur} ({money(v.total, v.devise)}, {new Date(v.creeLe).toLocaleString('fr-FR')})
+            <div className="row" style={{ marginTop: '0.4rem' }}>
+              <button type="button" className="secondaire petit" onClick={() => { remettreEnAttente(v.id); setFile(lireFile()); void envoyerFile(); }}>
+                Réessayer
+              </button>
+              <button type="button" className="secondaire petit" onClick={() => {
+                if (window.confirm(`Abandonner la vente ${v.libelle} ? Elle ne sera jamais enregistrée : notez-la à la main.`)) {
+                  retirerDeFile(v.id);
+                  setFile(lireFile());
+                }
+              }}>
+                Abandonner
+              </button>
+            </div>
+          </div>
+        ))}
         {message && <div className={`banner ${message.ton}`}>{message.texte}</div>}
 
         {derniereVente && (
@@ -431,7 +621,7 @@ export default function Caisse({
 
             <div className="tiers-payant-caisse">
               <label className="case">
-                <input type="checkbox" checked={tiersPayant} onChange={(e) => setTiersPayant(e.target.checked)} />
+                <input type="checkbox" checked={tiersPayant} disabled={horsLigne} onChange={(e) => setTiersPayant(e.target.checked)} />
                 Tiers payant (assurance, mutuelle, convention)
               </label>
               {tiersPayant && (
@@ -482,7 +672,7 @@ export default function Caisse({
             <div className="field" style={{ marginTop: '1rem' }}>
               <label htmlFor="moyen">Moyen de paiement</label>
               <select id="moyen" value={moyen} onChange={(e) => setMoyen(e.target.value)}>
-                {MOYENS.map((m) => (
+                {MOYENS.filter((m) => !(horsLigne && m.code === 'credit')).map((m) => (
                   <option key={m.code} value={m.code}>
                     {m.label}
                   </option>

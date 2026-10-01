@@ -1,13 +1,17 @@
 /*
  * Service worker de NOVA PHARMA OS.
  *
- * Il ne met en cache que la coquille de l'application — les fichiers
- * statiques et une page de repli. **Jamais les données** : un vendeur
- * qui verrait un stock d'hier passerait une vente sur un lot déjà
- * écoulé. En cas de coupure, l'application le dit franchement plutôt
- * que d'afficher des chiffres périmés.
+ * Il met en cache la coquille de l'application — les fichiers statiques et
+ * une page de repli — et la dernière version de la page Caisse, pour qu'un
+ * poste rechargé pendant une coupure puisse continuer d'encaisser. Il ne
+ * sert **jamais** de données de l'API depuis son cache : pendant une
+ * coupure, la caisse vend sur le catalogue que le poste a gardé lui-même
+ * (lots non périmés, ventes en attente déduites, voir lib/hors-ligne.ts),
+ * et tout repasse par l'API au retour du réseau.
  */
-const CACHE = 'nova-coquille-v1';
+const CACHE = 'nova-coquille-v2';
+// Pages gardées pour un rechargement sans réseau.
+const PAGES_HORS_LIGNE = ['/pharmacie/caisse'];
 const REPLI = '/hors-ligne.html';
 const COQUILLE = [REPLI, '/icone-192.png', '/icone-512.png', '/manifest.webmanifest'];
 
@@ -37,9 +41,22 @@ self.addEventListener('fetch', (evenement) => {
   // servies depuis le cache, jamais.
   if (url.pathname.startsWith('/api/')) return;
 
-  // Navigation : réseau d'abord, page « hors ligne » en dernier recours.
+  // Navigation : réseau d'abord ; la caisse retombe sur sa dernière
+  // version, les autres pages sur la page « hors ligne ».
   if (requete.mode === 'navigate') {
-    evenement.respondWith(fetch(requete).catch(() => caches.match(REPLI)));
+    const gardee = PAGES_HORS_LIGNE.includes(url.pathname);
+    evenement.respondWith(
+      fetch(requete)
+        .then((reponse) => {
+          if (gardee && reponse.ok && !reponse.redirected) {
+            const copie = reponse.clone();
+            caches.open(CACHE).then((cache) => cache.put(url.pathname, copie));
+          }
+          return reponse;
+        })
+        .catch(() => (gardee ? caches.match(url.pathname) : Promise.resolve(undefined))
+          .then((page) => page || caches.match(REPLI))),
+    );
     return;
   }
 

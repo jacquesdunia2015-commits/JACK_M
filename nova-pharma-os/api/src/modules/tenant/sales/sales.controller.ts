@@ -26,6 +26,18 @@ export class SalesController {
     return this.sales.create(ctx, dto);
   }
 
+  @Get('offline-catalog')
+  @RequirePermissions('sales.create')
+  @ApiOperation({
+    summary: 'Catalogue de la caisse pour vendre pendant une coupure',
+    description:
+      'Prix, codes-barres et lots vendables (non périmés, hors quarantaine) de la branche, ' +
+      'avec le taux du jour : le poste les garde pour encaisser hors connexion.',
+  })
+  offlineCatalog(@Ctx() ctx: RequestContext, @Query('branchId') branchId?: string) {
+    return this.sales.offlineCatalog(ctx, branchId);
+  }
+
   @Get()
   @RequirePermissions('sales.read')
   @ApiOperation({ summary: 'Journal des ventes' })

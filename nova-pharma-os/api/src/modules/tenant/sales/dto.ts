@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  ArrayMinSize, IsArray, IsIn, IsNumber, IsOptional, IsString, Matches, Min,
+  ArrayMinSize, IsArray, IsDateString, IsIn, IsNumber, IsOptional, IsString, Matches, Min,
   MinLength, ValidateNested,
 } from 'class-validator';
 
@@ -113,6 +113,14 @@ export class CreateSaleDto {
   @IsOptional() @IsString() clientOperationId?: string;
 
   @ApiPropertyOptional() @IsOptional() @IsString() deviceId?: string;
+
+  @ApiPropertyOptional({
+    example: '2026-10-01T09:42:00.000Z',
+    description:
+      'Heure réelle d’une vente encaissée hors connexion et envoyée au retour du réseau ' +
+      '(au plus 7 jours plus tôt). Exige clientOperationId.',
+  })
+  @IsOptional() @IsDateString({}, { message: 'Heure de vente au format ISO 8601.' }) soldAt?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() notes?: string;
 
   @ApiPropertyOptional({

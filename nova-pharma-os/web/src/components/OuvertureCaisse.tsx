@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { EVENEMENT_FILE, lireFile } from '@/lib/hors-ligne';
 import { money } from '@/lib/format';
 
 export default function OuvertureCaisse({
@@ -26,6 +27,15 @@ export default function OuvertureCaisse({
   const [compte, setCompte] = useState('');
   const [comptesAutres, setComptesAutres] = useState<Record<string, string>>({});
   const libelle = (d: string) => (d === 'CDF' ? 'FC' : d);
+  // Les ventes gardées sur ce poste pendant une coupure doivent être
+  // envoyées avant de compter la caisse : sinon l'attendu serait faux.
+  const [enAttente, setEnAttente] = useState(0);
+  useEffect(() => {
+    const lire = () => setEnAttente(lireFile().length);
+    lire();
+    window.addEventListener(EVENEMENT_FILE, lire);
+    return () => window.removeEventListener(EVENEMENT_FILE, lire);
+  }, []);
   const nombre = (v: string) => Number(v.replace(/\s/g, '').replace(',', '.'));
   const [erreur, setErreur] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -114,6 +124,12 @@ export default function OuvertureCaisse({
       </div>
       {erreur && <div className="erreur">{erreur}</div>}
       {message && <div className="banner info">{message}</div>}
+      {enAttente > 0 && (
+        <div className="banner warn">
+          {enAttente} vente(s) faite(s) hors connexion ne sont pas encore envoyées : attendez le retour du réseau
+          (ou régularisez-les) avant de clôturer.
+        </div>
+      )}
       <div className="row">
         <div style={{ maxWidth: 220 }}>
           <label htmlFor="compte">Espèces comptées{autresDevises.length ? ` en ${libelle(devise)}` : ''}</label>
@@ -146,7 +162,7 @@ export default function OuvertureCaisse({
         <div className="spacer" />
         <button
           className="secondaire"
-          disabled={envoi || compte === '' || autresDevises.some((a) => !(comptesAutres[a.currency] ?? '').trim())}
+          disabled={envoi || enAttente > 0 || compte === '' || autresDevises.some((a) => !(comptesAutres[a.currency] ?? '').trim())}
           style={{ marginTop: '1.35rem' }}
           onClick={async () => {
             const res = await appeler(

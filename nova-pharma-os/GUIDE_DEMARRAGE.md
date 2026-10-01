@@ -660,6 +660,30 @@ Les montants de la vente, de la facture et des rapports restent dans la
 devise de la pharmacie ; la page d'une vente montre ce qui a été remis en
 francs et à quel taux.
 
+## Vendre pendant une coupure d'Internet
+
+Laissez la page *Caisse* ouverte : elle garde sur l'ordinateur le catalogue,
+les prix et le stock vendable, et se met à jour toute seule tant qu'il y a du
+réseau.
+
+**Pendant la coupure**, un bandeau « Hors connexion » s'affiche. Continuez de
+vendre comme d'habitude : la recherche, le ticket, les espèces en dollars ou en
+francs, le Mobile Money (avec sa référence) et la carte fonctionnent. Chaque
+vente est gardée sur l'ordinateur avec un numéro provisoire (HL-…). La caisse ne
+vend que les lots qui ne seront pas périmés, et retire elle-même du stock ce
+qu'elle vient de vendre. Le crédit client et le tiers payant attendent le retour
+du réseau. Même si vous rechargez la page, la caisse reste disponible.
+
+**Au retour du réseau**, les ventes partent toutes seules, à leur heure réelle,
+sans jamais être comptées deux fois. Si l'une ne peut pas être enregistrée — par
+exemple parce que le dernier flacon a été vendu par un autre poste pendant la
+coupure — elle reste affichée « à régulariser » : corrigez le stock puis
+**Réessayer**, ou **Abandonner** après l'avoir notée.
+
+La caisse ne peut pas être clôturée tant que des ventes faites hors connexion
+n'ont pas été envoyées. Après 24 heures sans réseau, le stock gardé est trop
+ancien : la caisse refuse alors de vendre sans connexion.
+
 ## Tiers payant : assurances, mutuelles et conventions
 
 Menu *Tiers payant*.

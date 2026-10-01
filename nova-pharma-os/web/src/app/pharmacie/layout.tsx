@@ -3,6 +3,7 @@ import BoutonDeconnexion from '@/components/BoutonDeconnexion';
 import Logo from '@/components/Logo';
 import Navigation, { LienNav } from '@/components/Navigation';
 import SelecteurLangue from '@/components/SelecteurLangue';
+import ServiceWorker from '@/components/ServiceWorker';
 import { apiSafe } from '@/lib/api';
 import { droits } from '@/lib/droits';
 import { traduire } from '@/lib/i18n';
@@ -54,6 +55,7 @@ export default async function LayoutPharmacie({
 
   return (
     <div className="shell">
+      <ServiceWorker />
       <aside className="sidebar">
         <div className="brand">
           <Logo />
