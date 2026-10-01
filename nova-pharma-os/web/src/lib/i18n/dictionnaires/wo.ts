@@ -44,6 +44,7 @@ export const wo: Dictionnaire = {
   'nav.rapports': 'Rapóor',
   'nav.depenses': 'Dépaas ak njariñ',
   'nav.rappels': 'Delloo lot yi',
+  'nav.interactions': 'Garab yu dul déggoo',
   'nav.alertes_produits': 'Artu ci garab yi',
   'nav.equipe': 'Ekip',
   'nav.abonnement': 'Sama abonemaa',

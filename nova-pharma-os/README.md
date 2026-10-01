@@ -23,14 +23,14 @@ Deux espaces distincts, une seule base :
 | **Back-office SaaS** | NOVA PHARMA OS | Pharmacies clientes, forfaits, abonnements, facturation, relances, support, métriques, sauvegardes |
 | **Espace pharmacie** | Chaque pharmacie abonnée | Catalogue, lots et FEFO, stock, achats, ventes POS, caisse, clients, B2B, livraison, messagerie, Mobile Money, rapports |
 
-- **API** : NestJS + TypeScript, 110 tables PostgreSQL, documentation OpenAPI générée.
+- **API** : NestJS + TypeScript, 112 tables PostgreSQL, documentation OpenAPI générée.
 - **Interface** : Next.js 15 + TypeScript, rendu serveur, espace bureau et application
   mobile installable (PWA).
 - **Langues** : 15, dont le kiswahili de la RD Congo, le lingala, le kinyarwanda, le
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 224 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 231 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -602,6 +602,39 @@ produits à péremption proche. Aucun paiement ne transite par la plateforme.
 | `GET /api/market/search?q=&city=` · `POST /api/market/orders` · `GET /api/market/orders?side=purchases\|sales` | Acheter, suivre |
 | `POST /api/market/orders/:id/accept\|reject\|ship\|cancel\|receive` | Faire avancer une commande |
 
+## Interactions médicamenteuses (migration 033)
+
+Les bases d'interactions complètes (Vidal, Thériaque, Lexicomp…) sont payantes. NOVA
+fournit le mécanisme, gratuitement, avec une liste de départ courte et sourcée.
+
+- **Référence partagée** (`drug_classes`, `drug_interactions`) : 15 classes
+  thérapeutiques (antivitamines K, AINS, dérivés nitrés, IEC/ARA II, fluoroquinolones…)
+  et 23 associations très documentées, classées selon les quatre niveaux du Thésaurus
+  des interactions médicamenteuses de l'ANSM (contre-indication, association
+  déconseillée, précaution d'emploi, à prendre en compte). Liste non exhaustive : un
+  pharmacien doit la valider et la compléter.
+- **Caisse** : dès que le ticket contient deux produits qui interagissent — ou un produit
+  et un traitement suivi du client choisi (migration 026) —, un encadré donne le niveau,
+  l'effet et la conduite à tenir. L'alerte ne bloque jamais la vente.
+- **Reconnaissance** : la substance est cherchée, mot entier et sans accents, dans le nom,
+  le nom commercial, la DCI et le dosage du produit, ainsi que dans la molécule reliée
+  (« Coumadine » est reconnue comme warfarine si sa DCI est renseignée). Un mot voisin ne
+  déclenche rien (« clavulanate de potassium » n'est pas du chlorure de potassium).
+- **Pharmacie** : page *Interactions* (lecture, `catalog.read`), recherche par substance,
+  classes comprises.
+- **Back-office** : page *Interactions* (super administrateur, support) pour ajouter,
+  désactiver, ou importer une liste CSV `terme_a;terme_b;niveau;effet;conduite;source`
+  (une paire connue est mise à jour ; les lignes fautives sont signalées). Chaque
+  modification est inscrite au journal d'audit de la plateforme — ce qui a été corrigé au
+  passage pour les alertes produits du back-office, dont les actions n'étaient pas
+  journalisées.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `POST /api/interactions/check` `{productIds, customerId?}` | Alertes pour un ticket (caisse) |
+| `GET /api/interactions?q=` | Consulter la liste et les classes |
+| `GET/POST /api/platform/interactions` · `PATCH …/:id` · `POST …/import` | Tenir la liste (back-office) |
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -794,7 +827,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             224 tests de bout en bout
+│   └── test/             231 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -824,6 +857,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
 | `place-de-marche.e2e-spec.ts` | Offres visibles des seules pharmacies concernées, minimums, commande vue par l'acheteur et le vendeur seuls, acceptation en commande professionnelle, réception en stock |
+| `interactions.e2e-spec.ts` | Alerte par classe et par molécule renseignée, contre-indications en premier, ticket confronté aux traitements suivis, pas de fausse alerte sur un mot voisin, liste tenue et importée par le seul back-office |
 | `mobile-money-sms.e2e-spec.ts` | Lecture des SMS d'opérateurs, confirmation par SMS collé (montant vérifié), transfert automatique, doublons, SMS ambigus |
 | `sauvegarde-complete.e2e-spec.ts` | Sauvegarde de toutes les tables, restauration exacte malgré cycles de clés, autoréférences, photo binaire et JSON |
 | `previsions.e2e-spec.ts` | Produit saisonnier prévu plus haut qu'un produit régulier au même rythme, quantité à commander, fiabilité, export Excel |
@@ -851,10 +885,12 @@ Conformément à la priorité commerciale du cahier des charges, ces éléments 
 - **Passerelle d'envoi automatique** — SMS et WhatsApp partent aujourd'hui du
   téléphone du vendeur, gratuitement. Le mode « gateway » est prévu dans le modèle
   et dans les réglages ; il reste à écrire l'appel HTTP et à souscrire un compte.
-- **Intégration directe des opérateurs Mobile Money** — la demande, la confirmation
-  et le rapprochement existent, avec unicité de la référence de transaction. Il
-  reste à recevoir la confirmation de l'opérateur au lieu de la saisir.
-- **OCR des factures fournisseur**, **IA et prévisions**, **marketplace B2B**,
+- **Intégration directe des opérateurs Mobile Money** — la confirmation arrive déjà
+  par le SMS de l'opérateur, lu automatiquement (migration 031). L'appel direct aux API
+  des opérateurs demande un contrat marchand et des frais par transaction.
+- **Base médicale complète d'interactions** — le mécanisme et une liste de départ
+  existent (migration 033) ; une base exhaustive (Vidal, Thériaque) est payante.
+- **OCR des factures fournisseur**, **prévisions par apprentissage automatique**,
   **IoT température**, **module importation**.
 - **Relecture des traductions** — les 15 langues sont écrites et utilisables ; dix
   d'entre elles n'ont pas encore été relues par un locuteur natif, ce que

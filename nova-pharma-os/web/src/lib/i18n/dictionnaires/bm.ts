@@ -44,6 +44,7 @@ export const bm: Dictionnaire = {
   'nav.rapports': 'Rapɔrɔw',
   'nav.depenses': 'Musaka ni tɔnɔ',
   'nav.rappels': 'Loti seginni',
+  'nav.interactions': 'Furaw ɲɔgɔn kɔrɔ',
   'nav.alertes_produits': 'Furaw lasɔmini',
   'nav.equipe': 'Baarakɛlaw',
   'nav.abonnement': 'N ka abɔnɔmani',

@@ -847,6 +847,23 @@ d'habitude), puis **Expédiée**.
 Le règlement se fait entre vous, comme d'habitude : NOVA ne prend aucune
 commission.
 
+## Être prévenu des interactions entre médicaments
+
+Rien à régler : à la **caisse**, dès que deux médicaments du ticket ne vont pas
+bien ensemble (par exemple un anticoagulant comme la warfarine et un
+anti-inflammatoire comme l'ibuprofène), un encadré rouge ou orange l'annonce,
+avec la conduite à tenir. Si vous choisissez le client et qu'il a un traitement
+suivi (menu *Traitements suivis*), NOVA le compare aussi au ticket.
+
+L'alerte ne bloque pas la vente : elle vous informe, vous décidez. Pour qu'un
+produit au nom commercial soit reconnu, renseignez sa DCI (la molécule) dans le
+catalogue.
+
+Menu *Interactions* : consultez la liste, cherchez une substance. Elle est
+courte et non exhaustive (les bases complètes sont payantes) ; NOVA PHARMA OS
+la complète au fil des besoins. Signalez au support une association qui
+manque.
+
 ## Prévoir les ventes et savoir quoi commander
 
 Menu *Prévisions*. NOVA regarde vos ventes des trois derniers mois et, si vous

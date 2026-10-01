@@ -815,3 +815,4 @@ button.gj-colonne, button.gj-colonne:hover, button.gj-colonne:focus, button.gj-c
 .onglets a.actif { color: var(--vert-fonce); border-bottom: 3px solid var(--vert); }
 .panier-vendeur { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 0.75rem; padding: 0.75rem; border-radius: var(--rayon); background: var(--vert-clair); }
 .reception-ligne { display: grid; gap: 0.3rem; padding: 0.5rem; border: 1px solid var(--bord); border-radius: var(--rayon); }
+.alertes-interactions { display: grid; gap: 0.4rem; margin-top: 1rem; }

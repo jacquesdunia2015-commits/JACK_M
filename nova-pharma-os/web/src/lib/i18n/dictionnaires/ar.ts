@@ -44,6 +44,7 @@ export const ar: Dictionnaire = {
   'nav.rapports': 'التقارير',
   'nav.depenses': 'المصاريف والأرباح',
   'nav.rappels': 'سحب الدفعات',
+  'nav.interactions': 'التداخلات الدوائية',
   'nav.alertes_produits': 'تنبيهات المنتجات',
   'nav.equipe': 'الفريق',
   'nav.abonnement': 'اشتراكي',

@@ -44,6 +44,7 @@ export const rn: Dictionnaire = {
   'nav.rapports': 'Raporo',
   'nav.depenses': 'Amafaranga yasohotse n’inyungu',
   'nav.rappels': 'Gusubiza ama lot',
+  'nav.interactions': 'Imiti idahuza',
   'nav.alertes_produits': 'Imburira ku miti',
   'nav.equipe': 'Umugwi',
   'nav.abonnement': 'Ikwiyandikisha canje',

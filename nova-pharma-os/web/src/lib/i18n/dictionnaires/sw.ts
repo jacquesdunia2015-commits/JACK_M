@@ -44,6 +44,7 @@ export const sw: Dictionnaire = {
   'nav.rapports': 'Ripoti',
   'nav.depenses': 'Matumizi na faida',
   'nav.rappels': 'Kurejesha bechi',
+  'nav.interactions': 'Mwingiliano wa dawa',
   'nav.alertes_produits': 'Tahadhari za bidhaa',
   'nav.equipe': 'Wafanyakazi',
   'nav.abonnement': 'Uandikishaji wangu',

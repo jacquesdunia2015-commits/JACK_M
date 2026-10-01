@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ChoixBeneficiaire, { Beneficiaire } from '@/components/ChoixBeneficiaire';
 import ChoixClient, { ClientChoisi } from '@/components/ChoixClient';
+import { AlertesInteractions } from '@/components/Interactions';
 import { DocumentFacture, EmettreFacture, FactureEmise } from '@/components/Facture';
 import ScanCodeBarres from '@/components/ScanCodeBarres';
 import { BoutonTicket } from '@/components/ImpressionTicket';
@@ -762,6 +763,8 @@ export default function Caisse({
                 </div>
               </div>
             )}
+
+            {!horsLigne && <AlertesInteractions productIds={ticket.map((l) => l.produit.id)} customerId={client?.id} />}
 
             {(!horsLigne || client) && (
               <div className="field" style={{ marginTop: '1rem' }}>

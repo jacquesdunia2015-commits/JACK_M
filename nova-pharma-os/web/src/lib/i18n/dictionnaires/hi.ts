@@ -44,6 +44,7 @@ export const hi: Dictionnaire = {
   'nav.rapports': 'रिपोर्ट',
   'nav.depenses': 'खर्च और मुनाफ़ा',
   'nav.rappels': 'बैच वापसी',
+  'nav.interactions': 'दवा पारस्परिक क्रिया',
   'nav.alertes_produits': 'उत्पाद चेतावनियाँ',
   'nav.equipe': 'टीम',
   'nav.abonnement': 'मेरी सदस्यता',

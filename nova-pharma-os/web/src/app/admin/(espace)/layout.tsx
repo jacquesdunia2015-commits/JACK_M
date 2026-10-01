@@ -35,7 +35,10 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
     { href: '/admin/forfaits', label: t('nav.forfaits'), icone: '▧', groupe: t('nav.commerce') },
     { href: '/admin/support', label: t('nav.support'), icone: '▷', groupe: t('nav.exploitation') },
     ...(['super_admin', 'support_admin'].includes(session.role ?? '')
-      ? [{ href: '/admin/alertes', label: t('nav.alertes_produits'), icone: '▲', groupe: t('nav.exploitation') }]
+      ? [
+          { href: '/admin/alertes', label: t('nav.alertes_produits'), icone: '▲', groupe: t('nav.exploitation') },
+          { href: '/admin/interactions', label: t('nav.interactions'), icone: '◆', groupe: t('nav.exploitation') },
+        ]
       : []),
     { href: '/admin/documentation', label: t('nav.documents'), icone: '▢', groupe: t('nav.exploitation') },
     // Seul un super-administrateur crée des comptes internes (l'API le vérifie aussi).

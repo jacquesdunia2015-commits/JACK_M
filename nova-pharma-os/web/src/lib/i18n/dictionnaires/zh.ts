@@ -44,6 +44,7 @@ export const zh: Dictionnaire = {
   'nav.rapports': '报表',
   'nav.depenses': '支出与利润',
   'nav.rappels': '批次召回',
+  'nav.interactions': '药物相互作用',
   'nav.alertes_produits': '药品警报',
   'nav.equipe': '团队',
   'nav.abonnement': '我的订阅',

@@ -63,7 +63,7 @@ export class AlertesService {
           ctx.actorKind === 'platform_user' ? ctx.actorId : null,
         ],
       );
-      await this.audit.record(tx, { action: 'platform.product_alert.published', entity: 'product_alert', entityId: a.id, after: a });
+      await this.audit.recordPlatform(tx, { action: 'platform.product_alert.published', entity: 'product_alert', entityId: a.id, after: a });
       return a;
     });
   }
@@ -71,7 +71,7 @@ export class AlertesService {
   etat(ctx: RequestContext, id: string, actif: boolean) {
     return this.db.transaction(ctx, async (tx) => {
       const a = await tx.oneOrFail('UPDATE product_alerts SET is_active = $2 WHERE id = $1 RETURNING *', [id, actif], 'Alerte introuvable.');
-      await this.audit.record(tx, { action: 'platform.product_alert.updated', entity: 'product_alert', entityId: id, after: a });
+      await this.audit.recordPlatform(tx, { action: 'platform.product_alert.updated', entity: 'product_alert', entityId: id, after: a });
       return a;
     });
   }
