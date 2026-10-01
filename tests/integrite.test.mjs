@@ -207,13 +207,18 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
     verifier("la requête « Extraits citables » existe", !!citables);
     verifier("elle exclut l'entretien dont l'auteur a refusé la citation", citables && !citables.activatedDocs.includes(p05?.id));
 
-    // Les six phases de l'analyse thématique, et la positionnalité laissée vide
+    // Les six phases de l'analyse thématique, et la note de positionnalité
     const titres = projx.memos.filter(m => m.targetType === "project").map(m => m.title);
     for (const n of [1, 2, 3, 4, 5, 6]) {
       verifier(`la phase ${n} de l'analyse thématique est documentée`, titres.some(t => t.startsWith(`Phase ${n} `)));
     }
-    verifier("la note de positionnalité est laissée au chercheur",
-      titres.some(t => /positionnalité/i.test(t) && /À RÉDIGER/.test(t)));
+    // La note de positionnalité est un modèle d'exercice : les faits
+    // biographiques que rien ne donne restent des hypothèses à remplacer.
+    const posit = projx.memos.find(m => m.targetType === "project" && /positionnalité/i.test(m.title));
+    verifier("la note de positionnalité est présentée comme un modèle d'exercice",
+      !!posit && /MODÈLE D'EXERCICE/.test(posit.title) && /HYPOTHÈSES D'EXERCICE/.test(posit.text));
+    verifier("ses faits biographiques restent des hypothèses entre crochets",
+      !!posit && /\[Profession :/.test(posit.text) && /\[Lien avec le district/.test(posit.text) && /\[Sexe et âge : à préciser/.test(posit.text));
 
     // Les chiffres du LISEZ-MOI sont écrits à la main : ils doivent suivre le projet
     const fr = n => n.toLocaleString("fr-FR").replace(/\u202f|\u00a0/g, " ");
