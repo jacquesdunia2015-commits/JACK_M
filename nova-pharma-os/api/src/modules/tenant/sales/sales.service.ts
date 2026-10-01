@@ -4,6 +4,9 @@ import { DatabaseService, Tx } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
 import { BusinessRuleException } from '../../../common/http/exceptions';
 import { NumberingService } from '../../../common/numbering/numbering.service';
+import {
+  Taux, arrondi2, arrondirMonnaie, convertir, mouvementCaisse, tauxPour,
+} from '../cash/devises';
 import { StockService } from '../inventory/stock.service';
 import { InvoicesService } from './invoices.service';
 import {
@@ -125,13 +128,46 @@ export class SalesService {
 
       const totals = this.computeTotals(prepared);
 
+      // ---- Encaissements, ramenés à la devise de la vente ----
+      // Un client peut payer en francs une vente en dollars (ou mélanger
+      // les deux) : chaque montant remis est converti au taux du jour, et
+      // seul l'équivalent dans la devise de la vente entre dans les totaux.
+      const encaissements: {
+        method: string; provider?: string; reference?: string;
+        montant: number; devise: string; remis: number; taux: Taux | null;
+      }[] = [];
+      let tauxVente: Taux | null = null;
+      let tolerance = 0.001;
+      for (const p of dto.payments ?? []) {
+        const devise = p.currency ?? currency;
+        if (devise === currency) {
+          encaissements.push({ ...p, montant: p.amount, devise, remis: p.amount, taux: null });
+          continue;
+        }
+        if (p.method === 'credit') {
+          throw new BusinessRuleException(
+            `Le crédit client se compte dans la devise de la pharmacie (${currency}).`,
+          );
+        }
+        const taux = await tauxPour(tx, currency, devise, p.exchangeRate);
+        tauxVente ??= taux;
+        encaissements.push({
+          ...p, montant: arrondi2(convertir(p.amount, devise, currency, taux)),
+          devise, remis: p.amount, taux,
+        });
+        // Un montant remis en francs est arrondi à la coupure : l'écart
+        // d'arrondi, au plus un demi-pas, n'est pas un règlement incomplet.
+        const pas = devise === taux.quote_currency ? Number(taux.change_rounding) : 0;
+        tolerance = Math.max(tolerance, 0.0051, convertir(pas / 2, devise, currency, taux));
+      }
+
       // ---- Contrôle du crédit client ----
-      const creditAmount = (dto.payments ?? [])
+      const creditAmount = encaissements
         .filter((p) => p.method === 'credit')
-        .reduce((sum, p) => sum + p.amount, 0);
-      const paidAmount = (dto.payments ?? [])
+        .reduce((sum, p) => sum + p.montant, 0);
+      const paidAmount = encaissements
         .filter((p) => p.method !== 'credit')
-        .reduce((sum, p) => sum + p.amount, 0);
+        .reduce((sum, p) => sum + p.montant, 0);
       const declared = creditAmount + paidAmount;
 
       if (creditAmount > 0) {
@@ -161,7 +197,7 @@ export class SalesService {
         }
       }
 
-      if (declared > 0 && declared + 0.001 < totals.total) {
+      if (declared > 0 && declared + tolerance < totals.total) {
         throw new BusinessRuleException(
           `Règlement incomplet : ${declared.toFixed(2)} encaissé pour ` +
             `${totals.total.toFixed(2)} ${currency} dû.`,
@@ -192,22 +228,46 @@ export class SalesService {
       // ---- En-tête de vente ----
       const number = await this.numbering.next(tx, 'sale', { branchId });
       const changeGiven = Math.max(0, this.round(paidAmount + creditAmount - totals.total));
+      // Monnaie rendue dans la devise demandée (souvent en francs), arrondie
+      // à la coupure qui circule.
+      const changeCurrency = dto.changeCurrency ?? currency;
+      let changeAmount = changeGiven;
+      if (changeGiven > 0) {
+        const tauxMonnaie =
+          changeCurrency === currency
+            ? tauxVente
+            : tauxVente && [tauxVente.base_currency, tauxVente.quote_currency].includes(changeCurrency)
+              ? tauxVente
+              : await tauxPour(tx, currency, changeCurrency);
+        changeAmount = arrondirMonnaie(
+          tauxMonnaie ? convertir(changeGiven, currency, changeCurrency, tauxMonnaie) : changeGiven,
+          changeCurrency,
+          tauxMonnaie,
+        );
+      }
+      // Un reste dû inférieur au demi-pas d'arrondi est soldé.
+      const amountPaid =
+        declared > 0 && declared < totals.total && declared + tolerance >= totals.total
+          ? totals.total
+          : this.round(paidAmount + creditAmount - changeGiven);
 
       const sale = await tx.oneOrFail<{ id: string; number: string }>(
         `INSERT INTO sales
            (organization_id, branch_id, session_id, number, status, channel,
             customer_id, prescription_id, currency, subtotal, discount_total,
             tax_total, total, amount_paid, change_given, cost_total,
-            client_operation_id, device_id, sold_by, notes)
-         VALUES ($1,$2,$3,$4,'completed',$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+            client_operation_id, device_id, sold_by, notes,
+            change_currency, change_amount)
+         VALUES ($1,$2,$3,$4,'completed',$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
          RETURNING id, number`,
         [
           organizationId, branchId, session?.id ?? null, number,
           dto.channel ?? 'pos', customer?.id ?? null, prescriptionId, currency,
           totals.subtotal, totals.discount, totals.tax, totals.total,
-          this.round(paidAmount + creditAmount - changeGiven), changeGiven,
+          amountPaid, changeGiven,
           totals.cost, dto.clientOperationId ?? null, dto.deviceId ?? null,
           ctx.actorKind === 'user' ? ctx.actorId : null, dto.notes ?? null,
+          changeGiven > 0 ? changeCurrency : null, changeGiven > 0 ? changeAmount : null,
         ],
       );
 
@@ -250,39 +310,40 @@ export class SalesService {
       }
 
       // ---- Encaissements ----
-      for (const payment of dto.payments ?? []) {
+      for (const payment of encaissements) {
+        const etranger = payment.devise !== currency;
         await tx.query(
           `INSERT INTO sale_payments
-             (organization_id, sale_id, method, provider, amount, currency, reference)
-           VALUES ($1,$2,$3::nova.payment_method,$4,$5,$6,$7)`,
+             (organization_id, sale_id, method, provider, amount, currency, reference,
+              tendered_currency, tendered_amount, exchange_rate)
+           VALUES ($1,$2,$3::nova.payment_method,$4,$5,$6,$7,$8,$9,$10)`,
           [
             organizationId, sale.id, payment.method, payment.provider ?? null,
-            payment.amount, currency, payment.reference ?? null,
+            payment.montant, currency, payment.reference ?? null,
+            etranger ? payment.devise : null, etranger ? payment.remis : null,
+            etranger ? payment.taux?.rate : null,
           ],
         );
       }
 
-      // Le mouvement de caisse ne porte que sur les espèces effectivement
-      // reçues, nettes de la monnaie rendue.
-      const cashReceived = (dto.payments ?? [])
-        .filter((p) => p.method === 'cash')
-        .reduce((sum, p) => sum + p.amount, 0);
-      if (session && cashReceived > 0) {
-        await tx.query(
-          `INSERT INTO cash_movements
-             (organization_id, session_id, kind, amount, currency,
-              reference_kind, reference_id, reason, user_id)
-           VALUES ($1,$2,'sale',$3,$4,'sale',$5,$6,$7)`,
-          [
-            organizationId, session.id, this.round(cashReceived - changeGiven),
-            currency, sale.id, `Vente ${sale.number}`,
-            ctx.actorKind === 'user' ? ctx.actorId : null,
-          ],
-        );
-        await tx.query(
-          'UPDATE cash_sessions SET expected_cash = expected_cash + $2 WHERE id = $1',
-          [session.id, this.round(cashReceived - changeGiven)],
-        );
+      // La caisse ne voit que les espèces effectivement reçues, devise par
+      // devise, nettes de la monnaie rendue (dans sa propre devise).
+      if (session) {
+        const net = new Map<string, number>();
+        for (const p of encaissements) {
+          if (p.method === 'cash') net.set(p.devise, (net.get(p.devise) ?? 0) + p.remis);
+        }
+        if (changeGiven > 0 && (net.size > 0 || changeCurrency !== currency)) {
+          net.set(changeCurrency, (net.get(changeCurrency) ?? 0) - changeAmount);
+        }
+        for (const [devise, montant] of net) {
+          await mouvementCaisse(tx, {
+            organizationId, sessionId: session.id, deviseSession: currency, devise,
+            kind: 'sale', amount: montant, referenceKind: 'sale', referenceId: sale.id,
+            reason: `Vente ${sale.number}`,
+            userId: ctx.actorKind === 'user' ? ctx.actorId ?? null : null,
+          });
+        }
       }
 
       // ---- Crédit client ----
@@ -365,27 +426,28 @@ export class SalesService {
         );
       }
 
-      const cashPaid = await tx.one<{ amount: string }>(
-        `SELECT COALESCE(sum(amount), 0) AS amount FROM sale_payments
-          WHERE sale_id = $1 AND method = 'cash'`,
-        [saleId],
-      );
-      if (sale.session_id && Number(cashPaid?.amount ?? 0) > 0) {
-        await tx.query(
-          `INSERT INTO cash_movements
-             (organization_id, session_id, kind, amount, currency,
-              reference_kind, reference_id, reason, user_id)
-           VALUES ($1,$2,'refund',$3,$4,'sale',$5,$6,$7)`,
-          [
-            ctx.organizationId, sale.session_id, -Number(cashPaid?.amount ?? 0),
-            sale.currency, saleId, `Remboursement vente ${sale.number}`,
-            ctx.actorKind === 'user' ? ctx.actorId : null,
-          ],
+      // Les espèces de la vente ressortent de la caisse, devise par devise,
+      // telles qu'elles y sont entrées (monnaie rendue déduite).
+      if (sale.session_id) {
+        const caisse = await tx.oneOrFail<{ currency: string }>(
+          'SELECT currency FROM cash_sessions WHERE id = $1',
+          [sale.session_id],
         );
-        await tx.query(
-          'UPDATE cash_sessions SET expected_cash = expected_cash - $2 WHERE id = $1',
-          [sale.session_id, Number(cashPaid?.amount ?? 0)],
+        const entrees = await tx.many<{ currency: string; amount: string }>(
+          `SELECT currency, sum(amount) AS amount FROM cash_movements
+            WHERE reference_kind = 'sale' AND reference_id = $1
+            GROUP BY currency`,
+          [saleId],
         );
+        for (const e of entrees) {
+          await mouvementCaisse(tx, {
+            organizationId: ctx.organizationId as string, sessionId: sale.session_id,
+            deviseSession: caisse.currency, devise: e.currency, kind: 'refund',
+            amount: -Number(e.amount), referenceKind: 'sale', referenceId: saleId,
+            reason: `Remboursement vente ${sale.number}`,
+            userId: ctx.actorKind === 'user' ? ctx.actorId ?? null : null,
+          });
+        }
       }
 
       const cancelled = await tx.oneOrFail(
@@ -518,7 +580,8 @@ export class SalesService {
       [id],
     );
     const payments = await tx.many(
-      `SELECT method::text AS method, provider, amount, currency, reference, received_at
+      `SELECT method::text AS method, provider, amount, currency, reference, received_at,
+              tendered_currency, tendered_amount, exchange_rate
          FROM sale_payments WHERE sale_id = $1`,
       [id],
     );

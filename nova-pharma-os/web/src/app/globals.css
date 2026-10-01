@@ -295,6 +295,14 @@ button.petit, .btn.petit { padding: 0.32rem 0.6rem; font-size: 0.8rem; }
   margin-top: 0.85rem; padding-top: 0.85rem; border-top: 2px solid var(--encre);
   font-size: 1.25rem; font-weight: 700;
 }
+/* Caisse en deux devises */
+.taux-du-jour { padding-block: 0.85rem; }
+.especes-deux { display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.75rem; }
+.taux-du-jour.a-revoir { border-color: var(--attention); background: var(--attention-clair); }
+.monnaie-a-rendre {
+  font-size: 1.15rem; padding: 0.5rem 0.75rem; border-radius: var(--rayon);
+  background: var(--ok-clair); color: var(--ok);
+}
 .qty { display: flex; align-items: center; gap: 0.3rem; }
 .qty button { padding: 0.1rem 0.45rem; font-size: 0.9rem; }
 .qty input { width: 58px; text-align: center; padding: 0.25rem; }

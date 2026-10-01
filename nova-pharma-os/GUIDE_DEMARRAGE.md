@@ -630,6 +630,36 @@ route, et reçu par SMS. Ils se modifient dans les réglages.
 
 ---
 
+## Encaisser en dollars et en francs
+
+Menu *Caisse*.
+
+**1. Fixez le taux du jour**, chaque matin : *Taux du jour* → **Changer le
+taux** → « 1 USD = 2 850 », puis la plus petite coupure que vous rendez
+(50 ou 100 FC). Le taux est gardé avec son heure et la personne qui l'a fixé ;
+un taux qui n'a pas été revu aujourd'hui est signalé en jaune. Sans taux, la
+caisse n'encaisse que dans la devise de la pharmacie.
+
+**2. Ouvrez la caisse avec un fonds dans chaque devise** : par exemple 20 $
+et 50 000 FC.
+
+**3. Encaissez.** Sous le total, l'équivalent en francs s'affiche (« soit
+12 850 FC »). En espèces, saisissez ce que le client donne dans chaque
+devise — tout en francs, tout en dollars, ou un peu des deux. L'écran dit
+ce qui manque, ou ce qu'il faut rendre, et vous choisissez de rendre la
+monnaie en francs ou en dollars ; elle est arrondie à votre coupure. Un
+paiement Mobile Money, carte ou virement peut aussi être fait en francs :
+choisissez *Payé en : Francs*.
+
+**4. Fermez la caisse en comptant chaque devise.** L'écart est calculé
+séparément pour les dollars et pour les francs : on ne compte jamais des
+francs comme des dollars. Une vente annulée rend les espèces de chaque
+devise, monnaie déduite.
+
+Les montants de la vente, de la facture et des rapports restent dans la
+devise de la pharmacie ; la page d'une vente montre ce qui a été remis en
+francs et à quel taux.
+
 ## Encaisser par Mobile Money
 
 Après une vente, appuyez sur **Encaisser Mobile Money**. L'application affiche
@@ -747,6 +777,8 @@ Voici un parcours d'essai qui montre l'essentiel en vingt minutes :
    → *Observez :* son encours de crédit et sa balance âgée.
 5. **Fermer la caisse** — Menu *Caisse*, comptez l'argent, saisissez le montant.
    → *Observez :* l'écart est calculé et conservé.
+   Avec un taux du jour fixé, encaissez une vente en francs et rendez la
+   monnaie en francs : la caisse attend et compte chaque devise à part.
 6. **Passer côté éditeur** — déconnectez-vous, entrez dans le back-office.
    → *Observez :* la pharmacie que vous venez d'utiliser, son abonnement, son essai.
 7. **Changer de langue** — en haut à droite, choisissez *Kiswahili ya Kongo*.

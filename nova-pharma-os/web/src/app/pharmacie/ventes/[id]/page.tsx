@@ -13,13 +13,16 @@ interface DetailVente {
     id: string; number: string; status: string; currency: string; total: string; sold_at: string;
     customer_id: string | null; customer_name: string | null; customer_code: string | null;
     customer_phone: string | null; sold_by_name: string | null; invoice_id: string | null;
-    cancel_reason: string | null;
+    cancel_reason: string | null; change_currency: string | null; change_amount: string | null;
   };
   lines: {
     description: string; quantity: string; unit_price: string; line_total: string;
     lot_number: string | null; expiry_date: string | null;
   }[];
-  payments: { method: string; provider: string | null; amount: string }[];
+  payments: {
+    method: string; provider: string | null; amount: string;
+    tendered_currency: string | null; tendered_amount: string | null; exchange_rate: string | null;
+  }[];
 }
 
 /** Une vente, et l'établissement de sa facture si le client la demande. */
@@ -65,7 +68,13 @@ export default async function PageVente({ params }: { params: Promise<{ id: stri
         <div className="card-head">
           <h2>Articles</h2>
           <span className="hint">
-            {v.payments.map((p) => `${MOYENS_PAIEMENT[p.method] ?? p.method}${p.provider ? ` (${p.provider})` : ''} ${money(p.amount, s.currency)}`).join(' · ')}
+            {v.payments.map((p) =>
+              `${MOYENS_PAIEMENT[p.method] ?? p.method}${p.provider ? ` (${p.provider})` : ''} ` +
+              (p.tendered_currency
+                ? `${money(p.tendered_amount, p.tendered_currency)} (${money(p.amount, s.currency)} au taux de ${Number(p.exchange_rate).toLocaleString('fr-FR')})`
+                : money(p.amount, s.currency)),
+            ).join(' · ')}
+            {s.change_amount && Number(s.change_amount) > 0 ? ` · monnaie rendue ${money(s.change_amount, s.change_currency ?? s.currency)}` : ''}
           </span>
         </div>
         <div className="table-wrap">

@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 138 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 147 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -213,6 +213,30 @@ Les points d'entrée existaient ; l'espace pharmacie a désormais leurs écrans.
   avec moyen de règlement ou à crédit ; conversion d'un devis en commande.
 - Une livraison B2B d'un médicament sur ordonnance n'exige plus d'ordonnance de patient
   (`channel = 'b2b'`) ; la vente au comptoir la réclame toujours.
+
+## Caisse en deux devises (migration 023)
+
+Le taux du jour (`exchange_rates`, « 1 base = rate quote », historisé, avec le pas
+d'arrondi de la monnaie rendue dans la devise cotée) permet d'encaisser une vente en
+dollars avec des francs, ou un mélange des deux.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET /api/cash/rates`, `POST /api/cash/rates` | Taux du jour et historique ; fixer un taux (`cash.manage`) |
+| `POST /api/sales` — `payments[].currency`, `payments[].exchangeRate`, `changeCurrency` | Montant remis dans une autre devise, taux affiché au client, devise de la monnaie |
+| `POST /api/cash/sessions` — `openingFloats` ; `…/close` — `countedOther` | Fonds et comptage de chaque autre devise |
+
+- `sale_payments.amount` reste la contre-valeur dans la devise de la vente (totaux,
+  marges, factures inchangés) ; `tendered_currency`, `tendered_amount` et
+  `exchange_rate` gardent ce que le client a remis. La monnaie rendue est gardée dans
+  sa devise (`sales.change_currency`, `change_amount`), arrondie à la coupure.
+- Le taux annoncé par le poste n'est accepté que s'il a été fixé par la pharmacie dans
+  les 7 derniers jours (ventes préparées hors ligne) ; sinon le dernier taux s'applique.
+- Un écart d'arrondi inférieur au demi-pas n'est pas un règlement incomplet : la vente
+  est soldée. Le crédit client se compte dans la devise de la pharmacie.
+- La caisse suit chaque autre devise dans `cash_session_currencies` (fonds, attendu,
+  compté, écart) ; une annulation reverse les espèces de chaque devise telles
+  qu'elles sont entrées.
 
 ## Changer de base de données
 
@@ -406,7 +430,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             138 tests de bout en bout
+│   └── test/             147 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -430,6 +454,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | Suite | Ce qu'elle démontre |
 |---|---|
 | `acceptance-saas.e2e-spec.ts` | Les 17 critères d'acceptation du cahier des charges |
+| `caisse-devises.e2e-spec.ts` | Taux du jour, paiement en francs ou mêlé, monnaie rendue arrondie, caisse et annulation par devise |
 | `pharmacy-operations.e2e-spec.ts` | FEFO, stock, caisse, crédit, B2B, inventaire, mise en route |
 | `tenant-isolation.e2e-spec.ts` | L'isolation tient au niveau base, sans le code applicatif |
 | `messaging-payments.e2e-spec.ts` | Un message ne part pas deux fois, un versement Mobile Money ne s'encaisse pas deux fois |

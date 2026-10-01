@@ -2,6 +2,10 @@
 
 export function money(value: unknown, currency = 'USD'): string {
   const amount = Number(value ?? 0);
+  // Le franc congolais s'écrit « FC », sans centimes : ils ne circulent pas.
+  if (currency === 'CDF') {
+    return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(amount)} FC`;
+  }
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency,

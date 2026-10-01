@@ -4,7 +4,7 @@ import {
   Ctx, RequireModule, RequirePermissions, WriteOperation,
 } from '../../../common/auth/decorators';
 import { RequestContext } from '../../../common/database/request-context';
-import { CashService } from './cash.service';
+import { CashService, MontantDevise } from './cash.service';
 
 @ApiTags('Espace pharmacie')
 @Controller('cash')
@@ -17,6 +17,24 @@ export class CashController {
   @ApiOperation({ summary: 'Session de caisse en cours' })
   current(@Ctx() ctx: RequestContext, @Query('branchId') branchId?: string) {
     return this.cash.current(ctx, branchId);
+  }
+
+  @Get('rates')
+  @RequirePermissions('cash.read')
+  @ApiOperation({ summary: 'Taux du jour et historique des taux' })
+  taux(@Ctx() ctx: RequestContext) {
+    return this.cash.taux(ctx);
+  }
+
+  @Post('rates')
+  @RequirePermissions('cash.manage')
+  @WriteOperation()
+  @ApiOperation({ summary: 'Fixer le taux du jour (1 base = rate quote)' })
+  fixerTaux(
+    @Ctx() ctx: RequestContext,
+    @Body() body: { baseCurrency: string; quoteCurrency: string; rate: number; changeRounding?: number },
+  ) {
+    return this.cash.fixerTaux(ctx, body ?? ({} as never));
   }
 
   @Get('sessions')
@@ -32,7 +50,10 @@ export class CashController {
   @ApiOperation({ summary: 'Ouvrir la caisse' })
   open(
     @Ctx() ctx: RequestContext,
-    @Body() body: { branchId?: string; registerCode?: string; openingFloat?: number },
+    @Body() body: {
+      branchId?: string; registerCode?: string; openingFloat?: number;
+      openingFloats?: MontantDevise[];
+    },
   ) {
     return this.cash.open(ctx, body ?? {});
   }
@@ -44,7 +65,7 @@ export class CashController {
   close(
     @Ctx() ctx: RequestContext,
     @Param('id') id: string,
-    @Body() body: { countedCash: number; notes?: string },
+    @Body() body: { countedCash: number; countedOther?: MontantDevise[]; notes?: string },
   ) {
     return this.cash.close(ctx, id, body);
   }
@@ -56,7 +77,7 @@ export class CashController {
   movement(
     @Ctx() ctx: RequestContext,
     @Param('id') id: string,
-    @Body() body: { kind: string; amount: number; reason: string },
+    @Body() body: { kind: string; amount: number; reason: string; currency?: string },
   ) {
     return this.cash.movement(ctx, id, body);
   }

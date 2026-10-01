@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  ArrayMinSize, IsArray, IsIn, IsNumber, IsOptional, IsString, Min,
+  ArrayMinSize, IsArray, IsIn, IsNumber, IsOptional, IsString, Matches, Min,
   MinLength, ValidateNested,
 } from 'class-validator';
 
@@ -41,6 +41,23 @@ export class SalePaymentDto {
   @IsOptional() @IsString() provider?: string;
 
   @ApiPropertyOptional() @IsOptional() @IsString() reference?: string;
+
+  @ApiPropertyOptional({
+    example: 'CDF',
+    description:
+      'Devise du montant remis, si ce n’est pas celle de la vente. « amount » est ' +
+      'alors exprimé dans cette devise et converti au taux du jour.',
+  })
+  @IsOptional() @IsString() @Matches(/^[A-Z]{3}$/, { message: 'Devise sur trois lettres (USD, CDF…).' })
+  currency?: string;
+
+  @ApiPropertyOptional({
+    example: 2850,
+    description:
+      'Taux affiché au client (1 devise forte = taux devise faible). Accepté s’il a été ' +
+      'fixé par la pharmacie ces derniers jours ; sinon le dernier taux s’applique.',
+  })
+  @IsOptional() @IsNumber() @Min(0.000001) exchangeRate?: number;
 }
 
 export class PrescriptionDto {
@@ -82,6 +99,13 @@ export class CreateSaleDto {
 
   @ApiPropertyOptional() @IsOptional() @IsString() deviceId?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() notes?: string;
+
+  @ApiPropertyOptional({
+    example: 'CDF',
+    description: 'Devise dans laquelle la monnaie est rendue. Par défaut, celle de la vente.',
+  })
+  @IsOptional() @IsString() @Matches(/^[A-Z]{3}$/, { message: 'Devise sur trois lettres (USD, CDF…).' })
+  changeCurrency?: string;
 
   @ApiPropertyOptional({ default: false, description: 'Émettre une facture en plus du reçu.' })
   @IsOptional() issueInvoice?: boolean;
