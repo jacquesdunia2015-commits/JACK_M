@@ -9,12 +9,18 @@ const {
 
 import { AVERTISSEMENT, ETUDE, participants, guide } from "./echantillon.mjs";
 import { observations } from "./observations.mjs";
+import { participantsV2 } from "./echantillon-vague2.mjs";
+import { observationsV2 } from "./observations-vague2.mjs";
 import * as e12 from "./entretiens-01-02.mjs";
 import * as e34 from "./entretiens-03-04.mjs";
 import * as e56 from "./entretiens-05-06.mjs";
 import * as e78 from "./entretiens-07-08.mjs";
 import * as e910 from "./entretiens-09-10.mjs";
-const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910 };
+import * as e1113 from "./entretiens-11-13.mjs";
+import * as e1416 from "./entretiens-14-16.mjs";
+import * as e1719 from "./entretiens-17-19.mjs";
+import * as e2021 from "./entretiens-20-21.mjs";
+const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910, ...e1113, ...e1416, ...e1719, ...e2021 };
 
 const LARGEUR = 9026; // A4 moins les marges, en DXA
 const p = (text, opts = {}) => new Paragraph({ children: [new TextRun({ text, ...opts.run })], ...opts });
@@ -64,7 +70,7 @@ const bandeau = () => new Table({
   })] })],
 });
 
-const pageDeGarde = (sousTitre, description) => [
+const pageDeGarde = (sousTitre, description, echantillon) => [
   new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 400, after: 100 },
     children: [new TextRun({ text: "UNIVERSITÉ DE PARAKOU — ENATSE", bold: true, size: 22 })] }),
   new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 300 },
@@ -76,28 +82,61 @@ const pageDeGarde = (sousTitre, description) => [
   vide(), bandeau(), vide(),
   ...description.split("\n").map(l => p(l, { run: { size: 20 }, spacing: { after: 80 } })),
   vide(),
-  ...tableauInfos(),
+  ...tableauInfos(echantillon),
 ];
 
-const tableauInfos = () => [tableau([
+const tableauInfos = (echantillon) => [tableau([
   ["Chercheur", ETUDE.chercheur],
   ["Institution", ETUDE.institution],
   ["Direction", ETUDE.directrice],
   ["Période simulée", ETUDE.periodeSimulee],
-  ["Échantillon simulé", "5 infirmiers et 5 sages-femmes, 5 centres de santé codés (CS02, CS03, CS07, CS11, CS14)"],
+  ["Échantillon simulé", echantillon],
 ], [2400, 6626], { entete: false })];
 
 /* ================================================================
-   Document 1 — Annexes remplies
+   Couverture du Tableau II, calculée.
+   Les effectifs ne sont jamais saisis à la main : une liste de participants
+   qui change ne doit pas laisser un tableau de couverture périmé.
 ================================================================ */
-function documentAnnexes() {
+function resume(liste, critere, libelle) {
+  const ok = liste.filter(critere);
+  return `${ok.length} ${libelle} (${ok.map(x => x.code).join(", ")})`;
+}
+function couverture(liste) {
+  const centres = (crit) => [...new Set(liste.filter(crit).map(x => x.cs))].sort().join(", ");
+  const urb = x => x.secteur === "urbain";
+  return [
+    ["Dimension (Tableau II)", "Modalités recherchées", "Couverture dans l'échantillon simulé"],
+    ["Qualification", "Infirmiers ; sages-femmes",
+      resume(liste, x => x.qualif === "infirmier", "infirmiers ou infirmières") + " · " +
+      resume(liste, x => x.qualif === "sage-femme", "sages-femmes")],
+    ["Fonction", "Prestataires ; infirmiers titulaires",
+      resume(liste, x => x.titulaire, "titulaires") + ` · ${liste.filter(x => !x.titulaire).length} prestataires`],
+    ["Ancienneté en CPN", "6 mois-2 ans ; plus de 2 ans",
+      resume(liste, x => x.ancCpn === "6 mois-2 ans", "de 6 mois à 2 ans") + ` · ${liste.filter(x => x.ancCpn === "> 2 ans").length} de plus de 2 ans`],
+    ["Secteur d'implantation", "Urbain ; rural périphérique",
+      `${liste.filter(urb).length} urbains (${centres(urb)}) · ${liste.filter(x => !urb(x)).length} ruraux (${centres(x => !urb(x))})`],
+    ["Distance à l'hôpital", "Proche ; éloignée",
+      `${liste.filter(x => x.distanceHopital === "proche").length} proches · ${liste.filter(x => x.distanceHopital === "éloignée").length} éloignés`],
+    ["Volume d'activité prénatale", "Élevé ; modéré",
+      `${liste.filter(x => x.volume === "élevé").length} en volume élevé · ${liste.filter(x => x.volume === "modéré").length} en volume modéré`],
+    ["Profil socio-économique du secteur", "Pauvreté plus élevée ; plus faible",
+      `${liste.filter(x => x.pauvreteSecteur === "plus élevée").length} en secteur de pauvreté plus élevée · ${liste.filter(x => x.pauvreteSecteur === "plus faible").length} en secteur de pauvreté plus faible`],
+  ];
+}
+
+/* ================================================================
+   Document — Annexes remplies
+================================================================ */
+function documentAnnexes(cfg) {
+  const { participants, observations } = cfg;
   const enfants = [
-    ...pageDeGarde("Annexes de collecte remplies",
+    ...pageDeGarde(cfg.titre,
       "Ce document contient les outils de collecte du protocole renseignés par des données simulées :\n" +
-      "· Annexe 3 — fiche de données sociodémographiques et professionnelles (dix fiches)\n" +
-      "· Annexe 2 — guide d'observation du service (cinq grilles)\n" +
+      `· Annexe 3 — fiche de données sociodémographiques et professionnelles (${cfg.nbFiches} fiches)\n` +
+      `· Annexe 2 — guide d'observation du service (${cfg.nbGrilles} grilles)\n` +
       "· Synthèse de l'échantillon au regard du Tableau II (matrice de variation)\n\n" +
-      "Tous les champs sont éditables : le document est destiné à servir de gabarit pour la collecte réelle."),
+      "Tous les champs sont éditables : le document est destiné à servir de gabarit pour la collecte réelle.", cfg.echantillon),
     saut(),
 
     titre1("1. Synthèse de l'échantillon simulé"),
@@ -109,19 +148,17 @@ function documentAnnexes() {
         x.secteur === "urbain" ? "urbain" : "rural", x.distanceHopital, x.volume, x.formationMnt, x.langue.slice(0, 5) + "."]),
     ], [700, 800, 1200, 800, 1000, 900, 900, 826, 1000, 900]),
     vide(),
-    titre2("Couverture des sept dimensions de variation"),
-    tableau([
-      ["Dimension (Tableau II)", "Modalités recherchées", "Couverture dans l'échantillon simulé"],
-      ["Qualification", "Infirmiers ; sages-femmes", "5 infirmiers (P01, P04, P05, P08, P09) · 5 sages-femmes (P02, P03, P06, P07, P10)"],
-      ["Fonction", "Prestataires ; infirmiers titulaires", "3 titulaires (P01, P05, P09) · 7 prestataires"],
-      ["Ancienneté en CPN", "6 mois-2 ans ; plus de 2 ans", "3 de 6 mois à 2 ans (P03, P06, P08) · 7 de plus de 2 ans"],
-      ["Secteur d'implantation", "Urbain ; rural périphérique", "4 urbains (CS02, CS03) · 6 ruraux (CS07, CS11, CS14)"],
-      ["Distance à l'hôpital", "Proche ; éloignée", "4 proches · 6 éloignés"],
-      ["Volume d'activité prénatale", "Élevé ; modéré", "4 en volume élevé · 6 en volume modéré"],
-      ["Profil socio-économique du secteur", "Pauvreté plus élevée ; plus faible", "6 en secteur de pauvreté plus élevée · 4 en secteur de pauvreté plus faible"],
-    ], [2200, 2400, 4426]),
+    titre2(cfg.titreCouverture),
+    tableau(couverture(participants), [2200, 2400, 4426]),
     vide(),
-    p("Point de vigilance pour la collecte réelle : l'effectif retenu au protocole est de seize à vingt-quatre participants, à raison d'un à deux par centre sur les seize centres du district. Les dix participants simulés ici ne satisfont donc PAS le critère de suffisance informationnelle du § 4.2.3.1 ; ils suffisent à l'apprentissage de l'outil, pas à une analyse.", { run: { size: 20, italics: true } }),
+    ...(cfg.couvertureEnsemble ? [
+      titre2("Couverture de l'ensemble des deux vagues (21 participants, 16 centres)"),
+      p("C'est ce tableau-là que le protocole demande de remplir : la vague 2 a été composée pour compléter les modalités et couvrir les seize centres du district.", { run: { size: 20 } }),
+      vide(),
+      tableau(couverture(cfg.couvertureEnsemble), [2200, 2400, 4426]),
+      vide(),
+    ] : []),
+    p(cfg.vigilance, { run: { size: 20, italics: true } }),
     saut(),
 
     titre1("2. Annexe 3 — Fiches de données sociodémographiques et professionnelles"),
@@ -202,13 +239,14 @@ function documentAnnexes() {
 /* ================================================================
    Document 2 — Transcriptions verbatim
 ================================================================ */
-function documentTranscriptions() {
+function documentTranscriptions(cfg) {
+  const { participants } = cfg;
   const enfants = [
-    ...pageDeGarde("Transcriptions verbatim",
-      "Dix transcriptions d'entretiens simulés, présentées question par question selon l'annexe 1 du protocole (guide d'entretien semi-structuré).\n\n" +
+    ...pageDeGarde(cfg.titre,
+      `${cfg.nbTranscriptions} transcriptions d'entretiens simulés, présentées question par question selon l'annexe 1 du protocole (guide d'entretien semi-structuré).\n\n` +
       "Chaque transcription est précédée de la fiche du participant et du journal de bord de l'entretien (§ 4.2.6 : « consigner au journal de bord les conditions du déroulement, éléments non verbaux, interruptions et réflexions du chercheur »).\n\n" +
       "Les entretiens simulés en kinyarwanda sont présentés dans leur rendu français, les termes propres au discours du participant étant conservés entre crochets.\n\n" +
-      "« E : » désigne l'enquêteur (relances) ; le code du participant désigne ses tours de parole."),
+      "« E : » désigne l'enquêteur (relances) ; le code du participant désigne ses tours de parole.", cfg.echantillon),
     saut(),
     titre1("Note sur les insertions en kinyarwanda"),
     p("Les termes placés entre crochets dans les transcriptions (par exemple [umuvuduko w'amaraso], [kugagara], [ubukene]) sont ILLUSTRATIFS. Ils montrent où et comment le protocole demande de conserver les termes propres au discours du participant — ils ne constituent pas une traduction vérifiée. Avant tout usage, faites-les relire par un locuteur natif, et notamment par le collaborateur trilingue prévu au § 4.2.6 pour la transcription.", { run: { size: 20 } }),
@@ -268,5 +306,32 @@ const ecrire = async (doc, nom) => {
   console.log("écrit :", nom);
 };
 
-await ecrire(documentAnnexes(), "1_Annexes_remplies_SIMULATION.docx");
-await ecrire(documentTranscriptions(), "2_Transcriptions_verbatim_SIMULATION.docx");
+const dossier = process.argv[2] || ".";
+const ech1 = "5 infirmiers et 5 sages-femmes, 5 centres de santé codés (CS02, CS03, CS07, CS11, CS14)";
+const ech2 = "5 infirmiers ou infirmières et 6 sages-femmes, 11 centres de santé codés " +
+  "(CS01, CS04, CS05, CS06, CS08, CS09, CS10, CS12, CS13, CS15, CS16)";
+
+// Vague 1
+await ecrire(documentAnnexes({
+  participants, observations, echantillon: ech1, nbFiches: "dix", nbGrilles: "cinq",
+  titre: "Annexes de collecte remplies",
+  titreCouverture: "Couverture des sept dimensions de variation",
+  vigilance: "Point de vigilance pour la collecte réelle : l'effectif retenu au protocole est de seize à vingt-quatre participants, à raison d'un à deux par centre sur les seize centres du district. Les dix participants simulés ici ne satisfont donc PAS le critère de suffisance informationnelle du § 4.2.3.1 ; ils suffisent à l'apprentissage de l'outil, pas à une analyse.",
+}), `${dossier}/1_Annexes_remplies_SIMULATION.docx`);
+await ecrire(documentTranscriptions({
+  participants, echantillon: ech1, nbTranscriptions: "Dix", titre: "Transcriptions verbatim",
+}), `${dossier}/2_Transcriptions_verbatim_SIMULATION.docx`);
+
+// Vague 2
+await ecrire(documentAnnexes({
+  participants: participantsV2, observations: observationsV2, echantillon: ech2,
+  nbFiches: "onze", nbGrilles: "onze",
+  titre: "Annexes de collecte remplies — vague 2",
+  titreCouverture: "Couverture des sept dimensions — vague 2 seule",
+  couvertureEnsemble: [...participants, ...participantsV2],
+  vigilance: "Avec la première vague, l'ensemble atteint 21 participants sur les 16 centres du district, dans la fourchette de seize à vingt-quatre du § 4.2.3.1. Le protocole ne clôt pourtant pas la collecte sur un nombre : la suffisance informationnelle doit être argumentée dimension par dimension. Le projet « complet » contient un mémo qui s'y exerce.",
+}), `${dossier}/4_Annexes_remplies_SIMULATION_vague2.docx`);
+await ecrire(documentTranscriptions({
+  participants: participantsV2, echantillon: ech2, nbTranscriptions: "Onze",
+  titre: "Transcriptions verbatim — vague 2",
+}), `${dossier}/5_Transcriptions_verbatim_SIMULATION_vague2.docx`);

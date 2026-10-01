@@ -2,15 +2,21 @@
 //   node construire.mjs
 import { writeFileSync } from "node:fs";
 import { AVERTISSEMENT, ETUDE, participants, guide } from "./echantillon.mjs";
+import { participantsV2 } from "./echantillon-vague2.mjs";
 import { observations } from "./observations.mjs";
-import { arbre, grilleParQuestion, ajustements, grilleObservation, ecarts } from "./codes.mjs";
+import { observationsV2 } from "./observations-vague2.mjs";
+import { arbre, grilleParQuestion, ajustements, ajustementsV2, grilleObservation, ecarts, ecartsV2 } from "./codes.mjs";
 import * as e12 from "./entretiens-01-02.mjs";
 import * as e34 from "./entretiens-03-04.mjs";
 import * as e56 from "./entretiens-05-06.mjs";
 import * as e78 from "./entretiens-07-08.mjs";
 import * as e910 from "./entretiens-09-10.mjs";
+import * as e1113 from "./entretiens-11-13.mjs";
+import * as e1416 from "./entretiens-14-16.mjs";
+import * as e1719 from "./entretiens-17-19.mjs";
+import * as e2021 from "./entretiens-20-21.mjs";
 
-const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910 };
+const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910, ...e1113, ...e1416, ...e1719, ...e2021 };
 
 let compteur = 0;
 const uid = () => "s" + (++compteur).toString(36).padStart(5, "0");
@@ -112,177 +118,8 @@ function compteRendu(o) {
   return { texte, rubriques };
 }
 
-/* ================================================================
-   3. Construction du projet
-================================================================ */
-const maintenant = new Date("2026-09-20T09:00:00Z").toISOString();
-const projet = {
-  format: "qualicode-projx", version: 1, id: "memoire-ngoma-simulation",
-  name: "Mémoire Ngoma — SIMULATION de formation",
-  created: maintenant, modified: maintenant,
-  memo: "", documentGroups: [], documents: [], codes: [], segments: [],
-  memos: [], variables: [], trash: { documents: [], codes: [] },
-  savedQueries: [], conceptMaps: [], bibliography: [],
-};
-
-// --- Variables de document (permettent les comparaisons de groupes)
-projet.variables = [
-  "type_document", "code_structure", "qualification", "sexe", "tranche_age",
-  "niveau_formation", "anciennete_totale", "anciennete_cpn", "titulaire",
-  "formation_mnt", "secteur", "distance_hopital", "volume_activite",
-  "pauvrete_secteur", "langue_entretien",
-];
-
-// --- Groupes de documents
-const gEntretiens = { id: uid(), name: "Entretiens (corpus principal)" };
-const gObservations = { id: uid(), name: "Observations (corpus secondaire)" };
-projet.documentGroups.push(gEntretiens, gObservations);
-
-// --- Codes (arbre à deux niveaux)
-const idCode = {};
-for (const famille of arbre) {
-  const f = { id: uid(), name: famille.nom, parentId: null, color: famille.couleur, created: maintenant };
-  projet.codes.push(f);
-  idCode[famille.id] = f.id;
-  for (const enfant of famille.enfants) {
-    const c = { id: uid(), name: enfant.nom, parentId: f.id, color: famille.couleur, created: maintenant };
-    projet.codes.push(c);
-    idCode[enfant.id] = c.id;
-  }
-}
-
-// --- Documents d'entretien + codage
-function codesPour(participant, question) {
-  const base = grilleParQuestion[question] || [];
-  const regle = (ajustements[participant] || {})[question];
-  if (!regle) return base;
-  if (regle.startsWith("=")) return regle.slice(1).split(",").filter(Boolean);
-  return [...new Set([...base, ...regle.replace(/^\+/, "").split(",").filter(Boolean)])];
-}
-
-const docParParticipant = {};
-for (const p of participants) {
-  const { texte, tours } = transcription(p);
-  const doc = {
-    id: uid(), name: `Entretien ${p.code} — ${p.cs} (${p.qualif})`,
-    groupId: gEntretiens.id, text: texte, created: maintenant,
-    variables: {
-      type_document: "entretien", code_structure: p.cs, qualification: p.qualif,
-      sexe: p.sexe, tranche_age: p.age, niveau_formation: p.niveau,
-      anciennete_totale: p.ancTotale, anciennete_cpn: p.ancCpn,
-      titulaire: p.titulaire ? "oui" : "non",
-      formation_mnt: p.formationMnt, secteur: p.secteur,
-      distance_hopital: p.distanceHopital, volume_activite: p.volume,
-      pauvrete_secteur: p.pauvreteSecteur, langue_entretien: p.langue,
-    },
-  };
-  projet.documents.push(doc);
-  docParParticipant[p.code] = doc;
-
-  for (const tour of tours) {
-    for (const c of codesPour(p.code, tour.question)) {
-      if (!idCode[c]) throw new Error(`code inconnu : ${c} (${p.code}/${tour.question})`);
-      projet.segments.push({
-        id: uid(), docId: doc.id, codeId: idCode[c],
-        start: tour.debut, end: tour.fin,
-        text: texte.slice(tour.debut, tour.fin),
-        weight: 1, comment: "", created: maintenant, coder: "C1",
-      });
-    }
-  }
-
-  // Journal de bord → mémo de document
-  projet.memos.push({
-    id: uid(), targetType: "document", targetId: doc.id,
-    title: "Journal de bord — conditions de l'entretien",
-    text: entretiens[p.code].journal, created: maintenant,
-  });
-}
-
-// --- Documents d'observation + codage
-const docParCentre = {};
-for (const o of observations) {
-  const { texte, rubriques } = compteRendu(o);
-  const doc = {
-    id: uid(), name: `Observation ${o.cs} (${o.secteur})`,
-    groupId: gObservations.id, text: texte, created: maintenant,
-    variables: {
-      type_document: "observation", code_structure: o.cs,
-      secteur: o.secteur,
-      volume_activite: o.A.femmesRecues >= 35 ? "élevé" : "modéré",
-    },
-  };
-  projet.documents.push(doc);
-  docParCentre[o.cs] = doc;
-
-  for (const r of rubriques) {
-    for (const c of grilleObservation[r.lettre] || []) {
-      projet.segments.push({
-        id: uid(), docId: doc.id, codeId: idCode[c],
-        start: r.debut, end: r.fin, text: texte.slice(r.debut, r.fin),
-        weight: 1, comment: "", created: maintenant, coder: "C1",
-      });
-    }
-  }
-
-  // Écart déclaré / constaté : codé sur la rubrique F (réflexivité), avec le
-  // constat en commentaire de segment — c'est là que la triangulation se lit.
-  const ecart = ecarts.find(x => x.cs === o.cs);
-  if (ecart) {
-    const rF = rubriques.find(r => r.lettre === "F");
-    projet.segments.push({
-      id: uid(), docId: doc.id, codeId: idCode["J5"],
-      start: rF.debut, end: rF.fin, text: texte.slice(rF.debut, rF.fin),
-      weight: 3, comment: ecart.constat, created: maintenant, coder: "C1",
-    });
-  }
-}
-
-/* ================================================================
-   4. Double codage (§ 4.2.6 : dépendabilité)
-   Un second codeur reprend trois entretiens à l'aveugle. L'accord n'est pas
-   total — c'est précisément ce que le kappa doit mesurer. Sans désaccord, le
-   contrôle ne contrôlerait rien.
-================================================================ */
-const relus = ["P02", "P06", "P09"];
-let desaccords = 0;
-for (const code of relus) {
-  const doc = docParParticipant[code];
-  const originaux = projet.segments.filter(s => s.docId === doc.id && s.coder === "C1");
-  // Les désaccords sont de trois natures, celles qu'on rencontre réellement :
-  // un passage non retenu, une borne placée ailleurs, et un code voisin choisi
-  // à la place d'un autre. Un second codage qui reproduirait le premier à
-  // l'identique donnerait un kappa proche de 1 et ne contrôlerait rien.
-  const freres = { C4: "C6", G3: "G7", H2: "H4", E2: "E7", B2: "B6", F2: "F3", D2: "D4", A3: "A5" };
-  const idVers = Object.fromEntries(Object.entries(idCode).map(([k, v]) => [v, k]));
-  originaux.forEach((s, i) => {
-    if (i % 5 === 2) { desaccords++; return; }            // passage non retenu
-    const decalage = i % 8 === 5 ? 60 : 0;                 // borne déplacée
-    let codeId = s.codeId;
-    const cle = idVers[s.codeId];
-    if (i % 10 === 4 && freres[cle]) { codeId = idCode[freres[cle]]; desaccords++; } // code voisin
-    if (decalage) desaccords++;
-    const debut = Math.min(s.start + decalage, s.end - 1);
-    projet.segments.push({
-      id: uid(), docId: doc.id, codeId,
-      start: debut, end: s.end, text: doc.text.slice(debut, s.end),
-      weight: 1, comment: "", created: maintenant, coder: "C2",
-    });
-  });
-  // Et il ajoute un code que le premier codeur n'avait pas vu.
-  const rF = originaux[originaux.length - 1];
-  projet.segments.push({
-    id: uid(), docId: doc.id, codeId: idCode["H5"],
-    start: rF.start, end: rF.end, text: doc.text.slice(rF.start, rF.end),
-    weight: 1, comment: "Codé par C2 uniquement — à discuter en séance de consensus.",
-    created: maintenant, coder: "C2",
-  });
-  desaccords++;
-}
-
-/* ================================================================
-   5. Mémos analytiques
-================================================================ */
+/* Mémos de la vague 1 — inchangés depuis la première simulation. */
+function memosVague1({ projet, memoTheme, ecarts }) {
 projet.memo = `PROJET DE FORMATION — ${AVERTISSEMENT}
 
 Ce projet reproduit, de bout en bout, le traitement prévu au § 4.2.6 du protocole
@@ -310,10 +147,6 @@ Accord inter-codeurs.
 NOTE SUR LE KINYARWANDA : les termes insérés entre crochets sont illustratifs et
 doivent être vérifiés par un locuteur natif avant tout usage. Ils montrent où
 placer ces termes, non comment les écrire.`;
-
-const memoTheme = (titre, texte) => projet.memos.push({
-  id: uid(), targetType: "project", targetId: null, title: titre, text: texte, created: maintenant,
-});
 
 memoTheme("Phase 1 — Familiarisation (journal)",
 `Lecture intégrale des dix transcriptions et des cinq comptes rendus avant tout codage.
@@ -399,99 +232,555 @@ memoTheme("Piste d'audit — décisions de codage",
    Ces quatre codes appellent une révision du cadre conceptuel, prévue comme
    possible au § 3.2 (« le cadre est heuristique et révisable »).`);
 
-// Mémos de définition, sur les familles de codes
-const definitions = {
-  A: "Signification et valeur conférées au dépistage dans le cadre de la CPN (Tableau III). Coder ici les justifications spontanées, les comparaisons avec d'autres actes, l'adhésion ou la réserve — pas les descriptions de gestes, qui vont en famille 2.",
-  C: "Ce qui est transmis à la femme, fondement de sa capacité à agir. C'est la famille qui porte la dimension capacitante du dépistage : sans elle, mesurer n'est pas dépister. C4 (modulation) est le code central pour l'objectif spécifique 1.",
-  G: "ATTENTION — représentations professionnelles, jamais descriptions de la réalité des femmes. Les femmes enceintes ne font pas partie de la population d'étude (§ 4.2.2.1). Tout extrait de cette famille se rapporte à ce que le prestataire perçoit et mobilise, et se rapporte ainsi dans le mémoire.",
-  H: "Appréciation du caractère équitable de la distribution effective du dépistage, et jugement porté sur elle. Famille rattachée à la question Q19, qui porte à elle seule la dimension évaluative de l'étude. Coder les formulations sur le normal et l'anormal, le regret, la résignation, la révolte, et l'attribution de responsabilité.",
-  J: "Corpus secondaire. Sert de contexte et de contrepoint, non de preuve de ce que font les personnes : l'observation ne porte jamais sur un professionnel ni sur le contenu d'une consultation (annexe 2).",
-};
-for (const [famille, texte] of Object.entries(definitions)) {
-  projet.memos.push({
-    id: uid(), targetType: "code", targetId: idCode[famille],
-    title: "Définition et règle d'application", text: texte, created: maintenant,
+}
+
+function construireProjet(cfg) {
+  /* ================================================================
+     3. Construction du projet
+  ================================================================ */
+  const maintenant = new Date(cfg.date).toISOString();
+  const projet = {
+    format: "qualicode-projx", version: 1, id: cfg.id,
+    name: cfg.nom,
+    created: maintenant, modified: maintenant,
+    memo: "", documentGroups: [], documents: [], codes: [], segments: [],
+    memos: [], variables: [], trash: { documents: [], codes: [] },
+    savedQueries: [], conceptMaps: [], bibliography: [],
+  };
+
+  // --- Variables de document (permettent les comparaisons de groupes)
+  projet.variables = [
+    "type_document", "code_structure", "qualification", "sexe", "tranche_age",
+    "niveau_formation", "anciennete_totale", "anciennete_cpn", "titulaire",
+    "formation_mnt", "secteur", "distance_hopital", "volume_activite",
+    "pauvrete_secteur", "langue_entretien",
+  ];
+
+  // --- Groupes de documents
+  const gEntretiens = { id: uid(), name: "Entretiens (corpus principal)" };
+  const gObservations = { id: uid(), name: "Observations (corpus secondaire)" };
+  projet.documentGroups.push(gEntretiens, gObservations);
+
+  // --- Codes (arbre à deux niveaux)
+  const idCode = {};
+  for (const famille of arbre) {
+    const f = { id: uid(), name: famille.nom, parentId: null, color: famille.couleur, created: maintenant };
+    projet.codes.push(f);
+    idCode[famille.id] = f.id;
+    for (const enfant of famille.enfants) {
+      // Le projet de la vague 1 ne connaît pas les codes nés de la vague 2 :
+      // ils n'existaient pas encore quand ce corpus a été codé.
+      if (cfg.exclureVague2 && /vague 2/.test(enfant.nom)) continue;
+      const c = { id: uid(), name: enfant.nom, parentId: f.id, color: famille.couleur, created: maintenant };
+      projet.codes.push(c);
+      idCode[enfant.id] = c.id;
+    }
+  }
+
+  // --- Documents d'entretien + codage
+  function codesPour(participant, question) {
+    const base = grilleParQuestion[question] || [];
+    const regle = (cfg.ajustements[participant] || {})[question];
+    if (!regle) return base;
+    if (regle.startsWith("=")) return regle.slice(1).split(",").filter(Boolean);
+    return [...new Set([...base, ...regle.replace(/^\+/, "").split(",").filter(Boolean)])];
+  }
+
+  const docParParticipant = {};
+  for (const p of cfg.participants) {
+    const { texte, tours } = transcription(p);
+    const doc = {
+      id: uid(), name: `Entretien ${p.code} — ${p.cs} (${p.qualif})`,
+      groupId: gEntretiens.id, text: texte, created: maintenant,
+      variables: {
+        type_document: "entretien", code_structure: p.cs, qualification: p.qualif,
+        sexe: p.sexe, tranche_age: p.age, niveau_formation: p.niveau,
+        anciennete_totale: p.ancTotale, anciennete_cpn: p.ancCpn,
+        titulaire: p.titulaire ? "oui" : "non",
+        formation_mnt: p.formationMnt, secteur: p.secteur,
+        distance_hopital: p.distanceHopital, volume_activite: p.volume,
+        pauvrete_secteur: p.pauvreteSecteur, langue_entretien: p.langue,
+      },
+    };
+    projet.documents.push(doc);
+    docParParticipant[p.code] = doc;
+
+    for (const tour of tours) {
+      for (const c of codesPour(p.code, tour.question)) {
+        if (!idCode[c]) throw new Error(`code inconnu : ${c} (${p.code}/${tour.question})`);
+        projet.segments.push({
+          id: uid(), docId: doc.id, codeId: idCode[c],
+          start: tour.debut, end: tour.fin,
+          text: texte.slice(tour.debut, tour.fin),
+          weight: 1, comment: "", created: maintenant, coder: "C1",
+        });
+      }
+    }
+
+    // Journal de bord → mémo de document
+    projet.memos.push({
+      id: uid(), targetType: "document", targetId: doc.id,
+      title: "Journal de bord — conditions de l'entretien",
+      text: entretiens[p.code].journal, created: maintenant,
+    });
+  }
+
+  // --- Documents d'observation + codage
+  const docParCentre = {};
+  for (const o of cfg.observations) {
+    const { texte, rubriques } = compteRendu(o);
+    const doc = {
+      id: uid(), name: `Observation ${o.cs} (${o.secteur})`,
+      groupId: gObservations.id, text: texte, created: maintenant,
+      variables: {
+        type_document: "observation", code_structure: o.cs,
+        secteur: o.secteur,
+        volume_activite: o.A.femmesRecues >= 35 ? "élevé" : "modéré",
+      },
+    };
+    projet.documents.push(doc);
+    docParCentre[o.cs] = doc;
+
+    for (const r of rubriques) {
+      for (const c of grilleObservation[r.lettre] || []) {
+        projet.segments.push({
+          id: uid(), docId: doc.id, codeId: idCode[c],
+          start: r.debut, end: r.fin, text: texte.slice(r.debut, r.fin),
+          weight: 1, comment: "", created: maintenant, coder: "C1",
+        });
+      }
+    }
+
+    // Écart déclaré / constaté : codé sur la rubrique F (réflexivité), avec le
+    // constat en commentaire de segment — c'est là que la triangulation se lit.
+    const ecart = cfg.ecarts.find(x => x.cs === o.cs);
+    if (ecart) {
+      const rF = rubriques.find(r => r.lettre === "F");
+      projet.segments.push({
+        id: uid(), docId: doc.id, codeId: idCode["J5"],
+        start: rF.debut, end: rF.fin, text: texte.slice(rF.debut, rF.fin),
+        weight: 3, comment: ecart.constat, created: maintenant, coder: "C1",
+      });
+    }
+  }
+
+  /* ================================================================
+     4. Double codage (§ 4.2.6 : dépendabilité)
+     Un second codeur reprend trois entretiens à l'aveugle. L'accord n'est pas
+     total — c'est précisément ce que le kappa doit mesurer. Sans désaccord, le
+     contrôle ne contrôlerait rien.
+  ================================================================ */
+  const relus = cfg.relus;
+  let desaccords = 0;
+  for (const code of relus) {
+    const doc = docParParticipant[code];
+    const originaux = projet.segments.filter(s => s.docId === doc.id && s.coder === "C1");
+    // Les désaccords sont de trois natures, celles qu'on rencontre réellement :
+    // un passage non retenu, une borne placée ailleurs, et un code voisin choisi
+    // à la place d'un autre. Un second codage qui reproduirait le premier à
+    // l'identique donnerait un kappa proche de 1 et ne contrôlerait rien.
+    const freres = { C4: "C6", G3: "G7", H2: "H4", E2: "E7", B2: "B6", F2: "F3", D2: "D4", A3: "A5" };
+    const idVers = Object.fromEntries(Object.entries(idCode).map(([k, v]) => [v, k]));
+    originaux.forEach((s, i) => {
+      if (i % 5 === 2) { desaccords++; return; }            // passage non retenu
+      const decalage = i % 8 === 5 ? 60 : 0;                 // borne déplacée
+      let codeId = s.codeId;
+      const cle = idVers[s.codeId];
+      if (i % 10 === 4 && freres[cle]) { codeId = idCode[freres[cle]]; desaccords++; } // code voisin
+      if (decalage) desaccords++;
+      const debut = Math.min(s.start + decalage, s.end - 1);
+      projet.segments.push({
+        id: uid(), docId: doc.id, codeId,
+        start: debut, end: s.end, text: doc.text.slice(debut, s.end),
+        weight: 1, comment: "", created: maintenant, coder: "C2",
+      });
+    });
+    // Et il ajoute un code que le premier codeur n'avait pas vu.
+    const rF = originaux[originaux.length - 1];
+    projet.segments.push({
+      id: uid(), docId: doc.id, codeId: idCode["H5"],
+      start: rF.start, end: rF.end, text: doc.text.slice(rF.start, rF.end),
+      weight: 1, comment: "Codé par C2 uniquement — à discuter en séance de consensus.",
+      created: maintenant, coder: "C2",
+    });
+    desaccords++;
+  }
+
+  /* ================================================================
+     5. Mémos analytiques
+  ================================================================ */
+  const memoTheme = (titre, texte) => projet.memos.push({
+    id: uid(), targetType: "project", targetId: null, title: titre, text: texte, created: maintenant,
   });
+
+  // Mémos propres à la vague (projet, phases, triangulation, piste d'audit)
+  cfg.memos({ projet, memoTheme, ecarts: cfg.ecarts });
+
+  // Mémos de définition, sur les familles de codes
+  const definitions = {
+    A: "Signification et valeur conférées au dépistage dans le cadre de la CPN (Tableau III). Coder ici les justifications spontanées, les comparaisons avec d'autres actes, l'adhésion ou la réserve — pas les descriptions de gestes, qui vont en famille 2.",
+    C: "Ce qui est transmis à la femme, fondement de sa capacité à agir. C'est la famille qui porte la dimension capacitante du dépistage : sans elle, mesurer n'est pas dépister. C4 (modulation) est le code central pour l'objectif spécifique 1.",
+    G: "ATTENTION — représentations professionnelles, jamais descriptions de la réalité des femmes. Les femmes enceintes ne font pas partie de la population d'étude (§ 4.2.2.1). Tout extrait de cette famille se rapporte à ce que le prestataire perçoit et mobilise, et se rapporte ainsi dans le mémoire.",
+    H: "Appréciation du caractère équitable de la distribution effective du dépistage, et jugement porté sur elle. Famille rattachée à la question Q19, qui porte à elle seule la dimension évaluative de l'étude. Coder les formulations sur le normal et l'anormal, le regret, la résignation, la révolte, et l'attribution de responsabilité.",
+    J: "Corpus secondaire. Sert de contexte et de contrepoint, non de preuve de ce que font les personnes : l'observation ne porte jamais sur un professionnel ni sur le contenu d'une consultation (annexe 2).",
+  };
+  for (const [famille, texte] of Object.entries(definitions)) {
+    projet.memos.push({
+      id: uid(), targetType: "code", targetId: idCode[famille],
+      title: "Définition et règle d'application", text: texte, created: maintenant,
+    });
+  }
+
+  /* ================================================================
+     6. Requêtes sauvegardées
+  ================================================================ */
+  const tousDocs = projet.documents.map(d => d.id);
+  const entretiensDocs = projet.documents.filter(d => d.variables.type_document === "entretien").map(d => d.id);
+  const q = (name, docs, codes, mode = "or") => projet.savedQueries.push({
+    id: uid(), name, activatedDocs: docs, activatedCodes: codes.map(c => idCode[c]),
+    retrievalMode: mode, created: maintenant,
+  });
+  q("T2 — Modulation de l'information (mécanisme d'inégalité)", entretiensDocs, ["C4", "C5", "C6", "C8", "G3"]);
+  q("T1 — Le dépistage coupé en deux", entretiensDocs, ["B1", "B2", "B6", "E2", "F5"]);
+  q("T3 — Trouver sans pouvoir suivre", entretiensDocs, ["B4", "F2", "F3", "F6", "I6"]);
+  q("T4 — Ce qui est compté existe", entretiensDocs, ["E4", "E7", "F4", "I5"]);
+  q("Q19 — Jugements d'équité", entretiensDocs, ["H1", "H2", "H3", "H4", "H5", "H6", "H7", "H8"]);
+  q("Représentations sur les femmes (à manier avec précaution)", entretiensDocs, ["G6", "G3", "G4"]);
+  q("Écarts déclaré / constaté", tousDocs, ["J5"]);
+  q("Codes inductifs — révision du cadre", entretiensDocs, ["H7", "F4", "F6", "G8", "A5", "D5"]);
+  for (const [nom, codes, surTout] of cfg.requetesSup || []) q(nom, surTout ? tousDocs : entretiensDocs, codes);
+
+  /* ================================================================
+     7. Carte conceptuelle (figure 1 du protocole, version codée)
+  ================================================================ */
+  projet.conceptMaps.push({
+    id: uid(), name: "Cadre conceptuel — articulation des deux ensembles",
+    nodes: [
+      { id: "n1", label: "Charte d'Ottawa\n(justice sociale, équité)", x: 320, y: 20, color: "#17334f", width: 230, height: 60 },
+      { id: "n2", label: "ENSEMBLE 1\nSens attribué et pratiques déclarées\n(OS1)", x: 60, y: 140, color: "#4e79a7", width: 250, height: 70 },
+      { id: "n3", label: "ENSEMBLE 2\nConditions perçues (4 niveaux)\n(OS2)", x: 560, y: 140, color: "#e15759", width: 250, height: 70 },
+      { id: "n4", label: "Sens attribué", x: 40, y: 250, color: "#4e79a7", width: 140, height: 44 },
+      { id: "n5", label: "Pratiques techniques", x: 190, y: 250, color: "#59a14f", width: 150, height: 44 },
+      { id: "n6", label: "Pratique informative\n(capacitation)", x: 115, y: 320, color: "#f28e2b", width: 170, height: 50 },
+      { id: "n7", label: "Individuel /\nprofessionnel", x: 520, y: 250, color: "#b07aa1", width: 130, height: 44 },
+      { id: "n8", label: "Organisationnel", x: 660, y: 250, color: "#e15759", width: 130, height: 44 },
+      { id: "n9", label: "Systémique /\npolitique", x: 520, y: 320, color: "#76b7b2", width: 130, height: 44 },
+      { id: "n10", label: "Social perçu", x: 660, y: 320, color: "#edc948", width: 130, height: 44 },
+      { id: "n11", label: "Portée reconnue\nen équité (Q19)", x: 330, y: 420, color: "#9c755f", width: 180, height: 50 },
+      { id: "n12", label: "Transformations\nproposées", x: 560, y: 420, color: "#ff9da7", width: 160, height: 50 },
+      { id: "n13", label: "ÉQUITÉ D'ACCÈS AU DÉPISTAGE CAPACITANT\n(construction commune, non mesurée)", x: 240, y: 520, color: "#17334f", width: 380, height: 60 },
+    ],
+    edges: [
+      { id: "e1", from: "n1", to: "n2", label: "cadre mobilisé" },
+      { id: "e2", from: "n1", to: "n3", label: "cadre mobilisé" },
+      { id: "e3", from: "n2", to: "n4", label: "" },
+      { id: "e4", from: "n2", to: "n5", label: "" },
+      { id: "e5", from: "n2", to: "n6", label: "" },
+      { id: "e6", from: "n3", to: "n7", label: "" },
+      { id: "e7", from: "n3", to: "n8", label: "" },
+      { id: "e8", from: "n3", to: "n9", label: "" },
+      { id: "e9", from: "n3", to: "n10", label: "" },
+      { id: "e10", from: "n2", to: "n3", label: "articulation bidirectionnelle" },
+      { id: "e11", from: "n3", to: "n11", label: "" },
+      { id: "e12", from: "n11", to: "n12", label: "" },
+      { id: "e13", from: "n6", to: "n13", label: "" },
+      { id: "e14", from: "n11", to: "n13", label: "" },
+    ],
+  });
+
+  /* ================================================================
+     8. Bibliographie méthodologique
+     Références réelles, à recouper avec la liste du protocole avant citation.
+  ================================================================ */
+  const ref = (o) => projet.bibliography.push({ id: uid(), ...o });
+  ref({ type: "article", authors: "Braun V, Clarke V", year: "2006", title: "Using thematic analysis in psychology", container: "Qualitative Research in Psychology, 3(2), 77-101", doi: "10.1191/1478088706qp063oa", notes: "Les six phases suivies au § 4.2.6." });
+  ref({ type: "article", authors: "Braun V, Clarke V", year: "2021", title: "To saturate or not to saturate? Questioning data saturation as a useful concept for thematic analysis and sample-size rationales", container: "Qualitative Research in Sport, Exercise and Health, 13(2), 201-216", doi: "10.1080/2159676X.2019.1704846", notes: "Mise en question de la saturation comme justification d'effectif (§ 4.2.3.1)." });
+  ref({ type: "article", authors: "Malterud K, Siersma VD, Guassora AD", year: "2016", title: "Sample size in qualitative interview studies: guided by information power", container: "Qualitative Health Research, 26(13), 1753-1760", doi: "10.1177/1049732315617444", notes: "Principe de puissance informationnelle retenu pour la taille de l'échantillon." });
+  ref({ type: "article", authors: "Tong A, Sainsbury P, Craig J", year: "2007", title: "Consolidated criteria for reporting qualitative research (COREQ): a 32-item checklist for interviews and focus groups", container: "International Journal for Quality in Health Care, 19(6), 349-357", doi: "10.1093/intqhc/mzm042", notes: "Grille de rapportage annoncée en annexe 8." });
+  ref({ type: "article", authors: "Landis JR, Koch GG", year: "1977", title: "The measurement of observer agreement for categorical data", container: "Biometrics, 33(1), 159-174", doi: "10.2307/2529310", notes: "Interprétation du kappa employée par l'application." });
+  ref({ type: "rapport", authors: "Organisation mondiale de la Santé", year: "1986", title: "Charte d'Ottawa pour la promotion de la santé", container: "Première Conférence internationale sur la promotion de la santé, Ottawa", doi: "", notes: "Cadre théorique de l'étude (§ 3.1.1)." });
+
+  return { projet, desaccords };
 }
 
 /* ================================================================
-   6. Requêtes sauvegardées
+   Mémos de la vague 2
 ================================================================ */
-const tousDocs = projet.documents.map(d => d.id);
-const entretiensDocs = projet.documents.filter(d => d.variables.type_document === "entretien").map(d => d.id);
-const q = (name, docs, codes, mode = "or") => projet.savedQueries.push({
-  id: uid(), name, activatedDocs: docs, activatedCodes: codes.map(c => idCode[c]),
-  retrievalMode: mode, created: maintenant,
-});
-q("T2 — Modulation de l'information (mécanisme d'inégalité)", entretiensDocs, ["C4", "C5", "C6", "C8", "G3"]);
-q("T1 — Le dépistage coupé en deux", entretiensDocs, ["B1", "B2", "B6", "E2", "F5"]);
-q("T3 — Trouver sans pouvoir suivre", entretiensDocs, ["B4", "F2", "F3", "F6", "I6"]);
-q("T4 — Ce qui est compté existe", entretiensDocs, ["E4", "E7", "F4", "I5"]);
-q("Q19 — Jugements d'équité", entretiensDocs, ["H1", "H2", "H3", "H4", "H5", "H6", "H7", "H8"]);
-q("Représentations sur les femmes (à manier avec précaution)", entretiensDocs, ["G6", "G3", "G4"]);
-q("Écarts déclaré / constaté", tousDocs, ["J5"]);
-q("Codes inductifs — révision du cadre", entretiensDocs, ["H7", "F4", "F6", "G8", "A5", "D5"]);
+function memosVague2({ projet, memoTheme, ecarts }) {
+  projet.memo = `PROJET DE FORMATION — VAGUE 2 — ${AVERTISSEMENT}
+
+Seconde vague simulée : onze participants (6 sages-femmes, 5 infirmiers ou
+infirmières) dans les onze centres de santé que la vague 1 ne couvrait pas
+(CS01, CS04, CS05, CS06, CS08, CS09, CS10, CS12, CS13, CS15, CS16), avec une
+grille d'observation par centre.
+
+Aucune donnée réelle. Aucun extrait ne peut être cité, aucun résultat rapporté.
+
+Même grille de codage que la vague 1, ouverte : onze codes inductifs nouveaux
+sont nés de ce matériau, signalés « [inductif, vague 2] ». Double codage sur
+trois entretiens (P11, P18, P19, codeur C2).
+
+Pour l'analyse d'ensemble — 21 participants, 16 centres — ouvrir plutôt
+Memoire_Ngoma_SIMULATION_complet.projx.`;
+
+  memoTheme("Vague 2 — Familiarisation (journal)",
+`Lecture des onze transcriptions et des onze comptes rendus avant codage.
+
+1. Le centre CS01 change la lecture de l'ensemble. Il montre que le dépistage
+   complet est réalisable dans le district — et qu'il l'est là où le secteur
+   est le moins pauvre et l'hôpital le plus proche. L'inégalité ne se lit donc
+   pas seulement DANS les centres, mais ENTRE eux.
+2. Même là où tout est fourni, la modulation de l'explication selon l'heure
+   persiste (P11 : « le matériel règle l'inégalité du test ; il ne règle pas
+   celle de l'explication »). Résultat potentiellement central : il dissocie
+   les deux dimensions du dépistage capacitant.
+3. Le registre peut masquer ce qu'il est censé montrer (P19, CS13). Un
+   indicateur de complétude produit de la complétude, pas nécessairement des
+   actes.
+4. Plusieurs équipes ont inventé des réponses locales sans attendre le système :
+   une affiche dessinée à la main, un cahier de suivi après l'accouchement,
+   des piles achetées sur fonds propres, un relais par les agents
+   communautaires.
+5. Une participante (P18) refuse de répondre en catégories de femmes. Ce refus
+   est une donnée : il contredit la tendance à la catégorisation observée en
+   vague 1 et décrit une autre pratique de l'explication.`);
+
+  memoTheme("Vague 2 — Codes inductifs nouveaux et leur motif",
+`B7  Dotation incomplète d'un centre neuf — CS09 : ni rupture ni panne, une
+    dotation pas encore arrivée. Forme d'inégalité absente de la vague 1.
+C9  Support visuel d'information — l'affiche, imprimée (CS01) ou dessinée à la
+    main (CS08), décrite comme ce qui égalise l'explication entre femmes.
+E8  Rotation du personnel et perte des savoirs — P14 : « ce que je sais, je le
+    tiens d'une personne qui n'est plus là ».
+E9  Charge administrative du titulaire — P12 : les titulaires des petits
+    centres « sont devenus des secrétaires ».
+F7  Registre rempli sans acte — P19 et l'observation de CS13. Code sensible :
+    il désigne un effet de système, jamais une faute individuelle.
+F8  Contre-référence effective — CS01 : le volet de retour de l'hôpital, seul
+    exemple d'une référence qui ne se perd pas.
+G9  Relais communautaire — P15, P21 : l'agent de santé communautaire comme
+    « yeux après la référence ».
+G10 Recours au traitement traditionnel, tel que perçu — P13, P20. Représentation
+    professionnelle, à rapporter sans jugement (P13 : « parlez des guérisseurs,
+    mais sans mépris »).
+G11 Mobilité des femmes et rupture du suivi — P17, CS10 : un suivi organisé
+    « autour du centre » et non « autour de la femme ».
+H9  Refus de catégoriser les femmes — P18. Contrepoint direct de G6.
+I8  Initiative locale déjà mise en œuvre — distinct des transformations
+    PROPOSÉES (famille 9) : ici, la transformation est déjà faite, avec les
+    moyens du bord.`);
+
+  memoTheme("Vague 2 — Triangulation",
+ecarts.map(x => `${x.cs} — ${x.constat}`).join("\n\n") +
+`\n\nLa vague 2 produit surtout des CONCORDANCES. C'est un résultat, pas une
+absence de résultat : les écarts de la vague 1 ne permettent pas de supposer
+que les déclarations des participants sont en général contredites par le
+terrain.`);
+
+  memoTheme("Vague 2 — Piste d'audit",
+`1. Même unité de codage qu'en vague 1 : le tour de parole du participant.
+2. Les codes de la vague 1 n'ont été ni renommés ni redéfinis ; les onze codes
+   nouveaux s'y ajoutent sans les remplacer, pour que les deux vagues restent
+   comparables.
+3. Les propos de P20 sur le recours aux guérisseurs et sur la « vie d'ici »
+   sont codés G6 (responsabilité attribuée à la femme) seulement en Q11, où
+   ils prennent cette forme ; ailleurs, G10 suffit. Décision à revoir en
+   séance de consensus.
+4. La concentration de valeurs identiques dans le registre de CS13 n'est
+   consignée qu'en note d'observation, sans relevé chiffré nominatif, et ne
+   sera jamais rapportée en association avec le code de structure.`);
+}
 
 /* ================================================================
-   7. Carte conceptuelle (figure 1 du protocole, version codée)
+   Mémos de l'ensemble (vague 1 + vague 2)
 ================================================================ */
-projet.conceptMaps.push({
-  id: uid(), name: "Cadre conceptuel — articulation des deux ensembles",
-  nodes: [
-    { id: "n1", label: "Charte d'Ottawa\n(justice sociale, équité)", x: 320, y: 20, color: "#17334f", width: 230, height: 60 },
-    { id: "n2", label: "ENSEMBLE 1\nSens attribué et pratiques déclarées\n(OS1)", x: 60, y: 140, color: "#4e79a7", width: 250, height: 70 },
-    { id: "n3", label: "ENSEMBLE 2\nConditions perçues (4 niveaux)\n(OS2)", x: 560, y: 140, color: "#e15759", width: 250, height: 70 },
-    { id: "n4", label: "Sens attribué", x: 40, y: 250, color: "#4e79a7", width: 140, height: 44 },
-    { id: "n5", label: "Pratiques techniques", x: 190, y: 250, color: "#59a14f", width: 150, height: 44 },
-    { id: "n6", label: "Pratique informative\n(capacitation)", x: 115, y: 320, color: "#f28e2b", width: 170, height: 50 },
-    { id: "n7", label: "Individuel /\nprofessionnel", x: 520, y: 250, color: "#b07aa1", width: 130, height: 44 },
-    { id: "n8", label: "Organisationnel", x: 660, y: 250, color: "#e15759", width: 130, height: 44 },
-    { id: "n9", label: "Systémique /\npolitique", x: 520, y: 320, color: "#76b7b2", width: 130, height: 44 },
-    { id: "n10", label: "Social perçu", x: 660, y: 320, color: "#edc948", width: 130, height: 44 },
-    { id: "n11", label: "Portée reconnue\nen équité (Q19)", x: 330, y: 420, color: "#9c755f", width: 180, height: 50 },
-    { id: "n12", label: "Transformations\nproposées", x: 560, y: 420, color: "#ff9da7", width: 160, height: 50 },
-    { id: "n13", label: "ÉQUITÉ D'ACCÈS AU DÉPISTAGE CAPACITANT\n(construction commune, non mesurée)", x: 240, y: 520, color: "#17334f", width: 380, height: 60 },
-  ],
-  edges: [
-    { id: "e1", from: "n1", to: "n2", label: "cadre mobilisé" },
-    { id: "e2", from: "n1", to: "n3", label: "cadre mobilisé" },
-    { id: "e3", from: "n2", to: "n4", label: "" },
-    { id: "e4", from: "n2", to: "n5", label: "" },
-    { id: "e5", from: "n2", to: "n6", label: "" },
-    { id: "e6", from: "n3", to: "n7", label: "" },
-    { id: "e7", from: "n3", to: "n8", label: "" },
-    { id: "e8", from: "n3", to: "n9", label: "" },
-    { id: "e9", from: "n3", to: "n10", label: "" },
-    { id: "e10", from: "n2", to: "n3", label: "articulation bidirectionnelle" },
-    { id: "e11", from: "n3", to: "n11", label: "" },
-    { id: "e12", from: "n11", to: "n12", label: "" },
-    { id: "e13", from: "n6", to: "n13", label: "" },
-    { id: "e14", from: "n11", to: "n13", label: "" },
-  ],
-});
+function memosComplet({ projet, memoTheme, ecarts }) {
+  projet.memo = `PROJET DE FORMATION — CORPUS COMPLET — ${AVERTISSEMENT}
+
+Réunion des deux vagues simulées : 21 participants (11 sages-femmes, 10
+infirmiers ou infirmières) dans les 16 centres de santé du district, et une
+grille d'observation par centre.
+
+C'est la configuration que vise le protocole : seize à vingt-quatre
+participants, au moins un par centre, un second où l'activité le permet
+(§ 4.2.3.1). C'est donc sur ce projet qu'il faut s'exercer à l'analyse
+d'ensemble — comparaisons de groupes, revue des thèmes, suffisance
+informationnelle.
+
+Aucune donnée réelle. Aucun extrait ne peut être cité, aucun résultat rapporté.
+
+Double codage : sept entretiens sur vingt et un, soit un tiers — la proportion
+prévue au § 4.2.6 pour la vérification indépendante (P02, P06, P09, P11, P13,
+P18, P19 ; codeur C2).
+
+NOTE SUR LE KINYARWANDA : les termes entre crochets sont illustratifs et
+doivent être vérifiés par un locuteur natif.`;
+
+  memoTheme("Phase 3 — Thèmes révisés après la vague 2",
+`Les quatre thèmes provisoires de la vague 1 tiennent, mais deux sont précisés
+et trois s'ajoutent.
+
+T1. « Un dépistage coupé en deux » — PRÉCISÉ. Vrai dans la plupart des centres,
+    faux à CS01, ce qui montre qu'il ne tient pas à la nature du dépistage
+    glycémique mais à la répartition des moyens entre centres.
+T2. « Expliquer moins à celles qui savent le moins » — PRÉCISÉ. Persiste là où
+    tous les intrants sont disponibles (P11) : la modulation de l'explication
+    est indépendante de l'équipement. Deux contre-pratiques documentées :
+    l'image commune (C9) et la vérification de la compréhension (C8, P18).
+T3. « Trouver sans pouvoir suivre » — enrichi : la mobilité des femmes (G11)
+    et la contre-référence effective de CS01 (F8) en éclairent les deux bouts.
+T4. « Ce qui est compté existe » — inchangé, mais il appelle T6.
+T5. « Ce que change la dotation — et ce qu'elle ne change pas » — NOUVEAU.
+    Codes : B2, E2, F5, F8, C9. Le contraste CS01 / centres ruraux.
+T6. « Le registre comme écran » — NOUVEAU. Codes : F7, F4, E4. Un contrôle
+    portant sur la complétude produit de la complétude, et peut rendre
+    invisible l'inégalité qu'il devrait révéler (P19 : « une inégalité qu'on
+    ne voit pas, personne ne la corrigera »). Revers de T4.
+T7. « Le dépistage hors des murs » — NOUVEAU. Codes : G9, I8, F6. Relais
+    communautaires, cahier de suivi, affiche faite main : ce que les équipes
+    construisent là où le système ne prévoit rien.`);
+
+  memoTheme("Phase 4 — Revue des thèmes",
+`1. Le thème « résistance des femmes », écarté en vague 1, reste écarté. La
+   vague 2 renforce la décision : un seul participant (P20) y fait écho, sur
+   le mode de la résignation plutôt que du reproche, et P18 en récuse
+   explicitement la prémisse. Ces propos demeurent des représentations
+   professionnelles (G6, H9), analysées comme telles.
+2. « Femmes mobiles » (G11) a été envisagé comme thème autonome, puis rattaché
+   à T3 : il décrit une modalité particulière de la perte de suivi, non un
+   mécanisme distinct. Confronté au corpus entier, il ne concerne qu'un centre.
+3. T4 et T6 ont été un moment fusionnés, puis séparés : T4 dit que ce qui n'est
+   pas compté manque ; T6, que ce qui est compté peut tromper. Fusionnés, ils
+   perdaient leur tension, qui est précisément le résultat.
+4. T7 a été vérifié contre le corpus entier : ses initiatives sont toutes
+   portées par une personne nommément responsable, ce qui fait leur fragilité
+   — élément à garder dans la définition du thème.`);
+
+  memoTheme("Suffisance informationnelle — dimension par dimension (§ 4.2.3.1)",
+`Le protocole ne clôt pas la collecte sur un nombre ni sur une saturation, mais
+sur une appréciation documentée de la suffisance informationnelle au regard de
+CHAQUE dimension du cadre conceptuel. Exercice sur le corpus simulé :
+
+1. Sens attribué ..................... SUFFISANT. 21 participants, positions
+   contrastées (priorité, étape de la fiche, désinvestissement).
+2. Pratiques techniques déclarées ..... SUFFISANT. Tension et glycémie
+   documentées dans des conditions matérielles très variées.
+3. Pratique informative et éducative .. SUFFISANT. Modulation décrite, contre-
+   pratiques décrites (image commune, vérification de la compréhension).
+4. Conditions individuelles ........... SUFFISANT. Formés et non formés,
+   jeunes et anciens, transmission informelle.
+5. Conditions organisationnelles ...... SUFFISANT. Charge, équipement,
+   rotation, charge administrative.
+6. Conditions systémiques ............. SUFFISANT, avec une réserve : la
+   maintenance des appareils n'est évoquée que par quatre participants.
+7. Conditions sociales perçues ........ SUFFISANT pour les représentations des
+   prestataires — ce que l'étude vise. Le point de vue des femmes reste hors
+   champ, limite assumée au § 4.2.6.
+8. Portée reconnue en équité .......... SUFFISANT. Jugements contrastés :
+   inacceptable, résignation, refus de juger, responsabilité reconnue.
+9. Transformations proposées .......... SUFFISANT ; enrichi en vague 2 par des
+   transformations DÉJÀ réalisées (I8).
+
+Conclusion de l'exercice : la collecte pourrait être close à 21 participants.
+Dans la collecte réelle, cette conclusion devra être argumentée sur les
+données, dimension par dimension, et non reprise de ce modèle.`);
+
+  memoTheme("Triangulation — ensemble des deux vagues",
+ecarts.map(x => `${x.cs} — ${x.constat}`).join("\n\n") +
+`\n\nSur seize centres, quatre écarts et six concordances ont été consignés. Aucun
+écart n'est imputé à une intention du participant (§ 4.2.6).`);
+
+  memoTheme("Piste d'audit — révision du cadre conceptuel",
+`32 codes inductifs sur 90 : 21 nés de la vague 1, 11 de la vague 2. Le § 3.2
+prévoit que le cadre est « heuristique et révisable » ; ces codes appellent
+trois révisions possibles, à discuter en supervision :
+
+1. Ajouter au niveau organisationnel la distinction entre un intrant PRÉSENT et
+   un intrant UTILISABLE (CS05 : bandelettes périmées, glucomètre en état).
+2. Ajouter un niveau ou une articulation « communautaire » entre le service et
+   le social perçu : les relais communautaires (G9) prolongent le dépistage
+   hors du centre, ce que le cadre actuel ne prévoit pas.
+3. Faire apparaître le dispositif de contrôle lui-même (indicateurs,
+   complétude des registres) comme une condition systémique à part entière,
+   puisqu'il oriente l'attention (T4) et peut masquer l'inégalité (T6).
+
+Ces propositions sont des exercices : elles devront naître, dans l'étude
+réelle, du matériau réel.`);
+
+  memoTheme("Note de positionnalité — À RÉDIGER PAR LE CHERCHEUR",
+`Ce mémo ne peut pas être simulé : il vous appartient.
+
+Le protocole annonce « journal réflexif et note de positionnalité » au titre de
+la confirmabilité (annexe 8). Questions pour la rédiger :
+
+· Quelle est ma relation au terrain : origine, langue, parcours professionnel,
+  lien éventuel avec le système de santé rwandais ou avec les centres ?
+· Qu'est-ce que je pensais trouver avant la collecte, et sur quoi ?
+· Comment ma position — homme, étudiant d'une université étrangère, chercheur
+  plus âgé que certains participants — a-t-elle pu peser sur ce qui m'a été dit ?
+· Qu'est-ce qui m'a surpris, et qu'est-ce que je n'ai pas voulu entendre ?
+
+À rédiger avant le codage, puis à reprendre à la fin de l'analyse.`);
+}
 
 /* ================================================================
-   8. Bibliographie méthodologique
-   Références réelles, à recouper avec la liste du protocole avant citation.
+   Requêtes complémentaires (thèmes nés de la vague 2)
 ================================================================ */
-const ref = (o) => projet.bibliography.push({ id: uid(), ...o });
-ref({ type: "article", authors: "Braun V, Clarke V", year: "2006", title: "Using thematic analysis in psychology", container: "Qualitative Research in Psychology, 3(2), 77-101", doi: "10.1191/1478088706qp063oa", notes: "Les six phases suivies au § 4.2.6." });
-ref({ type: "article", authors: "Braun V, Clarke V", year: "2021", title: "To saturate or not to saturate? Questioning data saturation as a useful concept for thematic analysis and sample-size rationales", container: "Qualitative Research in Sport, Exercise and Health, 13(2), 201-216", doi: "10.1080/2159676X.2019.1704846", notes: "Mise en question de la saturation comme justification d'effectif (§ 4.2.3.1)." });
-ref({ type: "article", authors: "Malterud K, Siersma VD, Guassora AD", year: "2016", title: "Sample size in qualitative interview studies: guided by information power", container: "Qualitative Health Research, 26(13), 1753-1760", doi: "10.1177/1049732315617444", notes: "Principe de puissance informationnelle retenu pour la taille de l'échantillon." });
-ref({ type: "article", authors: "Tong A, Sainsbury P, Craig J", year: "2007", title: "Consolidated criteria for reporting qualitative research (COREQ): a 32-item checklist for interviews and focus groups", container: "International Journal for Quality in Health Care, 19(6), 349-357", doi: "10.1093/intqhc/mzm042", notes: "Grille de rapportage annoncée en annexe 8." });
-ref({ type: "article", authors: "Landis JR, Koch GG", year: "1977", title: "The measurement of observer agreement for categorical data", container: "Biometrics, 33(1), 159-174", doi: "10.2307/2529310", notes: "Interprétation du kappa employée par l'application." });
-ref({ type: "rapport", authors: "Organisation mondiale de la Santé", year: "1986", title: "Charte d'Ottawa pour la promotion de la santé", container: "Première Conférence internationale sur la promotion de la santé, Ottawa", doi: "", notes: "Cadre théorique de l'étude (§ 3.1.1)." });
+const requetesV2 = [
+  ["T5 — Ce que change la dotation, et ce qu'elle ne change pas", ["B2", "E2", "F5", "F8", "C9"]],
+  ["T6 — Le registre comme écran", ["F7", "F4", "E4"]],
+  ["T7 — Le dépistage hors des murs", ["G9", "I8", "F6"]],
+  ["Femmes mobiles et rupture du suivi", ["G11"]],
+  ["Recours au traitement traditionnel (représentations)", ["G10"]],
+  ["Codes inductifs nés de la vague 2", ["B7", "C9", "E8", "E9", "F7", "F8", "G9", "G10", "G11", "H9", "I8"]],
+];
 
 /* ================================================================
-   9. Écriture
+   9. Écriture des trois projets
 ================================================================ */
-writeFileSync("Memoire_Ngoma_SIMULATION.projx", JSON.stringify(projet, null, 2), "utf8");
+const projets = [
+  {
+    fichier: "Memoire_Ngoma_SIMULATION.projx",
+    cfg: {
+      id: "memoire-ngoma-simulation", nom: "Mémoire Ngoma — SIMULATION de formation",
+      date: "2026-09-20T09:00:00Z", participants, observations, ajustements,
+      ecarts, relus: ["P02", "P06", "P09"], memos: memosVague1, exclureVague2: true,
+    },
+  },
+  {
+    fichier: "Memoire_Ngoma_SIMULATION_vague2.projx",
+    cfg: {
+      id: "memoire-ngoma-simulation-vague2", nom: "Mémoire Ngoma — SIMULATION vague 2",
+      date: "2026-10-01T09:00:00Z", participants: participantsV2, observations: observationsV2,
+      ajustements: ajustementsV2, ecarts: ecartsV2, relus: ["P11", "P18", "P19"],
+      memos: memosVague2, requetesSup: requetesV2,
+    },
+  },
+  {
+    fichier: "Memoire_Ngoma_SIMULATION_complet.projx",
+    cfg: {
+      id: "memoire-ngoma-simulation-complet",
+      nom: "Mémoire Ngoma — SIMULATION complète (21 participants, 16 centres)",
+      date: "2026-10-01T09:00:00Z",
+      participants: [...participants, ...participantsV2],
+      observations: [...observations, ...observationsV2].sort((a, b) => a.cs.localeCompare(b.cs)),
+      ajustements: { ...ajustements, ...ajustementsV2 },
+      ecarts: [...ecarts, ...ecartsV2],
+      relus: ["P02", "P06", "P09", "P11", "P13", "P18", "P19"],
+      memos: memosComplet, requetesSup: requetesV2,
+    },
+  },
+];
 
-const parCoder = projet.segments.reduce((a, s) => { a[s.coder] = (a[s.coder] || 0) + 1; return a; }, {});
-console.log(`Projet écrit : Memoire_Ngoma_SIMULATION.projx`);
-console.log(`  ${projet.documents.length} documents (${projet.documents.filter(d => d.variables.type_document === "entretien").length} entretiens, ${projet.documents.filter(d => d.variables.type_document === "observation").length} observations)`);
-console.log(`  ${projet.codes.length} codes (${projet.codes.filter(c => !c.parentId).length} familles)`);
-console.log(`  ${projet.segments.length} segments codés — par codeur : ${JSON.stringify(parCoder)}`);
-console.log(`  ${projet.memos.length} mémos · ${projet.savedQueries.length} requêtes · ${projet.variables.length} variables · ${projet.bibliography.length} références`);
-console.log(`  ${projet.documents.reduce((s, d) => s + d.text.length, 0).toLocaleString("fr-FR")} caractères de corpus`);
-console.log(`  désaccords introduits volontairement pour le double codage : ${desaccords}`);
+const dossier = process.argv[2] || ".";
+for (const { fichier, cfg } of projets) {
+  const { projet, desaccords } = construireProjet(cfg);
+  writeFileSync(`${dossier}/${fichier}`, JSON.stringify(projet, null, 2), "utf8");
+  const parCoder = projet.segments.reduce((a, s) => { a[s.coder] = (a[s.coder] || 0) + 1; return a; }, {});
+  const ent = projet.documents.filter(d => d.variables.type_document === "entretien").length;
+  const obs = projet.documents.filter(d => d.variables.type_document === "observation").length;
+  console.log(`\n${fichier}`);
+  console.log(`  ${projet.documents.length} documents (${ent} entretiens, ${obs} observations) · ${projet.codes.length} codes`);
+  console.log(`  ${projet.segments.length} segments — par codeur : ${JSON.stringify(parCoder)} · désaccords volontaires : ${desaccords}`);
+  console.log(`  ${projet.memos.length} mémos · ${projet.savedQueries.length} requêtes · ${projet.documents.reduce((t, d) => t + d.text.length, 0).toLocaleString("fr-FR")} caractères`);
+}

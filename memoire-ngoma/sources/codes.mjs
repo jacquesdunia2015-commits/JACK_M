@@ -24,6 +24,7 @@ export const arbre = [
     { id: "B4", nom: "Conduite devant un cas détecté" },
     { id: "B5", nom: "Bandelette urinaire comme substitut [inductif]" },
     { id: "B6", nom: "Mesure omise faute d'appareil disponible [inductif]" },
+    { id: "B7", nom: "Dotation incomplète d'un centre neuf [inductif, vague 2]" },
   ]},
   { id: "C", nom: "3. Pratique informative et éducative", couleur: "#f28e2b", enfants: [
     { id: "C1", nom: "Explication de la mesure et du risque" },
@@ -34,6 +35,7 @@ export const arbre = [
     { id: "C6", nom: "Écart perçu entre information et compréhension" },
     { id: "C7", nom: "Information reportée sur un autre professionnel [inductif]" },
     { id: "C8", nom: "Vérification de la compréhension [inductif]" },
+    { id: "C9", nom: "Support visuel d'information [inductif, vague 2]" },
   ]},
   { id: "D", nom: "4. Conditions individuelles et professionnelles", couleur: "#b07aa1", enfants: [
     { id: "D1", nom: "Absence de préparation initiale" },
@@ -50,6 +52,8 @@ export const arbre = [
     { id: "E5", nom: "Facilitateur : poste de constantes dédié [inductif]" },
     { id: "E6", nom: "Concurrence entre programmes [inductif]" },
     { id: "E7", nom: "Absence de maintenance des appareils [inductif]" },
+    { id: "E8", nom: "Rotation du personnel et perte des savoirs [inductif, vague 2]" },
+    { id: "E9", nom: "Charge administrative du titulaire [inductif, vague 2]" },
   ]},
   { id: "F", nom: "6. Conditions systémiques et politiques", couleur: "#76b7b2", enfants: [
     { id: "F1", nom: "Directives et protocoles disponibles" },
@@ -58,6 +62,8 @@ export const arbre = [
     { id: "F4", nom: "Ce qui est compté existe [inductif]" },
     { id: "F5", nom: "Approvisionnement en intrants" },
     { id: "F6", nom: "Discontinuité après l'accouchement [inductif]" },
+    { id: "F7", nom: "Registre rempli sans acte [inductif, vague 2]" },
+    { id: "F8", nom: "Contre-référence effective [inductif, vague 2]" },
   ]},
   { id: "G", nom: "7. Conditions sociales perçues (représentations professionnelles)", couleur: "#edc948", enfants: [
     { id: "G1", nom: "Moyens, coût et mutuelle" },
@@ -68,6 +74,9 @@ export const arbre = [
     { id: "G6", nom: "Responsabilité attribuée à la femme [inductif]" },
     { id: "G7", nom: "Assurance et capacité à demander [inductif]" },
     { id: "G8", nom: "Le service comme cause du non-retour [inductif]" },
+    { id: "G9", nom: "Relais communautaire (agents de santé communautaire) [inductif, vague 2]" },
+    { id: "G10", nom: "Recours au traitement traditionnel, tel que perçu [inductif, vague 2]" },
+    { id: "G11", nom: "Mobilité des femmes et rupture du suivi [inductif, vague 2]" },
   ]},
   { id: "H", nom: "8. Portée reconnue en équité", couleur: "#9c755f", enfants: [
     { id: "H1", nom: "Perception d'un accès différencié" },
@@ -78,6 +87,7 @@ export const arbre = [
     { id: "H6", nom: "Refus de juger" },
     { id: "H7", nom: "L'heure d'arrivée comme facteur d'inégalité [inductif]" },
     { id: "H8", nom: "Le lieu décide de ce qu'on reçoit [inductif]" },
+    { id: "H9", nom: "Refus de catégoriser les femmes [inductif, vague 2]" },
   ]},
   { id: "I", nom: "9. Transformations proposées", couleur: "#ff9da7", enfants: [
     { id: "I1", nom: "Équipements et consommables" },
@@ -87,6 +97,7 @@ export const arbre = [
     { id: "I5", nom: "Indicateur et redevabilité [inductif]" },
     { id: "I6", nom: "Transport et référence effective [inductif]" },
     { id: "I7", nom: "Destinataires désignés" },
+    { id: "I8", nom: "Initiative locale déjà mise en œuvre [inductif, vague 2]" },
   ]},
   { id: "J", nom: "10. Contexte observé (corpus secondaire)", couleur: "#499894", enfants: [
     { id: "J1", nom: "Espace et flux observés" },
@@ -172,6 +183,61 @@ export const ajustements = {
          Q16: "+E4,E7", Q17: "=I6,F2", Q18: "+I6,I7", Q19: "+H2,H8,G2,G4", Q20: "+G4,H8" },
 };
 
+/** Ajustements de la vague 2 — même logique : « = » remplace, « + » complète. */
+export const ajustementsV2 = {
+  P11: { Q2: "+B2,E2,F5,H8", Q3: "+B4,F2,F8", Q4: "+C1,C2,C3,C9", Q5: "+C9,C3,C6",
+         Q6: "=C4,E1,H7,H5", Q7: "+A3,A5", Q8: "+A2,A4", Q9: "+E5,F8,F5", Q10: "+F3,F8",
+         Q11: "+H1,H7,G1", Q12: "+G2,G11", Q13: "+F2,F8", Q14: "+G1,G5", Q15: "+D2,D4",
+         Q16: "+F4,E4,I5", Q17: "=I6,F3,F8", Q18: "+I7,H8", Q19: "+H2,H8,H4", Q20: "+H8,A4" },
+  P12: { O2: "+E1,E9", Q2: "+B1,B2,D1,D3", Q3: "+B4,F3", Q4: "+C2,D3", Q5: "+C6,D3",
+         Q6: "+C4,E9", Q7: "+A3,F4,E9", Q8: "+A2", Q10: "+E1,E9,B2", Q11: "+H1,G5",
+         Q12: "+G1,G2", Q13: "+F3", Q14: "+G2,G1,G5,G8", Q15: "+D1", Q16: "+E4,F4",
+         Q17: "=I2,D1", Q18: "+I5,E9,I7", Q19: "+H2,H4,H5,E9", Q20: "+E9" },
+  P13: { O2: "+G2,E1", Q2: "+B1,B2,F5,E2", Q3: "+B4,G2,F2", Q4: "+C1,C2,G10",
+         Q5: "+C6,G10", Q6: "=C4,G10,G3", Q7: "+A3,A1", Q8: "+A2,A4", Q9: "+D2,D3,E2",
+         Q10: "+F5,E2,G2", Q11: "+H1,G2", Q12: "+G2,G4,G10", Q13: "+F2,G2,F3",
+         Q14: "+G2,G1,G5,G10", Q15: "+D2,D5", Q16: "+E4,F4,F5", Q17: "=I1,F5",
+         Q18: "+I6,I7,G10", Q19: "+H2,H8,G2", Q20: "+G10" },
+  P14: { O1: "+E8", O2: "+E1,E8", Q2: "+B1,B2,D4,D3,E8", Q3: "+B4,D3", Q4: "=C7",
+         Q5: "+C6,D3", Q6: "=C4,D3", Q7: "+A3,D3", Q8: "+A2", Q9: "+D4,D3",
+         Q10: "+B6,E8,E1", Q11: "+H1,G7,D3", Q12: "+G7", Q13: "+C7,F2", Q14: "+G1,G8",
+         Q15: "+D1,D4,E8", Q16: "+E4", Q17: "=I3,E8", Q18: "+I7,F1,E8", Q19: "+H3,H5,E8",
+         Q20: "+E8" },
+  P15: { O2: "+G9", Q2: "+B1,B2,G9,F2", Q3: "+B4,G1,G4,G9", Q4: "+C1,C2,C9",
+         Q5: "+C9,C6,I8", Q6: "=C4,C9,G3", Q7: "+A3,I8", Q8: "+A2,G9", Q9: "+G9,C9,E2",
+         Q10: "+E2,G9,F3", Q11: "=H1,G9", Q12: "+G9,G4", Q13: "+F2,G9", Q14: "+G2,G1,G5,G9",
+         Q15: "+D3", Q16: "+E4,I8", Q17: "=I3,G9", Q18: "+I4,G9,I7", Q19: "+H2,H5,I8",
+         Q20: "+G9" },
+  P16: { O1: "+B7", O2: "+B7", Q1: "+B3,B7", Q2: "+B1,B2,B7", Q3: "+B4,F3,B7",
+         Q4: "+C2", Q5: "+C6", Q6: "=C5,E1", Q7: "+A3,B7", Q8: "+A2,F1", Q9: "+E2",
+         Q10: "+B7,E2,F5", Q11: "+H1,B7", Q12: "=H6", Q13: "+F3", Q14: "+G5,G8",
+         Q15: "+D1", Q16: "+E4,B7", Q17: "=I1,B7", Q18: "+I7,B7", Q19: "+H3,B7,H1",
+         Q20: "+B7" },
+  P17: { O2: "+G11", Q2: "+B1,B2,D2", Q3: "+B4,G11", Q4: "+C1,C2,C3,G11",
+         Q5: "+C6,G11", Q6: "=C4,G11", Q7: "+A3,D2", Q8: "+A2,A4", Q9: "+D2,E2",
+         Q10: "+G11,F2,F6", Q11: "+H1,G11", Q12: "+G11", Q13: "+F2,G11", Q14: "=G11,G5",
+         Q15: "+D2", Q16: "+E4,F4,G11", Q17: "=I6,G11", Q18: "+I5,G11,I7",
+         Q19: "+H2,H4,G11", Q20: "+G11" },
+  P18: { Q2: "+B1,B2,F5", Q3: "+B4,B2,F2", Q4: "+C1,C2,C3", Q5: "+C6,C8,H9",
+         Q6: "=C4,C8,H9", Q7: "+A3,A1", Q8: "+A2", Q9: "+D2,D4,C8", Q10: "+F5,E2",
+         Q11: "=H9,G1,G4", Q12: "=H9,C5", Q13: "+F2,G1", Q14: "+G1,G4,G8,H9",
+         Q15: "+D2,D4", Q16: "+E4,F4", Q17: "=I1,F5", Q18: "+I7,F5", Q19: "+H2,H9,H5",
+         Q20: "+H9" },
+  P19: { O2: "+E1", Q1: "+B3,E1", Q2: "+B1,B2", Q3: "+B4,F2,G5", Q4: "+C2", Q5: "+C6",
+         Q6: "=C4,E1,H7", Q7: "+A3,F7", Q8: "+A2,F7", Q9: "+D2,E2,E1", Q10: "=F7,E1,F4,B6",
+         Q11: "+H1,H7,F7", Q12: "+H7,F7", Q13: "+F2", Q14: "+G8,G2,G1", Q15: "+D2,E1",
+         Q16: "+E4,F4,F7", Q17: "=I3,E1,F7", Q18: "+I5,F7,I7", Q19: "+H2,F7,H4", Q20: "+F7" },
+  P20: { Q2: "+B1,B2,E2,E7", Q3: "+B4,F3", Q4: "+C2", Q5: "+C6,G10", Q6: "=C5",
+         Q7: "+A3", Q8: "+A2", Q9: "+E2", Q10: "+E2,E7,B6", Q11: "=G6,G10,H3",
+         Q12: "+G2,G10", Q13: "+F2,H3", Q14: "+G2,G1,G5,G10", Q15: "+D1", Q16: "+E4,F4",
+         Q17: "=I1,E7", Q18: "+I1,I2", Q19: "+H3,H4", Q20: "+I2" },
+  P21: { O1: "+E9", O2: "+G2,E2", Q1: "+B3,I8,F6", Q2: "+B1,B2,E2,I8", Q3: "+B4,F6,I8",
+         Q4: "+C1,C2,C3", Q5: "+C3,C6,C8", Q6: "=C4,G9", Q7: "+A3,G2", Q8: "+A2,A4,F6",
+         Q9: "+G9,I8", Q10: "+E2,F5,H8", Q11: "=H1,G9", Q12: "+G9,G2", Q13: "+F2,G2,F6,I8",
+         Q14: "+G2,G1,G5", Q15: "+D1", Q16: "+E4,I8", Q17: "=I3,F6,I8", Q18: "+I1,F6,I7",
+         Q19: "+H2,H8,I8,H5", Q20: "+F6" },
+};
+
 /* ================================================================
    Codage des grilles d'observation (corpus secondaire, § 4.2.6)
 ================================================================ */
@@ -194,4 +260,16 @@ export const ecarts = [
     constat: "La titulaire déclare vérifier chaque semaine le remplissage de la colonne tension ; le registre observé est effectivement le mieux tenu des trois centres ruraux. Concordance, à consigner autant qu'un écart." },
   { cs: "CS07", code: "J5",
     constat: "Une participante déclare n'avoir jamais réalisé de glycémie ; l'absence totale de glucomètre dans le centre est confirmée par l'observation. La déclaration s'explique par la condition matérielle et non par la pratique individuelle." },
+];
+
+/** Écarts et concordances relevés à la lecture croisée de la vague 2. */
+export const ecartsV2 = [
+  { cs: "CS13", code: "J5",
+    constat: "CONCORDANCE sur un point sensible. La participante déclare d'elle-même que la colonne tension du registre est toujours remplie, y compris quand la mesure n'a pas été faite sous la pression de l'affluence ; l'observation relève une proportion inhabituelle de valeurs identiques dans un registre intégralement renseigné. Ni l'un ni l'autre ne prouve quoi que ce soit sur une personne. Consigné comme ce que produit un contrôle portant sur la complétude des registres plutôt que sur les actes (§ 4.2.6), jamais comme une faute individuelle." },
+  { cs: "CS01", code: "J5",
+    constat: "CONCORDANCE. Le dépistage glycémique ciblé décrit par la participante est observé directement — seul centre de la série où il l'est — et la colonne glycémie du registre est renseignée dans une proportion compatible avec un dépistage ciblé." },
+  { cs: "CS05", code: "J5",
+    constat: "CONCORDANCE. Le paradoxe décrit — glucomètre fonctionnel et bandelettes périmées — est constaté. L'observation suggère d'ajouter à la grille la distinction entre « présent » et « utilisable »." },
+  { cs: "CS16", code: "J5",
+    constat: "CONCORDANCE. Le cahier de suivi après l'accouchement décrit par la titulaire est observé, et les piles du tensiomètre sont signalées comme un intrant manquant de façon répétée." },
 ];

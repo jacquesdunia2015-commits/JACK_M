@@ -4,6 +4,23 @@ const require = createRequire(import.meta.url);
 const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
         Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle, PageBreak } = require("docx");
 import { ETUDE } from "./echantillon.mjs";
+import { readFileSync } from "node:fs";
+
+// Les effectifs cités par le guide sont LUS dans les projets, jamais recopiés :
+// un projet reconstruit ne doit pas laisser un guide qui annonce d'autres chiffres.
+const dossier = process.argv[2] || ".";
+const fr = n => n.toLocaleString("fr-FR").replace(/\u202f|\u00a0/g, " ");
+function compte(fichier) {
+  const p = JSON.parse(readFileSync(`${dossier}/${fichier}`, "utf8"));
+  const ent = p.documents.filter(d => d.variables?.type_document === "entretien").length;
+  const centres = new Set(p.documents.map(d => d.variables?.code_structure)).size;
+  const familles = p.codes.filter(c => !c.parentId).length;
+  const inductifs = p.codes.filter(c => /inductif/.test(c.name)).length;
+  return { ent, centres, codes: p.codes.length, seg: fr(p.segments.length), docs: p.documents.length, familles, inductifs };
+}
+const V1 = compte("Memoire_Ngoma_SIMULATION.projx");
+const V2 = compte("Memoire_Ngoma_SIMULATION_vague2.projx");
+const VC = compte("Memoire_Ngoma_SIMULATION_complet.projx");
 
 const L = 9026;
 const p = (t, o = {}) => new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: t, size: 21, ...o })] });
@@ -70,18 +87,32 @@ const enfants = [
 
   h1("2. Ouvrir le projet d'exercice"),
   p("Accueil ▸ Ouvrir (.projx), puis choisissez le fichier Memoire_Ngoma_SIMULATION.projx."),
-  p("Vous devez voir apparaître, en bas de l'écran : 15 documents · 79 codes · 1 220 segments codés."),
+  p(`Vous devez voir apparaître, en bas de l'écran : ${V1.docs} documents · ${V1.codes} codes · ${V1.seg} segments codés.`),
   vide(),
   tab([
     ["Ce que contient le projet", "Où le voir"],
     ["10 transcriptions d'entretiens + 5 comptes rendus d'observation", "Volet « Système de documents », à gauche"],
-    ["79 codes en 11 familles, dont 21 créés en cours de codage", "Volet « Système de codes », en bas à gauche"],
+    [`${V1.codes} codes en ${V1.familles} familles, dont ${V1.inductifs} créés en cours de codage`, "Volet « Système de codes », en bas à gauche"],
     ["15 variables de document (qualification, secteur, ancienneté…)", "Onglet Variables ▸ Éditeur de données"],
     ["20 mémos : journal de bord par entretien, mémos de phase, piste d'audit", "Onglet Mémos ▸ Gestionnaire de mémos"],
     ["8 requêtes sauvegardées correspondant aux thèmes provisoires", "Onglet Analyse ▸ Requêtes sauvegardées"],
     ["Une carte conceptuelle reprenant la figure 1 du protocole", "Onglet Visualisation ▸ Carte conceptuelle"],
     ["Un second codage (codeur C2) sur trois entretiens", "Onglet Analyse ▸ Accord inter-codeurs (κ)"],
   ], [4600, 4426]),
+  vide(),
+  h2("Les trois projets d'exercice"),
+  p("Une seconde vague simulée complète la première : onze participants (six sages-femmes, cinq infirmiers ou infirmières) dans les onze centres que la vague 1 ne couvrait pas. Trois fichiers en résultent :"),
+  vide(),
+  tab([
+    ["Fichier", "Contenu", "À quoi il sert"],
+    ["Memoire_Ngoma_SIMULATION.projx", `Vague 1 : ${V1.ent} entretiens, ${V1.centres} centres, ${V1.codes} codes, ${V1.seg} segments`, "Premiers gestes : coder, récupérer, annoter"],
+    ["Memoire_Ngoma_SIMULATION_vague2.projx", `Vague 2 : ${V2.ent} entretiens, ${V2.centres} centres, ${V2.codes} codes, ${V2.seg} segments`, "Voir naître des codes inductifs sur un matériau neuf"],
+    ["Memoire_Ngoma_SIMULATION_complet.projx", `Les deux vagues : ${VC.ent} entretiens, ${VC.centres} centres, ${VC.codes} codes, ${VC.seg} segments`, "L'analyse d'ensemble — c'est la configuration visée par le protocole"],
+  ], [3200, 3200, 2626]),
+  vide(),
+  p("Pour s'exercer à l'analyse elle-même — comparaison entre infirmiers et sages-femmes, revue des thèmes, suffisance informationnelle — ouvrez le projet complet. Il contient un mémo qui conduit l'exercice de suffisance informationnelle dimension par dimension, comme l'exige le § 4.2.3.1, et un mémo de positionnalité laissé VIDE : celui-là ne peut pas être simulé, il vous appartient."),
+  vide(),
+  p("Ce que la vague 2 apporte en propre : un centre bien doté (CS01) qui montre ce que change l'équipement — et ce qu'il ne change pas ; un registre rempli sans que les actes suivent (CS13) ; les agents de santé communautaire comme relais ; le recours aux guérisseurs tel que les prestataires le perçoivent ; des femmes mobiles que le suivi perd ; et une participante qui refuse de classer les femmes en catégories. Onze codes inductifs en sont nés, signalés « [inductif, vague 2] ».", { italics: true }),
   saut(),
 
   h1("3. Les six phases de l'analyse thématique, dans l'outil"),
@@ -102,7 +133,7 @@ const enfants = [
   puce("Un même passage peut porter plusieurs codes. Dans le projet d'exercice, la plupart en portent deux ou trois : c'est ce qui rend les co-occurrences interprétables."),
   vide(),
   encadre("Marquez vos codes inductifs", [
-    "Dans le projet d'exercice, les 21 codes nés du matériau portent la mention « [inductif] » dans leur intitulé. Ce n'est pas une coquetterie : c'est la trace qui permet au jury de vérifier que la grille est restée ouverte, comme l'annonce le § 4.2.6.",
+    `Dans le projet de la vague 1, les ${V1.inductifs} codes nés du matériau portent la mention « [inductif] » dans leur intitulé ; le projet complet en compte ${VC.inductifs}. Ce n'est pas une coquetterie : c'est la trace qui permet au jury de vérifier que la grille est restée ouverte, comme l'annonce le § 4.2.6.`,
     "Le mémo « Piste d'audit — décisions de codage » consigne, pour quatre d'entre eux, POURQUOI ils ont été créés. Faites de même pendant la collecte réelle : la raison s'oublie en trois semaines.",
   ], "2E86C1", "EAF2F8"),
 
@@ -189,7 +220,7 @@ const enfants = [
   vide(),
   h2("Passer à NVivo ou MAXQDA si nécessaire"),
   p("Le format REFI-QDA est le standard d'échange du domaine. Onglet Rapports ▸ REFI-QDA (.qdpx) produit une archive que NVivo 14+, MAXQDA 2022+ et ATLAS.ti 22+ savent ouvrir : documents, arbre de codes et codages sont conservés."),
-  p("Sur le projet d'exercice, l'aller-retour a été vérifié : les 15 documents, 79 codes et 1 220 segments reviennent intacts, sans qu'aucune borne de codage ne bouge. Vous n'êtes donc enfermé nulle part — argument utile si un membre du jury s'inquiète du choix de l'outil.", { italics: true }),
+  p(`Sur le projet d'exercice, l'aller-retour a été vérifié : les ${V1.docs} documents, ${V1.codes} codes et ${V1.seg} segments reviennent intacts, sans qu'aucune borne de codage ne bouge. Vous n'êtes donc enfermé nulle part — argument utile si un membre du jury s'inquiète du choix de l'outil.`, { italics: true }),
   saut(),
 
   h1("8. Check-list pour la collecte réelle"),
@@ -233,5 +264,5 @@ const doc = new Document({
     style: { paragraph: { indent: { left: 400, hanging: 200 } } } }] }] },
   sections: [{ children: enfants }],
 });
-writeFileSync("3_Guide_QualiCode_pour_ce_memoire.docx", await Packer.toBuffer(doc));
+writeFileSync(`${dossier}/3_Guide_QualiCode_pour_ce_memoire.docx`, await Packer.toBuffer(doc));
 console.log("écrit : 3_Guide_QualiCode_pour_ce_memoire.docx");
