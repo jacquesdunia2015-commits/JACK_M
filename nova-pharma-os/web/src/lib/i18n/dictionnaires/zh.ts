@@ -265,6 +265,7 @@ export const zh: Dictionnaire = {
   'stock.achete_30j': '采购（30 天）',
   'stock.vendu_30j': '销售（30 天）',
   'nav.requisitions': '请购单',
+  'nav.previsions': '销售预测',
   'nav.factures': '发票',
   'stock.dernier_fournisseur': '最近供应商',
 };

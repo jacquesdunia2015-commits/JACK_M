@@ -825,6 +825,20 @@ de SMS. Le patient est alors marqué « prévenu ».
 
 Un patient qui arrête son traitement : **Arrêter**. Il ne sera plus rappelé.
 
+## Prévoir les ventes et savoir quoi commander
+
+Menu *Prévisions*. NOVA regarde vos ventes des trois derniers mois et, si vous
+avez plus d'un an d'historique, ce qui s'est passé au même moment l'an dernier
+(les antipaludéens en saison des pluies, par exemple). Il en déduit ce que vous
+allez vendre et **combien commander** pour tenir le nombre de jours choisi
+(45 par défaut, délai de livraison compris), avec un stock de sécurité.
+
+La liste commence par les produits qui seront épuisés le plus vite. La colonne
+*Saison* dit si le mois qui vient se vend plus (↑) ou moins (↓) que d'habitude ;
+*Fiabilité* dit si NOVA a assez d'historique pour le savoir. **Préparer une
+réquisition** reprend toutes les quantités suggérées : ajustez-les, puis
+envoyez la réquisition à vos fournisseurs. **Excel** télécharge le tableau.
+
 ## Votre page publique : réservations et ordonnances en photo
 
 Menu *Réservations*, puis *Votre page publique*.

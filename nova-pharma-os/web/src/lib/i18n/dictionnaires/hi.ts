@@ -267,6 +267,7 @@ export const hi: Dictionnaire = {
   'stock.achete_30j': 'खरीदा (30 दिन)',
   'stock.vendu_30j': 'बेचा (30 दिन)',
   'nav.requisitions': 'माँग-पत्र',
+  'nav.previsions': 'पूर्वानुमान',
   'nav.factures': 'चालान',
   'stock.dernier_fournisseur': 'अंतिम आपूर्तिकर्ता',
 };

@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 207 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 211 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -514,6 +514,29 @@ bénéfice et TVA : `reporting.financial` ; régime fiscal : `settings.write`).
 | `GET /api/reservations` · `…/summary` · `…/:id/prescription` | Demandes · compteurs · photo d'ordonnance |
 | `POST /api/reservations/:id/status` · `…/:id/notify` | Changer le statut · message WhatsApp |
 
+## Prévisions saisonnières et quantités à commander
+
+Page *Prévisions* (`reporting.read`), calculée sur l'historique de la pharmacie seule —
+aucune donnée ne sort, aucun service payant.
+
+- **Rythme récent** : ventes des 30 derniers jours et des 60 d'avant, à poids égal.
+- **Saison** : indice d'un mois = ventes du même mois l'an dernier ÷ moyenne mensuelle des
+  12 derniers mois, pour le produit et pour sa catégorie (un produit peu vendu suit
+  surtout sa catégorie). Le rythme récent est « désaisonnalisé » (indice des jours
+  couverts par les 90 derniers jours), puis multiplié par l'indice du mois visé (milieu
+  de l'horizon). Sans un an d'historique, la saison est inconnue (indice 1) et la
+  fiabilité est indiquée : bonne (≥ 13 mois), moyenne (6 à 12), faible.
+- **À commander** = prévision journalière × jours de couverture (délai de livraison
+  compris) × (1 + stock de sécurité) − stock vendable − quantités déjà commandées ; le
+  seuil de réapprovisionnement de la fiche produit reste un plancher. Tri par jours de
+  stock restants. Un clic prépare une réquisition avec ces quantités.
+- Profil saisonnier de chaque catégorie sur les 12 prochains mois ; export Excel.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET /api/reports/forecast?horizon=30&coverDays=45&safetyPercent=20` | Prévisions, suggestions, saisons par catégorie |
+| `GET /api/reports/forecast/workbook` | Même chose en classeur Excel |
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -706,7 +729,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             207 tests de bout en bout
+│   └── test/             211 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -735,6 +758,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
+| `previsions.e2e-spec.ts` | Produit saisonnier prévu plus haut qu'un produit régulier au même rythme, quantité à commander, fiabilité, export Excel |
 | `reservations.e2e-spec.ts` | Page invisible avant publication, disponibilité sans quantités, réservation et photo sans compte, abus refusés, statut et WhatsApp, suivi client |
 | `rappels.e2e-spec.ts` | Alerte du back-office reprise par la pharmacie, lot trouvé malgré accents et tirets, quarantaine hors vente, réception bloquée, clients prévenus, destruction, fausse alerte |
 | `depenses.e2e-spec.ts` | Dépense en francs au taux du jour sortie de caisse, annulation, bénéfice réel (pertes, TVA à 16 %), TVA déductible sur facture normalisée seulement |

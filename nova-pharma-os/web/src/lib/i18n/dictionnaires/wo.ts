@@ -267,6 +267,7 @@ export const wo: Dictionnaire = {
   'stock.achete_30j': 'Jënd (30 fan)',
   'stock.vendu_30j': 'Jaay (30 fan)',
   'nav.requisitions': 'Laaj yu jënd',
+  'nav.previsions': 'Seetlu ëllëg',
   'nav.factures': 'Faktiir yi',
   'stock.dernier_fournisseur': 'Jaaykat bu mujj',
 };
