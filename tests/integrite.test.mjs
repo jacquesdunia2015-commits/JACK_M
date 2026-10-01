@@ -166,54 +166,68 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
   verifier("le déploiement refuse explicitement ce dossier",
     lire(".github/workflows/deploy-pages.yml").includes("memoire-ngoma"));
 
-  const projets = {
-    "vague 1": "Memoire_Ngoma_SIMULATION.projx",
-    "vague 2": "Memoire_Ngoma_SIMULATION_vague2.projx",
-    "ensemble": "Memoire_Ngoma_SIMULATION_complet.projx",
-  };
-  const lus = {};
-  for (const [nom, fichier] of Object.entries(projets)) {
-    const chemin = "memoire-ngoma/livrables/" + fichier;
-    if (!verifier(`le projet ${nom} est présent`, existsSync(join(racine, chemin)))) continue;
+  // UN SEUL projet : il porte le nom et l'identifiant de celui qui est déjà
+  // dans l'application, pour le remplacer au lieu de créer un doublon.
+  const chemin = "memoire-ngoma/livrables/Memoire_Ngoma_SIMULATION.projx";
+  if (verifier("le projet d'exercice est présent", existsSync(join(racine, chemin)))) {
     const projx = JSON.parse(lire(chemin));
-    lus[nom] = projx;
-    egal(`[${nom}] format QualiCode`, projx.format, "qualicode-projx");
+    egal("format QualiCode", projx.format, "qualicode-projx");
+    egal("même identifiant que le projet déjà présent dans l'application", projx.id, "memoire-ngoma-simulation");
+    egal("même nom que le projet déjà présent dans l'application", projx.name, "Mémoire Ngoma — SIMULATION de formation");
+
     const codes = new Set(projx.codes.map(c => c.id));
     const docs = new Map(projx.documents.map(d => [d.id, d]));
     const orphelins = projx.segments.filter(s => !codes.has(s.codeId) || !docs.has(s.docId));
-    verifier(`[${nom}] aucun codage ne pointe dans le vide`, orphelins.length === 0, String(orphelins.length));
+    verifier("aucun codage ne pointe dans le vide", orphelins.length === 0, String(orphelins.length));
     const decales = projx.segments.filter(s => {
       const d = docs.get(s.docId);
-      return !d || s.start < 0 || s.end > d.text.length || s.end <= s.start
-        || s.text !== d.text.slice(s.start, s.end);
+      return !d || s.start < 0 || s.end > d.text.length || s.end <= s.start || s.text !== d.text.slice(s.start, s.end);
     });
-    verifier(`[${nom}] chaque extrait correspond exactement à son passage`, decales.length === 0, String(decales.length));
-    verifier(`[${nom}] tous les documents portent l'avertissement de simulation`,
+    verifier("chaque extrait correspond exactement à son passage", decales.length === 0, String(decales.length));
+    verifier("tous les documents portent l'avertissement de simulation",
       projx.documents.every(d => d.text.includes("DONNÉES SIMULÉES")));
-    verifier(`[${nom}] le mémo de projet avertit que rien ne peut être cité`, /ne peut être cité/i.test(projx.memo));
-    verifier(`[${nom}] le double codage est présent (deux codeurs)`,
-      new Set(projx.segments.map(s => s.coder || "C1")).size === 2);
+    verifier("le mémo de projet avertit que rien ne peut être cité", /ne peut être cité/i.test(projx.memo));
+
+    // Composition visée par le protocole
+    const ent = projx.documents.filter(d => d.variables?.type_document === "entretien");
+    egal("21 participants", ent.length, 21);
+    egal("11 sages-femmes", ent.filter(d => d.variables.qualification === "sage-femme").length, 11);
+    egal("10 infirmiers ou infirmières", ent.filter(d => d.variables.qualification === "infirmier").length, 10);
+    egal("les 16 centres du district", new Set(projx.documents.map(d => d.variables?.code_structure)).size, 16);
+    memeContenu("les deux vagues sont identifiées (10 + 11)",
+      ["1", "2"].map(v => ent.filter(d => d.variables.vague === v).length), [10, 11]);
+    const relus = new Set(projx.segments.filter(s => s.coder === "C2").map(s => s.docId));
+    verifier("un tiers des entretiens est double-codé (§ 4.2.6)", relus.size * 3 >= ent.length, `${relus.size} sur ${ent.length}`);
+    verifier("la stabilité intra-codeur est documentée (C1b)", projx.segments.some(s => s.coder === "C1b"));
+
+    // Consentements : un refus de citation doit être respecté par la requête
+    const p05 = ent.find(d => /P05/.test(d.name));
+    egal("le refus de citation de P05 est enregistré", p05?.variables.citation_autorisee, "non");
+    const citables = projx.savedQueries.find(q => /citables/i.test(q.name));
+    verifier("la requête « Extraits citables » existe", !!citables);
+    verifier("elle exclut l'entretien dont l'auteur a refusé la citation", citables && !citables.activatedDocs.includes(p05?.id));
+
+    // Les six phases de l'analyse thématique, et la positionnalité laissée vide
+    const titres = projx.memos.filter(m => m.targetType === "project").map(m => m.title);
+    for (const n of [1, 2, 3, 4, 5, 6]) {
+      verifier(`la phase ${n} de l'analyse thématique est documentée`, titres.some(t => t.startsWith(`Phase ${n} `)));
+    }
+    verifier("la note de positionnalité est laissée au chercheur",
+      titres.some(t => /positionnalité/i.test(t) && /À RÉDIGER/.test(t)));
+
+    // Les chiffres du LISEZ-MOI sont écrits à la main : ils doivent suivre le projet
+    const fr = n => n.toLocaleString("fr-FR").replace(/\u202f|\u00a0/g, " ");
+    verifier("le LISEZ-MOI annonce le bon nombre de segments",
+      lisezMoi.includes(`| Segments codés | ${fr(projx.segments.length)} |`), `attendu : ${fr(projx.segments.length)}`);
+    verifier("le LISEZ-MOI annonce le bon nombre de documents",
+      lisezMoi.includes(`| Documents | ${projx.documents.length} `), `attendu : ${projx.documents.length}`);
   }
 
-  // L'ensemble doit réaliser la composition visée par le protocole.
-  if (lus.ensemble) {
-    const ent = lus.ensemble.documents.filter(d => d.variables?.type_document === "entretien");
-    egal("[ensemble] 21 participants", ent.length, 21);
-    egal("[ensemble] 11 sages-femmes", ent.filter(d => d.variables.qualification === "sage-femme").length, 11);
-    egal("[ensemble] 10 infirmiers ou infirmières", ent.filter(d => d.variables.qualification === "infirmier").length, 10);
-    egal("[ensemble] les 16 centres du district",
-      new Set(lus.ensemble.documents.map(d => d.variables?.code_structure)).size, 16);
-    const relus = new Set(lus.ensemble.segments.filter(s => s.coder === "C2").map(s => s.docId));
-    verifier("[ensemble] un tiers des entretiens est double-codé (§ 4.2.6)", relus.size * 3 >= ent.length,
-      `${relus.size} sur ${ent.length}`);
-  }
-
-  // Les effectifs du LISEZ-MOI sont écrits à la main : ils doivent suivre les projets.
-  const ligne = lisezMoi.match(/\| Segments codés \| ([\d  ]+) \| ([\d  ]+) \| ([\d  ]+) \|/);
-  if (verifier("le LISEZ-MOI annonce les effectifs de segments", !!ligne) && lus["vague 1"] && lus["vague 2"] && lus.ensemble) {
-    const annonces = ligne.slice(1, 4).map(x => Number(x.replace(/\D/g, "")));
-    memeContenu("ces effectifs correspondent aux projets", annonces,
-      [lus["vague 1"].segments.length, lus["vague 2"].segments.length, lus.ensemble.segments.length]);
+  // Les anciens fichiers par vague ne doivent pas revenir : ils ont causé la
+  // confusion que le projet unique corrige.
+  for (const f of ["Memoire_Ngoma_SIMULATION_vague2.projx", "Memoire_Ngoma_SIMULATION_complet.projx",
+                   "4_Annexes_remplies_SIMULATION_vague2.docx", "5_Transcriptions_verbatim_SIMULATION_vague2.docx"]) {
+    verifier(`l'ancien fichier ${f} n'existe plus`, !existsSync(join(racine, "memoire-ngoma/livrables", f)));
   }
 }
 
