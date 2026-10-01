@@ -47,6 +47,8 @@ import { PrevisionsController } from './previsions/previsions.controller';
 import { PrevisionsService } from './previsions/previsions.service';
 import { InteractionsController, PlatformInteractionsController } from './interactions/interactions.controller';
 import { InteractionsService } from './interactions/interactions.service';
+import { RapportsPublicsController } from './rapports-publics/rapports-publics.controller';
+import { RapportsPublicsService } from './rapports-publics/rapports-publics.service';
 import { MarcheController } from './marche/marche.controller';
 import { MarcheService } from './marche/marche.service';
 import { RappelsController } from './rappels/rappels.controller';
@@ -83,6 +85,7 @@ import { TraitementsService } from './traitements/traitements.service';
     MarcheController,
     InteractionsController,
     PlatformInteractionsController,
+    RapportsPublicsController,
     PrevisionsController,
     PagePubliqueController,
     ReservationsController,
@@ -116,6 +119,7 @@ import { TraitementsService } from './traitements/traitements.service';
     RappelsService,
     MarcheService,
     InteractionsService,
+    RapportsPublicsService,
     PrevisionsService,
     ReservationsService,
     CashService,

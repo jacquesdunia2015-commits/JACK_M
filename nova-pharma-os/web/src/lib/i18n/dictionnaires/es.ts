@@ -45,6 +45,7 @@ export const es: Dictionnaire = {
   'nav.depenses': 'Gastos y beneficio',
   'nav.rappels': 'Retiradas de lotes',
   'nav.interactions': 'Interacciones',
+  'nav.programmesPublics': 'Programas públicos',
   'nav.alertes_produits': 'Alertas de productos',
   'nav.equipe': 'Equipo',
   'nav.abonnement': 'Mi suscripción',

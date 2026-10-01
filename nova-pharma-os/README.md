@@ -23,14 +23,14 @@ Deux espaces distincts, une seule base :
 | **Back-office SaaS** | NOVA PHARMA OS | Pharmacies clientes, forfaits, abonnements, facturation, relances, support, métriques, sauvegardes |
 | **Espace pharmacie** | Chaque pharmacie abonnée | Catalogue, lots et FEFO, stock, achats, ventes POS, caisse, clients, B2B, livraison, messagerie, Mobile Money, rapports |
 
-- **API** : NestJS + TypeScript, 112 tables PostgreSQL, documentation OpenAPI générée.
+- **API** : NestJS + TypeScript, 114 tables PostgreSQL, documentation OpenAPI générée.
 - **Interface** : Next.js 15 + TypeScript, rendu serveur, espace bureau et application
   mobile installable (PWA).
 - **Langues** : 15, dont le kiswahili de la RD Congo, le lingala, le kinyarwanda, le
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 231 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 237 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -635,6 +635,40 @@ fournit le mécanisme, gratuitement, avec une liste de départ courte et sourcé
 | `GET /api/interactions?q=` | Consulter la liste et les classes |
 | `GET/POST /api/platform/interactions` · `PATCH …/:id` · `POST …/import` | Tenir la liste (back-office) |
 
+## Rapport mensuel pour les programmes publics (migration 034)
+
+Le ministère de la Santé suit les produits de santé par **LOGIMEV**, système national de
+gestion logistique bâti sur OpenLMIS (phase pilote à Kinshasa et au Maniema, programmes
+nationaux), et par le **SNIS** sur DHIS2. Tous deux reposent sur le même rapport mensuel
+de gestion des stocks. Page *Programmes publics* (`reporting.read` ; codes :
+`settings.write`).
+
+- **Calcul** depuis le registre des mouvements de stock, dans le fuseau horaire de la
+  pharmacie : stock initial, quantités reçues, consommées (ventes moins retours), pertes
+  (péremption, casse), ajustements (inventaire, transferts, retours fournisseur), stock
+  final, jours de rupture (jours terminés à stock nul), consommation moyenne mensuelle
+  (3 mois) et quantité à commander (stock maximum en mois de consommation, 3 par défaut,
+  moins le stock final). Chaque mouvement entre dans une seule rubrique : la ligne est
+  toujours équilibrée. Par agence possible (`branchId`).
+- **Excel** : une ligne par produit, avec une feuille qui met chaque rubrique en regard
+  du champ de la réquisition OpenLMIS (`beginningBalance`, `totalReceivedQuantity`…).
+- **DHIS2** : fichier `dataValueSets` (JSON) à importer dans l'application
+  *Import/Export* de DHIS2 — gratuit, sans compte de service à stocker dans NOVA.
+- **Codes** (`public_report_settings`, `public_report_mappings`) : code de la structure,
+  unité d'organisation et formulaire DHIS2, code national du produit, élément de données
+  (et combinaison de catégories) par rubrique ; saisie produit par produit ou import CSV
+  `reference_nova;code_national;rubrique;data_element;category_option_combo`.
+- **Ce que NOVA ne suppose pas** : les codes produits nationaux, les identifiants DHIS2
+  et l'accès à LOGIMEV sont attribués par le ministère ou le programme. L'envoi direct à
+  LOGIMEV (API OpenLMIS) se branchera quand cet accès sera ouvert ; aucun format n'a été
+  inventé en attendant.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET /api/reports/public-programs?month=AAAA-MM&branchId=&mappedOnly=` | Rapport du mois |
+| `GET …/workbook` · `GET …/dhis2?download=1` | Classeur Excel, fichier DHIS2 |
+| `GET/PUT …/settings` · `GET …/mappings` · `PUT …/mappings/:productId` · `POST …/mappings/import` | Codes de la structure et des produits |
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -827,7 +861,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             231 tests de bout en bout
+│   └── test/             237 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -858,6 +892,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
 | `place-de-marche.e2e-spec.ts` | Offres visibles des seules pharmacies concernées, minimums, commande vue par l'acheteur et le vendeur seuls, acceptation en commande professionnelle, réception en stock |
 | `interactions.e2e-spec.ts` | Alerte par classe et par molécule renseignée, contre-indications en premier, ticket confronté aux traitements suivis, pas de fausse alerte sur un mot voisin, liste tenue et importée par le seul back-office |
+| `rapports-publics.e2e-spec.ts` | Mois calculé dans le fuseau de la pharmacie, ligne équilibrée, jours de rupture, consommation moyenne et quantité à commander, fichier DHIS2 selon les codes saisis, import des correspondances |
 | `mobile-money-sms.e2e-spec.ts` | Lecture des SMS d'opérateurs, confirmation par SMS collé (montant vérifié), transfert automatique, doublons, SMS ambigus |
 | `sauvegarde-complete.e2e-spec.ts` | Sauvegarde de toutes les tables, restauration exacte malgré cycles de clés, autoréférences, photo binaire et JSON |
 | `previsions.e2e-spec.ts` | Produit saisonnier prévu plus haut qu'un produit régulier au même rythme, quantité à commander, fiabilité, export Excel |
@@ -890,6 +925,9 @@ Conformément à la priorité commerciale du cahier des charges, ces éléments 
   des opérateurs demande un contrat marchand et des frais par transaction.
 - **Base médicale complète d'interactions** — le mécanisme et une liste de départ
   existent (migration 033) ; une base exhaustive (Vidal, Thériaque) est payante.
+- **Envoi direct à LOGIMEV** — le rapport mensuel existe en Excel (rubriques OpenLMIS)
+  et en fichier DHIS2 (migration 034) ; l'envoi automatique attend l'accès et les codes
+  produits du ministère.
 - **OCR des factures fournisseur**, **prévisions par apprentissage automatique**,
   **IoT température**, **module importation**.
 - **Relecture des traductions** — les 15 langues sont écrites et utilisables ; dix

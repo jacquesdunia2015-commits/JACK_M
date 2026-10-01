@@ -53,6 +53,7 @@ export const fr = {
   'nav.depenses': 'Dépenses et bénéfice',
   'nav.rappels': 'Rappels de lots',
   'nav.interactions': 'Interactions',
+  'nav.programmesPublics': 'Programmes publics',
   'nav.alertes_produits': 'Alertes produits',
   'nav.equipe': 'Équipe',
   'nav.abonnement': 'Mon abonnement',

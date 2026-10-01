@@ -864,6 +864,24 @@ courte et non exhaustive (les bases complètes sont payantes) ; NOVA PHARMA OS
 la complète au fil des besoins. Signalez au support une association qui
 manque.
 
+## Envoyer le rapport mensuel aux programmes de santé
+
+Menu *Programmes publics*. Choisissez le mois : NOVA remplit le rapport mensuel
+de gestion des stocks à partir de vos ventes, réceptions et inventaires (stock
+initial, reçu, consommé, pertes, stock final, jours de rupture, quantité à
+commander). Rien à recompter à la main.
+
+**Une seule fois** : dans *Codes de la structure*, saisissez le code que vous a
+donné la zone de santé ou le programme, et l'identifiant DHIS2 de votre
+structure si vous déclarez dans DHIS2. Puis reliez les produits suivis par le
+programme à leur code national (*Relier un produit*, ou *Importer* si le
+programme vous a donné une liste).
+
+**Chaque mois** : **Excel** pour imprimer ou saisir le rapport ; **Fichier
+DHIS2** pour l'importer dans DHIS2 (*Import/Export → Importation de données*,
+faites d'abord un essai). Pour LOGIMEV, l'accès est donné par le ministère de
+la Santé ; le classeur Excel reprend ses rubriques.
+
 ## Prévoir les ventes et savoir quoi commander
 
 Menu *Prévisions*. NOVA regarde vos ventes des trois derniers mois et, si vous

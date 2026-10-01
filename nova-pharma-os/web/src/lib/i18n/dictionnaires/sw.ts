@@ -45,6 +45,7 @@ export const sw: Dictionnaire = {
   'nav.depenses': 'Matumizi na faida',
   'nav.rappels': 'Kurejesha bechi',
   'nav.interactions': 'Mwingiliano wa dawa',
+  'nav.programmesPublics': 'Programu za umma',
   'nav.alertes_produits': 'Tahadhari za bidhaa',
   'nav.equipe': 'Wafanyakazi',
   'nav.abonnement': 'Uandikishaji wangu',

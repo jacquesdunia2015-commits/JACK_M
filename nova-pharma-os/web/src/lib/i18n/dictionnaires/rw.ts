@@ -45,6 +45,7 @@ export const rw: Dictionnaire = {
   'nav.depenses': 'Amafaranga yasohotse n’inyungu',
   'nav.rappels': 'Gusubiza za lot',
   'nav.interactions': 'Imiti idahuza',
+  'nav.programmesPublics': 'Gahunda za Leta',
   'nav.alertes_produits': 'Imiburo ku miti',
   'nav.equipe': 'Ikipe',
   'nav.abonnement': 'Ifatabuguzi ryanjye',

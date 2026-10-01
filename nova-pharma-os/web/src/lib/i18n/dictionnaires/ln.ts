@@ -45,6 +45,7 @@ export const ln: Dictionnaire = {
   'nav.depenses': 'Babimisi ya mbongo mpe litomba',
   'nav.rappels': 'Kozongisa ba loti',
   'nav.interactions': 'Nkisi oyo ekokani te',
+  'nav.programmesPublics': 'Ba programme ya Leta',
   'nav.alertes_produits': 'Bakebisi ya biloko',
   'nav.equipe': 'Basali',
   'nav.abonnement': 'Abonnement na ngai',
