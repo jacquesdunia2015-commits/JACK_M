@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 135 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 137 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -195,6 +195,18 @@ le prix de son catalogue au moment de la demande (migration 021). Elle relève d
 | `GET/PUT/DELETE /api/admin/logo` | Logo PNG ou JPEG (500 Ko au plus, contenu vérifié) |
 
 Le relais web `/api/proxy` transmet désormais les réponses binaires (PDF) avec leur type.
+
+## Changer de base de données
+
+Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
+compte). `COPIER_DEPUIS_URL` = l'ancienne base, `DATABASE_ADMIN_URL` = la nouvelle : au
+démarrage, après les migrations, l'API recopie tout (`api/src/database/copier-base.ts`).
+La source est lue dans une transaction annulée ; la cible est remplie dans une seule
+transaction (tout ou rien), clés étrangères retirées puis recréées (donc revérifiées),
+cloisonnement rétabli, nombre de lignes contrôlé table par table. Une cible qui a déjà des
+pharmacies n'est pas écrasée (sauf `COPIER_FORCER=oui`). Le rôle applicatif est créé avec
+`NOVA_APP_PASSWORD` avant les migrations, pour les hébergeurs qui refusent les mots de passe
+courts (Neon). Procédure pas à pas : [docs/CHANGER_DE_BASE.md](docs/CHANGER_DE_BASE.md).
 
 ## Session et droits dans l'interface
 
@@ -376,7 +388,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             135 tests de bout en bout
+│   └── test/             137 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français

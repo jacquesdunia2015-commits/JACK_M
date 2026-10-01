@@ -21,15 +21,11 @@ import { loadEnv } from './load-env';
  *
  * Lancement :  npm run role:app
  */
-async function principal(): Promise<void> {
-  loadEnv();
-
-  const adminUrl = process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
-  if (!adminUrl) throw new Error('DATABASE_ADMIN_URL est requis.');
-
-  const role = process.env.NOVA_APP_ROLE ?? 'nova_app';
-  const motDePasse = process.env.NOVA_APP_PASSWORD ?? 'nova_app';
-
+export async function alignerRoleApplicatif(
+  adminUrl: string,
+  role = process.env.NOVA_APP_ROLE ?? 'nova_app',
+  motDePasse = process.env.NOVA_APP_PASSWORD ?? 'nova_app',
+): Promise<void> {
   const client = new Client({ connectionString: adminUrl });
   await client.connect();
   try {
@@ -99,7 +95,17 @@ async function litteral(client: Client, valeur: string): Promise<string> {
   return rows[0].q;
 }
 
-principal().catch((erreur: Error) => {
-  console.error(erreur.message);
-  process.exit(1);
-});
+async function principal(): Promise<void> {
+  loadEnv();
+  const adminUrl = process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
+  if (!adminUrl) throw new Error('DATABASE_ADMIN_URL est requis.');
+  await alignerRoleApplicatif(adminUrl);
+}
+
+// Lancé comme script (npm run role:app), pas quand on l'importe.
+if (require.main === module) {
+  principal().catch((erreur: Error) => {
+    console.error(erreur.message);
+    process.exit(1);
+  });
+}
