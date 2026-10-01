@@ -110,5 +110,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/pharmacie/:path*', '/admin/((?!connexion).*)', '/admin', '/mobile/:path*', '/mobile', '/api/proxy/:path*'],
+  matcher: ['/pharmacie/:path*', '/ticket/:path*', '/admin/((?!connexion).*)', '/admin', '/mobile/:path*', '/mobile', '/api/proxy/:path*'],
 };

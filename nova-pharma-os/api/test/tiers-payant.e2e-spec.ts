@@ -93,6 +93,10 @@ describe('Tiers payant', () => {
     ]));
     const apres = (await harness.get('/cash/current', pharmacie.token).expect(200)).body;
     expect(Number(apres.session.expected_cash) - Number(avant.session.expected_cash)).toBeCloseTo(1.4, 2);
+    // Le ticket de caisse indique l'organisme, le bénéficiaire et le bon.
+    const recu = await harness.get(`/sales/${v.body.sale.id}/receipt`, pharmacie.token).expect(200);
+    expect(recu.body.coverage).toEqual({ payer_name: 'Mutuelle de santé Umoja', member_name: 'Furaha Bahati', member_number: 'UMJ-00451' });
+    expect(recu.body.sale).toMatchObject({ payer_share: '5.60', patient_share: '1.40', authorization_number: 'BON-77' });
   });
 
   it('applique le plafond par vente puis le plafond annuel', async () => {

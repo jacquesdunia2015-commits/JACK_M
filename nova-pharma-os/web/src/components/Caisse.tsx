@@ -7,6 +7,7 @@ import ChoixBeneficiaire, { Beneficiaire } from '@/components/ChoixBeneficiaire'
 import ChoixClient, { ClientChoisi } from '@/components/ChoixClient';
 import { DocumentFacture, EmettreFacture, FactureEmise } from '@/components/Facture';
 import ScanCodeBarres from '@/components/ScanCodeBarres';
+import { BoutonTicket } from '@/components/ImpressionTicket';
 import { designation, money, quantity as fmtQty } from '@/lib/format';
 import { TauxDuJour, aPayer, arrondirMonnaie, autreDevise, convertir } from '@/lib/devises';
 import {
@@ -599,6 +600,9 @@ export default function Caisse({
 
         {derniereVente && (
           <div className="facture-vente">
+            <div className="row" style={{ marginBottom: '0.5rem' }}>
+              <BoutonTicket venteId={derniereVente.id} className="" />
+            </div>
             {facture ? (
               <>
                 <p style={{ marginTop: 0 }}>

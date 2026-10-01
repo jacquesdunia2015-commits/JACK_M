@@ -638,7 +638,16 @@ export class SalesService {
         'SELECT name, address, city, phone FROM branches WHERE id = $1',
         [data.sale.branch_id],
       );
-      return { organization, branch, ...data };
+      // Tiers payant : l'organisme et le bénéficiaire figurent sur le ticket.
+      const coverage = data.sale.payer_id
+        ? await tx.one(
+            `SELECT p.name AS payer_name, m.full_name AS member_name, m.member_number
+               FROM payers p LEFT JOIN payer_members m ON m.id = $2
+              WHERE p.id = $1`,
+            [data.sale.payer_id, data.sale.payer_member_id],
+          )
+        : null;
+      return { organization, branch, coverage, ...data };
     });
   }
 
@@ -646,7 +655,7 @@ export class SalesService {
   // Interne
   // -------------------------------------------------------------------
   private async loadSale(tx: Tx, id: string) {
-    const sale = await tx.oneOrFail(
+    const sale = await tx.oneOrFail<Record<string, string | null> & { branch_id: string }>(
       `SELECT s.*, c.name AS customer_name, c.code AS customer_code,
               c.phone AS customer_phone, c.email AS customer_email,
               u.full_name AS sold_by_name, b.name AS branch_name,

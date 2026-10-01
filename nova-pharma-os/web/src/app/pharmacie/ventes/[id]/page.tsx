@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BoutonTicket } from '@/components/ImpressionTicket';
 import { notFound } from 'next/navigation';
 import { EmettreFacture } from '@/components/Facture';
 import { apiSafe } from '@/lib/api';
@@ -44,6 +45,7 @@ export default async function PageVente({ params }: { params: Promise<{ id: stri
           {dateTime(s.sold_at)}{s.sold_by_name ? ` · servie par ${s.sold_by_name}` : ''} · <strong>{money(s.total, s.currency)}</strong>
           {s.customer_name ? ` · ${s.customer_name}` : ''}
         </p>
+        <BoutonTicket venteId={s.id} />
       </div>
 
       <section className="card">

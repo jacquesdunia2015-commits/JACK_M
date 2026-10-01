@@ -678,6 +678,20 @@ route, et reçu par SMS. Ils se modifient dans les réglages.
 
 ---
 
+## Imprimer le ticket de caisse
+
+Après chaque vente, **Imprimer le ticket** ouvre le ticket et lance
+l'impression. La première fois, choisissez la largeur de votre imprimante de
+comptoir — **58 mm** ou **80 mm** — puis, dans la fenêtre d'impression,
+l'imprimante thermique. La largeur est retenue sur ce poste. Le ticket d'une
+vente passée se réimprime depuis sa page (*Factures* → la vente).
+
+Le ticket indique la pharmacie, les articles, le total, les règlements dans
+leur devise (« 10 000 FC », avec le taux), la monnaie rendue et, pour un membre
+de mutuelle, la part de l'organisme et celle du patient. Sur un téléphone
+Android relié à une petite imprimante Bluetooth, une application gratuite
+comme RawBT sert d'imprimante pour le navigateur.
+
 ## Encaisser en dollars et en francs
 
 Menu *Caisse*.

@@ -359,6 +359,16 @@ Page *Mon compte* (lien en haut de chaque page, espace pharmacie et back-office)
 | `POST /api/auth/login`, `…/platform/login` — `code` | Code de l'application ou code de secours |
 | `GET /api/auth/2fa` · `POST …/2fa/setup` · `…/2fa/enable` · `…/2fa/disable` | État, QR code, activation, désactivation (mot de passe et code) |
 
+## Ticket de caisse sur imprimante thermique
+
+`/ticket/:id?largeur=58|80` (hors du cadre de l'application, pour n'imprimer que le
+ticket) : en-tête de la pharmacie, articles regroupés par produit, total et taxes, part
+du tiers payant et bénéficiaire, règlements dans leur devise avec le taux, monnaie
+rendue. Le bouton **Imprimer le ticket** (caisse après chaque vente, page d'une vente)
+ouvre le ticket et lance l'impression ; la largeur est retenue sur le poste. La page
+d'impression est mesurée à la hauteur exacte du ticket : le rouleau n'avance que de ce
+qui est imprimé. Données : `GET /api/sales/:id/receipt` (avec `coverage`).
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
