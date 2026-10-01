@@ -36,6 +36,7 @@ Le protocole lui-même **n'est pas inclus** dans ce dépôt.
 | `1_Annexes_remplies_SIMULATION.docx` | **Tous les outils de collecte remplis** : index des 21 entretiens (annexe 1), 16 grilles d'observation (annexe 2), 21 fiches sociodémographiques (annexe 3), registre des consentements (annexe 4), données de routine du district (annexe 9), et la couverture du Tableau II |
 | `2_Transcriptions_verbatim_SIMULATION.docx` | Les 21 transcriptions, question par question selon l'annexe 1, avec relances et journal de bord |
 | `3_Guide_QualiCode_pour_ce_memoire.docx` | Les six phases de l'analyse thématique (§ 4.2.6) traduites en gestes dans l'application |
+| `4_Note_de_positionnalite_MODELE.docx` | La note de positionnalité (confirmabilité, annexe 8), en modèle d'exercice modifiable : avant le codage, puis à la fin de l'analyse — la même que dans le projet |
 | `Memoire_Ngoma_SIMULATION.projx` | **Le projet QualiCode « Mémoire Ngoma — SIMULATION de formation »**, les deux vagues réunies |
 
 À ouvrir par **Accueil ▸ Ouvrir (.projx)**. Le projet porte le même nom et le
@@ -68,7 +69,9 @@ Les mémos suivent les six phases de l'analyse thématique, puis les étapes de
 rigueur du protocole : contrôle de fidélité des transcriptions, double codage
 et stabilité intra-codeur, triangulation, vérification des interprétations,
 suffisance informationnelle, piste d'audit. La note de positionnalité est
-laissée vide : elle ne peut pas être simulée.
+rédigée comme un **modèle d'exercice** : les faits biographiques que ni le
+protocole ni la simulation ne donnent (profession, lien avec le district,
+sexe, âge) sont laissés entre crochets, comme des hypothèses à remplacer.
 
 La vague 2 n'est pas une répétition de la première. Elle introduit un centre bien
 doté (ce que change l'équipement, et ce qu'il ne change pas), un registre rempli

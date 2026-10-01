@@ -1,5 +1,6 @@
 // construire.mjs — assemble le corpus et produit le projet QualiCode (.projx).
 //   node construire.mjs
+import { TITRE_POSITIONNALITE, TEXTE_POSITIONNALITE } from "./positionnalite.mjs";
 import { writeFileSync } from "node:fs";
 import { AVERTISSEMENT, ETUDE, participants, guide } from "./echantillon.mjs";
 import { participantsV2 } from "./echantillon-vague2.mjs";
@@ -762,20 +763,7 @@ trois révisions possibles, à discuter en supervision :
 Ces propositions sont des exercices : elles devront naître, dans l'étude
 réelle, du matériau réel.`);
 
-  memoTheme("Note de positionnalité — À RÉDIGER PAR LE CHERCHEUR",
-`Ce mémo ne peut pas être simulé : il vous appartient.
-
-Le protocole annonce « journal réflexif et note de positionnalité » au titre de
-la confirmabilité (annexe 8). Questions pour la rédiger :
-
-· Quelle est ma relation au terrain : origine, langue, parcours professionnel,
-  lien éventuel avec le système de santé rwandais ou avec les centres ?
-· Qu'est-ce que je pensais trouver avant la collecte, et sur quoi ?
-· Comment ma position — homme, étudiant d'une université étrangère, chercheur
-  plus âgé que certains participants — a-t-elle pu peser sur ce qui m'a été dit ?
-· Qu'est-ce qui m'a surpris, et qu'est-ce que je n'ai pas voulu entendre ?
-
-À rédiger avant le codage, puis à reprendre à la fin de l'analyse.`);
+  memoTheme(TITRE_POSITIONNALITE, TEXTE_POSITIONNALITE);
 }
 
 /* ================================================================
@@ -1012,7 +1000,7 @@ chercheur.`);
     "Piste d'audit 1 — décisions de codage (vague 1)",
     "Piste d'audit 2 — décisions de codage (vague 2)",
     "Piste d'audit 3 — révision du cadre conceptuel",
-    "Note de positionnalité — À RÉDIGER PAR LE CHERCHEUR",
+    TITRE_POSITIONNALITE,
   ];
   const oublies = [...recueillis.keys()].filter(k => !ordre.includes(k));
   const absents = ordre.filter(k => !recueillis.has(k));
@@ -1038,7 +1026,8 @@ Les mémos suivent les six phases de l'analyse thématique (Braun & Clarke),
 puis les étapes de rigueur du protocole : fidélité des transcriptions, double
 codage et stabilité intra-codeur, triangulation, vérification des
 interprétations, suffisance informationnelle, piste d'audit. La note de
-positionnalité est laissée vide : elle vous appartient.
+positionnalité est un MODÈLE D'EXERCICE : les passages entre crochets sont
+des hypothèses à remplacer par votre situation réelle.
 
 Variables de consentement : « citation_autorisee » (P05 a refusé la citation,
 P19 l'a acceptée sans élément identifiant son centre) et « recontact_accepte ».
@@ -1071,7 +1060,7 @@ const projets = [
     cfg: {
       id: "memoire-ngoma-simulation", nom: "Mémoire Ngoma — SIMULATION de formation",
       date: "2026-09-20T09:00:00Z", modifie: new Date().toISOString(),
-      versionSimulation: "deux-vagues-21-participants-16-centres",
+      versionSimulation: "deux-vagues-21-participants-16-centres-positionnalite",
       participants: [...participants, ...participantsV2],
       observations: [...observations, ...observationsV2].sort((x, y) => x.cs.localeCompare(y.cs)),
       ajustements: { ...ajustements, ...ajustementsV2 },

@@ -111,7 +111,7 @@ const enfants = [
   vide(),
   p("Ce que la vague 2 apporte en propre : un centre bien doté (CS01) qui montre ce que change l'équipement — et ce qu'il ne change pas ; un registre rempli sans que les actes suivent (CS13) ; les agents de santé communautaire comme relais ; le recours aux guérisseurs tel que les prestataires le perçoivent ; des femmes mobiles que le suivi perd ; et une participante qui refuse de classer les femmes en catégories. Onze codes inductifs en sont nés, signalés « [inductif, vague 2] ».", { italics: true }),
   vide(),
-  p("Les mémos suivent les six phases de l'analyse thématique, puis les étapes de rigueur du protocole : contrôle de fidélité des transcriptions, double codage et stabilité intra-codeur, triangulation, vérification des interprétations auprès des participants, suffisance informationnelle, piste d'audit. La note de positionnalité est laissée VIDE : elle ne peut pas être simulée, elle vous appartient."),
+  p("Les mémos suivent les six phases de l'analyse thématique, puis les étapes de rigueur du protocole : contrôle de fidélité des transcriptions, double codage et stabilité intra-codeur, triangulation, vérification des interprétations auprès des participants, suffisance informationnelle, piste d'audit. La note de positionnalité est un MODÈLE D'EXERCICE : ses passages entre crochets (profession, lien avec le district, sexe, âge) sont des hypothèses à remplacer par votre situation réelle, et la note réelle s'écrira à partir de votre propre journal."),
   saut(),
 
   h1("3. Les six phases de l'analyse thématique, dans l'outil"),

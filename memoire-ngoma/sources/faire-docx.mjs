@@ -12,6 +12,7 @@ import { observations } from "./observations.mjs";
 import { participantsV2 } from "./echantillon-vague2.mjs";
 import { observationsV2 } from "./observations-vague2.mjs";
 import { consentementDe } from "./consentements.mjs";
+import { TEXTE_POSITIONNALITE } from "./positionnalite.mjs";
 import { parCentre, fileActiveMnt, SOURCE as SOURCE_ROUTINE, RESERVE } from "./donnees-routine.mjs";
 import * as e12 from "./entretiens-01-02.mjs";
 import * as e34 from "./entretiens-03-04.mjs";
@@ -363,6 +364,45 @@ function documentTranscriptions(cfg) {
   return new Document({ styles: stylesCommuns(), sections: [{ children: enfants }] });
 }
 
+/* Note de positionnalité : même texte que le mémo du projet, mis en page.
+   Les passages entre crochets (hypothèses à remplacer) sont surlignés pour
+   qu'aucun ne soit oublié lors de la réécriture. */
+function documentPositionnalite(cfg) {
+  const enfants = [...pageDeGarde("Note de positionnalité — modèle d'exercice",
+    "Modèle rédigé pour s'entraîner. Il suit le protocole (annexe 8 : « journal réflexif et note de positionnalité », au titre de la confirmabilité) et les items 1 à 8 de la grille COREQ.\n\n" +
+    "Les passages SURLIGNÉS entre crochets sont des hypothèses d'exercice : ni le protocole ni la simulation ne disent votre profession, votre lien avec le district, votre sexe ou votre âge. Remplacez-les par votre situation réelle. Les exemples de la partie 5 viennent des journaux de bord simulés.\n\n" +
+    "Ce même texte figure dans le projet QualiCode, parmi les mémos de projet.", cfg.echantillon), saut()];
+  const segments = texte => texte.split(/(\[[^\]]*\])/).filter(Boolean).map(t => t.startsWith("[")
+    ? new TextRun({ text: t, size: 21, highlight: "yellow" }) : new TextRun({ text: t, size: 21 }));
+  const blocs = TEXTE_POSITIONNALITE.split(/\n\s*\n/);
+  for (const bloc of blocs) {
+    const lignes = bloc.split("\n");
+    if (lignes.some(l => /^─+$/.test(l))) {
+      const t = lignes.find(l => l.trim() && !/^─+$/.test(l));
+      if (t) enfants.push(titre1(t.trim()));
+      continue;
+    }
+    if (/^\d\. [A-ZÀ-Ý' ,()]+/.test(lignes[0])) {
+      enfants.push(titre2(lignes[0]));
+      lignes.shift();
+      if (!lignes.length) continue;
+    }
+    // Puces « · » ; les lignes en retrait prolongent la puce précédente.
+    const items = [];
+    for (const l of lignes) {
+      if (l.startsWith("· ")) items.push({ puce: true, t: l.slice(2) });
+      else if (items.length && items[items.length - 1].puce && /^  \S/.test(l)) items[items.length - 1].t += " " + l.trim();
+      else if (items.length && !items[items.length - 1].puce) items[items.length - 1].t += " " + l.trim();
+      else items.push({ puce: false, t: l.trim() });
+    }
+    for (const it of items) {
+      enfants.push(new Paragraph({ spacing: { after: 100 }, ...(it.puce ? { bullet: { level: 0 } } : {}),
+        children: segments(it.t) }));
+    }
+  }
+  return new Document({ styles: stylesCommuns(), sections: [{ children: enfants }] });
+}
+
 function stylesCommuns() {
   return {
     default: { document: { run: { font: "Calibri", size: 21 }, paragraph: { spacing: { line: 276 } } } },
@@ -397,3 +437,4 @@ await ecrire(documentTranscriptions({
   participants: tous, echantillon, nbTranscriptions: String(tous.length),
   titre: "Transcriptions verbatim",
 }), `${dossier}/2_Transcriptions_verbatim_SIMULATION.docx`);
+await ecrire(documentPositionnalite({ echantillon }), `${dossier}/4_Note_de_positionnalite_MODELE.docx`);
