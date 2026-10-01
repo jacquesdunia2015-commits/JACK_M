@@ -158,25 +158,55 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
   verifier("le déploiement refuse explicitement ce dossier",
     lire(".github/workflows/deploy-pages.yml").includes("memoire-ngoma"));
 
-  const projx = JSON.parse(lire("memoire-ngoma/livrables/Memoire_Ngoma_SIMULATION.projx"));
-  egal("le projet d'exercice est au bon format", projx.format, "qualicode-projx");
-  const codes = new Set(projx.codes.map(c => c.id));
-  const docs = new Map(projx.documents.map(d => [d.id, d]));
-  const orphelins = projx.segments.filter(s => !codes.has(s.codeId) || !docs.has(s.docId));
-  verifier("aucun codage ne pointe dans le vide", orphelins.length === 0, String(orphelins.length));
-  const decales = projx.segments.filter(s => {
-    const d = docs.get(s.docId);
-    return !d || s.start < 0 || s.end > d.text.length || s.end <= s.start
-      || s.text !== d.text.slice(s.start, s.end);
-  });
-  verifier("chaque extrait correspond exactement à son passage", decales.length === 0, String(decales.length));
-  verifier("tous les documents portent l'avertissement de simulation",
-    projx.documents.every(d => d.text.includes("DONNÉES SIMULÉES")));
-  verifier("le mémo de projet avertit que rien ne peut être cité",
-    /ne peut être cité/i.test(projx.memo));
-  const doubleCodage = new Set(projx.segments.map(s => s.coder || "C1"));
-  verifier("le double codage est présent (deux codeurs)", doubleCodage.size === 2,
-    [...doubleCodage].join(", "));
+  const projets = {
+    "vague 1": "Memoire_Ngoma_SIMULATION.projx",
+    "vague 2": "Memoire_Ngoma_SIMULATION_vague2.projx",
+    "ensemble": "Memoire_Ngoma_SIMULATION_complet.projx",
+  };
+  const lus = {};
+  for (const [nom, fichier] of Object.entries(projets)) {
+    const chemin = "memoire-ngoma/livrables/" + fichier;
+    if (!verifier(`le projet ${nom} est présent`, existsSync(join(racine, chemin)))) continue;
+    const projx = JSON.parse(lire(chemin));
+    lus[nom] = projx;
+    egal(`[${nom}] format QualiCode`, projx.format, "qualicode-projx");
+    const codes = new Set(projx.codes.map(c => c.id));
+    const docs = new Map(projx.documents.map(d => [d.id, d]));
+    const orphelins = projx.segments.filter(s => !codes.has(s.codeId) || !docs.has(s.docId));
+    verifier(`[${nom}] aucun codage ne pointe dans le vide`, orphelins.length === 0, String(orphelins.length));
+    const decales = projx.segments.filter(s => {
+      const d = docs.get(s.docId);
+      return !d || s.start < 0 || s.end > d.text.length || s.end <= s.start
+        || s.text !== d.text.slice(s.start, s.end);
+    });
+    verifier(`[${nom}] chaque extrait correspond exactement à son passage`, decales.length === 0, String(decales.length));
+    verifier(`[${nom}] tous les documents portent l'avertissement de simulation`,
+      projx.documents.every(d => d.text.includes("DONNÉES SIMULÉES")));
+    verifier(`[${nom}] le mémo de projet avertit que rien ne peut être cité`, /ne peut être cité/i.test(projx.memo));
+    verifier(`[${nom}] le double codage est présent (deux codeurs)`,
+      new Set(projx.segments.map(s => s.coder || "C1")).size === 2);
+  }
+
+  // L'ensemble doit réaliser la composition visée par le protocole.
+  if (lus.ensemble) {
+    const ent = lus.ensemble.documents.filter(d => d.variables?.type_document === "entretien");
+    egal("[ensemble] 21 participants", ent.length, 21);
+    egal("[ensemble] 11 sages-femmes", ent.filter(d => d.variables.qualification === "sage-femme").length, 11);
+    egal("[ensemble] 10 infirmiers ou infirmières", ent.filter(d => d.variables.qualification === "infirmier").length, 10);
+    egal("[ensemble] les 16 centres du district",
+      new Set(lus.ensemble.documents.map(d => d.variables?.code_structure)).size, 16);
+    const relus = new Set(lus.ensemble.segments.filter(s => s.coder === "C2").map(s => s.docId));
+    verifier("[ensemble] un tiers des entretiens est double-codé (§ 4.2.6)", relus.size * 3 >= ent.length,
+      `${relus.size} sur ${ent.length}`);
+  }
+
+  // Les effectifs du LISEZ-MOI sont écrits à la main : ils doivent suivre les projets.
+  const ligne = lisezMoi.match(/\| Segments codés \| ([\d  ]+) \| ([\d  ]+) \| ([\d  ]+) \|/);
+  if (verifier("le LISEZ-MOI annonce les effectifs de segments", !!ligne) && lus["vague 1"] && lus["vague 2"] && lus.ensemble) {
+    const annonces = ligne.slice(1, 4).map(x => Number(x.replace(/\D/g, "")));
+    memeContenu("ces effectifs correspondent aux projets", annonces,
+      [lus["vague 1"].segments.length, lus["vague 2"].segments.length, lus.ensemble.segments.length]);
+  }
 }
 
 titre("Documentation livrée avec l'application");
