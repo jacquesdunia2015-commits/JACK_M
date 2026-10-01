@@ -36,6 +36,14 @@ for (const m of modules) {
 }
 verifier("aucun import ne pointe dans le vide", importsCasses.length === 0, importsCasses.join(", "));
 
+titre("Le projet courant ne se remplace que par remplacerProjet()");
+// Toute affectation directe contournerait la remise à zéro de l'historique
+// d'annulation — c'est ainsi qu'un Ctrl+Z pouvait vider un projet ouvert.
+const affectations = modules.filter(m => m !== "state.js")
+  .flatMap(m => [...lire("js/" + m).matchAll(/\bstate\.project\s*=(?!=)/g)].map(() => m));
+verifier("aucun module n'affecte state.project directement", affectations.length === 0,
+  "affectations directes dans : " + [...new Set(affectations)].join(", "));
+
 /* ================== Fonctionnement hors ligne ================== */
 titre("Mode hors ligne : le service worker doit tout connaître");
 const sw = lire("sw.js");
