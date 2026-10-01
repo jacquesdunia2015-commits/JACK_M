@@ -43,6 +43,7 @@ export const swCD: Dictionnaire = {
   'nav.clients': 'Wateja',
   'nav.b2b': 'Commande za jumla',
   'nav.tiers_payant': 'Bima na mituelle',
+  'nav.traitements': 'Matibabu ya kudumu',
   'nav.rapports': 'Ripoti',
   'nav.equipe': 'Wafanyakazi',
   'nav.abonnement': 'Abonnement yangu',

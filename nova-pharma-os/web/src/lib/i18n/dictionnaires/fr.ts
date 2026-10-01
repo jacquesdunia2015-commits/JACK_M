@@ -45,6 +45,7 @@ export const fr = {
   'nav.clients': 'Clients',
   'nav.b2b': 'Commandes B2B',
   'nav.tiers_payant': 'Tiers payant',
+  'nav.traitements': 'Traitements suivis',
   'nav.rapports': 'Rapports',
   'nav.equipe': 'Équipe',
   'nav.abonnement': 'Mon abonnement',

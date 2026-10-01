@@ -38,6 +38,8 @@ import { InvoicesController } from './sales/invoices.controller';
 import { InvoicesService } from './sales/invoices.service';
 import { SalesController } from './sales/sales.controller';
 import { SalesService } from './sales/sales.service';
+import { TraitementsController } from './traitements/traitements.controller';
+import { TraitementsService } from './traitements/traitements.service';
 
 /**
  * Espace pharmacie : l'exploitation quotidienne d'une officine —
@@ -58,6 +60,7 @@ import { SalesService } from './sales/sales.service';
     InvoicesController,
     CustomersController,
     PayersController,
+    TraitementsController,
     CashController,
     B2bController,
     DeliveryController,
@@ -80,6 +83,7 @@ import { SalesService } from './sales/sales.service';
     InvoicesService,
     CustomersService,
     PayersService,
+    TraitementsService,
     CashService,
     B2bService,
     DeliveryService,

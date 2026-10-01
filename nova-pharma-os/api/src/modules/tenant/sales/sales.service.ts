@@ -9,6 +9,7 @@ import {
 } from '../cash/devises';
 import { StockService } from '../inventory/stock.service';
 import { PayersService, PriseEnCharge } from '../payers/payers.service';
+import { TraitementsService } from '../traitements/traitements.service';
 import { InvoicesService } from './invoices.service';
 import {
   CancelSaleDto,
@@ -38,6 +39,7 @@ export class SalesService {
     private readonly audit: AuditService,
     private readonly invoices: InvoicesService,
     private readonly payers: PayersService,
+    private readonly traitements: TraitementsService,
   ) {}
 
   /**
@@ -390,6 +392,13 @@ export class SalesService {
             userId: ctx.actorKind === 'user' ? ctx.actorId ?? null : null,
           });
         }
+      }
+
+      // ---- Traitements suivis : la délivrance recalcule la date de fin ----
+      if (customer) {
+        await this.traitements.apresVente(
+          tx, customer.id, prepared.map((l) => ({ productId: l.product.id, quantity: l.quantity })), soldAt ?? new Date(),
+        );
       }
 
       // ---- Crédit client ----

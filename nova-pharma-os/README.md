@@ -23,14 +23,14 @@ Deux espaces distincts, une seule base :
 | **Back-office SaaS** | NOVA PHARMA OS | Pharmacies clientes, forfaits, abonnements, facturation, relances, support, métriques, sauvegardes |
 | **Espace pharmacie** | Chaque pharmacie abonnée | Catalogue, lots et FEFO, stock, achats, ventes POS, caisse, clients, B2B, livraison, messagerie, Mobile Money, rapports |
 
-- **API** : NestJS + TypeScript, 87 tables PostgreSQL, documentation OpenAPI générée.
+- **API** : NestJS + TypeScript, 96 tables PostgreSQL, documentation OpenAPI générée.
 - **Interface** : Next.js 15 + TypeScript, rendu serveur, espace bureau et application
   mobile installable (PWA).
 - **Langues** : 15, dont le kiswahili de la RD Congo, le lingala, le kinyarwanda, le
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 174 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 179 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -369,6 +369,29 @@ ouvre le ticket et lance l'impression ; la largeur est retenue sur le poste. La 
 d'impression est mesurée à la hauteur exacte du ticket : le rouleau n'avance que de ce
 qui est imprimé. Données : `GET /api/sales/:id/receipt` (avec `coverage`).
 
+## Traitements suivis des malades chroniques (migration 026)
+
+Page *Traitements suivis* (`customers.read` ; ajout et arrêt : `customers.write` ;
+rappel : `messaging.write`). Pour chaque patient et chaque médicament de fond
+(`treatment_plans` : maladie, jours couverts par une unité vendue, jours d'avance du
+rappel), NOVA calcule la date de fin de la boîte : dernière délivrance + quantité ×
+jours par unité. **Chaque vente** du médicament au patient recalcule cette date (jour de
+la vente au fuseau de la pharmacie, heure réelle pour une vente faite hors connexion)
+et efface le rappel précédent.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET /api/treatments?etat=a_prevenir\|en_retard\|en_cours\|arrete&customerId=` | Traitements avec leur état et les jours restants (`a_prevenir` inclut les boîtes finies) |
+| `POST /api/treatments` · `PATCH …/:id` | Suivre un traitement · modifier, arrêter (`isActive: false`) ou reprendre |
+| `POST /api/treatments/:id/remind` | Prépare le message de renouvellement (catégorie `refill_reminder`) |
+
+- Le rappel passe par la messagerie : en mode manuel (par défaut, gratuit), il rend un
+  lien `wa.me` que le vendeur ouvre sur le téléphone de la pharmacie ; un clic confirme
+  l'envoi (`POST /api/messaging/messages/:id/sent`). Patient sans téléphone, traitement
+  arrêté : rappel refusé avec la raison.
+- Le message dit « arrive à sa fin vers le … » ou, boîte finie, « devait être renouvelé
+  le … », avec le nom et le téléphone de la pharmacie.
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -561,7 +584,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             174 tests de bout en bout
+│   └── test/             179 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -590,6 +613,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
+| `traitements.e2e-spec.ts` | Date de fin d'une boîte, patients à prévenir, lien WhatsApp, date recalculée par la vente, arrêt |
 | `double-authentification.e2e-spec.ts` | Changement de mot de passe, activation, code à usage unique, codes de secours, désactivation, verrouillage du back-office |
 | `pharmacy-operations.e2e-spec.ts` | FEFO, stock, caisse, crédit, B2B, inventaire, mise en route |
 | `tenant-isolation.e2e-spec.ts` | L'isolation tient au niveau base, sans le code applicatif |

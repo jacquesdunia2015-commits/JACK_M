@@ -801,6 +801,30 @@ les règlements reçus jusqu'à ce qu'il soit **réglé**.
 Une vente annulée sort d'elle-même d'un relevé encore en brouillon. Une fois le
 relevé présenté, il faut d'abord l'annuler (tant qu'il n'est pas réglé).
 
+## Prévenir les malades chroniques avant la fin de leur traitement
+
+Menu *Traitements suivis*. Un patient diabétique, hypertendu ou sous
+antirétroviraux revient chaque mois : le prévenir quelques jours avant la fin
+de sa boîte l'aide à ne pas interrompre son traitement — et le fait revenir
+chez vous plutôt que chez le voisin.
+
+**1. Suivez le traitement** : *Suivre le traitement d'un patient*, choisissez le
+patient (il doit exister dans *Clients*, avec son téléphone) et le médicament,
+la maladie, et combien de jours dure une boîte (30 comprimés à un par jour :
+30). Indiquez la date de la dernière délivrance et le nombre de boîtes : NOVA
+calcule la date de fin.
+
+**2. Ensuite, rien à faire** : à chaque vente de ce médicament à ce patient
+(choisissez-le à la caisse), la date de fin se recalcule toute seule.
+
+**3. Chaque matin**, ouvrez *Traitements suivis* : la liste **À prévenir**
+montre les boîtes qui finissent dans les 3 jours (réglable) et celles déjà
+finies. Touchez **Prévenir sur WhatsApp**, puis **Ouvrir WhatsApp** : le
+message est prêt, envoyez-le depuis le WhatsApp de la pharmacie. Aucun frais
+de SMS. Le patient est alors marqué « prévenu ».
+
+Un patient qui arrête son traitement : **Arrêter**. Il ne sera plus rappelé.
+
 ## Encaisser par Mobile Money
 
 Après une vente, appuyez sur **Encaisser Mobile Money**. L'application affiche
