@@ -517,6 +517,32 @@ filtre les produits par couleur de péremption.
 
 ---
 
+## Protéger votre compte : mot de passe et double authentification
+
+En haut de chaque page, cliquez sur **Mon compte**.
+
+**Changer votre mot de passe** : saisissez l'actuel, puis deux fois le nouveau
+(au moins 8 caractères, avec des lettres et un chiffre). Vous restez connecté ;
+tous vos autres appareils sont déconnectés. Faites-le dès la première
+connexion : les mots de passe de démonstration sont écrits dans ce guide.
+
+**Activer la double authentification** — fortement conseillé pour le gérant et
+pour le back-office :
+
+1. Installez sur votre téléphone une application gratuite : Google
+   Authenticator, Microsoft Authenticator ou 2FAS.
+2. **Activer la double authentification** : un QR code s'affiche. Dans
+   l'application, ajoutez un compte et scannez-le.
+3. Saisissez le code à 6 chiffres affiché par l'application, puis
+   **Activer**.
+4. Notez les **8 codes de secours** (ou imprimez-les) et rangez-les à part :
+   chacun ouvre votre compte une fois si vous perdez votre téléphone.
+
+Désormais, après votre mot de passe, NOVA demande le code de l'application. Il
+change toutes les 30 secondes et ne sert qu'une fois. Pas de SMS, aucun frais,
+et cela fonctionne même sans réseau téléphonique. Pour changer de téléphone :
+désactivez (mot de passe et code), puis réactivez avec le nouveau téléphone.
+
 ## Créer des comptes
 
 Chaque compte se crée avec les trois mêmes informations : **un numéro de

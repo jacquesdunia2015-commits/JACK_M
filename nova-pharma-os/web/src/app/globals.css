@@ -747,3 +747,10 @@ button.gj-colonne, button.gj-colonne:hover, button.gj-colonne:focus, button.gj-c
 .gj-colonne:focus-visible { outline: 2px solid var(--vert); outline-offset: 1px; }
 .gj-dates { display: flex; gap: 2px; font-size: 0.7rem; color: var(--gris); }
 .gj-dates span { flex: 1; min-width: 0; white-space: nowrap; overflow: visible; }
+
+/* Mon compte */
+.lien-compte { margin-left: 0.5rem; }
+.qr-2fa { border: 1px solid var(--bord); border-radius: 8px; background: #fff; }
+.cle-2fa { font-size: 1.05rem; letter-spacing: 0.05em; margin-top: 0.35rem; word-break: break-all; }
+.codes-secours ul { columns: 2; margin: 0.5rem 0; padding-left: 1.2rem; font-size: 1.05rem; }
+.code-verification input { font-size: 1.3rem; letter-spacing: 0.2em; text-align: center; }

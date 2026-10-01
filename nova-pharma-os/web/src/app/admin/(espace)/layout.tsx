@@ -59,6 +59,7 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
         <header className="topbar">
           <div className="topbar-context">
             <strong>{session.name}</strong>
+            {' '}<a href="/admin/compte" className="small lien-compte">Mon compte</a>
             <span className="muted"> · {ROLES[session.role ?? ''] ?? session.role}</span>
           </div>
           <div className="topbar-actions">

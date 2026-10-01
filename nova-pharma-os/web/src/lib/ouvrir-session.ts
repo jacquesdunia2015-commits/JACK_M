@@ -7,6 +7,8 @@ export interface Identifiants {
   password: string;
   organizationSlug?: string;
   space?: 'pharmacy' | 'platform';
+  /** Code de l'application d'authentification, si le compte en exige un. */
+  code?: string;
 }
 
 /**
@@ -33,21 +35,25 @@ export function messageErreur(body: unknown, repli: string): string {
  */
 export async function ouvrirSession(
   request: NextRequest,
-  { email, password, organizationSlug, space }: Identifiants,
+  { email, password, organizationSlug, space, code }: Identifiants,
 ): Promise<NextResponse> {
   const path = space === 'platform' ? '/auth/platform/login' : '/auth/login';
 
   const response = await fetch(`${API_URL}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, organizationSlug }),
+    body: JSON.stringify({ email, password, organizationSlug, ...(code ? { code } : {}) }),
     cache: 'no-store',
   });
 
   const body = await response.json().catch(() => null);
   if (!response.ok) {
     return NextResponse.json(
-      { message: messageErreur(body, 'Connexion impossible.') },
+      {
+        message: messageErreur(body, 'Connexion impossible.'),
+        // Double authentification : le formulaire affiche alors le champ du code.
+        ...((body as { mfaRequired?: boolean } | null)?.mfaRequired ? { mfaRequired: true } : {}),
+      },
       { status: response.status },
     );
   }

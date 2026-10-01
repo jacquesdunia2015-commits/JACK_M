@@ -84,6 +84,7 @@ export default async function LayoutPharmacie({
         <header className="topbar">
           <div className="topbar-context">
             <strong>{session.name}</strong>
+            {' '}<a href="/pharmacie/compte" className="small lien-compte">Mon compte</a>
             <span className="muted"> · {session.email}</span>
           </div>
           <div className="topbar-actions">

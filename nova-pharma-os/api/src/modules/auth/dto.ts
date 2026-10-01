@@ -19,6 +19,16 @@ export class LoginDto {
   @IsOptional()
   @IsString()
   organizationSlug?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Code à 6 chiffres de l’application d’authentification (ou code de secours), ' +
+      'si la double authentification est activée sur le compte.',
+    example: '123456',
+  })
+  @IsOptional()
+  @IsString()
+  code?: string;
 }
 
 export class RefreshDto {
@@ -36,4 +46,20 @@ export class ChangePasswordDto {
   @IsString()
   @MinLength(8)
   newPassword!: string;
+}
+
+export class CodeDto {
+  @ApiProperty({ example: '123456' })
+  @IsString()
+  code!: string;
+}
+
+export class DesactivationDto {
+  @ApiProperty()
+  @IsString()
+  password!: string;
+
+  @ApiProperty({ description: 'Code de l’application, ou code de secours.' })
+  @IsString()
+  code!: string;
 }

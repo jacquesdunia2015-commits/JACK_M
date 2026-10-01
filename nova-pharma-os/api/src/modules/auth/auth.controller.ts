@@ -3,7 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Ctx, Public } from '../../common/auth/decorators';
 import { RequestContext } from '../../common/database/request-context';
 import { AuthService } from './auth.service';
-import { ChangePasswordDto, LoginDto, RefreshDto } from './dto';
+import { ChangePasswordDto, CodeDto, DesactivationDto, LoginDto, RefreshDto } from './dto';
 
 @ApiTags('Authentification')
 @Controller('auth')
@@ -54,10 +54,40 @@ export class AuthController {
   }
 
   @Post('password')
-  @ApiOperation({ summary: 'Changement de mot de passe' })
-  async changePassword(@Ctx() ctx: RequestContext, @Body() dto: ChangePasswordDto) {
-    await this.auth.changePassword(ctx, dto.currentPassword, dto.newPassword);
-    return { message: 'Mot de passe modifié. Les autres sessions ont été fermées.' };
+  @ApiOperation({ summary: 'Changement de mot de passe (renvoie une session neuve ; les autres sont fermées)' })
+  async changePassword(
+    @Ctx() ctx: RequestContext,
+    @Body() dto: ChangePasswordDto,
+    @Req() req: { ip?: string; headers: Record<string, string> },
+  ) {
+    const tokens = await this.auth.changePassword(ctx, dto.currentPassword, dto.newPassword, {
+      ip: req.ip, userAgent: req.headers['user-agent'],
+    });
+    return { message: 'Mot de passe modifié. Les autres sessions ont été fermées.', ...tokens };
+  }
+
+  @Get('2fa')
+  @ApiOperation({ summary: 'État de la double authentification du compte' })
+  etat2fa(@Ctx() ctx: RequestContext) {
+    return this.auth.etatDoubleAuth(ctx);
+  }
+
+  @Post('2fa/setup')
+  @ApiOperation({ summary: 'Préparer la double authentification : secret et lien du QR code' })
+  preparer2fa(@Ctx() ctx: RequestContext) {
+    return this.auth.preparerDoubleAuth(ctx);
+  }
+
+  @Post('2fa/enable')
+  @ApiOperation({ summary: 'Activer la double authentification avec un premier code (renvoie les codes de secours)' })
+  activer2fa(@Ctx() ctx: RequestContext, @Body() dto: CodeDto) {
+    return this.auth.activerDoubleAuth(ctx, dto.code);
+  }
+
+  @Post('2fa/disable')
+  @ApiOperation({ summary: 'Désactiver la double authentification (mot de passe et code exigés)' })
+  desactiver2fa(@Ctx() ctx: RequestContext, @Body() dto: DesactivationDto) {
+    return this.auth.desactiverDoubleAuth(ctx, dto.password, dto.code);
   }
 
   @Get('me')

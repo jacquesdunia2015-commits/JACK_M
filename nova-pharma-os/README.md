@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 168 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 174 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -338,6 +338,27 @@ produits qui ne se vendent pas (aucune vente en 90 jours), péremptions et perte
   elles prennent les lots qui périment le plus tôt, à leur coût (auparavant une quantité
   positive *ajoutait* du stock sur une ligne sans lot).
 
+## Mot de passe et double authentification (migration 025)
+
+Page *Mon compte* (lien en haut de chaque page, espace pharmacie et back-office).
+
+- **Mot de passe** : l'actuel, puis le nouveau (8 caractères, lettres et chiffre,
+  différent de l'actuel). Toutes les sessions sont fermées, puis une session neuve est
+  ouverte pour l'appareil qui a changé le mot de passe (`POST /api/auth/password` renvoie
+  les jetons ; le relais web `/api/compte/mot-de-passe` réécrit le cookie).
+- **Double authentification** (TOTP, RFC 6238, `api/src/modules/auth/totp.ts`) : QR code
+  à scanner avec une application gratuite (Google Authenticator, Microsoft Authenticator,
+  2FAS), activation par un premier code juste, 8 codes de secours à usage unique (gardés
+  sous forme d'empreinte). À la connexion, après le mot de passe, la réponse
+  `401 { mfaRequired: true }` fait apparaître le champ du code ; un code ne sert qu'une
+  fois ; un code faux compte comme un échec de connexion. Pas de SMS : aucun frais.
+- Le back-office se verrouille désormais aussi 15 minutes après 5 échecs.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `POST /api/auth/login`, `…/platform/login` — `code` | Code de l'application ou code de secours |
+| `GET /api/auth/2fa` · `POST …/2fa/setup` · `…/2fa/enable` · `…/2fa/disable` | État, QR code, activation, désactivation (mot de passe et code) |
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -530,7 +551,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             168 tests de bout en bout
+│   └── test/             174 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -559,6 +580,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
+| `double-authentification.e2e-spec.ts` | Changement de mot de passe, activation, code à usage unique, codes de secours, désactivation, verrouillage du back-office |
 | `pharmacy-operations.e2e-spec.ts` | FEFO, stock, caisse, crédit, B2B, inventaire, mise en route |
 | `tenant-isolation.e2e-spec.ts` | L'isolation tient au niveau base, sans le code applicatif |
 | `messaging-payments.e2e-spec.ts` | Un message ne part pas deux fois, un versement Mobile Money ne s'encaisse pas deux fois |

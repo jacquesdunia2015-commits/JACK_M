@@ -4,8 +4,8 @@ import { SESSION_COOKIE } from '@/lib/session';
 
 /** Échange les identifiants contre une session (voir lib/ouvrir-session). */
 export async function POST(request: NextRequest) {
-  const { email, password, organizationSlug, space } = await request.json();
-  return ouvrirSession(request, { email, password, organizationSlug, space });
+  const { email, password, organizationSlug, space, code } = await request.json();
+  return ouvrirSession(request, { email, password, organizationSlug, space, code });
 }
 
 export async function DELETE() {

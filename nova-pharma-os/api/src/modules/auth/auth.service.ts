@@ -19,6 +19,9 @@ import {
   SYSTEM_CONTEXT,
 } from '../../common/database/request-context';
 import { LoginDto } from './dto';
+import {
+  codesSecours, empreinteSecours, lienOtpauth, nouveauSecret, verifierCode,
+} from './totp';
 
 const MAX_FAILED_LOGINS = 5;
 const LOCK_MINUTES = 15;
@@ -97,6 +100,11 @@ export class AuthService {
       await this.registerFailedLogin(user.organization_id, user.id, user.failed_login_count);
       throw new UnauthorizedException('Identifiants incorrects.');
     }
+
+    await this.secondFacteur('users', user.id, dto.code, {
+      organizationId: user.organization_id, actorId: user.id, actorKind: 'user', actorLabel: user.email,
+      platform: false, readonly: false, ip: session.ip, userAgent: session.userAgent,
+    }, () => this.registerFailedLogin(user.organization_id, user.id, user.failed_login_count));
 
     if (['terminated', 'archived'].includes(user.org_status)) {
       throw new ForbiddenException(
@@ -181,14 +189,34 @@ export class AuthService {
         password_hash: string;
         role: string;
         is_active: boolean;
+        failed_login_count: number;
+        locked_until: Date | null;
       }>(
-        `SELECT id, email, full_name, password_hash, role, is_active
+        `SELECT id, email, full_name, password_hash, role, is_active, failed_login_count, locked_until
            FROM platform_users WHERE lower(email) = lower($1)`,
         [dto.email],
       ),
     );
 
-    if (!user || !bcrypt.compareSync(dto.password, user.password_hash)) {
+    if (!user) throw new UnauthorizedException('Identifiants incorrects.');
+    // Le back-office aussi se verrouille après plusieurs échecs.
+    if (user.locked_until && new Date(user.locked_until) > new Date()) {
+      throw new ForbiddenException(
+        `Compte temporairement verrouillé après plusieurs échecs. Réessayez dans ${LOCK_MINUTES} minutes.`,
+      );
+    }
+    const echecPlateforme = () => this.db.transaction(SYSTEM_CONTEXT, (tx) =>
+      tx.query(
+        `UPDATE platform_users
+            SET failed_login_count = failed_login_count + 1,
+                locked_until = CASE WHEN failed_login_count + 1 >= $2::integer
+                                    THEN now() + make_interval(mins => $3::integer) ELSE locked_until END
+          WHERE id = $1`,
+        [user.id, MAX_FAILED_LOGINS, LOCK_MINUTES],
+      ),
+    );
+    if (!bcrypt.compareSync(dto.password, user.password_hash)) {
+      await echecPlateforme();
       throw new UnauthorizedException('Identifiants incorrects.');
     }
     if (!user.is_active) throw new ForbiddenException('Ce compte est désactivé.');
@@ -204,10 +232,13 @@ export class AuthService {
       userAgent: session.userAgent,
     };
 
+    await this.secondFacteur('platform_users', user.id, dto.code, context, echecPlateforme);
+
     const tokens = await this.db.transaction(context, async (tx) => {
-      await tx.query('UPDATE platform_users SET last_login_at = now() WHERE id = $1', [
-        user.id,
-      ]);
+      await tx.query(
+        'UPDATE platform_users SET last_login_at = now(), failed_login_count = 0, locked_until = NULL WHERE id = $1',
+        [user.id],
+      );
       await this.audit.recordPlatform(tx, {
         action: 'platform.login',
         entity: 'platform_user',
@@ -331,13 +362,28 @@ export class AuthService {
     });
   }
 
+  /**
+   * Change le mot de passe. Toutes les sessions sont fermées — un voleur de
+   * session perd l'accès — puis une session neuve est ouverte pour l'appareil
+   * qui vient de changer le mot de passe.
+   */
   async changePassword(
     ctx: RequestContext,
     currentPassword: string,
     newPassword: string,
-  ): Promise<void> {
+    session: SessionInfo = {},
+  ): Promise<AuthenticatedTokens> {
     const table = ctx.actorKind === 'platform_user' ? 'platform_users' : 'users';
-    await this.db.transaction({ ...ctx, readonly: false }, async (tx) => {
+    if (newPassword === currentPassword) {
+      throw new ForbiddenException('Le nouveau mot de passe doit être différent de l’actuel.');
+    }
+    if (!/[A-Za-zÀ-ÿ]/.test(newPassword) || !/\d/.test(newPassword)) {
+      throw new ForbiddenException('Le mot de passe doit contenir au moins une lettre et un chiffre.');
+    }
+    const payload = table === 'users'
+      ? await this.tenantPayload(ctx.actorId as string)
+      : await this.platformPayload(ctx.actorId as string);
+    return this.db.transaction({ ...ctx, readonly: false }, async (tx) => {
       const row = await tx.oneOrFail<{ password_hash: string }>(
         `SELECT password_hash FROM ${table} WHERE id = $1`,
         [ctx.actorId],
@@ -363,7 +409,149 @@ export class AuthService {
       } else {
         await this.audit.record(tx, { action: 'auth.password_changed' });
       }
+      return this.issueTokens(tx, payload, session);
     });
+  }
+
+  // -------------------------------------------------------------------
+  // Double authentification
+  // -------------------------------------------------------------------
+  private table(ctx: RequestContext): 'users' | 'platform_users' {
+    return ctx.actorKind === 'platform_user' ? 'platform_users' : 'users';
+  }
+
+  async etatDoubleAuth(ctx: RequestContext) {
+    return this.db.readTransaction(ctx, async (tx) => {
+      const r = await tx.oneOrFail<{ totp_enabled_at: string | null; totp_recovery_codes: string[] }>(
+        `SELECT totp_enabled_at, totp_recovery_codes FROM ${this.table(ctx)} WHERE id = $1`,
+        [ctx.actorId], 'Compte introuvable.',
+      );
+      return {
+        enabled: Boolean(r.totp_enabled_at),
+        enabledAt: r.totp_enabled_at,
+        recoveryCodesLeft: r.totp_recovery_codes.length,
+      };
+    });
+  }
+
+  /** Prépare un secret : il ne devient actif qu'au premier code juste. */
+  async preparerDoubleAuth(ctx: RequestContext) {
+    return this.db.transaction({ ...ctx, readonly: false }, async (tx) => {
+      const r = await tx.oneOrFail<{ email: string; totp_enabled_at: string | null }>(
+        `SELECT email, totp_enabled_at FROM ${this.table(ctx)} WHERE id = $1`,
+        [ctx.actorId], 'Compte introuvable.',
+      );
+      if (r.totp_enabled_at) {
+        throw new ForbiddenException('La double authentification est déjà activée. Désactivez-la pour changer de téléphone.');
+      }
+      const secret = nouveauSecret();
+      await tx.query(`UPDATE ${this.table(ctx)} SET totp_pending_secret = $2 WHERE id = $1`, [ctx.actorId, secret]);
+      return { secret, otpauthUrl: lienOtpauth(r.email, secret) };
+    });
+  }
+
+  async activerDoubleAuth(ctx: RequestContext, code: string) {
+    return this.db.transaction({ ...ctx, readonly: false }, async (tx) => {
+      const r = await tx.oneOrFail<{ totp_pending_secret: string | null; totp_enabled_at: string | null }>(
+        `SELECT totp_pending_secret, totp_enabled_at FROM ${this.table(ctx)} WHERE id = $1 FOR UPDATE`,
+        [ctx.actorId], 'Compte introuvable.',
+      );
+      if (r.totp_enabled_at) throw new ForbiddenException('La double authentification est déjà activée.');
+      if (!r.totp_pending_secret) throw new ForbiddenException('Commencez par afficher le QR code à scanner.');
+      const pas = verifierCode(r.totp_pending_secret, code, null);
+      if (pas === null) {
+        throw new UnauthorizedException('Code incorrect. Vérifiez que l’heure du téléphone est juste, puis saisissez le code affiché.');
+      }
+      const { codes, empreintes } = codesSecours();
+      await tx.query(
+        `UPDATE ${this.table(ctx)}
+            SET totp_secret = totp_pending_secret, totp_pending_secret = NULL, totp_enabled_at = now(),
+                totp_last_step = $2, totp_recovery_codes = $3
+          WHERE id = $1`,
+        [ctx.actorId, pas, empreintes],
+      );
+      await this.journal(tx, ctx, 'auth.2fa_enabled');
+      return { enabled: true, recoveryCodes: codes };
+    });
+  }
+
+  async desactiverDoubleAuth(ctx: RequestContext, motDePasse: string, code: string) {
+    return this.db.transaction({ ...ctx, readonly: false }, async (tx) => {
+      const r = await tx.oneOrFail<{
+        password_hash: string; totp_secret: string | null; totp_last_step: string | null; totp_recovery_codes: string[];
+      }>(
+        `SELECT password_hash, totp_secret, totp_last_step, totp_recovery_codes FROM ${this.table(ctx)} WHERE id = $1 FOR UPDATE`,
+        [ctx.actorId], 'Compte introuvable.',
+      );
+      if (!r.totp_secret) throw new ForbiddenException('La double authentification n’est pas activée.');
+      if (!bcrypt.compareSync(motDePasse, r.password_hash)) throw new UnauthorizedException('Mot de passe incorrect.');
+      const valide =
+        verifierCode(r.totp_secret, code, r.totp_last_step === null ? null : Number(r.totp_last_step)) !== null
+        || r.totp_recovery_codes.includes(empreinteSecours(code));
+      if (!valide) throw new UnauthorizedException('Code de vérification incorrect.');
+      await tx.query(
+        `UPDATE ${this.table(ctx)}
+            SET totp_secret = NULL, totp_pending_secret = NULL, totp_enabled_at = NULL,
+                totp_last_step = NULL, totp_recovery_codes = '{}'
+          WHERE id = $1`,
+        [ctx.actorId],
+      );
+      await this.journal(tx, ctx, 'auth.2fa_disabled');
+      return { enabled: false };
+    });
+  }
+
+  /**
+   * Second facteur à la connexion, une fois le mot de passe vérifié : sans
+   * code, la réponse le demande ; un code faux compte comme un échec de
+   * connexion (verrouillage après plusieurs essais) ; un code de secours ne
+   * sert qu'une fois.
+   */
+  private async secondFacteur(
+    table: 'users' | 'platform_users',
+    id: string,
+    code: string | undefined,
+    contexte: RequestContext,
+    echec: () => Promise<unknown>,
+  ): Promise<void> {
+    await this.db.transaction(contexte, async (tx) => {
+      const r = await tx.oneOrFail<{ totp_secret: string | null; totp_last_step: string | null; totp_recovery_codes: string[] }>(
+        `SELECT totp_secret, totp_last_step, totp_recovery_codes FROM ${table} WHERE id = $1 FOR UPDATE`,
+        [id],
+      );
+      if (!r.totp_secret) return;
+      if (!code?.trim()) {
+        throw new UnauthorizedException({
+          statusCode: 401,
+          message: 'Saisissez le code à 6 chiffres de votre application d’authentification.',
+          mfaRequired: true,
+        });
+      }
+      const pas = verifierCode(r.totp_secret, code, r.totp_last_step === null ? null : Number(r.totp_last_step));
+      if (pas !== null) {
+        await tx.query(`UPDATE ${table} SET totp_last_step = $2 WHERE id = $1`, [id, pas]);
+        return;
+      }
+      const empreinte = empreinteSecours(code);
+      if (r.totp_recovery_codes.includes(empreinte)) {
+        await tx.query(`UPDATE ${table} SET totp_recovery_codes = array_remove(totp_recovery_codes, $2) WHERE id = $1`, [id, empreinte]);
+        await this.journal(tx, contexte, 'auth.recovery_code_used');
+        return;
+      }
+      throw new Error('code-incorrect');
+    }).catch(async (e) => {
+      if ((e as Error).message !== 'code-incorrect') throw e;
+      await echec();
+      throw new UnauthorizedException({ statusCode: 401, message: 'Code de vérification incorrect.', mfaRequired: true });
+    });
+  }
+
+  private async journal(tx: Tx, ctx: RequestContext, action: string) {
+    if (ctx.actorKind === 'platform_user') {
+      await this.audit.recordPlatform(tx, { action: action.replace(/^auth\./, 'platform.'), entity: 'platform_user', entityId: ctx.actorId });
+    } else {
+      await this.audit.record(tx, { action, entity: 'user', entityId: ctx.actorId });
+    }
   }
 
   // -------------------------------------------------------------------
