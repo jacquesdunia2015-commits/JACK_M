@@ -90,7 +90,7 @@ export default function Caisse({
   const [facture, setFacture] = useState<FactureEmise | null>(null);
   const champRecherche = useRef<HTMLInputElement>(null);
 
-  const total = useMemo(
+  const brut = useMemo(
     () =>
       ticket.reduce(
         (somme, ligne) => somme + ligne.quantite * Number(ligne.produit.sale_price),
@@ -98,6 +98,10 @@ export default function Caisse({
       ),
     [ticket],
   );
+  // Remise permanente de la catégorie du client (personnel, fidèles…),
+  // appliquée aussi par le serveur aux lignes sans remise saisie.
+  const remise = client && Number(client.group_discount) > 0 ? Number(client.group_discount) : 0;
+  const total = Math.round((brut - (brut * remise) / 100) * 100) / 100;
 
   const ordonnanceRequise = ticket.some((l) => l.produit.requires_prescription);
 
@@ -123,8 +127,28 @@ export default function Caisse({
     return () => clearTimeout(minuteur);
   }, [tiersPayant, beneficiaire, total]);
   const couvert = tiersPayant && beneficiaire && partage && partage.payerShare > 0;
+  /** Part du client avant ses points de fidélité. */
+  const partClient = couvert ? partage.patientShare : total;
+
+  // Fidélité : le solde du client et ce qu'il peut utiliser sur cette vente.
+  const [fidelite, setFidelite] = useState<{
+    enabled: boolean; balance: number; value: number; maxPoints: number; maxValue: number; pointValue: number; reason: string | null;
+  } | null>(null);
+  const [utiliserPoints, setUtiliserPoints] = useState(false);
+  const [points, setPoints] = useState('');
+  useEffect(() => {
+    if (!client || horsLigne) { setFidelite(null); return; }
+    const minuteur = setTimeout(async () => {
+      const r = await fetch(`/api/proxy/loyalty/customers/${client.id}/quote?amount=${partClient.toFixed(2)}`).catch(() => null);
+      setFidelite(r?.ok ? await r.json() : null);
+    }, 200);
+    return () => clearTimeout(minuteur);
+  }, [client, partClient, horsLigne]);
+  const pointsSaisis = Math.floor(Number(points) || 0);
+  const pointsUtilises = utiliserPoints && fidelite?.enabled ? Math.min(pointsSaisis, fidelite.maxPoints) : 0;
+  const valeurPoints = fidelite ? Math.round(pointsUtilises * fidelite.pointValue * 100) / 100 : 0;
   /** Ce que le patient doit payer lui-même. */
-  const du = couvert ? partage.patientShare : total;
+  const du = Math.round((partClient - valeurPoints) * 100) / 100;
 
   // Espèces : ce qui est remis dans chaque devise, ramené à la devise de la
   // pharmacie ; la monnaie se rend dans la devise choisie, à la coupure près.
@@ -346,6 +370,7 @@ export default function Caisse({
           payments: paiements,
           ...(moyen === 'cash' && surplus > 0 ? { changeCurrency: deviseMonnaie } : {}),
           ...(client ? { customerId: client.id } : {}),
+          ...(pointsUtilises > 0 ? { loyaltyPoints: pointsUtilises } : {}),
           ...(couvert && beneficiaire
             ? { coverage: { payerMemberId: beneficiaire.id, ...(bon.trim() ? { authorizationNumber: bon.trim() } : {}) } }
             : {}),
@@ -418,6 +443,8 @@ export default function Caisse({
     setPatient('');
     setPrescripteur('');
     setClient(null);
+    setUtiliserPoints(false);
+    setPoints('');
   }
 
   /**
@@ -432,8 +459,8 @@ export default function Caisse({
       setMessage({ ton: 'danger', texte: 'Pas de réseau, et le catalogue gardé sur ce poste est absent ou trop ancien : impossible de vendre hors connexion.' });
       return;
     }
-    if (couvert || moyen === 'credit') {
-      setMessage({ ton: 'danger', texte: 'Hors connexion, la vente se règle au comptant : le crédit et le tiers payant reviendront avec le réseau.' });
+    if (couvert || moyen === 'credit' || pointsUtilises > 0) {
+      setMessage({ ton: 'danger', texte: 'Hors connexion, la vente se règle au comptant : le crédit, le tiers payant et les points de fidélité reviendront avec le réseau.' });
       return;
     }
     const enAttente = lireFile();
@@ -450,7 +477,10 @@ export default function Caisse({
       id: corps.clientOperationId as string,
       corps: {
         ...corps,
-        lines: ticket.map((l) => ({ productId: l.produit.id, quantity: l.quantite, unitPrice: Number(l.produit.sale_price) })),
+        lines: ticket.map((l) => ({
+          productId: l.produit.id, quantity: l.quantite, unitPrice: Number(l.produit.sale_price),
+          ...(remise > 0 ? { discountPercent: remise } : {}),
+        })),
         soldAt: heure.toISOString(),
         deviceId: identifiantPoste(),
         notes: `Vente encaissée hors connexion le ${heure.toLocaleString('fr-FR')}`,
@@ -666,6 +696,12 @@ export default function Caisse({
               </div>
             ))}
 
+            {remise > 0 && (
+              <div className="ticket-line small">
+                <span>Remise {client?.group_name} ({remise.toLocaleString('fr-FR')} %)</span>
+                <span className="mono">−{money(brut - total, devise)}</span>
+              </div>
+            )}
             <div className="ticket-total">
               <span>Total</span>
               <span className="mono">{money(total, devise)}</span>
@@ -727,6 +763,37 @@ export default function Caisse({
               </div>
             )}
 
+            {(!horsLigne || client) && (
+              <div className="field" style={{ marginTop: '1rem' }}>
+                <label htmlFor="choix-client">
+                  Client {moyen === 'credit' ? '(obligatoire pour le crédit)' : '(facultatif : fidélité, remise, suivi)'}
+                </label>
+                <ChoixClient client={client} onChange={(c) => { setClient(c); setUtiliserPoints(false); setPoints(''); }} devise={devise} />
+                {fidelite?.enabled && (
+                  <div className="fidelite-caisse">
+                    <span className="small">
+                      <strong>{fidelite.balance}</strong> point(s) · {money(fidelite.value, devise)}
+                    </span>
+                    {fidelite.maxPoints > 0 ? (
+                      <label className="case">
+                        <input type="checkbox" checked={utiliserPoints}
+                          onChange={(e) => { setUtiliserPoints(e.target.checked); setPoints(e.target.checked ? String(fidelite.maxPoints) : ''); }} />
+                        Utiliser
+                        {utiliserPoints ? (
+                          <input aria-label="Points à utiliser" inputMode="numeric" value={points} onChange={(e) => setPoints(e.target.value.replace(/\D/g, ''))}
+                            style={{ width: '5.5rem' }} />
+                        ) : ` jusqu’à ${fidelite.maxPoints}`}
+                        {' '}points{utiliserPoints && valeurPoints > 0 ? ` = −${money(valeurPoints, devise)}` : ''}
+                      </label>
+                    ) : fidelite.reason ? <span className="small muted">{fidelite.reason}</span> : null}
+                    {utiliserPoints && pointsSaisis > fidelite.maxPoints && (
+                      <span className="small" style={{ color: 'var(--attention)' }}>Au plus {fidelite.maxPoints} points sur cette vente.</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="field" style={{ marginTop: '1rem' }}>
               <label htmlFor="moyen">Moyen de paiement</label>
               <select id="moyen" value={moyen} onChange={(e) => setMoyen(e.target.value)}>
@@ -738,12 +805,6 @@ export default function Caisse({
               </select>
             </div>
 
-            {moyen === 'credit' && (
-              <div className="field">
-                <label htmlFor="choix-client">Client</label>
-                <ChoixClient client={client} onChange={setClient} devise={devise} />
-              </div>
-            )}
 
             {moyen === 'cash' && (
               <>
@@ -811,7 +872,7 @@ export default function Caisse({
               disabled={envoi}
               style={{ width: '100%', marginTop: '0.5rem' }}
             >
-              {envoi ? 'Enregistrement…' : couvert ? `Encaisser la part patient : ${money(du, devise)}` : `Encaisser ${money(total, devise)}`}
+              {envoi ? 'Enregistrement…' : couvert ? `Encaisser la part patient : ${money(du, devise)}` : `Encaisser ${money(du, devise)}`}
             </button>
           </>
         )}

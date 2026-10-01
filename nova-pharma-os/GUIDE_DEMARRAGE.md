@@ -825,6 +825,29 @@ de SMS. Le patient est alors marqué « prévenu ».
 
 Un patient qui arrête son traitement : **Arrêter**. Il ne sera plus rappelé.
 
+## Fidéliser vos clients : points et remises
+
+Menu *Fidélité*.
+
+**1. Activez le programme** et réglez-le : combien de points rapporte un dollar
+payé (1 par exemple), ce que vaut un point (0,05 $ : 100 points = 5 $), à partir
+de combien de points on peut les utiliser, et quelle part d'un achat peut être
+payée en points (50 %). NOVA affiche ce que le client récupère sur ce qu'il
+dépense : entre 1 et 5 % est courant.
+
+**2. À la caisse, choisissez le client** (nom, code ou téléphone) avant
+d'encaisser : il gagne ses points tout seul. S'il en a assez, cochez
+**Utiliser** : la valeur des points est déduite, il ne paie que le reste. Le
+ticket imprime les points utilisés, gagnés et son nouveau solde.
+
+**3. Remises permanentes** : créez des catégories (« Personnel » à 10 %,
+« Clients fidèles » à 5 %…), puis, dans *Un client*, rangez-y les clients
+concernés. À la caisse, la remise s'applique dès que le client est choisi.
+
+Vous pouvez aussi offrir ou retirer des points à un client (geste commercial,
+correction), toujours avec un motif. Une vente annulée reprend les points
+gagnés et rend les points utilisés.
+
 ## Encaisser par Mobile Money
 
 Après une vente, appuyez sur **Encaisser Mobile Money**. L'application affiche

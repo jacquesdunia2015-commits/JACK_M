@@ -457,7 +457,7 @@ export class ReportingService {
     ];
     const LIB_MOYEN: Record<string, string> = {
       cash: 'Espèces', mobile_money: 'Mobile Money', card: 'Carte', bank_transfer: 'Virement',
-      bank_local: 'Banque', credit: 'Crédit client', insurance: 'Tiers payant', manual: 'Autre',
+      bank_local: 'Banque', credit: 'Crédit client', insurance: 'Tiers payant', loyalty: 'Points fidélité', manual: 'Autre',
     };
     const feuilles: Feuille[] = [
       {

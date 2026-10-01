@@ -9,6 +9,7 @@ import {
 } from '../cash/devises';
 import { StockService } from '../inventory/stock.service';
 import { PayersService, PriseEnCharge } from '../payers/payers.service';
+import { FideliteService } from '../fidelite/fidelite.service';
 import { TraitementsService } from '../traitements/traitements.service';
 import { InvoicesService } from './invoices.service';
 import {
@@ -40,6 +41,7 @@ export class SalesService {
     private readonly invoices: InvoicesService,
     private readonly payers: PayersService,
     private readonly traitements: TraitementsService,
+    private readonly fidelite: FideliteService,
   ) {}
 
   /**
@@ -109,6 +111,11 @@ export class SalesService {
           )
         : null;
 
+      // Remise permanente de la catégorie du client (personnel, fidèles…),
+      // appliquée aux lignes sans remise saisie.
+      const remiseCategorie = customer ? await this.fidelite.remiseClient(tx, customer.id) : 0;
+      const programme = await this.fidelite.lireProgramme(tx);
+
       // ---- Préparation des lignes ----
       interface PreparedLine {
         product: ResolvedProduct;
@@ -142,7 +149,7 @@ export class SalesService {
           product,
           quantity: line.quantity,
           unitPrice,
-          discountPercent: line.discountPercent ?? 0,
+          discountPercent: line.discountPercent ?? remiseCategorie,
           allocations,
         });
       }
@@ -175,6 +182,23 @@ export class SalesService {
           method: 'insurance', provider: priseEnCharge.payerName,
           reference: dto.coverage.authorizationNumber, montant: priseEnCharge.payerShare,
           devise: currency, remis: priseEnCharge.payerShare, taux: null,
+        });
+      }
+
+      // Points de fidélité : leur valeur est un règlement de la vente, pris
+      // sur la part du client (après celle du tiers payant).
+      let pointsUtilises = 0;
+      let valeurPoints = 0;
+      if (dto.loyaltyPoints) {
+        if (!customer) throw new BusinessRuleException('Choisissez le client pour utiliser ses points de fidélité.');
+        const u = await this.fidelite.utiliser(
+          tx, customer.id, dto.loyaltyPoints, totals.total - (priseEnCharge?.payerShare ?? 0),
+        );
+        pointsUtilises = dto.loyaltyPoints;
+        valeurPoints = u.montant;
+        encaissements.push({
+          method: 'loyalty', reference: `${pointsUtilises} points`, montant: valeurPoints,
+          devise: currency, remis: valeurPoints, taux: null,
         });
       }
 
@@ -318,6 +342,9 @@ export class SalesService {
           soldAt ? soldAt.toISOString() : null,
         ],
       );
+      if (remiseCategorie > 0 && prepared.some((l) => l.discountPercent === remiseCategorie)) {
+        await tx.query('UPDATE sales SET group_discount_percent = $2 WHERE id = $1', [sale.id, remiseCategorie]);
+      }
 
       // ---- Lignes, une par lot consommé ----
       let sortOrder = 0;
@@ -399,6 +426,33 @@ export class SalesService {
         await this.traitements.apresVente(
           tx, customer.id, prepared.map((l) => ({ productId: l.product.id, quantity: l.quantity })), soldAt ?? new Date(),
         );
+      }
+
+      // ---- Fidélité : points utilisés, puis points gagnés sur ce que le
+      // client a payé lui-même (ni tiers payant, ni points, ni crédit) ----
+      if (customer) {
+        const auteur = ctx.actorKind === 'user' ? ctx.actorId ?? null : null;
+        if (pointsUtilises > 0) {
+          await this.fidelite.mouvement(tx, {
+            organizationId, customerId: customer.id, saleId: sale.id, kind: 'redeem',
+            points: -pointsUtilises, amount: valeurPoints, reason: `Vente ${sale.number}`, userId: auteur,
+          });
+        }
+        const gagnes = dto.channel === 'b2b' ? 0 : this.fidelite.pointsGagnes(
+          programme, totals.total - (priseEnCharge?.payerShare ?? 0) - valeurPoints - creditAmount,
+        );
+        if (gagnes > 0) {
+          await this.fidelite.mouvement(tx, {
+            organizationId, customerId: customer.id, saleId: sale.id, kind: 'earn',
+            points: gagnes, reason: `Vente ${sale.number}`, userId: auteur,
+          });
+        }
+        if (pointsUtilises > 0 || gagnes > 0) {
+          await tx.query(
+            'UPDATE sales SET loyalty_points_earned = $2, loyalty_points_redeemed = $3 WHERE id = $1',
+            [sale.id, gagnes, pointsUtilises],
+          );
+        }
       }
 
       // ---- Crédit client ----
@@ -494,6 +548,8 @@ export class SalesService {
       }
       // Une vente prise en charge sort du relevé en brouillon qui la porte.
       await this.payers.retirerVente(tx, saleId);
+      // Points gagnés retirés, points utilisés rendus.
+      await this.fidelite.annulerVente(tx, ctx, saleId, sale.number);
 
       const lines = await tx.many<{
         product_id: string; lot_id: string | null; quantity: string; unit_cost: string;
@@ -656,7 +712,15 @@ export class SalesService {
             [data.sale.payer_id, data.sale.payer_member_id],
           )
         : null;
-      return { organization, branch, coverage, ...data };
+      // Fidélité : points gagnés, utilisés, et solde du client.
+      const loyalty = data.sale.customer_id && (Number(data.sale.loyalty_points_earned) > 0 || Number(data.sale.loyalty_points_redeemed) > 0)
+        ? await tx.one<{ balance: number }>('SELECT loyalty_points AS balance FROM customers WHERE id = $1', [data.sale.customer_id])
+            .then((c) => ({
+              earned: Number(data.sale.loyalty_points_earned), redeemed: Number(data.sale.loyalty_points_redeemed),
+              balance: c ? Number(c.balance) : null,
+            }))
+        : null;
+      return { organization, branch, coverage, loyalty, ...data };
     });
   }
 

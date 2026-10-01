@@ -17,5 +17,7 @@ export const MOYENS_PAIEMENT: Record<string, string> = {
   bank_transfer: 'Virement',
   bank_local: 'Banque',
   credit: 'À crédit',
+  insurance: 'Tiers payant',
+  loyalty: 'Points fidélité',
   manual: 'Autre',
 };

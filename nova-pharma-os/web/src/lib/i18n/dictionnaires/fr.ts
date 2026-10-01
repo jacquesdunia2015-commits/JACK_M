@@ -46,6 +46,7 @@ export const fr = {
   'nav.b2b': 'Commandes B2B',
   'nav.tiers_payant': 'Tiers payant',
   'nav.traitements': 'Traitements suivis',
+  'nav.fidelite': 'Fidélité',
   'nav.rapports': 'Rapports',
   'nav.equipe': 'Équipe',
   'nav.abonnement': 'Mon abonnement',

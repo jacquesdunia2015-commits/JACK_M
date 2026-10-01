@@ -32,6 +32,7 @@ const LIBELLES_PAIEMENT: Record<string, string> = {
   credit: 'À crédit',
   manual: 'Autre',
   insurance: 'Prise en charge',
+  loyalty: 'Points fidélité',
 };
 
 /**

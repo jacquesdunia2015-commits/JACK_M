@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../../common/audit/audit.service';
+import { FideliteService } from '../fidelite/fidelite.service';
 import { DatabaseService, Tx } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
 import { BusinessRuleException } from '../../../common/http/exceptions';
@@ -35,6 +36,7 @@ export class CustomersService {
   constructor(
     private readonly db: DatabaseService,
     private readonly audit: AuditService,
+    private readonly fidelite: FideliteService,
   ) {}
 
   async list(ctx: RequestContext, search?: string, kind?: string) {
@@ -42,8 +44,9 @@ export class CustomersService {
       tx.many(
         `SELECT c.id, c.code, c.kind, c.name, c.contact_name, c.phone, c.email,
                 c.city, c.credit_limit, c.credit_days, c.outstanding_balance,
-                c.is_credit_blocked, c.loyalty_points, c.is_active,
+                c.is_credit_blocked, c.loyalty_points, c.is_active, c.group_id,
                 g.name AS group_name,
+                CASE WHEN g.is_active THEN g.discount_percent END AS group_discount,
                 (SELECT count(*) FROM sales s WHERE s.customer_id = c.id
                    AND s.status = 'completed') AS purchases,
                 (SELECT COALESCE(sum(s.total), 0) FROM sales s
@@ -86,7 +89,9 @@ export class CustomersService {
         entityId: customer.id as string,
         after: { code, name: dto.name, kind: dto.kind ?? 'individual' },
       });
-      return customer;
+      // Points de bienvenue, si le programme de fidélité en offre.
+      const bienvenue = await this.fidelite.bienvenue(tx, ctx, customer.id as string);
+      return bienvenue ? { ...customer, loyalty_points: bienvenue } : customer;
     });
   }
 

@@ -327,6 +327,12 @@ button.lien { background: none; border: 0; padding: 0; color: inherit; text-deco
   margin-top: 1rem; padding: 0.75rem; border: 1px dashed var(--bord); border-radius: var(--rayon);
   display: grid; gap: 0.5rem;
 }
+/* Fidélité à la caisse */
+.fidelite-caisse {
+  margin-top: 0.5rem; padding: 0.5rem 0.65rem; border-radius: var(--rayon); background: var(--vert-clair);
+  display: grid; gap: 0.35rem;
+}
+.fidelite-caisse .case { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
 .beneficiaire-choisi { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
 .liste-choix { display: grid; gap: 0.25rem; margin-top: 0.4rem; max-height: 220px; overflow-y: auto; }
 .liste-choix .choix {

@@ -11,6 +11,7 @@ interface Recu {
   };
   branch: { name: string; address: string | null; city: string | null; phone: string | null };
   coverage: { payer_name: string; member_name: string | null; member_number: string | null } | null;
+  loyalty: { earned: number; redeemed: number; balance: number | null } | null;
   sale: {
     number: string; status: string; currency: string; sold_at: string; subtotal: string; discount_total: string;
     tax_total: string; total: string; change_given: string; change_amount: string | null; change_currency: string | null;
@@ -26,7 +27,7 @@ interface Recu {
 
 const MOYENS: Record<string, string> = {
   cash: 'Espèces', mobile_money: 'Mobile Money', card: 'Carte', bank_transfer: 'Virement',
-  bank_local: 'Banque', credit: 'À crédit', insurance: 'Tiers payant', manual: 'Autre',
+  bank_local: 'Banque', credit: 'À crédit', insurance: 'Tiers payant', loyalty: 'Points fidélité', manual: 'Autre',
 };
 
 /**
@@ -117,6 +118,15 @@ export default async function PageTicket({
         )}
         {Number(s.change_given) > 0 && (
           <div className="t-ligne t-gras"><span>Monnaie rendue</span><span>{money(s.change_amount ?? s.change_given, s.change_currency ?? d)}</span></div>
+        )}
+        {r.loyalty && (
+          <>
+            <div className="t-trait" />
+            <div className="t-centre t-gras">Fidélité{s.customer_name ? ` — ${s.customer_name}` : ''}</div>
+            {r.loyalty.redeemed > 0 && <div className="t-ligne"><span>Points utilisés</span><span>-{r.loyalty.redeemed}</span></div>}
+            {r.loyalty.earned > 0 && <div className="t-ligne"><span>Points gagnés</span><span>+{r.loyalty.earned}</span></div>}
+            {r.loyalty.balance !== null && <div className="t-ligne t-gras"><span>Votre solde</span><span>{r.loyalty.balance} points</span></div>}
+          </>
         )}
         <div className="t-trait" />
         <div className="t-centre">Merci de votre confiance.</div>

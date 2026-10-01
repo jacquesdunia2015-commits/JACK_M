@@ -44,6 +44,7 @@ export default async function LayoutPharmacie({
     { href: '/pharmacie/clients', label: t('nav.clients'), icone: '▩', groupe: t('nav.commerce'), droit: ['customers.read'] },
     { href: '/pharmacie/tiers-payant', label: t('nav.tiers_payant'), icone: '▧', groupe: t('nav.commerce'), droit: ['customers.read'] },
     { href: '/pharmacie/traitements', label: t('nav.traitements'), icone: '▣', groupe: t('nav.commerce'), droit: ['customers.read'], module: 'customers' },
+    { href: '/pharmacie/fidelite', label: t('nav.fidelite'), icone: '▤', groupe: t('nav.commerce'), droit: ['customers.read'], module: 'customers' },
     { href: '/pharmacie/b2b', label: t('nav.b2b'), icone: '▤', groupe: t('nav.commerce'), droit: ['b2b.read'], module: 'b2b' },
     { href: '/pharmacie/utilisateurs', label: t('nav.equipe'), icone: '▣', groupe: t('nav.administration'), droit: ['users.read'] },
     { href: '/pharmacie/abonnement', label: t('nav.abonnement'), icone: '▢', groupe: t('nav.administration'), droit: ['billing.read'] },

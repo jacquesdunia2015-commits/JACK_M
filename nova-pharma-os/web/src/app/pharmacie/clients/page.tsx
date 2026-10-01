@@ -13,7 +13,7 @@ interface Client {
   id: string; code: string; kind: string; name: string; phone: string | null;
   city: string | null; credit_limit: string; outstanding_balance: string;
   is_credit_blocked: boolean; purchases: string; lifetime_value: string;
-  last_purchase_at: string | null;
+  last_purchase_at: string | null; loyalty_points: number; group_name: string | null;
 }
 
 interface BalanceAgee {
@@ -136,6 +136,7 @@ export default async function PageClients({
                   <th>Client</th>
                   <th>Type</th>
                   <th>Téléphone</th>
+                  <th className="num">Points</th>
                   <th className="num">Achats</th>
                   <th className="num">Cumul</th>
                   <th className="num">Encours</th>
@@ -166,8 +167,10 @@ export default async function PageClients({
                             Crédit bloqué
                           </span>
                         )}
+                        {c.group_name && <span className="tag ok" style={{ marginLeft: '0.3rem' }}>{c.group_name}</span>}
                       </td>
                       <td className="small">{c.phone ?? '—'}</td>
+                      <td className="num">{c.loyalty_points > 0 ? c.loyalty_points.toLocaleString('fr-FR') : '—'}</td>
                       <td className="num">{c.purchases}</td>
                       <td className="num">{money(c.lifetime_value, devise)}</td>
                       <td className="num">

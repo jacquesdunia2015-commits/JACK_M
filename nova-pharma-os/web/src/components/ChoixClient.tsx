@@ -11,6 +11,11 @@ export interface ClientChoisi {
   credit_limit: string;
   outstanding_balance: string;
   is_credit_blocked: boolean;
+  loyalty_points?: number;
+  group_id?: string | null;
+  group_name?: string | null;
+  /** Remise de la catégorie du client, si elle est active. */
+  group_discount?: string | null;
 }
 
 /**
@@ -57,6 +62,11 @@ export default function ChoixClient({
             {plafond > 0 ? ` / plafond ${money(plafond, devise)}` : ''}
           </span>
           {client.is_credit_blocked && <span className="tag danger" style={{ marginLeft: '0.35rem' }}>Crédit bloqué</span>}
+          {client.group_name && (
+            <span className="tag ok" style={{ marginLeft: '0.35rem' }}>
+              {client.group_name}{Number(client.group_discount) > 0 ? ` −${Number(client.group_discount).toLocaleString('fr-FR')} %` : ''}
+            </span>
+          )}
         </span>
         <button type="button" className="secondaire petit" onClick={() => { onChange(null); setTerme(''); }}>Changer</button>
       </div>

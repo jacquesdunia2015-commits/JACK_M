@@ -23,14 +23,14 @@ Deux espaces distincts, une seule base :
 | **Back-office SaaS** | NOVA PHARMA OS | Pharmacies clientes, forfaits, abonnements, facturation, relances, support, métriques, sauvegardes |
 | **Espace pharmacie** | Chaque pharmacie abonnée | Catalogue, lots et FEFO, stock, achats, ventes POS, caisse, clients, B2B, livraison, messagerie, Mobile Money, rapports |
 
-- **API** : NestJS + TypeScript, 96 tables PostgreSQL, documentation OpenAPI générée.
+- **API** : NestJS + TypeScript, 98 tables PostgreSQL, documentation OpenAPI générée.
 - **Interface** : Next.js 15 + TypeScript, rendu serveur, espace bureau et application
   mobile installable (PWA).
 - **Langues** : 15, dont le kiswahili de la RD Congo, le lingala, le kinyarwanda, le
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 179 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 187 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -392,6 +392,38 @@ et efface le rappel précédent.
 - Le message dit « arrive à sa fin vers le … » ou, boîte finie, « devait être renouvelé
   le … », avec le nom et le téléphone de la pharmacie.
 
+## Fidélité : points et remises (migration 027)
+
+Page *Fidélité* (`customers.read` ; réglages, catégories, ajustements : `customers.write`).
+Rien n'est actif tant que la pharmacie n'a pas activé le programme.
+
+- **Points** (`loyalty_programs`, un par pharmacie) : points gagnés par unité de devise
+  payée, valeur d'un point, seuil d'utilisation, part maximale d'une vente payable en
+  points, points de bienvenue à l'inscription d'un client. Les points se gagnent sur ce
+  que le client paie lui-même (ni part du tiers payant, ni points, ni crédit ; pas sur
+  une vente B2B). Journal `loyalty_entries` (gagnés, utilisés, annulation, ajustement,
+  bienvenue) avec le solde après chaque mouvement ; le solde ne devient jamais négatif.
+- **À la caisse**, le client peut être choisi pour toute vente : son solde s'affiche, et
+  `loyaltyPoints` dans `POST /api/sales` paie une partie de la vente. La valeur des
+  points devient un règlement `loyalty` : elle n'entre ni en caisse ni à l'encours. La
+  fiche du client est verrouillée pendant la vente (deux caisses ne dépensent pas les
+  mêmes points). Hors connexion, pas de points.
+- **Annulation** d'une vente : les points gagnés repartent, les points utilisés
+  reviennent (solde ramené à zéro au pire si les points gagnés sont déjà dépensés).
+- **Remises par catégorie** (`customer_groups` : personnel, clients fidèles…) : la
+  remise de la catégorie active du client s'applique d'office aux lignes sans remise
+  saisie, côté serveur comme à l'écran de la caisse ; `sales.group_discount_percent`
+  la garde.
+- Le ticket indique les points utilisés, gagnés et le nouveau solde.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET/PUT /api/loyalty/program` | Réglages et points en circulation (valeur promise, mois en cours) |
+| `GET /api/loyalty/customers/:id` · `…/:id/quote?amount=` | Solde et mouvements · points utilisables sur un montant |
+| `POST /api/loyalty/customers/:id/adjust` | Offrir ou retirer des points, avec un motif |
+| `GET /api/loyalty/dashboard` | Meilleurs clients et derniers mouvements |
+| `GET/POST /api/loyalty/groups`, `PATCH …/:id` · `PUT /api/loyalty/customers/:id/group` | Catégories et remise · ranger un client |
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -584,7 +616,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             179 tests de bout en bout
+│   └── test/             187 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -613,6 +645,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
+| `fidelite.e2e-spec.ts` | Programme désactivé par défaut, bienvenue, points gagnés et utilisés sous limites, annulation, ajustement, remise de catégorie |
 | `traitements.e2e-spec.ts` | Date de fin d'une boîte, patients à prévenir, lien WhatsApp, date recalculée par la vente, arrêt |
 | `double-authentification.e2e-spec.ts` | Changement de mot de passe, activation, code à usage unique, codes de secours, désactivation, verrouillage du back-office |
 | `pharmacy-operations.e2e-spec.ts` | FEFO, stock, caisse, crédit, B2B, inventaire, mise en route |

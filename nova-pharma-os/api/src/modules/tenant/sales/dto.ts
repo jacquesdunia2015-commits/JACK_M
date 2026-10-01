@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  ArrayMinSize, IsArray, IsDateString, IsIn, IsNumber, IsOptional, IsString, Matches, Min,
+  ArrayMinSize, IsArray, IsDateString, IsIn, IsInt, IsNumber, IsOptional, IsString, Matches, Min,
   MinLength, ValidateNested,
 } from 'class-validator';
 
@@ -132,6 +132,12 @@ export class CreateSaleDto {
 
   @ApiPropertyOptional({ default: false, description: 'Émettre une facture en plus du reçu.' })
   @IsOptional() issueInvoice?: boolean;
+
+  @ApiPropertyOptional({
+    example: 200,
+    description: 'Points de fidélité du client utilisés pour payer une partie de la vente (exige customerId).',
+  })
+  @IsOptional() @IsInt({ message: 'Un nombre entier de points.' }) @Min(1) loyaltyPoints?: number;
 }
 
 export class CancelSaleDto {

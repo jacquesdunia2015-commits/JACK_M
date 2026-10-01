@@ -38,6 +38,7 @@ export const rw: Dictionnaire = {
   'nav.b2b': 'Ibicuruzwa ku bwinshi',
   'nav.tiers_payant': 'Ubwishingizi',
   'nav.traitements': 'Imiti ya buri gihe',
+  'nav.fidelite': 'Ibihembo by’abakiriya',
   'nav.rapports': 'Raporo',
   'nav.equipe': 'Ikipe',
   'nav.abonnement': 'Ifatabuguzi ryanjye',

@@ -38,6 +38,7 @@ export const en: Dictionnaire = {
   'nav.b2b': 'B2B orders',
   'nav.tiers_payant': 'Third-party payers',
   'nav.traitements': 'Ongoing treatments',
+  'nav.fidelite': 'Loyalty',
   'nav.rapports': 'Reports',
   'nav.equipe': 'Team',
   'nav.abonnement': 'My subscription',
