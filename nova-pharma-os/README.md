@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 163 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 168 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -311,6 +311,33 @@ retour du réseau.
 | `POST /api/catalog/barcodes/internal` | Codes internes pour les produits sans code-barres |
 | `GET /api/catalog/labels?ids=` | Nom, dosage, prix et code principal des étiquettes |
 
+## Rapports et export Excel
+
+Page *Rapports* (`reporting.read`) : période (aujourd'hui, hier, 7 jours, ce mois, mois
+précédent, 90 jours ou dates libres, jours comptés dans le fuseau de la pharmacie),
+synthèse (chiffre d'affaires, marge hors taxes, panier moyen, part des tiers payants,
+annulations, pertes), chiffre d'affaires jour par jour, encaissements par moyen et par
+devise remise, ventes par produit, catégorie, vendeur et client, valeur du stock,
+produits qui ne se vendent pas (aucune vente en 90 jours), péremptions et pertes.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET /api/reports/summary?from&to` | Synthèse de la période |
+| `GET /api/reports/sales?groupBy=day\|month\|product\|category\|seller\|customer&from&to` | Ventes regroupées (dates AAAA-MM-JJ incluses) |
+| `GET /api/reports/payments?from&to` | Encaissements par moyen et par devise remise |
+| `GET /api/reports/expiry?from&to` | Retirés pour péremption, périmés en stock, à risque sous 90 jours |
+| `GET /api/reports/workbook?from&to` | Classeur Excel de tous les rapports (`reporting.financial`) |
+
+- **Marge hors taxes** partout : la TVA comprise dans les prix est déduite du chiffre
+  d'affaires avant de calculer la marge et son taux.
+- **Excel** : `.xlsx` écrit sans bibliothèque (`api/src/common/excel/classeur.ts`, zip +
+  XML) — une feuille par rapport, en-tête figé et filtrable, montants, pourcentages et
+  dates reconnus par Excel, LibreOffice et Google Sheets.
+- **Régularisations de stock** : une casse, une destruction pour péremption ou une sortie
+  retirent désormais toujours du stock, quel que soit le signe saisi ; sans lot précisé,
+  elles prennent les lots qui périment le plus tôt, à leur coût (auparavant une quantité
+  positive *ajoutait* du stock sur une ligne sans lot).
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -503,7 +530,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             163 tests de bout en bout
+│   └── test/             168 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -531,6 +558,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `tiers-payant.e2e-spec.ts` | Organismes, bénéficiaires, partage sous plafonds, relevé PDF, annulation, règlement |
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
+| `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
 | `pharmacy-operations.e2e-spec.ts` | FEFO, stock, caisse, crédit, B2B, inventaire, mise en route |
 | `tenant-isolation.e2e-spec.ts` | L'isolation tient au niveau base, sans le code applicatif |
 | `messaging-payments.e2e-spec.ts` | Un message ne part pas deux fois, un versement Mobile Money ne s'encaisse pas deux fois |

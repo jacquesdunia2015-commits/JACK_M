@@ -37,6 +37,7 @@ export const bm: Dictionnaire = {
   'nav.clients': 'Kiliyanw',
   'nav.b2b': 'Jago belebele',
   'nav.tiers_payant': 'Asiransi',
+  'nav.rapports': 'Rapɔrɔw',
   'nav.equipe': 'Baarakɛlaw',
   'nav.abonnement': 'N ka abɔnɔmani',
   'nav.support': 'Dɛmɛ',

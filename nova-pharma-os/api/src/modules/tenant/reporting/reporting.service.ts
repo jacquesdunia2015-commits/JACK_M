@@ -1,7 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '../../../common/database/database.service';
+import { DatabaseService, Tx } from '../../../common/database/database.service';
+import { Feuille, classeur } from '../../../common/excel/classeur';
+import { BusinessRuleException } from '../../../common/http/exceptions';
 import { niveauPeremption } from '../../../common/niveau-peremption';
 import { RequestContext } from '../../../common/database/request-context';
+
+/** Jour d'une vente dans le fuseau de la pharmacie (Goma et Bukavu : UTC+2). */
+const JOUR_VENTE = `(s.sold_at AT TIME ZONE (SELECT o.timezone FROM organizations o WHERE o.id = s.organization_id))::date`;
+
+/** « 2026-10-01 » ou une date ISO complète → jour ; sinon null. */
+function jour(valeur?: string): string | null {
+  if (!valeur) return null;
+  const j = valeur.slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(j) || Number.isNaN(new Date(j).getTime())) {
+    throw new BusinessRuleException(`Date invalide : « ${valeur} » (attendu AAAA-MM-JJ).`);
+  }
+  return j;
+}
 
 @Injectable()
 export class ReportingService {
@@ -192,14 +207,14 @@ export class ReportingService {
     const groupBy = query.groupBy ?? 'day';
     const dimension =
       {
-        day: "to_char(date_trunc('day', s.sold_at), 'YYYY-MM-DD')",
-        month: "to_char(date_trunc('month', s.sold_at), 'YYYY-MM')",
+        day: `to_char(${JOUR_VENTE}, 'YYYY-MM-DD')`,
+        month: `to_char(${JOUR_VENTE}, 'YYYY-MM')`,
         product: 'p.name',
         category: "COALESCE(c.name, 'Sans catégorie')",
         seller: "COALESCE(u.full_name, 'Non renseigné')",
         channel: 's.channel',
         customer: "COALESCE(cu.name, 'Client de passage')",
-      }[groupBy] ?? "to_char(date_trunc('day', s.sold_at), 'YYYY-MM-DD')";
+      }[groupBy] ?? `to_char(${JOUR_VENTE}, 'YYYY-MM-DD')`;
 
     return this.db.readTransaction(ctx, (tx) =>
       tx.many(
@@ -207,11 +222,13 @@ export class ReportingService {
                 count(DISTINCT s.id) AS sales,
                 sum(sl.quantity) AS quantity,
                 sum(sl.line_total) AS revenue,
+                sum(sl.tax_amount) AS tax,
                 sum(sl.quantity * sl.unit_cost) AS cost,
-                sum(sl.line_total - sl.quantity * sl.unit_cost) AS margin,
-                CASE WHEN sum(sl.line_total) > 0
-                     THEN round(100 * sum(sl.line_total - sl.quantity * sl.unit_cost)
-                                / sum(sl.line_total), 2)
+                -- Marge hors taxes : la TVA collectée n'appartient pas à la pharmacie.
+                sum(sl.line_total - sl.tax_amount - sl.quantity * sl.unit_cost) AS margin,
+                CASE WHEN sum(sl.line_total - sl.tax_amount) > 0
+                     THEN round(100 * sum(sl.line_total - sl.tax_amount - sl.quantity * sl.unit_cost)
+                                / sum(sl.line_total - sl.tax_amount), 2)
                      ELSE 0 END AS margin_percent
            FROM sales s
            JOIN sale_lines sl ON sl.sale_id = s.id
@@ -220,13 +237,12 @@ export class ReportingService {
            LEFT JOIN users u ON u.id = s.sold_by
            LEFT JOIN customers cu ON cu.id = s.customer_id
           WHERE s.status = 'completed'
-            AND ($1::timestamptz IS NULL OR s.sold_at >= $1)
-            AND ($2::timestamptz IS NULL OR s.sold_at <= $2)
+            AND ${JOUR_VENTE} BETWEEN COALESCE($1::date, '1900-01-01') AND COALESCE($2::date, '2999-12-31')
             AND ($3::uuid IS NULL OR s.branch_id = $3)
-          GROUP BY 1 ORDER BY revenue DESC LIMIT 500`,
+          GROUP BY 1 ORDER BY ${groupBy === 'day' || groupBy === 'month' ? '1' : 'revenue DESC'} LIMIT 500`,
         [
-          query.from ?? null,
-          query.to ?? null,
+          jour(query.from),
+          jour(query.to),
           query.branchId ?? ctx.branchId ?? null,
         ],
       ),
@@ -296,6 +312,224 @@ export class ReportingService {
         [String(days), branchId ?? ctx.branchId ?? null],
       ),
     );
+  }
+
+  /** Synthèse d'une période : chiffre d'affaires, marge, panier, parts payées par les tiers. */
+  async synthese(ctx: RequestContext, q: { from?: string; to?: string; branchId?: string }) {
+    return this.db.readTransaction(ctx, (tx) => this.syntheseTx(tx, ctx, q));
+  }
+
+  private async syntheseTx(tx: Tx, ctx: RequestContext, q: { from?: string; to?: string; branchId?: string }) {
+    const [de, a] = [jour(q.from), jour(q.to)];
+    const totaux = await tx.oneOrFail<Record<string, string>>(
+      `SELECT count(*) AS sales,
+              COALESCE(sum(s.total), 0) AS revenue,
+              COALESCE(sum(s.cost_total), 0) AS cost,
+              COALESCE(sum(s.margin_total), 0) AS margin,
+              COALESCE(sum(s.tax_total), 0) AS tax,
+              COALESCE(avg(s.total), 0) AS average_basket,
+              COALESCE(sum(s.payer_share), 0) AS payer_share,
+              COALESCE(sum(s.discount_total), 0) AS discounts,
+              count(*) FILTER (WHERE s.created_at - s.sold_at > interval '1 minute') AS offline_sales
+         FROM sales s
+        WHERE s.status = 'completed'
+          AND ${JOUR_VENTE} BETWEEN COALESCE($1::date, '1900-01-01') AND COALESCE($2::date, '2999-12-31')
+          AND ($3::uuid IS NULL OR s.branch_id = $3)`,
+      [de, a, q.branchId ?? ctx.branchId ?? null],
+    );
+    const annulees = await tx.oneOrFail<{ n: string; total: string }>(
+      `SELECT count(*) AS n, COALESCE(sum(s.total), 0) AS total FROM sales s
+        WHERE s.status = 'cancelled'
+          AND ${JOUR_VENTE} BETWEEN COALESCE($1::date, '1900-01-01') AND COALESCE($2::date, '2999-12-31')
+          AND ($3::uuid IS NULL OR s.branch_id = $3)`,
+      [de, a, q.branchId ?? ctx.branchId ?? null],
+    );
+    const devise = await tx.oneOrFail<{ currency: string }>('SELECT currency FROM organizations WHERE id = $1', [ctx.organizationId]);
+    const ca = Number(totaux.revenue);
+    const caHt = ca - Number(totaux.tax);
+    return {
+      from: de, to: a, currency: devise.currency,
+      sales: Number(totaux.sales), revenue: ca, tax: Number(totaux.tax), cost: Number(totaux.cost),
+      margin: Number(totaux.margin),
+      // Taux de marge sur le chiffre d'affaires hors taxes.
+      marginPercent: caHt > 0 ? this.round((100 * Number(totaux.margin)) / caHt) : 0,
+      averageBasket: this.round(Number(totaux.average_basket)), payerShare: Number(totaux.payer_share),
+      discounts: Number(totaux.discounts), offlineSales: Number(totaux.offline_sales),
+      cancelled: { count: Number(annulees.n), total: Number(annulees.total) },
+    };
+  }
+
+  /** Encaissements par moyen de paiement et par devise remise. */
+  async paiements(ctx: RequestContext, q: { from?: string; to?: string; branchId?: string }) {
+    return this.db.readTransaction(ctx, (tx) => this.paiementsTx(tx, ctx, q));
+  }
+
+  private paiementsTx(tx: Tx, ctx: RequestContext, q: { from?: string; to?: string; branchId?: string }) {
+    return tx.many(
+      `SELECT sp.method::text AS method,
+              COALESCE(sp.tendered_currency, sp.currency) AS currency,
+              count(*) AS payments,
+              sum(COALESCE(sp.tendered_amount, sp.amount)) AS tendered,
+              sum(sp.amount) AS amount
+         FROM sale_payments sp
+         JOIN sales s ON s.id = sp.sale_id
+        WHERE s.status = 'completed'
+          AND ${JOUR_VENTE} BETWEEN COALESCE($1::date, '1900-01-01') AND COALESCE($2::date, '2999-12-31')
+          AND ($3::uuid IS NULL OR s.branch_id = $3)
+        GROUP BY 1, 2 ORDER BY amount DESC`,
+      [jour(q.from), jour(q.to), q.branchId ?? ctx.branchId ?? null],
+    );
+  }
+
+  /**
+   * Pertes par péremption : ce qui a été retiré pour péremption sur la
+   * période, ce qui est périmé et encore en rayon, ce qui va l'être.
+   */
+  async peremptions(ctx: RequestContext, q: { from?: string; to?: string; branchId?: string }) {
+    return this.db.readTransaction(ctx, (tx) => this.peremptionsTx(tx, ctx, q));
+  }
+
+  private async peremptionsTx(tx: Tx, ctx: RequestContext, q: { from?: string; to?: string; branchId?: string }) {
+    const branche = q.branchId ?? ctx.branchId ?? null;
+    const retires = await tx.many(
+      `SELECT sm.occurred_at, p.sku, p.name, pl.lot_number, pl.expiry_date,
+              -sm.quantity AS quantity, -sm.quantity * sm.unit_cost AS value, sm.reason
+         FROM stock_movements sm
+         JOIN products p ON p.id = sm.product_id
+         LEFT JOIN product_lots pl ON pl.id = sm.lot_id
+        WHERE sm.kind = 'expiry_write_off'
+          AND (sm.occurred_at AT TIME ZONE (SELECT o.timezone FROM organizations o WHERE o.id = sm.organization_id))::date
+              BETWEEN COALESCE($1::date, '1900-01-01') AND COALESCE($2::date, '2999-12-31')
+          AND ($3::uuid IS NULL OR sm.branch_id = $3)
+        ORDER BY sm.occurred_at DESC LIMIT 500`,
+      [jour(q.from), jour(q.to), branche],
+    );
+    const enRayon = await tx.many(
+      `SELECT p.sku, p.name, pl.lot_number, pl.expiry_date, si.quantity,
+              si.quantity * si.average_cost AS value,
+              (pl.expiry_date - CURRENT_DATE) AS days_left
+         FROM stock_items si
+         JOIN products p ON p.id = si.product_id
+         JOIN product_lots pl ON pl.id = si.lot_id
+        WHERE si.quantity > 0 AND pl.expiry_date IS NOT NULL AND pl.expiry_date <= CURRENT_DATE + 90
+          AND ($1::uuid IS NULL OR si.branch_id = $1)
+        ORDER BY pl.expiry_date LIMIT 500`,
+      [branche],
+    );
+    const somme = (lignes: Record<string, unknown>[], filtre: (l: Record<string, unknown>) => boolean) =>
+      this.round(lignes.filter(filtre).reduce((s, l) => s + Number(l.value), 0));
+    return {
+      writtenOff: retires,
+      writtenOffValue: somme(retires, () => true),
+      atRisk: enRayon,
+      expiredValue: somme(enRayon, (l) => Number(l.days_left) < 0),
+      expiring30Value: somme(enRayon, (l) => Number(l.days_left) >= 0 && Number(l.days_left) <= 30),
+      expiring90Value: somme(enRayon, (l) => Number(l.days_left) >= 0),
+    };
+  }
+
+  /** Tous les rapports d'une période dans un classeur Excel, une feuille par rapport. */
+  async classeur(ctx: RequestContext, q: { from?: string; to?: string; branchId?: string }) {
+    const [syn, parJour, parProduit, parCategorie, parVendeur, parClient, pay, stock, rotation, per] = await Promise.all([
+      this.synthese(ctx, q),
+      this.salesReport(ctx, { ...q, groupBy: 'day' }),
+      this.salesReport(ctx, { ...q, groupBy: 'product' }),
+      this.salesReport(ctx, { ...q, groupBy: 'category' }),
+      this.salesReport(ctx, { ...q, groupBy: 'seller' }),
+      this.salesReport(ctx, { ...q, groupBy: 'customer' }),
+      this.paiements(ctx, q),
+      this.stockValuation(ctx, q.branchId),
+      this.stockRotation(ctx, 90, q.branchId),
+      this.peremptions(ctx, q),
+    ]);
+    const officine = await this.db.readTransaction(ctx, (tx) =>
+      tx.oneOrFail<{ name: string }>('SELECT COALESCE(trade_name, legal_name) AS name FROM organizations WHERE id = $1', [ctx.organizationId]),
+    );
+    const periode = `Du ${syn.from ?? 'début'} au ${syn.to ?? "aujourd'hui"} — montants en ${syn.currency}`;
+    const entete = (titre: string) => [`${officine.name} — ${titre}`, periode];
+    const ventes = (r: Record<string, unknown>[]) => r.map((l) => [l.dimension, l.sales, l.quantity, l.revenue, l.tax, l.cost, l.margin, l.margin_percent]);
+    const colonnesVentes = (premiere: string, type: 'texte' | 'date' = 'texte') => [
+      { titre: premiere, type, largeur: type === 'date' ? 13 : 34 },
+      { titre: 'Ventes', type: 'nombre' as const }, { titre: 'Quantité', type: 'nombre' as const },
+      { titre: 'Chiffre d’affaires TTC', type: 'montant' as const }, { titre: 'dont taxes', type: 'montant' as const },
+      { titre: 'Coût d’achat', type: 'montant' as const },
+      { titre: 'Marge HT', type: 'montant' as const }, { titre: 'Marge % (sur HT)', type: 'pourcent' as const },
+    ];
+    const LIB_MOYEN: Record<string, string> = {
+      cash: 'Espèces', mobile_money: 'Mobile Money', card: 'Carte', bank_transfer: 'Virement',
+      bank_local: 'Banque', credit: 'Crédit client', insurance: 'Tiers payant', manual: 'Autre',
+    };
+    const feuilles: Feuille[] = [
+      {
+        nom: 'Synthèse', entete: entete('Synthèse'),
+        colonnes: [{ titre: 'Indicateur', largeur: 40 }, { titre: 'Valeur', type: 'montant', largeur: 18 }],
+        lignes: [
+          ['Nombre de ventes', syn.sales], ['Chiffre d’affaires TTC', syn.revenue], ['dont taxes', syn.tax],
+          ['Coût d’achat', syn.cost], ['Marge hors taxes', syn.margin], ['Marge % (sur le CA hors taxes)', syn.marginPercent],
+          ['Panier moyen', syn.averageBasket],
+          ['Remises accordées', syn.discounts], ['Part payée par les tiers payants', syn.payerShare],
+          ['Ventes faites hors connexion', syn.offlineSales],
+          ['Ventes annulées', syn.cancelled.count], ['Montant des ventes annulées', syn.cancelled.total],
+          ['Pertes par péremption (retirées)', per.writtenOffValue], ['Périmé encore en stock', per.expiredValue],
+          ['Péremption sous 90 jours', per.expiring90Value],
+        ],
+      },
+      { nom: 'Ventes par jour', entete: entete('Ventes par jour'), colonnes: colonnesVentes('Jour', 'date'), lignes: ventes(parJour) },
+      { nom: 'Par produit', entete: entete('Ventes par produit'), colonnes: colonnesVentes('Produit'), lignes: ventes(parProduit) },
+      { nom: 'Par catégorie', entete: entete('Ventes par catégorie'), colonnes: colonnesVentes('Catégorie'), lignes: ventes(parCategorie) },
+      { nom: 'Par vendeur', entete: entete('Ventes par vendeur'), colonnes: colonnesVentes('Vendeur'), lignes: ventes(parVendeur) },
+      { nom: 'Par client', entete: entete('Ventes par client'), colonnes: colonnesVentes('Client'), lignes: ventes(parClient) },
+      {
+        nom: 'Paiements', entete: entete('Encaissements par moyen et par devise'),
+        colonnes: [
+          { titre: 'Moyen', largeur: 20 }, { titre: 'Devise remise', largeur: 14 }, { titre: 'Paiements', type: 'nombre' },
+          { titre: 'Montant remis', type: 'montant', largeur: 18 }, { titre: `Contre-valeur (${syn.currency})`, type: 'montant', largeur: 20 },
+        ],
+        lignes: (pay as Record<string, unknown>[]).map((l) => [LIB_MOYEN[l.method as string] ?? l.method, l.currency, l.payments, l.tendered, l.amount]),
+      },
+      {
+        nom: 'Valeur du stock', entete: [`${officine.name} — Valeur du stock au ${new Date().toISOString().slice(0, 10)}`, `Montants en ${syn.currency}`],
+        colonnes: [
+          { titre: 'Catégorie', largeur: 30 }, { titre: 'Produits', type: 'nombre' }, { titre: 'Unités', type: 'nombre' },
+          { titre: 'Valeur d’achat', type: 'montant' }, { titre: 'Valeur de vente', type: 'montant' },
+          { titre: 'Marge potentielle', type: 'montant' }, { titre: 'Péremption sous 90 j', type: 'montant' },
+        ],
+        lignes: (stock as Record<string, unknown>[]).map((l) => [l.category, l.products, l.units, l.cost_value, l.retail_value, l.potential_margin, l.at_risk_90d]),
+      },
+      {
+        nom: 'Ne se vendent pas', entete: [`${officine.name} — Rotation du stock (90 derniers jours)`, 'Produits dormants : en stock, aucune vente en 90 jours'],
+        colonnes: [
+          { titre: 'Référence', largeur: 16 }, { titre: 'Produit', largeur: 34 }, { titre: 'En stock', type: 'nombre' },
+          { titre: 'Capital immobilisé', type: 'montant', largeur: 18 }, { titre: 'Vendu (90 j)', type: 'nombre' },
+          { titre: 'Rotation', type: 'nombre' }, { titre: 'Classement', largeur: 14 },
+        ],
+        lignes: (rotation as Record<string, unknown>[])
+          .filter((l) => Number(l.on_hand) > 0)
+          .sort((x, y) => (x.classification === 'dormant' ? 0 : 1) - (y.classification === 'dormant' ? 0 : 1))
+          .map((l) => [l.sku, l.name, l.on_hand, l.tied_up_capital, l.sold, l.rotation, l.classification]),
+      },
+      {
+        nom: 'Péremptions', entete: entete('Lots périmés ou qui périment sous 90 jours'),
+        colonnes: [
+          { titre: 'Référence', largeur: 16 }, { titre: 'Produit', largeur: 34 }, { titre: 'Lot', largeur: 14 },
+          { titre: 'Péremption', type: 'date', largeur: 13 }, { titre: 'Jours restants', type: 'nombre' },
+          { titre: 'Quantité', type: 'nombre' }, { titre: 'Valeur d’achat', type: 'montant' },
+        ],
+        lignes: (per.atRisk as Record<string, unknown>[]).map((l) => [l.sku, l.name, l.lot_number, l.expiry_date, l.days_left, l.quantity, l.value]),
+      },
+      {
+        nom: 'Pertes retirées', entete: entete('Produits retirés pour péremption'),
+        colonnes: [
+          { titre: 'Date', type: 'date', largeur: 13 }, { titre: 'Référence', largeur: 16 }, { titre: 'Produit', largeur: 34 },
+          { titre: 'Lot', largeur: 14 }, { titre: 'Quantité', type: 'nombre' }, { titre: 'Valeur d’achat', type: 'montant' },
+          { titre: 'Motif', largeur: 30 },
+        ],
+        lignes: (per.writtenOff as Record<string, unknown>[]).map((l) => [l.occurred_at, l.sku, l.name, l.lot_number, l.quantity, l.value, l.reason]),
+      },
+    ];
+    const fichier = classeur(feuilles);
+    const suffixe = [syn.from, syn.to].filter(Boolean).join('_') || new Date().toISOString().slice(0, 10);
+    return { fichier, nom: `rapports-${suffixe}.xlsx` };
   }
 
   private round(value: number): number {

@@ -452,6 +452,28 @@ commande**, sans rien ressaisir.
 
 ---
 
+## Suivre l'activité : les rapports
+
+Menu *Rapports*. Choisissez la période en haut (aujourd'hui, hier, 7 derniers
+jours, ce mois, le mois précédent, 90 jours, ou deux dates), puis l'onglet :
+
+- **Synthèse** : chiffre d'affaires, marge (hors taxes), panier moyen, ce que
+  paient les mutuelles et assurances, ventes annulées et pertes ; le chiffre
+  d'affaires jour par jour (touchez une barre pour le détail) ; les
+  encaissements par moyen et par devise (espèces en dollars, espèces en francs,
+  Mobile Money…), à rapprocher de la caisse.
+- **Par produit, par catégorie, par vendeur, par client** : ce qui se vend, ce
+  qui rapporte ; une marge faible est signalée en rouge.
+- **Valeur du stock** : ce que vaut votre stock au prix d'achat et au prix de
+  vente, et ce qui périme sous 90 jours.
+- **Ne se vendent pas** : les produits en stock qui n'ont pas eu une seule vente
+  en 90 jours, et l'argent qu'ils immobilisent — à ne pas recommander.
+- **Péremptions et pertes** : ce qui a été retiré pour péremption, ce qui est
+  périmé et encore en rayon, ce qui périme dans 30 et 90 jours.
+
+**Exporter en Excel** télécharge tous ces rapports pour la période, une feuille
+par rapport, à garder ou à remettre à votre comptable.
+
 ## Lire les couleurs du stock
 
 Dans *Stock et lots*, chaque produit porte une couleur, et les plus urgents

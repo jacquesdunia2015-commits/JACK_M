@@ -724,3 +724,26 @@ details.depliable[open] > summary { margin-bottom: 1rem; }
   .planche-rouleau-50x30 .etiquette-produit, .planche-rouleau-40x25 .etiquette-produit { break-after: page; }
   .no-print { display: none !important; }
 }
+
+/* --------------------------- Rapports -------------------------------- */
+.periodes { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.periodes a { padding: 0.35rem 0.7rem; border-radius: 999px; border: 1px solid var(--bord); text-decoration: none; color: var(--encre); font-size: 0.88rem; }
+.periodes a.actif { background: var(--vert); border-color: var(--vert); color: var(--blanc); }
+.onglets { display: flex; flex-wrap: wrap; gap: 0.25rem; border-bottom: 1px solid var(--bord); margin-bottom: 1rem; }
+.onglets a { padding: 0.5rem 0.8rem; text-decoration: none; color: var(--gris); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.onglets a.actif { color: var(--encre); border-bottom-color: var(--vert); font-weight: 600; }
+.graphique-jours { display: grid; gap: 0.5rem; }
+.gj-infobulle { min-height: 1.4em; font-size: 0.9rem; }
+.gj-zone { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.5rem; }
+.gj-axe { display: flex; flex-direction: column; justify-content: space-between; font-size: 0.72rem; color: var(--gris); text-align: right; height: 160px; }
+.gj-barres { position: relative; display: flex; align-items: flex-end; gap: 2px; border-bottom: 1px solid var(--bord); }
+.gj-grille { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--bord); pointer-events: none; }
+button.gj-colonne, button.gj-colonne:hover, button.gj-colonne:focus, button.gj-colonne:active {
+  flex: 1; min-width: 0; height: 100%; display: flex; align-items: flex-end; background: none; border: 0;
+  padding: 0; margin: 0; box-shadow: none; cursor: pointer; position: relative; border-radius: 0;
+}
+.gj-barre { display: block; width: 100%; max-width: 28px; margin: 0 auto; background: var(--vert); border-radius: 4px 4px 0 0; }
+.gj-colonne:hover .gj-barre, .gj-colonne.actif .gj-barre { background: var(--vert-fonce); }
+.gj-colonne:focus-visible { outline: 2px solid var(--vert); outline-offset: 1px; }
+.gj-dates { display: flex; gap: 2px; font-size: 0.7rem; color: var(--gris); }
+.gj-dates span { flex: 1; min-width: 0; white-space: nowrap; overflow: visible; }

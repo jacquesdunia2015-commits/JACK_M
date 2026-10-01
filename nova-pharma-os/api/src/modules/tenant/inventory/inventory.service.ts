@@ -266,23 +266,60 @@ export class InventoryService {
 
     const kind =
       dto.kind ?? (dto.quantity > 0 ? 'adjustment_in' : 'adjustment_out');
+    // Une casse, une destruction pour péremption ou une sortie retirent du
+    // stock, quel que soit le signe saisi.
+    const sortie = kind !== 'adjustment_in';
+    const quantite = sortie ? -Math.abs(dto.quantity) : dto.quantity;
 
     return this.db.transaction(ctx, async (tx) => {
-      const result = await this.stock.applyMovement(tx, {
-        branchId,
-        productId: dto.productId,
-        lotId: dto.lotId ?? null,
-        kind,
-        quantity: dto.quantity,
-        referenceKind: 'adjustment',
-        reason: dto.reason,
-      });
+      let result: { balance: number };
+      if (sortie && !dto.lotId) {
+        // Sans lot précisé, la sortie prend les lots qui périment le plus
+        // tôt (périmés compris : c'est eux qu'on détruit), à leur coût.
+        const lots = await tx.many<{ lot_id: string | null; quantity: string; average_cost: string }>(
+          `SELECT si.lot_id, si.quantity, si.average_cost
+             FROM stock_items si
+             LEFT JOIN product_lots pl ON pl.id = si.lot_id
+            WHERE si.branch_id = $1 AND si.product_id = $2 AND si.quantity > 0
+            ORDER BY pl.expiry_date NULLS LAST, si.id
+            FOR UPDATE OF si`,
+          [branchId, dto.productId],
+        );
+        let reste = Math.abs(quantite);
+        const disponible = lots.reduce((s, l) => s + Number(l.quantity), 0);
+        if (disponible < reste) {
+          throw new BusinessRuleException(
+            `Sortie refusée : ${disponible} en stock, ${reste} demandé(s).`,
+            { productId: dto.productId, available: disponible, requested: reste },
+          );
+        }
+        result = { balance: 0 };
+        for (const lot of lots) {
+          if (reste <= 0) break;
+          const prise = Math.min(reste, Number(lot.quantity));
+          result = await this.stock.applyMovement(tx, {
+            branchId, productId: dto.productId, lotId: lot.lot_id, kind, quantity: -prise,
+            unitCost: Number(lot.average_cost), referenceKind: 'adjustment', reason: dto.reason,
+          });
+          reste -= prise;
+        }
+      } else {
+        result = await this.stock.applyMovement(tx, {
+          branchId,
+          productId: dto.productId,
+          lotId: dto.lotId ?? null,
+          kind,
+          quantity: quantite,
+          referenceKind: 'adjustment',
+          reason: dto.reason,
+        });
+      }
       await this.stock.refreshAlerts(tx, branchId);
       await this.audit.record(tx, {
         action: 'inventory.adjusted',
         entity: 'product',
         entityId: dto.productId,
-        after: { quantity: dto.quantity, kind, balance: result.balance },
+        after: { quantity: quantite, kind, balance: result.balance },
         reason: dto.reason,
       });
       return { ...result, kind, message: 'Régularisation enregistrée.' };
