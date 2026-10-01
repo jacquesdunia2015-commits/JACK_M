@@ -335,15 +335,30 @@ function bindRibbon() {
     }
     const p = await readProjectFile(file);
     if (!p) return;
-    remplacerProjet(p);
-    updateUndoButtons();
-    state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
-    state.ui.currentDocId = null; state.ui.selectedCodeId = null;
-    state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
-    childCodes(null).forEach(c => expandedCodes.add(c.id));
-    persistNow();
-    renderAll();
-    toast(t("project_loaded") + " : " + state.project.name);
+    const ouvrir = () => {
+      remplacerProjet(p);
+      updateUndoButtons();
+      state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
+      state.ui.currentDocId = null; state.ui.selectedCodeId = null;
+      state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
+      childCodes(null).forEach(c => expandedCodes.add(c.id));
+      persistNow();
+      renderAll();
+      toast(t("project_loaded") + " : " + state.project.name);
+    };
+    // Un projet portant le même identifiant REMPLACE celui du navigateur. Si le
+    // fichier est plus ancien que la version enregistrée — une sauvegarde de
+    // lundi rouverte mercredi —, le travail des jours intermédiaires serait
+    // écrasé sans un mot. On prévient, et on laisse décider.
+    const present = listProjects().find(e => e.id === p.id);
+    if (present && present.modified && p.modified && present.modified > p.modified) {
+      const date = iso => new Date(iso).toLocaleString();
+      confirmModal(t("open_older_warning")
+        .replace("{file}", date(p.modified)).replace("{name}", present.name)
+        .replace("{stored}", date(present.modified)), ouvrir);
+    } else {
+      ouvrir();
+    }
   });
   $("#btnMyProjects").onclick = openMyProjects;
   $("#btnProtect").onclick = openProtectModal;
