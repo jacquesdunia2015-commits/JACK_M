@@ -24,7 +24,7 @@ describe('Caisse hors connexion', () => {
       .expect(201);
     pharmacie = await harness.loginPharmacy(`gerant@${slug}.cd`, PASSWORD);
     const p = await harness
-      .post('/catalog/products', { name: 'Amoxicilline sirop', salePrice: 2.5, barcodes: ['6001234567890'] }, pharmacie.token)
+      .post('/catalog/products', { name: 'Amoxicilline sirop', salePrice: 2.5, barcodes: ['6001234567899'] }, pharmacie.token)
       .expect(201);
     produit = p.body.id ?? p.body.product?.id;
     await harness
@@ -47,7 +47,7 @@ describe('Caisse hors connexion', () => {
     expect(c.body.currency).toBe('USD');
     expect(new Date(c.body.generatedAt).getTime()).toBeGreaterThan(Date.now() - 60_000);
     const p = c.body.products.find((x: { id: string }) => x.id === produit);
-    expect(p).toMatchObject({ name: 'Amoxicilline sirop', sale_price: '2.5000', barcodes: ['6001234567890'] });
+    expect(p).toMatchObject({ name: 'Amoxicilline sirop', sale_price: '2.5000', barcodes: ['6001234567899'] });
     expect(p.lots).toEqual([
       { e: '2027-03-31', q: 10 },
       { e: '2028-06-30', q: 5 },

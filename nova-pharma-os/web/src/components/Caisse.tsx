@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import ChoixBeneficiaire, { Beneficiaire } from '@/components/ChoixBeneficiaire';
 import ChoixClient, { ClientChoisi } from '@/components/ChoixClient';
 import { DocumentFacture, EmettreFacture, FactureEmise } from '@/components/Facture';
+import ScanCodeBarres from '@/components/ScanCodeBarres';
 import { designation, money, quantity as fmtQty } from '@/lib/format';
 import { TauxDuJour, aPayer, arrondirMonnaie, autreDevise, convertir } from '@/lib/devises';
 import {
@@ -241,6 +242,49 @@ export default function Caisse({
     champRecherche.current?.focus();
   }
 
+  /**
+   * Code scanné (caméra ou douchette, qui tape le code puis Entrée) : le
+   * produit qui porte ce code part directement au ticket.
+   */
+  async function ajouterParCode(brut: string) {
+    const code = brut.trim();
+    if (code.length < 3) return;
+    let trouve: Produit | null = null;
+    if (horsLigne) {
+      const c = lireCatalogue();
+      const p = c?.products.find((x) => x.barcodes.includes(code) || x.sku.toLowerCase() === code.toLowerCase());
+      if (p) {
+        trouve = {
+          id: p.id, sku: p.sku, name: p.name, dosage: p.dosage, sale_price: p.sale_price,
+          requires_prescription: p.requires_prescription, nearest_expiry: p.lots[0]?.e ?? null,
+          available: String(disponibleHorsLigne(p, lireFile())),
+        };
+      }
+    } else {
+      try {
+        const r = await fetch(`/api/proxy/catalog/products?q=${encodeURIComponent(code)}&pageSize=5`);
+        const body = r.ok ? await r.json() : { data: [] };
+        const liste: Produit[] = body.data ?? [];
+        trouve = liste.length === 1 ? liste[0] : liste.find((x) => x.sku.toLowerCase() === code.toLowerCase()) ?? null;
+      } catch {
+        setHorsLigne(true);
+        return ajouterParCode(code);
+      }
+    }
+    if (!trouve) {
+      setRecherche(code);
+      setMessage({ ton: 'warn', texte: `Aucun produit ne porte le code ${code}. Ajoutez-le à sa fiche dans Catalogue.` });
+      return;
+    }
+    if (Number(trouve.available) <= 0) {
+      setMessage({ ton: 'danger', texte: `« ${trouve.name} » est en rupture${horsLigne ? ' sur ce poste' : ''}.` });
+      setRecherche('');
+      return;
+    }
+    setMessage(null);
+    ajouter(trouve);
+  }
+
   function ajuster(id: string, quantite: number) {
     setTicket((lignes) =>
       quantite <= 0
@@ -457,13 +501,23 @@ export default function Caisse({
           <span className="hint">Nom, référence ou code-barres</span>
         </div>
 
-        <input
-          ref={champRecherche}
-          value={recherche}
-          onChange={(e) => setRecherche(e.target.value)}
-          placeholder="Paracétamol, PARA500, 3400930000011…"
-          autoFocus
-        />
+        <div className="recherche-scan">
+          <input
+            ref={champRecherche}
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            onKeyDown={(e) => {
+              // Entrée : la douchette a fini de taper un code, ou un seul produit correspond.
+              if (e.key !== 'Enter') return;
+              e.preventDefault();
+              if (resultats.length === 1 && Number(resultats[0].available) > 0) ajouter(resultats[0]);
+              else void ajouterParCode(recherche);
+            }}
+            placeholder="Paracétamol, PARA500, 3400930000014…"
+            autoFocus
+          />
+          <ScanCodeBarres onCode={(code) => void ajouterParCode(code)} />
+        </div>
 
         <div className="pos-results" style={{ marginTop: '0.75rem' }}>
           {resultats.map((produit) => {

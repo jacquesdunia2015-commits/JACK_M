@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import CodesBarresProduit from '@/components/CodesBarresProduit';
 import FournisseursProduit, { OffreProduit } from '@/components/FournisseursProduit';
 import ModifierProduit, { ProduitModifiable } from '@/components/ModifierProduit';
 import Stat from '@/components/Stat';
@@ -54,7 +55,9 @@ export default async function PageFicheStock({ params }: { params: Promise<{ id:
     apiSafe<Fiche | null>(`/inventory/products/${id}/history`, null),
     apiSafe<OffreProduit[]>(`/purchasing/suppliers/price-comparison?productId=${id}`, []),
     apiSafe<{ id: string; name: string; currency: string | null; is_active: boolean }[]>('/purchasing/suppliers', []),
-    peut('catalog.write') ? apiSafe<{ product: ProduitModifiable } | null>(`/catalog/products/${id}`, null) : Promise.resolve(null),
+    peut('catalog.write')
+      ? apiSafe<{ product: ProduitModifiable; barcodes: { barcode: string; kind: string; is_primary: boolean }[] } | null>(`/catalog/products/${id}`, null)
+      : Promise.resolve(null),
   ]);
   if (!fiche) notFound();
   const t = fiche.totals;
@@ -91,6 +94,16 @@ export default async function PageFicheStock({ params }: { params: Promise<{ id:
             <summary>Modifier le produit (prix, nom, seuil, ordonnance) ou l&apos;archiver</summary>
             <ModifierProduit produit={detail.product} peutArchiver={peut('catalog.delete')} />
           </details>
+        </section>
+      )}
+
+      {detail && (
+        <section className="card">
+          <div className="card-head">
+            <h2>Codes-barres</h2>
+            <span className="hint">Scannés à la caisse, ils ajoutent le produit au ticket</span>
+          </div>
+          <CodesBarresProduit produitId={fiche.id} codes={detail.barcodes ?? []} />
         </section>
       )}
 

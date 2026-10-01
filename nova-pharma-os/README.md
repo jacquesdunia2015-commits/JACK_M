@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 158 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 163 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -289,6 +289,28 @@ retour du réseau.
   pendant la coupure peut continuer d'encaisser. Il ne sert toujours aucune donnée de
   l'API depuis son cache.
 
+## Codes-barres : scan par la caméra et étiquettes
+
+- **Scan** (`web/src/components/ScanCodeBarres.tsx`) : caméra arrière du téléphone ou
+  webcam, lecteur intégré du navigateur (`BarcodeDetector`, Chrome Android) ou, à
+  défaut, `@zxing/browser` chargé à la demande. À la caisse, sur le mobile du vendeur,
+  à la création d'un produit et sur sa fiche. Une douchette USB tape le code puis
+  Entrée : le produit part directement au ticket (aussi hors connexion).
+- **Contrôle** : les codes GS1 (8, 12, 13, 14 chiffres) doivent avoir un chiffre de
+  contrôle juste ; un code ne peut appartenir qu'à un produit. À l'import du catalogue,
+  un code faux ou déjà pris est écarté et signalé sans bloquer l'import.
+- **Codes internes** : EAN-13 du préfixe GS1 « 29 » (usage interne d'un magasin) pour
+  les produits sans code-barres.
+- **Étiquettes** (`/pharmacie/catalogue/etiquettes`) : planche A4 de 24 ou 40
+  étiquettes, ou rouleau 50 × 30 / 40 × 25 mm, avec ou sans prix ; codes dessinés en SVG
+  (EAN-13, EAN-8, UPC-A, Code 128) et vérifiés par décodage.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `POST /api/catalog/products/:id/barcodes`, `DELETE …/barcodes/:code` | Ajouter (saisi ou scanné) ou retirer un code |
+| `POST /api/catalog/barcodes/internal` | Codes internes pour les produits sans code-barres |
+| `GET /api/catalog/labels?ids=` | Nom, dosage, prix et code principal des étiquettes |
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -481,7 +503,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             158 tests de bout en bout
+│   └── test/             163 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -508,6 +530,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `caisse-devises.e2e-spec.ts` | Taux du jour, paiement en francs ou mêlé, monnaie rendue arrondie, caisse et annulation par devise |
 | `tiers-payant.e2e-spec.ts` | Organismes, bénéficiaires, partage sous plafonds, relevé PDF, annulation, règlement |
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
+| `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `pharmacy-operations.e2e-spec.ts` | FEFO, stock, caisse, crédit, B2B, inventaire, mise en route |
 | `tenant-isolation.e2e-spec.ts` | L'isolation tient au niveau base, sans le code applicatif |
 | `messaging-payments.e2e-spec.ts` | Un message ne part pas deux fois, un versement Mobile Money ne s'encaisse pas deux fois |
@@ -522,8 +545,7 @@ Conformément à la priorité commerciale du cahier des charges, ces éléments 
 - **Applications natives Flutter** (magasinier, client) — l'application mobile
   installable couvre aujourd'hui le vendeur et le livreur : vente au comptoir,
   tournée, preuve de remise. La caisse de l'espace pharmacie vend déjà pendant les
-  coupures ; l'application mobile du vendeur pas encore, ni le lecteur de code-barres
-  par la caméra.
+  coupures ; l'application mobile du vendeur pas encore.
 - **Passerelle d'envoi automatique** — SMS et WhatsApp partent aujourd'hui du
   téléphone du vendeur, gratuitement. Le mode « gateway » est prévu dans le modèle
   et dans les réglages ; il reste à écrire l'appel HTTP et à souscrire un compte.

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import ScanCodeBarres from '@/components/ScanCodeBarres';
 
 const FORMES = [
   'comprimé', 'gélule', 'sirop', 'suspension buvable', 'solution injectable', 'perfusion',
@@ -21,7 +22,7 @@ export default function FormulaireProduit() {
   const router = useRouter();
   const vide = {
     name: '', dosage: '', dosageForm: '', packaging: '', salePrice: '', costPrice: '',
-    reorderPoint: '', sku: '', requiresPrescription: false, hasExpiry: true,
+    reorderPoint: '', sku: '', barcode: '', requiresPrescription: false, hasExpiry: true,
   };
   const [champs, setChamps] = useState(vide);
   const [message, setMessage] = useState<{ ton: string; texte: string } | null>(null);
@@ -54,6 +55,7 @@ export default function FormulaireProduit() {
     for (const cle of ['dosage', 'dosageForm', 'packaging', 'sku'] as const) {
       if (champs[cle].trim()) corps[cle] = champs[cle].trim();
     }
+    if (champs.barcode.trim()) corps.barcodes = [champs.barcode.trim()];
     try {
       const response = await fetch('/api/proxy/catalog/products', {
         method: 'POST',
@@ -133,6 +135,15 @@ export default function FormulaireProduit() {
         <div className="field">
           <label htmlFor="p-reference">Référence (facultatif)</label>
           <input id="p-reference" value={champs.sku} onChange={changer('sku')} placeholder="Tirée du nom si vide" />
+        </div>
+        <div className="field">
+          <label htmlFor="p-code">Code-barres de la boîte (facultatif)</label>
+          <div className="recherche-scan">
+            <input id="p-code" value={champs.barcode} onChange={changer('barcode')} inputMode="numeric" autoComplete="off"
+              placeholder="Scannez ou tapez"
+              onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
+            <ScanCodeBarres onCode={(code) => setChamps((c) => ({ ...c, barcode: code }))} libelle="Scanner" />
+          </div>
         </div>
         <div className="field" style={{ display: 'grid', gap: '0.4rem', alignContent: 'end' }}>
           <label className="case">

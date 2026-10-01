@@ -660,6 +660,30 @@ Les montants de la vente, de la facture et des rapports restent dans la
 devise de la pharmacie ; la page d'une vente montre ce qui a été remis en
 francs et à quel taux.
 
+## Scanner les codes-barres et imprimer des étiquettes
+
+**À la caisse**, appuyez sur **Scanner** à côté de la recherche : la caméra
+s'ouvre (celle de derrière sur un téléphone). Placez le code-barres de la boîte
+dans le cadre : un bip, et le produit est au ticket. Une douchette USB marche
+aussi : elle tape le code dans la recherche et le produit s'ajoute tout seul.
+Sur le téléphone du vendeur (*/mobile*), le bouton 📷 fait la même chose.
+
+**Sur la fiche d'un produit** (*Stock et lots* → son nom), section
+*Codes-barres* : **Scanner la boîte** ou tapez le code. NOVA vérifie le dernier
+chiffre (une faute de frappe est refusée) et qu'aucun autre produit n'a déjà ce
+code. À la création d'un produit, le champ *Code-barres de la boîte* a aussi
+son bouton **Scanner**.
+
+**Une boîte sans code-barres ?** Sur sa fiche, **Créer un code interne** : NOVA
+lui donne un code qui commence par 29, réservé aux magasins. Puis **Imprimer des
+étiquettes**.
+
+**Étiquettes** (*Catalogue* → **Imprimer des étiquettes**) : ajoutez les
+produits, le nombre d'étiquettes de chacun, choisissez le format — planche A4
+autocollante de 24 ou 40 étiquettes, ou rouleau d'imprimante d'étiquettes
+50 × 30 mm ou 40 × 25 mm — avec ou sans le prix, puis **Imprimer**. Les produits
+encore sans code reçoivent leur code interne en un clic.
+
 ## Vendre pendant une coupure d'Internet
 
 Laissez la page *Caisse* ouverte : elle garde sur l'ordinateur le catalogue,

@@ -9,6 +9,8 @@ import { CashController } from './cash/cash.controller';
 import { CashService } from './cash/cash.service';
 import { CatalogController } from './catalog/catalog.controller';
 import { CatalogService } from './catalog/catalog.service';
+import { CodesBarresController } from './catalog/codes-barres.controller';
+import { CodesBarresService } from './catalog/codes-barres.service';
 import { CustomersController } from './customers/customers.controller';
 import { CustomersService } from './customers/customers.service';
 import { DeliveryController } from './delivery/delivery.controller';
@@ -47,6 +49,7 @@ import { SalesService } from './sales/sales.service';
   imports: [PlatformModule],
   controllers: [
     CatalogController,
+    CodesBarresController,
     InventoryController,
     PurchasingController,
     SuppliersController,
@@ -67,6 +70,7 @@ import { SalesService } from './sales/sales.service';
   ],
   providers: [
     CatalogService,
+    CodesBarresService,
     StockService,
     InventoryService,
     PurchasingService,

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import ChoixClient, { ClientChoisi } from '@/components/ChoixClient';
+import ScanCodeBarres from '@/components/ScanCodeBarres';
 import { money, quantity } from '@/lib/format';
 
 interface Produit {
@@ -121,6 +122,19 @@ export default function VenteMobile({
     });
     setRecherche('');
     setResultats([]);
+  }
+
+  /** Boîte scannée avec la caméra du téléphone : directement au ticket. */
+  async function ajouterParCode(code: string) {
+    const reponse = await fetch(`/api/proxy/catalog/products?q=${encodeURIComponent(code)}&pageSize=5`).catch(() => null);
+    const liste: Produit[] = reponse?.ok ? ((await reponse.json()).data ?? []) : [];
+    const produit = liste.length === 1 ? liste[0] : liste.find((x) => x.sku.toLowerCase() === code.toLowerCase());
+    if (!produit) {
+      setMessage({ ton: 'danger', texte: `Aucun produit ne porte le code ${code}.` });
+      return;
+    }
+    setMessage(null);
+    ajouter(produit);
   }
 
   function changerQuantite(id: string, delta: number) {
@@ -252,14 +266,17 @@ export default function VenteMobile({
     <>
       {message && <div className={`mob-message ${message.ton}`}>{message.texte}</div>}
 
-      <input
-        className="mob-recherche"
-        value={recherche}
-        onChange={(e) => setRecherche(e.target.value)}
-        placeholder={libelles.rechercher}
-        inputMode="search"
-        autoComplete="off"
-      />
+      <div className="recherche-scan">
+        <input
+          className="mob-recherche"
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
+          placeholder={libelles.rechercher}
+          inputMode="search"
+          autoComplete="off"
+        />
+        <ScanCodeBarres onCode={(code) => void ajouterParCode(code)} libelle="📷" className="mob-scan" />
+      </div>
 
       {resultats.length > 0 && (
         <ul className="mob-resultats">

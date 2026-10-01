@@ -13,6 +13,8 @@ import {
 import {
   CATALOGUE_REFERENCE, CATEGORIES_REFERENCE, DEVISE_REFERENCE, ProduitReference,
 } from './reference-kivu';
+import { codeValide } from './codes-barres';
+import { BusinessRuleException } from '../../../common/http/exceptions';
 
 @Injectable()
 export class CatalogService {
@@ -155,7 +157,22 @@ export class CatalogService {
           skipped.push({ sku: item.sku as string, reason: 'Référence déjà présente.' });
           continue;
         }
-        const product = await this.insertProduct(tx, ctx, item);
+        // À l'import, un code-barres faux ou déjà pris est écarté et signalé,
+        // sans faire échouer tout le catalogue.
+        const codes: string[] = [];
+        for (const brut of item.barcodes ?? []) {
+          try {
+            const { code } = codeValide(brut);
+            if (await tx.one('SELECT 1 FROM product_barcodes WHERE barcode = $1', [code]) || codes.includes(code)) {
+              skipped.push({ sku: item.sku as string, reason: `Code-barres ${code} déjà utilisé : écarté.` });
+            } else {
+              codes.push(code);
+            }
+          } catch (e) {
+            skipped.push({ sku: item.sku as string, reason: `${(e as Error).message} Écarté.` });
+          }
+        }
+        const product = await this.insertProduct(tx, ctx, { ...item, barcodes: codes });
         created.push(product.sku as string);
       }
 
@@ -360,11 +377,19 @@ export class CatalogService {
       ],
     );
 
-    for (const [index, barcode] of (dto.barcodes ?? []).entries()) {
+    // Un code-barres déjà porté par un autre produit est refusé : sinon le
+    // scan au comptoir vendrait l'un pour l'autre.
+    for (const [index, brut] of (dto.barcodes ?? []).filter((c) => c?.trim()).entries()) {
+      const { code, kind } = codeValide(brut);
+      const pris = await tx.one<{ name: string }>(
+        `SELECT p.name FROM product_barcodes b JOIN products p ON p.id = b.product_id WHERE b.barcode = $1`,
+        [code],
+      );
+      if (pris) throw new BusinessRuleException(`Le code-barres ${code} est déjà celui de « ${pris.name} ».`);
       await tx.query(
-        `INSERT INTO product_barcodes (organization_id, product_id, barcode, is_primary)
-         VALUES ($1,$2,$3,$4) ON CONFLICT (organization_id, barcode) DO NOTHING`,
-        [organizationId, product.id, barcode, index === 0],
+        `INSERT INTO product_barcodes (organization_id, product_id, barcode, kind, is_primary)
+         VALUES ($1,$2,$3,$4,$5)`,
+        [organizationId, product.id, code, kind, index === 0],
       );
     }
     return product;

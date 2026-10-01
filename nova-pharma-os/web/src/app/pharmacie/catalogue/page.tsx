@@ -54,6 +54,17 @@ export default async function PageCatalogue({
         </div>
       </section>
 
+      <section className="card">
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <strong>Étiquettes code-barres</strong>
+            <br />
+            <span className="small muted">Pour les boîtes sans code-barres et les rayons : planche A4 ou rouleau, avec ou sans prix.</span>
+          </div>
+          <Link href="/pharmacie/catalogue/etiquettes" className="btn secondaire">Imprimer des étiquettes</Link>
+        </div>
+      </section>
+
       <section className="card" id="nouveau">
         <details className="depliable">
           <summary>Ajouter un produit ou un médicament</summary>

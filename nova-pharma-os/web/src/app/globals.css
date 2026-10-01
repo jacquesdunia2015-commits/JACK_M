@@ -299,6 +299,25 @@ button.petit, .btn.petit { padding: 0.32rem 0.6rem; font-size: 0.8rem; }
 .taux-du-jour { padding-block: 0.85rem; }
 .especes-deux { display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.75rem; }
 .taux-du-jour.a-revoir { border-color: var(--attention); background: var(--attention-clair); }
+/* Scan des codes-barres par la caméra */
+.recherche-scan { display: flex; gap: 0.5rem; }
+.recherche-scan input { flex: 1; }
+.scan-fond {
+  position: fixed; inset: 0; z-index: 50; background: rgba(16, 32, 29, 0.72);
+  display: grid; place-items: center; padding: 1rem;
+}
+.scan-fenetre {
+  position: relative; width: min(100%, 480px); background: var(--blanc); border-radius: var(--rayon);
+  padding: 0.75rem; text-align: center;
+}
+.scan-video { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; background: #000; display: block; }
+.scan-viseur {
+  position: absolute; left: 15%; right: 15%; top: 30%; height: 22%;
+  border: 3px solid #fff; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.15); pointer-events: none;
+}
+svg.code-barres { display: block; width: 100%; height: auto; }
+.mob-scan { font-size: 1.3rem; padding: 0 0.85rem; border-radius: 12px; }
+
 /* Caisse hors connexion */
 .banner.hors-ligne strong { display: block; }
 button.lien { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; font-weight: 600; cursor: pointer; }
@@ -681,3 +700,27 @@ details.depliable[open] > summary { margin-bottom: 1rem; }
 .message-ticket.support { background: var(--vert-clair); margin-left: auto; }
 .message-ticket.interne { background: var(--attention-clair); border-style: dashed; }
 .mob-client { margin: 0.5rem 0 0.75rem; }
+
+/* --------------------------- Étiquettes code-barres ------------------ */
+.planche {
+  display: grid; gap: 0; width: max-content; max-width: 100%; overflow: auto;
+  background: #fff; border: 1px dashed var(--bord); margin-bottom: 1.25rem;
+}
+.etiquette-produit {
+  box-sizing: border-box; padding: 2mm 3mm; display: flex; flex-direction: column; gap: 0.5mm;
+  overflow: hidden; background: #fff; color: #000; border: 1px dotted #cfd8d6;
+}
+.etiquette-nom { font-size: 8pt; font-weight: 600; line-height: 1.15; max-height: 2.3em; overflow: hidden; }
+.etiquette-prix { font-size: 10pt; font-weight: 700; line-height: 1.1; }
+.etiquette-code { flex: 1; min-height: 0; display: flex; align-items: flex-end; }
+.etiquette-code svg.code-barres { max-height: 100%; }
+
+@media print {
+  html, body { background: #fff !important; }
+  body * { visibility: hidden; }
+  .zone-impression, .zone-impression * { visibility: visible; }
+  .zone-impression { position: absolute; left: 0; top: 0; border: 0; margin: 0; overflow: visible; }
+  .etiquette-produit { border: 0; break-inside: avoid; }
+  .planche-rouleau-50x30 .etiquette-produit, .planche-rouleau-40x25 .etiquette-produit { break-after: page; }
+  .no-print { display: none !important; }
+}

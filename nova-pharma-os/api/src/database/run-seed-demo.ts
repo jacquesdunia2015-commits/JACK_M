@@ -36,7 +36,7 @@ const CATALOGUE = [
   { sku: 'PARA500', name: 'Paracétamol 500 mg', inn: 'Paracétamol', dosage: '500 mg',
     dosageForm: 'comprimé', packaging: 'boîte de 20', categoryCode: 'ANTALGIQUES',
     unit: 'boîte', costPrice: 0.85, salePrice: 1.5, wholesalePrice: 1.1,
-    reorderPoint: 40, reorderQuantity: 200, barcodes: ['3400930000011'] },
+    reorderPoint: 40, reorderQuantity: 200, barcodes: ['3400930000014'] },
   { sku: 'AMOX250', name: 'Amoxicilline 250 mg', inn: 'Amoxicilline', dosage: '250 mg',
     dosageForm: 'gélule', packaging: 'boîte de 12', categoryCode: 'ANTIBIOTIQUES',
     unit: 'boîte', costPrice: 2.1, salePrice: 3.5, wholesalePrice: 2.7,
