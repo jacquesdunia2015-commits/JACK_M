@@ -283,6 +283,7 @@ export const fr = {
   'stock.vendu_30j': 'Vendu (30 j)',
   'nav.requisitions': 'Réquisitions',
   'nav.previsions': 'Prévisions',
+  'nav.marche': 'Place de marché',
   'nav.factures': 'Factures',
   'stock.dernier_fournisseur': 'Dernier fournisseur',
 } as const;

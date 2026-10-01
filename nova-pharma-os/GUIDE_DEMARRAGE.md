@@ -825,6 +825,28 @@ de SMS. Le patient est alors marqué « prévenu ».
 
 Un patient qui arrête son traitement : **Arrêter**. Il ne sera plus rappelé.
 
+## Acheter et vendre sur la place de marché
+
+Menu *Place de marché*.
+
+**Acheter** : tapez un produit (et votre ville si vous voulez un vendeur qui
+livre chez vous). Les offres des dépôts et des autres pharmacies s'affichent,
+de la moins chère à la plus chère, avec la disponibilité et la péremption
+annoncée. **Ajouter** les produits voulus, puis **Envoyer la commande** au
+vendeur, et prévenez-le d'un clic sur WhatsApp. Suivez-la dans *Mes
+commandes* ; à la livraison, **Réceptionner** : choisissez le produit de votre
+catalogue, le lot et la péremption, et le stock entre au prix de la commande.
+
+**Vendre** (dépôt, ou pharmacie qui écoule un surplus) : publiez votre fiche
+(ville, zones de livraison, minimum de commande), puis vos offres. Une offre
+reliée à un produit de votre catalogue se met à jour depuis votre stock. Les
+commandes arrivent dans *Commandes reçues* : **Accepter** crée la commande
+professionnelle dans votre NOVA (préparation, sortie de stock, facture comme
+d'habitude), puis **Expédiée**.
+
+Le règlement se fait entre vous, comme d'habitude : NOVA ne prend aucune
+commission.
+
 ## Prévoir les ventes et savoir quoi commander
 
 Menu *Prévisions*. NOVA regarde vos ventes des trois derniers mois et, si vous

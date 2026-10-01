@@ -275,6 +275,7 @@ export const swCD: Dictionnaire = {
   'stock.vendu_30j': 'Zilizouzwa (siku 30)',
   'nav.requisitions': 'Maombi ya bidhaa',
   'nav.previsions': 'Utabiri',
+  'nav.marche': 'Soko la dawa',
   'nav.factures': 'Ankara',
   'stock.dernier_fournisseur': 'Muuzaji wa mwisho',
 };

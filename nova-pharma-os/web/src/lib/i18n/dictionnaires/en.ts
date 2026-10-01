@@ -269,6 +269,7 @@ export const en: Dictionnaire = {
   'stock.vendu_30j': 'Sold (30 d)',
   'nav.requisitions': 'Requisitions',
   'nav.previsions': 'Forecasts',
+  'nav.marche': 'Marketplace',
   'nav.factures': 'Invoices',
   'stock.dernier_fournisseur': 'Last supplier',
 };

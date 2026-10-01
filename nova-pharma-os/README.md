@@ -23,14 +23,14 @@ Deux espaces distincts, une seule base :
 | **Back-office SaaS** | NOVA PHARMA OS | Pharmacies clientes, forfaits, abonnements, facturation, relances, support, métriques, sauvegardes |
 | **Espace pharmacie** | Chaque pharmacie abonnée | Catalogue, lots et FEFO, stock, achats, ventes POS, caisse, clients, B2B, livraison, messagerie, Mobile Money, rapports |
 
-- **API** : NestJS + TypeScript, 105 tables PostgreSQL, documentation OpenAPI générée.
+- **API** : NestJS + TypeScript, 110 tables PostgreSQL, documentation OpenAPI générée.
 - **Interface** : Next.js 15 + TypeScript, rendu serveur, espace bureau et application
   mobile installable (PWA).
 - **Langues** : 15, dont le kiswahili de la RD Congo, le lingala, le kinyarwanda, le
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 217 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 224 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -574,6 +574,34 @@ marchand — exploité gratuitement de deux façons (page *Mobile Money*, `payme
   encaissée → `duplicate`.
 - Quand un contrat opérateur sera signé, son adaptateur appellera le même rapprochement.
 
+## Place de marché entre pharmacies et dépôts (migration 032)
+
+Page *Place de marché* (acheter : `purchasing.*` ; vendre : `b2b.*`). Tout type
+d'organisation peut vendre : un dépôt, ou une pharmacie qui écoule un surplus ou des
+produits à péremption proche. Aucun paiement ne transite par la plateforme.
+
+- **Vendeur** (`market_sellers`, `market_offers`) : fiche publiée (ville, zones de
+  livraison, minimum de commande, règlement, WhatsApp), offres reliées ou non à un produit
+  du catalogue ; « mettre à jour depuis mon stock » recalcule disponibilité et péremption.
+- **Acheteur** : recherche par produit et ville de livraison, du moins cher au plus cher ;
+  panier par vendeur (quantité et montant minimums contrôlés), lien WhatsApp gratuit vers
+  le vendeur. Numéros `MKT-AAAA-00001`.
+- **Cycle** (`market_orders`) : envoyée → acceptée (une commande professionnelle est créée
+  chez le vendeur, client « MKT-… » créé au besoin, si chaque ligne est reliée à un
+  produit) → expédiée → reçue (entrée en stock chez l'acheteur, au prix de la commande,
+  produit/lot/péremption choisis, fournisseur « MKT-… ») ; refus motivé, annulation avant
+  expédition.
+- **Cloisonnement** : seules tables où une pharmacie lit des lignes d'une autre — les
+  offres actives d'un vendeur publié, sa fiche, et les commandes dont elle est l'acheteur
+  ou le vendeur. Politiques RLS écrites explicitement dans la migration ; un tiers ne voit
+  ni ne modifie rien (vérifié par le test).
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET/PUT /api/market/seller` · `GET /api/market/offers/mine` · `POST /api/market/offers` · `PATCH …/:id` · `POST …/refresh` | Vendre |
+| `GET /api/market/search?q=&city=` · `POST /api/market/orders` · `GET /api/market/orders?side=purchases\|sales` | Acheter, suivre |
+| `POST /api/market/orders/:id/accept\|reject\|ship\|cancel\|receive` | Faire avancer une commande |
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -766,7 +794,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             217 tests de bout en bout
+│   └── test/             224 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -795,6 +823,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
+| `place-de-marche.e2e-spec.ts` | Offres visibles des seules pharmacies concernées, minimums, commande vue par l'acheteur et le vendeur seuls, acceptation en commande professionnelle, réception en stock |
 | `mobile-money-sms.e2e-spec.ts` | Lecture des SMS d'opérateurs, confirmation par SMS collé (montant vérifié), transfert automatique, doublons, SMS ambigus |
 | `sauvegarde-complete.e2e-spec.ts` | Sauvegarde de toutes les tables, restauration exacte malgré cycles de clés, autoréférences, photo binaire et JSON |
 | `previsions.e2e-spec.ts` | Produit saisonnier prévu plus haut qu'un produit régulier au même rythme, quantité à commander, fiabilité, export Excel |

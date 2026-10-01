@@ -269,6 +269,7 @@ export const hi: Dictionnaire = {
   'stock.vendu_30j': 'बेचा (30 दिन)',
   'nav.requisitions': 'माँग-पत्र',
   'nav.previsions': 'पूर्वानुमान',
+  'nav.marche': 'मार्केटप्लेस',
   'nav.factures': 'चालान',
   'stock.dernier_fournisseur': 'अंतिम आपूर्तिकर्ता',
 };

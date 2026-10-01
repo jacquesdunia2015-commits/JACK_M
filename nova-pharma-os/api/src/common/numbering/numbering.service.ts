@@ -17,7 +17,8 @@ export type DocumentKind =
   | 'requisition'
   | 'payer_claim'
   | 'expense'
-  | 'reservation';
+  | 'reservation'
+  | 'market_order';
 
 const DEFAULT_FORMATS: Record<DocumentKind, string> = {
   sale: 'V-{PERIOD}-{SEQ:6}',
@@ -36,6 +37,7 @@ const DEFAULT_FORMATS: Record<DocumentKind, string> = {
   payer_claim: 'RL-{PERIOD}-{SEQ:5}',
   expense: 'DEP-{PERIOD}-{SEQ:5}',
   reservation: 'RES-{PERIOD}-{SEQ:5}',
+  market_order: 'MKT-{PERIOD}-{SEQ:5}',
 };
 
 /**

@@ -269,6 +269,7 @@ export const rw: Dictionnaire = {
   'stock.vendu_30j': 'Byagurishijwe (iminsi 30)',
   'nav.requisitions': 'Ibisabwa',
   'nav.previsions': 'Iteganyagihe ry’igurisha',
+  'nav.marche': 'Isoko',
   'nav.factures': 'Inyemezabuguzi',
   'stock.dernier_fournisseur': 'Uwatanze ibicuruzwa bwa nyuma',
 };

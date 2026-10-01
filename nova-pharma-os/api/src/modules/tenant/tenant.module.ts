@@ -45,6 +45,8 @@ import { DepensesService } from './depenses/depenses.service';
 import { FideliteController } from './fidelite/fidelite.controller';
 import { PrevisionsController } from './previsions/previsions.controller';
 import { PrevisionsService } from './previsions/previsions.service';
+import { MarcheController } from './marche/marche.controller';
+import { MarcheService } from './marche/marche.service';
 import { RappelsController } from './rappels/rappels.controller';
 import { PagePubliqueController, ReservationsController } from './reservations/reservations.controller';
 import { ReservationsService } from './reservations/reservations.service';
@@ -76,6 +78,7 @@ import { TraitementsService } from './traitements/traitements.service';
     FideliteController,
     DepensesController,
     RappelsController,
+    MarcheController,
     PrevisionsController,
     PagePubliqueController,
     ReservationsController,
@@ -107,6 +110,7 @@ import { TraitementsService } from './traitements/traitements.service';
     FideliteService,
     DepensesService,
     RappelsService,
+    MarcheService,
     PrevisionsService,
     ReservationsService,
     CashService,

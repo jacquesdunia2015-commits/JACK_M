@@ -269,6 +269,7 @@ export const rn: Dictionnaire = {
   'stock.vendu_30j': 'Vyadandajwe (imisi 30)',
   'nav.requisitions': 'Ivyasabwe',
   'nav.previsions': 'Ivyitezwe',
+  'nav.marche': 'Isoko',
   'nav.factures': 'Inyemezabuguzi',
   'stock.dernier_fournisseur': 'Uwadandaje bwa nyuma',
 };

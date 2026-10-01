@@ -269,6 +269,7 @@ export const ar: Dictionnaire = {
   'stock.vendu_30j': 'المباع (30 يومًا)',
   'nav.requisitions': 'طلبات الشراء',
   'nav.previsions': 'التوقعات',
+  'nav.marche': 'السوق',
   'nav.factures': 'الفواتير',
   'stock.dernier_fournisseur': 'آخر مورد',
 };

@@ -269,6 +269,7 @@ export const bm: Dictionnaire = {
   'stock.vendu_30j': 'Feerelen (tile 30)',
   'nav.requisitions': 'Fɛnw ɲinini',
   'nav.previsions': 'Siniko jateminɛ',
+  'nav.marche': 'Sugu',
   'nav.factures': 'Jatebɔsɛbɛnw',
   'stock.dernier_fournisseur': 'Feerekɛla laban',
 };

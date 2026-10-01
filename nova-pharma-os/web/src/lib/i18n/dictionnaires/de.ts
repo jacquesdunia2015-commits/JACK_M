@@ -269,6 +269,7 @@ export const de: Dictionnaire = {
   'stock.vendu_30j': 'Verkauft (30 T)',
   'nav.requisitions': 'Bestellanforderungen',
   'nav.previsions': 'Prognosen',
+  'nav.marche': 'Marktplatz',
   'nav.factures': 'Rechnungen',
   'stock.dernier_fournisseur': 'Letzter Lieferant',
 };
