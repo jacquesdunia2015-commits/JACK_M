@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AlertesController, AlertesService } from './alertes/alertes.controller';
 import { PlatformAuditController } from './audit/platform-audit.controller';
 import { BackupsController } from './backups/backups.controller';
 import { BackupsService } from './backups/backups.service';
@@ -24,6 +25,7 @@ import { PlatformUsersService } from './users/platform-users.service';
  */
 @Module({
   controllers: [
+    AlertesController,
     OrganizationsController,
     BillingController,
     MetricsController,
@@ -36,6 +38,7 @@ import { PlatformUsersService } from './users/platform-users.service';
     BackupsController,
   ],
   providers: [
+    AlertesService,
     OrganizationsService,
     SubscriptionsService,
     BillingService,

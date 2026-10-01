@@ -36,6 +36,7 @@ export default async function LayoutPharmacie({
     { href: '/pharmacie/caisse', label: t('nav.caisse'), icone: '▦', groupe: t('nav.exploitation'), droit: ['sales.create', 'cash.read'] },
     { href: '/pharmacie/stock', label: t('nav.stock'), icone: '▥', groupe: t('nav.exploitation'), droit: ['inventory.read'] },
     { href: '/pharmacie/catalogue', label: t('nav.catalogue'), icone: '▧', groupe: t('nav.exploitation'), droit: ['catalog.read'] },
+    { href: '/pharmacie/rappels', label: t('nav.rappels'), icone: '▲', groupe: t('nav.exploitation'), droit: ['inventory.read'] },
     { href: '/pharmacie/rapports', label: t('nav.rapports'), icone: '▥', groupe: t('nav.exploitation'), droit: ['reporting.read'] },
     { href: '/pharmacie/depenses', label: t('nav.depenses'), icone: '▤', groupe: t('nav.exploitation'), droit: ['cash.read', 'reporting.financial'] },
     { href: '/pharmacie/achats', label: t('nav.achats'), icone: '▨', groupe: t('nav.approvisionnement'), droit: ['purchasing.read'], module: 'purchasing' },

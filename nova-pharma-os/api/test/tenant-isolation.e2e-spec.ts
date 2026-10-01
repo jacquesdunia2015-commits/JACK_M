@@ -161,7 +161,9 @@ describe('Isolation multi-tenant au niveau base de données', () => {
               'permissions', 'organizations', 'platform_users', 'platform_settings',
               'platform_incidents', 'platform_audit_logs', 'knowledge_base_articles',
               'leads', 'organization_backups', 'subscription_invoice_lines',
-              'refresh_tokens', 'schema_migrations')
+              'refresh_tokens', 'schema_migrations',
+              -- Alertes produits publiées par le back-office pour toutes les pharmacies.
+              'product_alerts')
             AND NOT EXISTS (
               SELECT 1 FROM pg_attribute a
                WHERE a.attrelid = c.oid AND a.attname = 'organization_id'

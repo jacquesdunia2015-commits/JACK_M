@@ -825,6 +825,27 @@ de SMS. Le patient est alors marqué « prévenu ».
 
 Un patient qui arrête son traitement : **Arrêter**. Il ne sera plus rappelé.
 
+## Rappels de lots et produits falsifiés
+
+Menu *Rappels de lots*. Quand l'ACOREP, l'OMS, un fabricant ou un grossiste
+rappelle un lot ou signale des boîtes falsifiées :
+
+- les alertes publiées par NOVA PHARMA OS arrivent toutes seules, et un bandeau
+  rouge s'affiche sur le tableau de bord si votre stock est concerné ;
+- une lettre reçue de votre grossiste s'enregistre avec *Enregistrer un rappel
+  reçu* : le produit, les numéros de lot, la source.
+
+NOVA cherche aussitôt le lot dans votre stock (peu importe les majuscules, les
+espaces ou les tirets) et le **met en quarantaine** : il ne se vend plus, même
+hors connexion. Sur la page de l'alerte, vous voyez les **clients qui l'ont
+acheté** : **Prévenir sur WhatsApp** prépare le message à envoyer depuis le
+téléphone de la pharmacie. Puis décidez : **Détruire le stock**, **Retourner au
+fournisseur** (avec le numéro du bon), ou **Fausse alerte** si votre lot n'est
+pas concerné. Un lot rappelé ne peut plus être réceptionné.
+
+Côté back-office, menu *Alertes produits* (super-administrateur et support) :
+publiez une alerte une seule fois, toutes les pharmacies du pays la reçoivent.
+
 ## Noter vos dépenses et connaître votre bénéfice réel
 
 Menu *Dépenses et bénéfice*.

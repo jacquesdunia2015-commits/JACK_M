@@ -41,6 +41,8 @@ import { SalesService } from './sales/sales.service';
 import { DepensesController } from './depenses/depenses.controller';
 import { DepensesService } from './depenses/depenses.service';
 import { FideliteController } from './fidelite/fidelite.controller';
+import { RappelsController } from './rappels/rappels.controller';
+import { RappelsService } from './rappels/rappels.service';
 import { FideliteService } from './fidelite/fidelite.service';
 import { TraitementsController } from './traitements/traitements.controller';
 import { TraitementsService } from './traitements/traitements.service';
@@ -67,6 +69,7 @@ import { TraitementsService } from './traitements/traitements.service';
     TraitementsController,
     FideliteController,
     DepensesController,
+    RappelsController,
     CashController,
     B2bController,
     DeliveryController,
@@ -92,6 +95,7 @@ import { TraitementsService } from './traitements/traitements.service';
     TraitementsService,
     FideliteService,
     DepensesService,
+    RappelsService,
     CashService,
     B2bService,
     DeliveryService,

@@ -23,14 +23,14 @@ Deux espaces distincts, une seule base :
 | **Back-office SaaS** | NOVA PHARMA OS | Pharmacies clientes, forfaits, abonnements, facturation, relances, support, métriques, sauvegardes |
 | **Espace pharmacie** | Chaque pharmacie abonnée | Catalogue, lots et FEFO, stock, achats, ventes POS, caisse, clients, B2B, livraison, messagerie, Mobile Money, rapports |
 
-- **API** : NestJS + TypeScript, 100 tables PostgreSQL, documentation OpenAPI générée.
+- **API** : NestJS + TypeScript, 102 tables PostgreSQL, documentation OpenAPI générée.
 - **Interface** : Next.js 15 + TypeScript, rendu serveur, espace bureau et application
   mobile installable (PWA).
 - **Langues** : 15, dont le kiswahili de la RD Congo, le lingala, le kinyarwanda, le
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 192 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 200 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -458,6 +458,32 @@ bénéfice et TVA : `reporting.financial` ; régime fiscal : `settings.write`).
 | `GET/PUT /api/finance/settings` | Assujettissement à la TVA, numéro du dispositif fiscal |
 | `PUT /api/sales/:id/normalized-reference` | Référence de la facture normalisée d'une vente |
 
+## Rappels de lots et produits falsifiés (migration 029)
+
+- **Alertes du back-office** (`product_alerts`, table de référence lisible par toutes les
+  pharmacies, écrite par le seul back-office) : un super-administrateur ou le support
+  publie un rappel de l'ACOREP, une alerte de l'OMS sur un produit falsifié… avec les
+  numéros de lot et des mots à retrouver dans le produit (nom, molécule, dosage). Chaque
+  pharmacie la reprend dans son suivi (`lot_recalls`) à l'ouverture de ses rappels.
+- **Rappels de la pharmacie** : une lettre du grossiste ou du fabricant s'enregistre de
+  la même façon, sur un produit du catalogue ou un nom.
+- **Recherche des lots** : majuscules, espaces, tirets et accents ignorés
+  (`nova.lot_normalise`, `nova.sans_accent`) ; pour une alerte sans produit précis, tous
+  les mots doivent figurer dans le produit — un numéro de lot seul est trop ambigu.
+- **Quarantaine** : le lot sort du FEFO, de la caisse et du catalogue hors connexion.
+  **Clients** qui ont acheté le lot (ventes non annulées), avec message WhatsApp prêt
+  (`lot_recall`) ; quantités vendues sans client identifié. **Clôture** : stock détruit
+  (`damage`) ou retourné (`purchase_return`) au coût, ou fausse alerte (quarantaine levée
+  sauf si un autre rappel ouvert vise le lot).
+- **Réception bloquée** d'un lot visé par un rappel ouvert. Bandeau sur le tableau de bord.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET /api/recalls` · `GET …/summary` · `GET …/:id` | Rappels et stock concerné · résumé · lots et clients (`inventory.read`) |
+| `POST /api/recalls` · `…/:id/quarantine` · `…/:id/withdraw` · `…/:id/release` | Enregistrer, bloquer, détruire ou retourner, fausse alerte (`inventory.adjust`) |
+| `POST /api/recalls/:id/notify` | Message WhatsApp pour un client (`messaging.write`) |
+| `GET/POST /api/platform/product-alerts` · `PATCH …/:id` | Back-office : publier, retirer (super-administrateur, support) |
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -650,7 +676,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             192 tests de bout en bout
+│   └── test/             200 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -679,6 +705,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
+| `rappels.e2e-spec.ts` | Alerte du back-office reprise par la pharmacie, lot trouvé malgré accents et tirets, quarantaine hors vente, réception bloquée, clients prévenus, destruction, fausse alerte |
 | `depenses.e2e-spec.ts` | Dépense en francs au taux du jour sortie de caisse, annulation, bénéfice réel (pertes, TVA à 16 %), TVA déductible sur facture normalisée seulement |
 | `fidelite.e2e-spec.ts` | Programme désactivé par défaut, bienvenue, points gagnés et utilisés sous limites, annulation, ajustement, remise de catégorie |
 | `traitements.e2e-spec.ts` | Date de fin d'une boîte, patients à prévenir, lien WhatsApp, date recalculée par la vente, arrêt |

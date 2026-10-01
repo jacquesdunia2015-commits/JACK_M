@@ -5,6 +5,7 @@ import { RequestContext } from '../../../common/database/request-context';
 import { BusinessRuleException } from '../../../common/http/exceptions';
 import { NumberingService } from '../../../common/numbering/numbering.service';
 import { StockService } from '../inventory/stock.service';
+import { RappelsService } from '../rappels/rappels.service';
 import { CreatePurchaseOrderDto, CreateReceiptDto, StockEntryDto } from './dto';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class PurchasingService {
     private readonly stock: StockService,
     private readonly numbering: NumberingService,
     private readonly audit: AuditService,
+    private readonly rappels: RappelsService,
   ) {}
 
   // -------------------------------------------------------------------
@@ -245,6 +247,9 @@ export class PurchasingService {
             { productId: product.id },
           );
         }
+
+        // Un lot visé par un rappel ou une alerte « falsifié » ne rentre pas en stock.
+        await this.rappels.verifierReception(tx, product, line.lotNumber);
 
         let lotId: string | null = null;
         if (product.is_batch_tracked) {

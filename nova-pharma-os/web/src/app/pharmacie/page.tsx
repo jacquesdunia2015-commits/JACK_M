@@ -29,7 +29,10 @@ export default async function TableauDeBord() {
   const devise = await deviseSession();
   const session = await readSession();
   const { t } = await traduire();
-  const data = await apiSafe<Dashboard | null>('/reports/dashboard', null);
+  const [data, rappels] = await Promise.all([
+    apiSafe<Dashboard | null>('/reports/dashboard', null),
+    apiSafe<{ open: number; withStock: number; notQuarantined: number } | null>('/recalls/summary', null),
+  ]);
   const libellesPeremption = Object.fromEntries(
     NIVEAUX_PEREMPTION.map((n) => [n, t(CLE_PEREMPTION[n])]),
   ) as Record<NiveauPeremption, string>;
@@ -84,6 +87,13 @@ export default async function TableauDeBord() {
         <div className="banner danger">
           <strong>{t('general.abonnement_suspendu')}</strong>
           {t('general.message_suspension')}
+        </div>
+      )}
+
+      {rappels && rappels.withStock > 0 && (
+        <div className="banner danger">
+          <strong>{rappels.withStock} {t('bord.rappels_en_cours')}</strong>{' '}
+          <Link href="/pharmacie/rappels">{t('action.voir_detail')}</Link>
         </div>
       )}
 
