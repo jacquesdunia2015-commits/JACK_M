@@ -35,6 +35,7 @@ export const ln: Dictionnaire = {
   'nav.catalogue': 'Lisitá ya bankisi',
   'nav.achats': 'Kosomba',
   'nav.clients': 'Bakiliya',
+  'nav.reservations': 'Ba commande ya liboso',
   'nav.b2b': 'Ba commande ya munene',
   'nav.tiers_payant': 'Mituelle mpe asirans',
   'nav.traitements': 'Minganga ya ntango molai',

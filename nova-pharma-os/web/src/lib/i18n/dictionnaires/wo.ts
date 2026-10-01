@@ -35,6 +35,7 @@ export const wo: Dictionnaire = {
   'nav.catalogue': 'Limu garab yi',
   'nav.achats': 'Njënd',
   'nav.clients': 'Kliyaan',
+  'nav.reservations': 'Komand yi',
   'nav.b2b': 'Komaand yu mag',
   'nav.tiers_payant': 'Asiraans ak mitiwel',
   'nav.traitements': 'Fajj yu yàgg',

@@ -162,6 +162,12 @@ describe('Catalogue de référence et factures clients', () => {
     expect(ligne).toMatchObject({ invoice_number: facture.body.invoice.number, customer_name: 'Mme Furaha Bahati' });
 
     // PDF au logo de la pharmacie.
+    // Un logo de 300 Ko passe (Express s'arrêtait à 100 Ko) ; au-delà de 3 Mo, refus clair.
+    const entete = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const lourd = (n: number) => `data:image/png;base64,${Buffer.concat([entete, Buffer.alloc(n, 7)]).toString('base64')}`;
+    await harness.put('/admin/logo', { dataUrl: lourd(300_000) }, pharmacie.token).expect(200);
+    const trop = await harness.put('/admin/logo', { dataUrl: lourd(3_200_000) }, pharmacie.token).expect(413);
+    expect(trop.body.message).toContain('trop volumineux');
     await harness.put('/admin/logo', { dataUrl: PNG_1PX }, pharmacie.token).expect(200);
     const doc = await pdf(`/invoices/${facture.body.invoice.id}/pdf`, pharmacie.token).expect(200);
     expect(doc.headers['content-type']).toBe('application/pdf');

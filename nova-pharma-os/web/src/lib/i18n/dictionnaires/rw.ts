@@ -35,6 +35,7 @@ export const rw: Dictionnaire = {
   'nav.catalogue': 'Urutonde rw’imiti',
   'nav.achats': 'Ibyaguzwe',
   'nav.clients': 'Abakiriya',
+  'nav.reservations': 'Ibyatumijwe',
   'nav.b2b': 'Ibicuruzwa ku bwinshi',
   'nav.tiers_payant': 'Ubwishingizi',
   'nav.traitements': 'Imiti ya buri gihe',

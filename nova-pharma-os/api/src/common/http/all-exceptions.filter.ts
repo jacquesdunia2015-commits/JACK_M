@@ -42,6 +42,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return;
     }
 
+    // Erreurs du lecteur de corps (Express) : requête trop lourde, JSON illisible.
+    const lecture = exception as { type?: string; status?: number };
+    if (lecture?.type === 'entity.too.large') {
+      response.status(HttpStatus.PAYLOAD_TOO_LARGE).json({
+        statusCode: 413, error: 'PayloadTooLarge',
+        message: 'Envoi trop volumineux : réduisez l’image (3 Mo au plus).',
+      });
+      return;
+    }
+    if (lecture?.type === 'entity.parse.failed') {
+      response.status(HttpStatus.BAD_REQUEST).json({ statusCode: 400, error: 'BadRequest', message: 'Requête illisible (JSON mal formé).' });
+      return;
+    }
+
     if (exception instanceof RowNotFoundError) {
       response
         .status(HttpStatus.NOT_FOUND)

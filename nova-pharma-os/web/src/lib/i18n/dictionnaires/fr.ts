@@ -43,6 +43,7 @@ export const fr = {
   'nav.catalogue': 'Catalogue',
   'nav.achats': 'Achats',
   'nav.clients': 'Clients',
+  'nav.reservations': 'Réservations',
   'nav.b2b': 'Commandes B2B',
   'nav.tiers_payant': 'Tiers payant',
   'nav.traitements': 'Traitements suivis',

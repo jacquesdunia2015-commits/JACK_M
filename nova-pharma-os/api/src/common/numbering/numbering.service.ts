@@ -16,7 +16,8 @@ export type DocumentKind =
   | 'ticket'
   | 'requisition'
   | 'payer_claim'
-  | 'expense';
+  | 'expense'
+  | 'reservation';
 
 const DEFAULT_FORMATS: Record<DocumentKind, string> = {
   sale: 'V-{PERIOD}-{SEQ:6}',
@@ -34,6 +35,7 @@ const DEFAULT_FORMATS: Record<DocumentKind, string> = {
   requisition: 'RQ-{PERIOD}-{SEQ:5}',
   payer_claim: 'RL-{PERIOD}-{SEQ:5}',
   expense: 'DEP-{PERIOD}-{SEQ:5}',
+  reservation: 'RES-{PERIOD}-{SEQ:5}',
 };
 
 /**

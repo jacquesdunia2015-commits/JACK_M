@@ -173,7 +173,7 @@ export class RappelsService {
         const p = await tx.oneOrFail<{ name: string; dosage: string | null }>(
           'SELECT name, dosage FROM products WHERE id = $1', [dto.productId], 'Produit introuvable.',
         );
-        nom ||= [p.name, p.dosage].filter(Boolean).join(' ');
+        nom ||= p.dosage && !p.name.toLowerCase().includes(p.dosage.toLowerCase()) ? `${p.name} ${p.dosage}` : p.name;
       }
       if (!nom) throw new BusinessRuleException('Indiquez le nom du produit concerné.');
       const r = await tx.oneOrFail<{ id: string }>(

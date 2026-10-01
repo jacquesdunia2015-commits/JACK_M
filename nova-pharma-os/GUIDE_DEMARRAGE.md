@@ -825,6 +825,28 @@ de SMS. Le patient est alors marqué « prévenu ».
 
 Un patient qui arrête son traitement : **Arrêter**. Il ne sera plus rappelé.
 
+## Votre page publique : réservations et ordonnances en photo
+
+Menu *Réservations*, puis *Votre page publique*.
+
+**1. Publiez votre page** : cochez *Page publiée*, indiquez vos horaires, un
+repère pour vous trouver (« en face du marché »), votre numéro WhatsApp, une
+annonce si vous êtes de garde. NOVA affiche l'adresse de votre page et un **QR
+code** : imprimez-le et collez-le sur la vitrine, partagez l'adresse sur vos
+groupes WhatsApp.
+
+**2. Vos clients**, depuis leur téléphone et sans créer de compte, voient si un
+médicament est **disponible** ou **sur commande** (jamais vos quantités),
+le réservent, ou envoient la **photo de leur ordonnance**. Ils paient au
+comptoir en venant chercher.
+
+**3. Chaque demande arrive dans *Réservations*** : **Confirmer**, puis
+**Prête** quand c'est préparé, et **Prévenir : prête** ouvre le message
+WhatsApp tout écrit. **Retirée** quand le client est passé. La photo d'une
+ordonnance s'ouvre d'un clic ; elle est effacée 30 jours après la clôture.
+L'ordonnance originale reste exigée au comptoir pour les médicaments qui la
+demandent.
+
 ## Rappels de lots et produits falsifiés
 
 Menu *Rappels de lots*. Quand l'ACOREP, l'OMS, un fabricant ou un grossiste

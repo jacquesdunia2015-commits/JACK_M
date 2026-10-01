@@ -35,6 +35,7 @@ export const es: Dictionnaire = {
   'nav.catalogue': 'Catálogo',
   'nav.achats': 'Compras',
   'nav.clients': 'Clientes',
+  'nav.reservations': 'Reservas',
   'nav.b2b': 'Pedidos B2B',
   'nav.tiers_payant': 'Terceros pagadores',
   'nav.traitements': 'Tratamientos crónicos',

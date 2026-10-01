@@ -23,14 +23,14 @@ Deux espaces distincts, une seule base :
 | **Back-office SaaS** | NOVA PHARMA OS | Pharmacies clientes, forfaits, abonnements, facturation, relances, support, métriques, sauvegardes |
 | **Espace pharmacie** | Chaque pharmacie abonnée | Catalogue, lots et FEFO, stock, achats, ventes POS, caisse, clients, B2B, livraison, messagerie, Mobile Money, rapports |
 
-- **API** : NestJS + TypeScript, 102 tables PostgreSQL, documentation OpenAPI générée.
+- **API** : NestJS + TypeScript, 105 tables PostgreSQL, documentation OpenAPI générée.
 - **Interface** : Next.js 15 + TypeScript, rendu serveur, espace bureau et application
   mobile installable (PWA).
 - **Langues** : 15, dont le kiswahili de la RD Congo, le lingala, le kinyarwanda, le
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 200 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 207 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -484,6 +484,36 @@ bénéfice et TVA : `reporting.financial` ; régime fiscal : `settings.write`).
 | `POST /api/recalls/:id/notify` | Message WhatsApp pour un client (`messaging.write`) |
 | `GET/POST /api/platform/product-alerts` · `PATCH …/:id` | Back-office : publier, retirer (super-administrateur, support) |
 
+## Page publique, réservations et photo d'ordonnance (migration 030)
+
+- **Page publique** `/p/<identifiant>` (sans compte, hors du cadre de l'application) :
+  nom, logo, accroche, horaires, adresse et repère, annonce (« de garde »), boutons
+  WhatsApp, Appeler et Itinéraire (OpenStreetMap, gratuit). Invisible (404) tant que la
+  pharmacie ne l'a pas publiée, et pour une pharmacie suspendue. Réglages et QR code à
+  coller sur la vitrine : page *Réservations* (`settings.write`).
+- **Recherche publique** : disponible ou sur commande — jamais les quantités ; prix
+  affichés au choix de la pharmacie ; lots en quarantaine ou périmés exclus.
+- **Réservation sans compte** : médicaments et/ou photo d'ordonnance (réduite dans le
+  navigateur à 1 600 px en JPEG, 2,5 Mo au plus, signature JPEG/PNG vérifiée), nom,
+  téléphone (normalisé, rattaché à la fiche client s'il existe), heure de passage.
+  Protections : champ piège, 5 demandes par téléphone et par jour, 40 par pharmacie et
+  par heure. Le client suit sa demande avec son numéro (`RES-AAAA-00001`) et son
+  téléphone. Rien n'est payé en ligne.
+- **Traitement** (`sales.read`, `sales.create`) : nouvelle → confirmée → prête → retirée
+  (ou annulée) ; message WhatsApp gratuit « reçue » ou « prête ». Les photos sont
+  gardées dans la base (aucun stockage payant) et effacées 30 jours après la clôture.
+- La limite des requêtes JSON passe de 100 Ko (valeur d'Express) à 3 Mo
+  (`common/http/corps-requete.ts`) : un logo de plus de 100 Ko était refusé par une
+  erreur 500 ; un envoi trop lourd reçoit désormais un 413 explicite.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET /api/public/pharmacies/:slug` · `…/products?q=` | Fiche publique · médicaments disponibles (sans jeton) |
+| `POST /api/public/pharmacies/:slug/reservations` · `GET …/reservations/:numero?phone=` | Réserver · suivre sa demande (sans jeton) |
+| `GET/PUT /api/public-profile` | Réglages de la page publique |
+| `GET /api/reservations` · `…/summary` · `…/:id/prescription` | Demandes · compteurs · photo d'ordonnance |
+| `POST /api/reservations/:id/status` · `…/:id/notify` | Changer le statut · message WhatsApp |
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -676,7 +706,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             200 tests de bout en bout
+│   └── test/             207 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -705,6 +735,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
+| `reservations.e2e-spec.ts` | Page invisible avant publication, disponibilité sans quantités, réservation et photo sans compte, abus refusés, statut et WhatsApp, suivi client |
 | `rappels.e2e-spec.ts` | Alerte du back-office reprise par la pharmacie, lot trouvé malgré accents et tirets, quarantaine hors vente, réception bloquée, clients prévenus, destruction, fausse alerte |
 | `depenses.e2e-spec.ts` | Dépense en francs au taux du jour sortie de caisse, annulation, bénéfice réel (pertes, TVA à 16 %), TVA déductible sur facture normalisée seulement |
 | `fidelite.e2e-spec.ts` | Programme désactivé par défaut, bienvenue, points gagnés et utilisés sous limites, annulation, ajustement, remise de catégorie |

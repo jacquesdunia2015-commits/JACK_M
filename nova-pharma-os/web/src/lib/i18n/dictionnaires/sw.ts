@@ -35,6 +35,7 @@ export const sw: Dictionnaire = {
   'nav.catalogue': 'Orodha ya bidhaa',
   'nav.achats': 'Manunuzi',
   'nav.clients': 'Wateja',
+  'nav.reservations': 'Maagizo ya awali',
   'nav.b2b': 'Maagizo ya jumla',
   'nav.tiers_payant': 'Bima na mifuko ya afya',
   'nav.traitements': 'Matibabu ya kudumu',

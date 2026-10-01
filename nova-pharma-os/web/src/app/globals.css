@@ -791,3 +791,20 @@ button.gj-colonne, button.gj-colonne:hover, button.gj-colonne:focus, button.gj-c
 .compte-resultat tr.total td { font-weight: 700; font-size: 1.05rem; border-top: 2px solid var(--encre); }
 .cadre-fiscal { border: 1px dashed var(--bord); border-radius: var(--rayon); padding: 0.6rem 0.8rem; margin: 0 0 1rem; }
 .cadre-fiscal legend { font-size: 0.85rem; font-weight: 600; padding: 0 0.3rem; }
+
+/* Page publique d'une pharmacie */
+.page-publique { max-width: 760px; margin: 0 auto; padding: 1rem 16px 2rem; }
+.pp-entete { display: flex; gap: 1rem; align-items: center; margin: 0.5rem 0 1rem; }
+.pp-entete h1 { margin: 0; font-size: 1.5rem; }
+.pp-logo { width: 72px; height: 72px; object-fit: contain; border-radius: 12px; background: var(--blanc); border: 1px solid var(--bord); }
+.pp-accroche { margin: 0.2rem 0; color: var(--gris); }
+.pp-infos p { margin: 0 0 0.75rem; }
+.pp-resultats, .pp-panier { list-style: none; padding: 0; margin: 0.75rem 0 0; display: grid; gap: 0.4rem; }
+.pp-resultats li, .pp-panier li { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.5rem 0.6rem; border: 1px solid var(--bord); border-radius: var(--rayon); }
+.pp-apercu { display: block; max-width: 100%; max-height: 260px; margin-top: 0.5rem; border-radius: var(--rayon); border: 1px solid var(--bord); }
+.pp-piege { position: absolute; left: -10000px; width: 1px; height: 1px; opacity: 0; }
+.pp-pied { margin-top: 1.5rem; text-align: center; }
+.photo-ordonnance { max-width: 100%; max-height: 420px; border: 1px solid var(--bord); border-radius: var(--rayon); }
+.liste-reservations { display: grid; gap: 0.75rem; }
+.reservation { border: 1px solid var(--bord); border-radius: var(--rayon); padding: 0.75rem; }
+.qr-page-publique { width: 220px; display: grid; gap: 0.4rem; justify-items: center; text-align: center; }

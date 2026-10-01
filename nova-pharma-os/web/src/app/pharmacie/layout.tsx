@@ -43,6 +43,7 @@ export default async function LayoutPharmacie({
     { href: '/pharmacie/fournisseurs', label: t('nav.fournisseurs'), icone: '▦', groupe: t('nav.approvisionnement'), droit: ['suppliers.read'] },
     { href: '/pharmacie/requisitions', label: t('nav.requisitions'), icone: '▤', groupe: t('nav.approvisionnement'), droit: ['suppliers.read'] },
     { href: '/pharmacie/factures', label: t('nav.factures'), icone: '▤', groupe: t('nav.commerce'), droit: ['sales.read'] },
+    { href: '/pharmacie/reservations', label: t('nav.reservations'), icone: '▦', groupe: t('nav.commerce'), droit: ['sales.read'] },
     { href: '/pharmacie/clients', label: t('nav.clients'), icone: '▩', groupe: t('nav.commerce'), droit: ['customers.read'] },
     { href: '/pharmacie/tiers-payant', label: t('nav.tiers_payant'), icone: '▧', groupe: t('nav.commerce'), droit: ['customers.read'] },
     { href: '/pharmacie/traitements', label: t('nav.traitements'), icone: '▣', groupe: t('nav.commerce'), droit: ['customers.read'], module: 'customers' },

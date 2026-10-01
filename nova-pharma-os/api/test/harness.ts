@@ -1,7 +1,9 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { configurerCorpsRequete } from '../src/common/http/corps-requete';
 import { loadEnv } from '../src/database/load-env';
 
 export interface Session {
@@ -34,7 +36,8 @@ export class Harness {
       imports: [AppModule],
     }).compile();
 
-    this.app = moduleRef.createNestApplication();
+    this.app = moduleRef.createNestApplication<NestExpressApplication>();
+    configurerCorpsRequete(this.app as NestExpressApplication);
     this.app.setGlobalPrefix('api');
     // Exactement la configuration de `src/main.ts`. Sans la conversion
     // implicite, un paramètre d'URL reste une chaîne et échoue sur un

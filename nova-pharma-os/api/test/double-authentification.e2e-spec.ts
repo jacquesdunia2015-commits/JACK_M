@@ -13,6 +13,8 @@ describe('Mot de passe et double authentification', () => {
   let gerant: Session;
   let secret: string;
   let secours: string[];
+  /** Pas de temps du code qui a servi à l'activation. */
+  let pasActivation: number;
 
   beforeAll(async () => {
     await harness.start();
@@ -68,7 +70,8 @@ describe('Mot de passe et double authentification', () => {
 
     const faux = codePour(secret, pasActuel() + 5);
     await harness.post('/auth/2fa/enable', { code: faux }, gerant.token).expect(401);
-    const ok = await harness.post('/auth/2fa/enable', { code: codePour(secret, pasActuel()) }, gerant.token).expect(201);
+    pasActivation = pasActuel();
+    const ok = await harness.post('/auth/2fa/enable', { code: codePour(secret, pasActivation) }, gerant.token).expect(201);
     secours = ok.body.recoveryCodes;
     expect(secours).toHaveLength(8);
     expect(secours[0]).toMatch(/^[A-Z2-7]{4}-[A-Z2-7]{4}$/);
@@ -81,11 +84,11 @@ describe('Mot de passe et double authentification', () => {
     const sans = await connexion({}).expect(401);
     expect(sans.body).toMatchObject({ mfaRequired: true });
     expect(sans.body.message).toContain('code à 6 chiffres');
-    // Le code qui a servi à l'activation ne ressert pas.
-    const rejoue = await connexion({ code: codePour(secret, pasActuel()) }).expect(401);
+    // Le code qui a servi à l'activation ne ressert pas (même s'il est encore dans la fenêtre).
+    const rejoue = await connexion({ code: codePour(secret, pasActivation) }).expect(401);
     expect(rejoue.body.message).toBe('Code de vérification incorrect.');
     // Le code suivant (horloge du téléphone en avance de 30 s) passe.
-    const ok = await connexion({ code: codePour(secret, pasActuel() + 1) }).expect(201);
+    const ok = await connexion({ code: codePour(secret, pasActivation + 1) }).expect(201);
     expect(ok.body.accessToken).toBeTruthy();
     // Un mauvais mot de passe reste refusé avant même de parler de code.
     await harness.post('/auth/login', { email, password: 'Mauvais2026!', code: '000000' }).expect(401);
