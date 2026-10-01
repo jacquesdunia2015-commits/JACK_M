@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 137 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 138 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -195,6 +195,24 @@ le prix de son catalogue au moment de la demande (migration 021). Elle relève d
 | `GET/PUT/DELETE /api/admin/logo` | Logo PNG ou JPEG (500 Ko au plus, contenu vérifié) |
 
 Le relais web `/api/proxy` transmet désormais les réponses binaires (PDF) avec leur type.
+
+## Commandes fournisseurs et commandes professionnelles (écrans)
+
+Les points d'entrée existaient ; l'espace pharmacie a désormais leurs écrans.
+
+- **Achats** (`/pharmacie/achats`, `…/achats/[id]`) : commande créée depuis les
+  suggestions de réapprovisionnement groupées par fournisseur (`?commande=<fournisseur>`)
+  ou à la main, prix repris du catalogue du fournisseur (`price-comparison`) ou du prix
+  d'achat habituel ; transmission (`POST …/orders/:id/submit`) ; réceptions partielles
+  successives (`POST /api/purchasing/receipts` avec `purchaseOrderLineId`), lot et
+  péremption exigés pour un produit périssable, clé d'idempotence renouvelée à chaque
+  réception.
+- **B2B** (`/pharmacie/b2b`, `…/commandes/[id]`, `…/devis/[id]`) : commande ou devis pour un
+  client professionnel, prix de gros et remise par ligne ; statuts (confirmée, en
+  préparation, prête, annulée) ; livraison et facture (`POST …/orders/:id/fulfil`), comptant
+  avec moyen de règlement ou à crédit ; conversion d'un devis en commande.
+- Une livraison B2B d'un médicament sur ordonnance n'exige plus d'ordonnance de patient
+  (`channel = 'b2b'`) ; la vente au comptoir la réclame toujours.
 
 ## Changer de base de données
 
@@ -388,7 +406,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             137 tests de bout en bout
+│   └── test/             138 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français

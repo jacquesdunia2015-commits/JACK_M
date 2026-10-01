@@ -10,6 +10,7 @@ import { STATUTS_REQUISITION as STATUTS } from '@/lib/requisitions';
 import AccesReserve from '@/components/AccesReserve';
 import { droits } from '@/lib/droits';
 import { traduire } from '@/lib/i18n';
+import Depliable from '@/components/Depliable';
 
 interface Requisition {
   id: string; number: string; status: string; needed_by: string | null; created_at: string;
@@ -43,14 +44,13 @@ export default async function PageRequisitions({
       </div>
 
       <section className="card" id="nouvelle">
-        <details className="depliable" open={Boolean(produit) || requisitions.length === 0}>
-          <summary>Nouvelle réquisition</summary>
+        <Depliable key={produit ?? "aucun"} ouvert={Boolean(produit) || requisitions.length === 0} resume={<>Nouvelle réquisition</>}>
           <FormulaireRequisition
             produits={catalogue.data}
             fournisseurs={fournisseurs.filter((f) => f.is_active)}
             produitInitial={produit}
           />
-        </details>
+        </Depliable>
       </section>
 
       <section className="card">

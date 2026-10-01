@@ -453,6 +453,32 @@ describe('Opérations pharmacie', () => {
       );
       expect(stockBefore - stockAfter).toBe(20);
     });
+
+    it('livre à un professionnel un médicament sur ordonnance, sans ordonnance de patient', async () => {
+      // Une clinique ou une autre pharmacie achète pour ses propres patients :
+      // l'ordonnance n'est exigée qu'au comptoir.
+      const order = await harness
+        .post(
+          '/b2b/orders',
+          { customerId, paymentTerms: 'cash', lines: [{ productId: productIds.AMOX250, quantity: 1 }] },
+          pharmacy.token,
+        )
+        .expect(201);
+      const fulfilled = await harness
+        .post(
+          `/b2b/orders/${order.body.order.id}/fulfil`,
+          { payments: [{ method: 'mobile_money', amount: Number(order.body.order.total), reference: 'MP-B2B-1' }] },
+          pharmacy.token,
+        )
+        .expect(201);
+      expect(fulfilled.body.order.status).toBe('invoiced');
+      expect(fulfilled.body.invoice.number).toMatch(/^FA-/);
+
+      // Au comptoir, la même vente reste refusée sans ordonnance.
+      await harness
+        .post('/sales', { lines: [{ productId: productIds.AMOX250, quantity: 1 }], payments: [{ method: 'cash', amount: 10 }] }, pharmacy.token)
+        .expect(409);
+    });
   });
 
   // -----------------------------------------------------------------

@@ -8,6 +8,7 @@ import { dateTime } from '@/lib/format';
 import AccesReserve from '@/components/AccesReserve';
 import { droits } from '@/lib/droits';
 import { traduire } from '@/lib/i18n';
+import Depliable from '@/components/Depliable';
 
 interface Ticket {
   id: string; reference: string; subject: string; category: string;
@@ -56,10 +57,9 @@ export default async function PageSupport() {
 
       {(await droits()).peut('support.write') && (
         <section className="card">
-          <details className="depliable" open={tickets.length === 0}>
-            <summary>Écrire au support NOVA PHARMA OS</summary>
+          <Depliable ouvert={tickets.length === 0} resume={<>Écrire au support NOVA PHARMA OS</>}>
             <NouveauTicket />
-          </details>
+          </Depliable>
         </section>
       )}
 

@@ -13,6 +13,7 @@ import {
 import AccesReserve from '@/components/AccesReserve';
 import { droits } from '@/lib/droits';
 import { deviseSession } from '@/lib/devise';
+import Depliable from '@/components/Depliable';
 
 interface LigneStock {
   product_id: string; sku: string; name: string; unit: string;
@@ -84,14 +85,13 @@ export default async function PageStock({
       </div>
 
       <section className="card" id="achat">
-        <details className="depliable" open={Boolean(achat)}>
-          <summary>{t('stock.enregistrer_achat')}</summary>
+        <Depliable key={achat ?? "aucun"} ouvert={Boolean(achat)} resume={<>{t('stock.enregistrer_achat')}</>}>
           <EntreeStock
             produits={catalogue.data}
             fournisseurs={fournisseurs.filter((f) => f.is_active)}
             produitInitial={achat}
           />
-        </details>
+        </Depliable>
         <p className="small muted" style={{ margin: '0.75rem 0 0' }}>
           {t('stock.aide_saisie')}{' '}
           <Link href="/pharmacie/caisse">{t('nav.caisse')}</Link>

@@ -397,6 +397,59 @@ Chaque achat mis en stock garde son fournisseur : la colonne *Dernier
 fournisseur* de *Stock et lots* et la colonne *Fournisseur* des mouvements de la
 fiche le montrent.
 
+## Commander à un fournisseur et réceptionner la livraison
+
+Menu *Achats*. Pour un achat payé et livré sur-le-champ, *Stock et lots* →
+*Enregistrer un achat* suffit ; la commande sert quand la marchandise arrive
+plus tard, ou en plusieurs fois.
+
+**1. Partez des suggestions.** En haut de la page, les produits qui vont
+manquer sont groupés par fournisseur : **Commander chez …** ouvre une commande
+déjà remplie, avec les quantités proposées. Sinon, **Nouvelle commande
+fournisseur** part d'une page blanche.
+
+**2. Vérifiez la commande.** Choisissez le fournisseur, puis chaque produit et
+sa quantité. Le prix unitaire est repris de **son catalogue** quand il y figure,
+sinon du prix d'achat habituel du produit ; il reste modifiable. *Créer la
+commande* l'enregistre en **brouillon**.
+
+**3. Transmettez-la.** Envoyez-la au fournisseur comme d'habitude (téléphone,
+WhatsApp, réquisition PDF), puis **Marquer comme transmise au fournisseur**.
+
+**4. Réceptionnez.** À la livraison, ouvrez la commande : chaque produit
+propose la quantité qui reste à recevoir. Corrigez-la si le fournisseur livre
+moins, saisissez le **lot** et la **date de péremption** (obligatoires pour un
+médicament qui périme) et, si vous l'avez, le numéro de sa facture.
+**Enregistrer la réception** fait entrer la marchandise en stock aussitôt. La
+commande passe « reçue en partie » — le reste reste proposé pour la livraison
+suivante — puis « reçue ». La liste des réceptions garde chaque livraison.
+
+## Vendre aux professionnels : commandes et devis
+
+Menu *Commandes B2B*, pour les cliniques, ONG et autres pharmacies enregistrées comme
+**clients professionnels** (*Clients* → *Ajouter un client* → professionnel).
+
+**1. Établissez un devis ou une commande.** **Nouvelle commande ou devis** :
+choisissez le document, le client, puis les produits. Le prix proposé est le
+**prix de gros** du produit (à défaut son prix de vente), avec une remise en %
+par ligne si vous le souhaitez. Une commande se règle **comptant à la
+livraison** ou **à crédit**, dans la limite du plafond du client. Un
+médicament sur ordonnance peut être livré à un professionnel sans ordonnance
+de patient ; au comptoir, l'ordonnance reste exigée.
+
+**2. Faites-la avancer.** Sur la page de la commande : *Confirmer*, *Mettre en
+préparation*, *Marquer prête* — ou *Annuler*.
+
+**3. Livrez et facturez.** **Livrer et facturer** sort les produits du stock
+(lots qui périment le plus tôt d'abord) et établit la facture. Au comptant,
+choisissez le moyen de règlement (espèces, Mobile Money avec sa référence,
+virement) : la facture est « réglée ». À crédit, la somme s'ajoute à l'encours
+du client et la facture reste « à régler » jusqu'à son paiement (voir plus bas).
+La facture s'imprime et se partage comme celle d'un client du comptoir.
+
+**4. Un devis accepté devient une commande** d'un clic : **Transformer en
+commande**, sans rien ressaisir.
+
 ---
 
 ## Lire les couleurs du stock
@@ -709,6 +762,14 @@ Voici un parcours d'essai qui montre l'essentiel en vingt minutes :
     référence de transaction.
     → *Observez :* la deuxième est refusée, avec le numéro de l'encaissement
     déjà enregistré. C'est ce qui protège votre caisse.
+11. **Commander et réceptionner** — Menu *Achats*, *Commander chez …* sous les
+    suggestions, créez la commande, transmettez-la, puis réceptionnez la moitié
+    des quantités.
+    → *Observez :* le stock augmente aussitôt ; le reste attend la livraison
+    suivante, et la commande est « reçue en partie ».
+12. **Livrer une clinique** — Menu *Commandes B2B*, une commande pour « Clinique du Lac »,
+    confirmez-la, puis *Livrer et facturer*.
+    → *Observez :* la facture est établie et le stock a baissé.
 
 ---
 

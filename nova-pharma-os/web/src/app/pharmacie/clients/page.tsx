@@ -7,6 +7,7 @@ import AccesReserve from '@/components/AccesReserve';
 import { droits } from '@/lib/droits';
 import { traduire } from '@/lib/i18n';
 import { deviseSession } from '@/lib/devise';
+import Depliable from '@/components/Depliable';
 
 interface Client {
   id: string; code: string; kind: string; name: string; phone: string | null;
@@ -96,10 +97,9 @@ export default async function PageClients({
 
       {(await droits()).peut('customers.write') && (
         <section className="card">
-          <details className="depliable" open={clients.length === 0}>
-            <summary>Ajouter un client</summary>
+          <Depliable ouvert={clients.length === 0} resume={<>Ajouter un client</>}>
             <NouveauClient />
-          </details>
+          </Depliable>
         </section>
       )}
 

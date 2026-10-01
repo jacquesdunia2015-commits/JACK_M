@@ -97,7 +97,9 @@ export class SalesService {
       const prepared: PreparedLine[] = [];
       for (const line of dto.lines) {
         const product = await this.resolveProduct(tx, line);
-        if (product.requires_prescription && !dto.prescription) {
+        // L'ordonnance concerne la délivrance à un patient. Une vente à un
+        // professionnel de santé (clinique, autre pharmacie) n'en porte pas.
+        if (product.requires_prescription && !dto.prescription && dto.channel !== 'b2b') {
           throw new BusinessRuleException(
             `« ${product.name} » est délivré sur ordonnance : renseignez la prescription.`,
             { productId: product.id, sku: product.sku },

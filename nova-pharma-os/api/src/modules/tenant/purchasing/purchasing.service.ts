@@ -174,8 +174,8 @@ export class PurchasingService {
       'Commande introuvable.',
     );
     const lines = await tx.many(
-      `SELECT l.id, l.quantity, l.received_quantity, l.unit_cost, l.discount_percent,
-              l.tax_rate, l.line_total, p.sku, p.name, p.unit
+      `SELECT l.id, l.product_id, l.quantity, l.received_quantity, l.unit_cost, l.discount_percent,
+              l.tax_rate, l.line_total, p.sku, p.name, p.unit, p.has_expiry
          FROM purchase_order_lines l
          JOIN products p ON p.id = l.product_id
         WHERE l.purchase_order_id = $1 ORDER BY l.sort_order`,
