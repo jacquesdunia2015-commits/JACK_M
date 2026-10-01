@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import ChoixBeneficiaire, { Beneficiaire } from '@/components/ChoixBeneficiaire';
 import ChoixClient, { ClientChoisi } from '@/components/ChoixClient';
 import { DocumentFacture, EmettreFacture, FactureEmise } from '@/components/Facture';
 import { designation, money, quantity as fmtQty } from '@/lib/format';
@@ -85,6 +86,31 @@ export default function Caisse({
 
   const ordonnanceRequise = ticket.some((l) => l.produit.requires_prescription);
 
+  // Tiers payant : la part de l'organisme est calculée par le serveur
+  // (taux, plafonds) ; le patient ne paie que le reste.
+  const [tiersPayant, setTiersPayant] = useState(false);
+  const [beneficiaire, setBeneficiaire] = useState<Beneficiaire | null>(null);
+  const [bon, setBon] = useState('');
+  const [partage, setPartage] = useState<{
+    payerShare: number; patientShare: number; percent: number; payerName: string; capped: boolean; reason: string | null;
+  } | null>(null);
+  const [erreurPartage, setErreurPartage] = useState<string | null>(null);
+  useEffect(() => {
+    setPartage(null);
+    setErreurPartage(null);
+    if (!tiersPayant || !beneficiaire || total <= 0) return;
+    const minuteur = setTimeout(async () => {
+      const r = await fetch(`/api/proxy/payers/members/${beneficiaire.id}/coverage?amount=${total.toFixed(2)}`);
+      const body = await r.json().catch(() => ({}));
+      if (r.ok) setPartage(body);
+      else setErreurPartage(body.message ?? 'Prise en charge impossible.');
+    }, 200);
+    return () => clearTimeout(minuteur);
+  }, [tiersPayant, beneficiaire, total]);
+  const couvert = tiersPayant && beneficiaire && partage && partage.payerShare > 0;
+  /** Ce que le patient doit payer lui-même. */
+  const du = couvert ? partage.patientShare : total;
+
   // Espèces : ce qui est remis dans chaque devise, ramené à la devise de la
   // pharmacie ; la monnaie se rend dans la devise choisie, à la coupure près.
   const nombre = (v: string) => Number(v.replace(/\s/g, '').replace(',', '.')) || 0;
@@ -98,8 +124,8 @@ export default function Caisse({
   // Mobile Money ou virement : le montant exact, à l'unité supérieure (pas de coupure à rendre).
   const auFrancPres = (m: number, d: string) =>
     d === 'CDF' ? Math.ceil(m - 1e-9) : Math.ceil(m * 100 - 1e-9) / 100;
-  const manque = especesSaisies && recuEquivalent + tolerance < total ? total - recuEquivalent : 0;
-  const surplus = especesSaisies ? Math.max(0, recuEquivalent - total) : 0;
+  const manque = especesSaisies && recuEquivalent + tolerance < du ? du - recuEquivalent : 0;
+  const surplus = especesSaisies ? Math.max(0, recuEquivalent - du) : 0;
   const monnaie = surplus > 0
     ? arrondirMonnaie(convertir(surplus, devise, deviseMonnaie, taux), deviseMonnaie, taux)
     : 0;
@@ -172,11 +198,16 @@ export default function Caisse({
             ...(recuPrincipal > 0 ? [{ method: 'cash', amount: recuPrincipal }] : []),
             ...(recuAutre > 0 && autre ? [{ method: 'cash', ...enAutre(recuAutre, autre) }] : []),
           ]
-        : [{ method: 'cash', amount: total }];
+        : du > 0 ? [{ method: 'cash', amount: du }] : [];
     } else if (moyen !== 'credit' && autre && devisePaiement === autre) {
-      paiements = [{ method: moyen, ...enAutre(auFrancPres(convertir(total, devise, autre, taux), autre), autre) }];
+      paiements = du > 0 ? [{ method: moyen, ...enAutre(auFrancPres(convertir(du, devise, autre, taux), autre), autre) }] : [];
     } else {
-      paiements = [{ method: moyen, amount: total }];
+      paiements = du > 0 ? [{ method: moyen, amount: du }] : [];
+    }
+    if (tiersPayant && !couvert) {
+      setMessage({ ton: 'danger', texte: erreurPartage ?? 'Choisissez le bénéficiaire du tiers payant, ou décochez « Tiers payant ».' });
+      setEnvoi(false);
+      return;
     }
     if (moyen === 'credit' && !client) {
       setMessage({ ton: 'danger', texte: 'Choisissez le client à qui la vente est faite à crédit.' });
@@ -196,6 +227,9 @@ export default function Caisse({
           payments: paiements,
           ...(moyen === 'cash' && surplus > 0 ? { changeCurrency: deviseMonnaie } : {}),
           ...(client ? { customerId: client.id } : {}),
+          ...(couvert && beneficiaire
+            ? { coverage: { payerMemberId: beneficiaire.id, ...(bon.trim() ? { authorizationNumber: bon.trim() } : {}) } }
+            : {}),
           ...(ordonnanceRequise
             ? {
                 prescription: {
@@ -227,6 +261,9 @@ export default function Caisse({
       setTicket([]);
       setEncaisse('');
       setEncaisseAutre('');
+      setTiersPayant(false);
+      setBeneficiaire(null);
+      setBon('');
       setPatient('');
       setPrescripteur('');
       setClient(null);
@@ -392,6 +429,32 @@ export default function Caisse({
               </div>
             )}
 
+            <div className="tiers-payant-caisse">
+              <label className="case">
+                <input type="checkbox" checked={tiersPayant} onChange={(e) => setTiersPayant(e.target.checked)} />
+                Tiers payant (assurance, mutuelle, convention)
+              </label>
+              {tiersPayant && (
+                <>
+                  <ChoixBeneficiaire beneficiaire={beneficiaire} onChange={setBeneficiaire} />
+                  {erreurPartage && <div className="banner danger" style={{ marginTop: '0.5rem' }}>{erreurPartage}</div>}
+                  {couvert && (
+                    <div className="partage">
+                      <div><span>Part {partage.payerName}</span><strong className="mono">{money(partage.payerShare, devise)}</strong></div>
+                      <div><span>Part patient</span><strong className="mono">{money(partage.patientShare, devise)}</strong></div>
+                      {partage.capped && partage.reason && <p className="small" style={{ margin: 0, color: 'var(--attention)' }}>{partage.reason}</p>}
+                    </div>
+                  )}
+                  {beneficiaire && (
+                    <div className="field" style={{ marginTop: '0.5rem' }}>
+                      <label htmlFor="bon">N° du bon de prise en charge (facultatif)</label>
+                      <input id="bon" value={bon} onChange={(e) => setBon(e.target.value)} />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
             {ordonnanceRequise && (
               <div style={{ marginTop: '1rem' }}>
                 <div className="banner warn" style={{ marginBottom: '0.75rem' }}>
@@ -444,7 +507,7 @@ export default function Caisse({
                       inputMode="decimal"
                       value={encaisse}
                       onChange={(e) => setEncaisse(e.target.value)}
-                      placeholder={autre ? '0' : total.toFixed(2)}
+                      placeholder={autre ? '0' : du.toFixed(2)}
                     />
                   </div>
                   {autre && (
@@ -487,9 +550,9 @@ export default function Caisse({
               <div className="field">
                 <label htmlFor="devise-paiement">Payé en</label>
                 <select id="devise-paiement" value={devisePaiement} onChange={(e) => setDevisePaiement(e.target.value)}>
-                  <option value={devise}>{devise === 'CDF' ? 'Francs (FC)' : devise} — {money(total, devise)}</option>
+                  <option value={devise}>{devise === 'CDF' ? 'Francs (FC)' : devise} — {money(du, devise)}</option>
                   <option value={autre}>
-                    {autre === 'CDF' ? 'Francs (FC)' : autre} — {money(auFrancPres(convertir(total, devise, autre, taux), autre), autre)}
+                    {autre === 'CDF' ? 'Francs (FC)' : autre} — {money(auFrancPres(convertir(du, devise, autre, taux), autre), autre)}
                   </option>
                 </select>
               </div>
@@ -500,7 +563,7 @@ export default function Caisse({
               disabled={envoi}
               style={{ width: '100%', marginTop: '0.5rem' }}
             >
-              {envoi ? 'Enregistrement…' : `Encaisser ${money(total, devise)}`}
+              {envoi ? 'Enregistrement…' : couvert ? `Encaisser la part patient : ${money(du, devise)}` : `Encaisser ${money(total, devise)}`}
             </button>
           </>
         )}

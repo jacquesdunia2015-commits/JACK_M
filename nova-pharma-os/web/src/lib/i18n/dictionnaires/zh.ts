@@ -36,6 +36,7 @@ export const zh: Dictionnaire = {
   'nav.achats': '采购',
   'nav.clients': '客户',
   'nav.b2b': 'B2B 订单',
+  'nav.tiers_payant': '第三方支付',
   'nav.equipe': '团队',
   'nav.abonnement': '我的订阅',
   'nav.support': '支持',

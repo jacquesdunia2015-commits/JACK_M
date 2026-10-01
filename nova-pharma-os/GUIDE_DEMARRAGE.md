@@ -660,6 +660,37 @@ Les montants de la vente, de la facture et des rapports restent dans la
 devise de la pharmacie ; la page d'une vente montre ce qui a été remis en
 francs et à quel taux.
 
+## Tiers payant : assurances, mutuelles et conventions
+
+Menu *Tiers payant*.
+
+**1. Enregistrez chaque organisme** qui prend en charge une partie des
+médicaments de ses membres : mutuelle de santé, assurance, entreprise sous
+convention, ONG. Indiquez la part qu'il paie (80 % par exemple), un éventuel
+plafond par vente, et son délai de règlement.
+
+**2. Ajoutez ses bénéficiaires** sur la fiche de l'organisme : numéro de carte
+ou matricule, nom, l'adhérent principal pour un conjoint ou un enfant, la date
+de validité de la carte et, s'il y en a un, le plafond annuel. Un bénéficiaire
+peut avoir un taux différent de celui de l'organisme.
+
+**3. À la caisse**, cochez **Tiers payant**, tapez le nom ou le numéro de carte
+et choisissez le bénéficiaire. L'écran montre aussitôt la part de l'organisme et
+celle du patient ; le patient ne paie que sa part, en dollars ou en francs.
+NOVA vérifie la carte (active, non expirée) et les plafonds : quand un plafond
+est atteint, la part de l'organisme est réduite et l'écran dit pourquoi. Notez
+le numéro du bon de prise en charge s'il y en a un.
+
+**4. Chaque mois**, sur la fiche de l'organisme, *Ventes à présenter* →
+**Établir le relevé** (le mois précédent est proposé). Le relevé liste chaque
+vente : date, bénéficiaire, carte, bon, montant, part du patient, part de
+l'organisme. **Ouvrir le PDF / imprimer** pour le visa de l'organisme, ou
+**Partager** par WhatsApp ou e-mail. Marquez-le **présenté**, puis enregistrez
+les règlements reçus jusqu'à ce qu'il soit **réglé**.
+
+Une vente annulée sort d'elle-même d'un relevé encore en brouillon. Une fois le
+relevé présenté, il faut d'abord l'annuler (tant qu'il n'est pas réglé).
+
 ## Encaisser par Mobile Money
 
 Après une vente, appuyez sur **Encaisser Mobile Money**. L'application affiche
@@ -802,6 +833,10 @@ Voici un parcours d'essai qui montre l'essentiel en vingt minutes :
 12. **Livrer une clinique** — Menu *Commandes B2B*, une commande pour « Clinique du Lac »,
     confirmez-la, puis *Livrer et facturer*.
     → *Observez :* la facture est établie et le stock a baissé.
+13. **Servir un membre de mutuelle** — Menu *Tiers payant*, ajoutez une
+    mutuelle et un bénéficiaire, puis à la *Caisse* cochez *Tiers payant*.
+    → *Observez :* le patient ne paie que sa part ; le relevé du mois liste la
+    vente pour la mutuelle.
 
 ---
 

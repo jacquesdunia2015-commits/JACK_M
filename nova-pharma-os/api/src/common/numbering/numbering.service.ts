@@ -14,7 +14,8 @@ export type DocumentKind =
   | 'transfer'
   | 'inventory'
   | 'ticket'
-  | 'requisition';
+  | 'requisition'
+  | 'payer_claim';
 
 const DEFAULT_FORMATS: Record<DocumentKind, string> = {
   sale: 'V-{PERIOD}-{SEQ:6}',
@@ -30,6 +31,7 @@ const DEFAULT_FORMATS: Record<DocumentKind, string> = {
   inventory: 'INV-{PERIOD}-{SEQ:4}',
   ticket: 'TCK-{PERIOD}-{SEQ:5}',
   requisition: 'RQ-{PERIOD}-{SEQ:5}',
+  payer_claim: 'RL-{PERIOD}-{SEQ:5}',
 };
 
 /**

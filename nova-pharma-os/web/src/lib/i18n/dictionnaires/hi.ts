@@ -36,6 +36,7 @@ export const hi: Dictionnaire = {
   'nav.achats': 'ख़रीद',
   'nav.clients': 'ग्राहक',
   'nav.b2b': 'B2B ऑर्डर',
+  'nav.tiers_payant': 'तृतीय-पक्ष भुगतानकर्ता',
   'nav.equipe': 'टीम',
   'nav.abonnement': 'मेरी सदस्यता',
   'nav.support': 'सहायता',

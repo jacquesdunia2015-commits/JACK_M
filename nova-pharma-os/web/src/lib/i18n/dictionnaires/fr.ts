@@ -44,6 +44,7 @@ export const fr = {
   'nav.achats': 'Achats',
   'nav.clients': 'Clients',
   'nav.b2b': 'Commandes B2B',
+  'nav.tiers_payant': 'Tiers payant',
   'nav.equipe': 'Équipe',
   'nav.abonnement': 'Mon abonnement',
   'nav.support': 'Support',

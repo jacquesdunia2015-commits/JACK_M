@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 147 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 155 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -238,6 +238,31 @@ dollars avec des francs, ou un mélange des deux.
   compté, écart) ; une annulation reverse les espèces de chaque devise telles
   qu'elles sont entrées.
 
+## Tiers payant (migration 024)
+
+Organismes payeurs (`payers` : assurance, mutuelle, entreprise, ONG ; taux, plafond par
+vente, délai de règlement), bénéficiaires (`payer_members` : carte ou matricule, ayant
+droit, taux propre, plafond annuel, validité), relevés (`payer_claims`) et leurs
+règlements. Lecture : `customers.read` ; organismes et cartes : `customers.write` ;
+relevés : `customers.credit`.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET/POST /api/payers`, `GET/PATCH …/:id`, `POST …/:id/members`, `PATCH …/members/:id` | Organismes et bénéficiaires |
+| `GET /api/payers/members?q=` · `GET …/members/:id/coverage?amount=` | Recherche au comptoir · aperçu du partage |
+| `POST /api/sales` — `coverage: { payerMemberId, authorizationNumber? }` | Vente prise en charge : la part du payeur est calculée par le serveur |
+| `GET/POST /api/payers/claims`, `GET …/:id`, `…/:id/pdf`, `…/:id/send`, `…/:id/payments`, `…/:id/cancel` | Relevé d'une période, PDF, présentation, règlements, annulation |
+
+- La part du payeur devient un règlement `insurance` de la vente : elle n'entre ni en
+  caisse ni à l'encours du client. `sales` garde payeur, bénéficiaire, taux, parts et
+  numéro de bon. La ligne du bénéficiaire est verrouillée pendant la vente : deux caisses
+  ne consomment pas ensemble le même reste de plafond annuel (année civile).
+- Carte désactivée ou expirée, organisme inactif, plafond épuisé : la vente est refusée
+  avec la raison. Les paiements doivent couvrir la part du patient.
+- Un relevé réunit les ventes de la période (fuseau de la pharmacie) pas encore
+  présentées ; une vente annulée sort d'un relevé en brouillon, et l'annulation est
+  refusée une fois le relevé présenté.
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -430,7 +455,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             147 tests de bout en bout
+│   └── test/             155 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -455,6 +480,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 |---|---|
 | `acceptance-saas.e2e-spec.ts` | Les 17 critères d'acceptation du cahier des charges |
 | `caisse-devises.e2e-spec.ts` | Taux du jour, paiement en francs ou mêlé, monnaie rendue arrondie, caisse et annulation par devise |
+| `tiers-payant.e2e-spec.ts` | Organismes, bénéficiaires, partage sous plafonds, relevé PDF, annulation, règlement |
 | `pharmacy-operations.e2e-spec.ts` | FEFO, stock, caisse, crédit, B2B, inventaire, mise en route |
 | `tenant-isolation.e2e-spec.ts` | L'isolation tient au niveau base, sans le code applicatif |
 | `messaging-payments.e2e-spec.ts` | Un message ne part pas deux fois, un versement Mobile Money ne s'encaisse pas deux fois |

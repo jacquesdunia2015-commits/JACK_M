@@ -20,6 +20,8 @@ import { MessagingController } from './messaging/messaging.controller';
 import { MessagingService } from './messaging/messaging.service';
 import { OnboardingController } from './onboarding/onboarding.controller';
 import { OnboardingService } from './onboarding/onboarding.service';
+import { PayersController } from './payers/payers.controller';
+import { PayersService } from './payers/payers.service';
 import { PaymentsController } from './payments/payments.controller';
 import { MobileMoneyService } from './payments/mobile-money.service';
 import { PurchasingController } from './purchasing/purchasing.controller';
@@ -52,6 +54,7 @@ import { SalesService } from './sales/sales.service';
     SalesController,
     InvoicesController,
     CustomersController,
+    PayersController,
     CashController,
     B2bController,
     DeliveryController,
@@ -72,6 +75,7 @@ import { SalesService } from './sales/sales.service';
     SalesService,
     InvoicesService,
     CustomersService,
+    PayersService,
     CashService,
     B2bService,
     DeliveryService,

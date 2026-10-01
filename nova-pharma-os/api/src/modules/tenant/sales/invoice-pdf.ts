@@ -31,6 +31,7 @@ const LIBELLES_PAIEMENT: Record<string, string> = {
   bank_local: 'Banque',
   credit: 'À crédit',
   manual: 'Autre',
+  insurance: 'Prise en charge',
 };
 
 /**

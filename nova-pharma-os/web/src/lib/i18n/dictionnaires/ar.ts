@@ -36,6 +36,7 @@ export const ar: Dictionnaire = {
   'nav.achats': 'المشتريات',
   'nav.clients': 'الزبائن',
   'nav.b2b': 'طلبات الجملة',
+  'nav.tiers_payant': 'الجهات الضامنة',
   'nav.equipe': 'الفريق',
   'nav.abonnement': 'اشتراكي',
   'nav.support': 'الدعم',

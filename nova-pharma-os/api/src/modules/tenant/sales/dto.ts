@@ -68,6 +68,14 @@ export class PrescriptionDto {
   @ApiPropertyOptional() @IsOptional() @IsString() notes?: string;
 }
 
+export class CoverageDto {
+  @ApiProperty({ description: 'Bénéficiaire du tiers payant (carte ou matricule enregistré).' })
+  @IsString() payerMemberId!: string;
+
+  @ApiPropertyOptional({ description: 'Numéro du bon de prise en charge, s’il y en a un.' })
+  @IsOptional() @IsString() authorizationNumber?: string;
+}
+
 export class CreateSaleDto {
   @ApiPropertyOptional({ description: 'Branche de vente. Par défaut, celle de la session.' })
   @IsOptional() @IsString() branchId?: string;
@@ -85,6 +93,13 @@ export class CreateSaleDto {
   @ApiPropertyOptional({ type: [SalePaymentDto] })
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => SalePaymentDto)
   payments?: SalePaymentDto[];
+
+  @ApiPropertyOptional({
+    type: CoverageDto,
+    description: 'Tiers payant : la part du payeur est calculée par le serveur ; les paiements couvrent la part du patient.',
+  })
+  @IsOptional() @ValidateNested() @Type(() => CoverageDto)
+  coverage?: CoverageDto;
 
   @ApiPropertyOptional({ type: PrescriptionDto })
   @IsOptional() @ValidateNested() @Type(() => PrescriptionDto)

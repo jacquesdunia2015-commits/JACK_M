@@ -8,6 +8,7 @@ import {
   Taux, arrondi2, arrondirMonnaie, convertir, mouvementCaisse, tauxPour,
 } from '../cash/devises';
 import { StockService } from '../inventory/stock.service';
+import { PayersService, PriseEnCharge } from '../payers/payers.service';
 import { InvoicesService } from './invoices.service';
 import {
   CancelSaleDto,
@@ -36,6 +37,7 @@ export class SalesService {
     private readonly numbering: NumberingService,
     private readonly audit: AuditService,
     private readonly invoices: InvoicesService,
+    private readonly payers: PayersService,
   ) {}
 
   /**
@@ -138,6 +140,25 @@ export class SalesService {
       }[] = [];
       let tauxVente: Taux | null = null;
       let tolerance = 0.001;
+
+      // Tiers payant : la part du payeur, calculée ici (taux, plafonds),
+      // est un règlement de la vente ; le patient paie le reste.
+      let priseEnCharge: PriseEnCharge | null = null;
+      if (dto.coverage) {
+        priseEnCharge = await this.payers.priseEnCharge(tx, dto.coverage.payerMemberId, totals.total);
+        if (priseEnCharge.payerShare <= 0) {
+          throw new BusinessRuleException(
+            priseEnCharge.reason ?? `Rien n'est pris en charge pour ${priseEnCharge.memberName}.`,
+            { priseEnCharge },
+          );
+        }
+        encaissements.push({
+          method: 'insurance', provider: priseEnCharge.payerName,
+          reference: dto.coverage.authorizationNumber, montant: priseEnCharge.payerShare,
+          devise: currency, remis: priseEnCharge.payerShare, taux: null,
+        });
+      }
+
       for (const p of dto.payments ?? []) {
         const devise = p.currency ?? currency;
         if (devise === currency) {
@@ -257,8 +278,10 @@ export class SalesService {
             customer_id, prescription_id, currency, subtotal, discount_total,
             tax_total, total, amount_paid, change_given, cost_total,
             client_operation_id, device_id, sold_by, notes,
-            change_currency, change_amount)
-         VALUES ($1,$2,$3,$4,'completed',$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+            change_currency, change_amount,
+            payer_id, payer_member_id, coverage_percent, payer_share, patient_share, authorization_number)
+         VALUES ($1,$2,$3,$4,'completed',$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,
+                 $22,$23,$24,$25,$26,$27)
          RETURNING id, number`,
         [
           organizationId, branchId, session?.id ?? null, number,
@@ -268,6 +291,10 @@ export class SalesService {
           totals.cost, dto.clientOperationId ?? null, dto.deviceId ?? null,
           ctx.actorKind === 'user' ? ctx.actorId : null, dto.notes ?? null,
           changeGiven > 0 ? changeCurrency : null, changeGiven > 0 ? changeAmount : null,
+          priseEnCharge?.payerId ?? null, priseEnCharge?.memberId ?? null,
+          priseEnCharge?.percent ?? null, priseEnCharge?.payerShare ?? 0,
+          priseEnCharge ? priseEnCharge.patientShare : null,
+          dto.coverage?.authorizationNumber?.trim() || null,
         ],
       );
 
@@ -393,6 +420,8 @@ export class SalesService {
       if (sale.status === 'cancelled') {
         throw new BusinessRuleException('Cette vente est déjà annulée.');
       }
+      // Une vente prise en charge sort du relevé en brouillon qui la porte.
+      await this.payers.retirerVente(tx, saleId);
 
       const lines = await tx.many<{
         product_id: string; lot_id: string | null; quantity: string; unit_cost: string;
