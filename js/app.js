@@ -8,7 +8,7 @@ import {
   addDocument, addGroup, addCode, addSegment, deleteSegment,
   trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode,
   upsertMemo, getMemo,
-  pushUndoSnapshot, undoAction, redoAction, canUndo, canRedo, clearUndoHistory,
+  pushUndoSnapshot, undoAction, redoAction, canUndo, canRedo, clearUndoHistory, remplacerProjet,
   saveQuery, deleteQuery,
   demanderStockageDurable, estimationStockage,
 } from "./state.js";
@@ -104,7 +104,7 @@ async function init() {
   protegerLesDonnees();
 
   if (!(await loadPersisted())) {
-    state.project = buildSampleProject();
+    remplacerProjet(buildSampleProject());
     persistNow();
   }
   // Abonnement : essai 5 jours puis clé de licence ; l'export reste possible
@@ -295,7 +295,8 @@ function bindRibbon() {
   // --- Accueil ---
   $("#btnNewProject").onclick = () => {
     promptModal(t("new_project_title"), t("project_name_q") + " — " + t("new_version_hint"), "", name => {
-      state.project = emptyProject(name);
+      remplacerProjet(emptyProject(name));
+      updateUndoButtons();
       state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
       state.ui.currentDocId = null; state.ui.selectedCodeId = null;
       persistNow();
@@ -334,7 +335,8 @@ function bindRibbon() {
     }
     const p = await readProjectFile(file);
     if (!p) return;
-    state.project = p;
+    remplacerProjet(p);
+    updateUndoButtons();
     state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
     state.ui.currentDocId = null; state.ui.selectedCodeId = null;
     state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
@@ -360,7 +362,8 @@ function bindRibbon() {
   });
   $("#btnSampleProject").onclick = () => {
     confirmModal(t("new_version_hint"), () => {
-      state.project = buildSampleProject();
+      remplacerProjet(buildSampleProject());
+      updateUndoButtons();
       state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
       state.ui.currentDocId = state.project.documents[0]?.id ?? null;
       state.project.documentGroups.forEach(g => expandedGroups.add(g.id));
@@ -2195,7 +2198,7 @@ function openBarChart() {
    Mes projets : bibliothèque locale multi-projets
 ================================================================ */
 function switchToProject(project) {
-  state.project = project;
+  remplacerProjet(project);
   state.ui.activatedDocs.clear(); state.ui.activatedCodes.clear();
   state.ui.currentDocId = project.documents[0]?.id ?? null;
   state.ui.selectedCodeId = null;
