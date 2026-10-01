@@ -40,6 +40,7 @@ export const wo: Dictionnaire = {
   'nav.traitements': 'Fajj yu yàgg',
   'nav.fidelite': 'Kilifu yu wóor',
   'nav.rapports': 'Rapóor',
+  'nav.depenses': 'Dépaas ak njariñ',
   'nav.equipe': 'Ekip',
   'nav.abonnement': 'Sama abonemaa',
   'nav.support': 'Ndimbal',

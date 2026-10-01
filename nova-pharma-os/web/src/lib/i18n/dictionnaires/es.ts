@@ -40,6 +40,7 @@ export const es: Dictionnaire = {
   'nav.traitements': 'Tratamientos crónicos',
   'nav.fidelite': 'Fidelización',
   'nav.rapports': 'Informes',
+  'nav.depenses': 'Gastos y beneficio',
   'nav.equipe': 'Equipo',
   'nav.abonnement': 'Mi suscripción',
   'nav.support': 'Soporte',

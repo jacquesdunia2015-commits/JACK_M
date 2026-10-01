@@ -40,6 +40,7 @@ export const hi: Dictionnaire = {
   'nav.traitements': 'नियमित उपचार',
   'nav.fidelite': 'लॉयल्टी',
   'nav.rapports': 'रिपोर्ट',
+  'nav.depenses': 'खर्च और मुनाफ़ा',
   'nav.equipe': 'टीम',
   'nav.abonnement': 'मेरी सदस्यता',
   'nav.support': 'सहायता',

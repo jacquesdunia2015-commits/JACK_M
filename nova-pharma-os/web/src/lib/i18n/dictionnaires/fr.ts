@@ -48,6 +48,7 @@ export const fr = {
   'nav.traitements': 'Traitements suivis',
   'nav.fidelite': 'Fidélité',
   'nav.rapports': 'Rapports',
+  'nav.depenses': 'Dépenses et bénéfice',
   'nav.equipe': 'Équipe',
   'nav.abonnement': 'Mon abonnement',
   'nav.support': 'Support',

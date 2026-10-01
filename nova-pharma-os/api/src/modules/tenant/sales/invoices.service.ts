@@ -182,6 +182,7 @@ export class InvoicesService {
       date: f.issue_date,
       echeance: f.due_date,
       numeroVente: (f.sale_number as string | null) ?? null,
+      referenceNormalisee: (f.normalized_reference as string | null) ?? null,
       devise: f.currency,
       statut: f.status,
       client: c
@@ -225,6 +226,7 @@ export class InvoicesService {
       `SELECT i.*, i.status::text AS status, to_char(i.issue_date, 'YYYY-MM-DD') AS issue_date,
               to_char(i.due_date, 'YYYY-MM-DD') AS due_date,
               s.number AS sale_number, s.sold_at, s.status::text AS sale_status, s.change_given,
+              s.normalized_reference,
               u.full_name AS sold_by_name, pr.patient_name, pr.prescriber_name
          FROM invoices i
          LEFT JOIN sales s ON s.id = i.sale_id

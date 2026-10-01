@@ -23,14 +23,14 @@ Deux espaces distincts, une seule base :
 | **Back-office SaaS** | NOVA PHARMA OS | Pharmacies clientes, forfaits, abonnements, facturation, relances, support, métriques, sauvegardes |
 | **Espace pharmacie** | Chaque pharmacie abonnée | Catalogue, lots et FEFO, stock, achats, ventes POS, caisse, clients, B2B, livraison, messagerie, Mobile Money, rapports |
 
-- **API** : NestJS + TypeScript, 98 tables PostgreSQL, documentation OpenAPI générée.
+- **API** : NestJS + TypeScript, 100 tables PostgreSQL, documentation OpenAPI générée.
 - **Interface** : Next.js 15 + TypeScript, rendu serveur, espace bureau et application
   mobile installable (PWA).
 - **Langues** : 15, dont le kiswahili de la RD Congo, le lingala, le kinyarwanda, le
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 187 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 192 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -424,6 +424,40 @@ Rien n'est actif tant que la pharmacie n'a pas activé le programme.
 | `GET /api/loyalty/dashboard` | Meilleurs clients et derniers mouvements |
 | `GET/POST /api/loyalty/groups`, `PATCH …/:id` · `PUT /api/loyalty/customers/:id/group` | Catégories et remise · ranger un client |
 
+## Dépenses, bénéfice réel et facture normalisée (migration 028)
+
+Page *Dépenses et bénéfice* (liste : `cash.read` ; saisie et annulation : `cash.manage` ;
+bénéfice et TVA : `reporting.financial` ; régime fiscal : `settings.write`).
+
+- **Dépenses** (`expenses`, numéros `DEP-AAAA-00001`) : 16 catégories (loyer, salaires,
+  SNEL, REGIDESO, carburant du groupe, frais Mobile Money…), montant en dollars ou en
+  francs (contre-valeur au taux saisi ou au dernier taux du jour), moyen de paiement.
+  Payée en espèces « depuis la caisse ouverte », elle sort de la caisse dans sa devise
+  (mouvement `expense`) ; annulée tant que la caisse est ouverte, l'argent y rentre.
+- **Bénéfice réel du mois** (`GET /api/reports/profit?month=AAAA-MM`) : marge HT des
+  ventes − points de fidélité utilisés − pertes de stock au coût (péremptions, casse,
+  régularisations, écarts d'inventaire) − dépenses ; comparaison avec le mois précédent et
+  six derniers mois. Les achats de médicaments ne sont pas des dépenses : ils comptent
+  à la vente, par leur coût d'achat.
+- **Facture normalisée** (décret n° 23/10 du 3 mars 2023 ; obligatoire pour les
+  assujettis à la TVA depuis le 1er décembre 2025, sanctions depuis le 15 mai 2026) :
+  elle doit être émise par un système de facturation homologué par la DGI relié à un
+  dispositif électronique fiscal (MCF ou e-MCF). NOVA n'est pas homologué : la pharmacie
+  émet la facture avec son dispositif et en note la référence sur la vente
+  (`PUT /api/sales/:id/normalized-reference`), reportée sur la facture PDF et le ticket.
+  Pour une pharmacie déclarée assujettie (`PUT /api/finance/settings`), une dépense ne
+  compte hors TVA que si elle est justifiée par une facture normalisée ; le rapport donne
+  la TVA collectée, la TVA récupérable sur dépenses (indicatif : la TVA des achats de
+  médicaments n'est pas encore suivie), les dépenses avec TVA sans facture normalisée et
+  les ventes sans référence.
+
+| Point d'entrée | Rôle |
+|---|---|
+| `GET/POST /api/expenses` · `POST …/:id/cancel` · `GET …/categories` | Dépenses d'une période, saisie, annulation motivée |
+| `GET /api/reports/profit?month=` | Compte du mois et bénéfice réel |
+| `GET/PUT /api/finance/settings` | Assujettissement à la TVA, numéro du dispositif fiscal |
+| `PUT /api/sales/:id/normalized-reference` | Référence de la facture normalisée d'une vente |
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -616,7 +650,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             187 tests de bout en bout
+│   └── test/             192 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -645,6 +679,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
+| `depenses.e2e-spec.ts` | Dépense en francs au taux du jour sortie de caisse, annulation, bénéfice réel (pertes, TVA à 16 %), TVA déductible sur facture normalisée seulement |
 | `fidelite.e2e-spec.ts` | Programme désactivé par défaut, bienvenue, points gagnés et utilisés sous limites, annulation, ajustement, remise de catégorie |
 | `traitements.e2e-spec.ts` | Date de fin d'une boîte, patients à prévenir, lien WhatsApp, date recalculée par la vente, arrêt |
 | `double-authentification.e2e-spec.ts` | Changement de mot de passe, activation, code à usage unique, codes de secours, désactivation, verrouillage du back-office |

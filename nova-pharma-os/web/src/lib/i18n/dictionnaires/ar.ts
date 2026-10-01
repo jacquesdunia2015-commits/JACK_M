@@ -40,6 +40,7 @@ export const ar: Dictionnaire = {
   'nav.traitements': 'العلاجات المزمنة',
   'nav.fidelite': 'برنامج الولاء',
   'nav.rapports': 'التقارير',
+  'nav.depenses': 'المصاريف والأرباح',
   'nav.equipe': 'الفريق',
   'nav.abonnement': 'اشتراكي',
   'nav.support': 'الدعم',

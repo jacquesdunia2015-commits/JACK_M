@@ -783,3 +783,11 @@ button.gj-colonne, button.gj-colonne:hover, button.gj-colonne:focus, button.gj-c
 @media print {
   .ticket-thermique { border: 0; padding: 2mm 3mm; }
 }
+
+/* Compte du mois (dépenses et bénéfice) */
+.compte-resultat td { padding: 0.4rem 0.6rem; }
+.compte-resultat tr.muted td { color: var(--gris); }
+.compte-resultat tr.sous-total td { font-weight: 600; border-top: 1px solid var(--bord); }
+.compte-resultat tr.total td { font-weight: 700; font-size: 1.05rem; border-top: 2px solid var(--encre); }
+.cadre-fiscal { border: 1px dashed var(--bord); border-radius: var(--rayon); padding: 0.6rem 0.8rem; margin: 0 0 1rem; }
+.cadre-fiscal legend { font-size: 0.85rem; font-weight: 600; padding: 0 0.3rem; }

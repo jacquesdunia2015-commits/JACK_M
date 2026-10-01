@@ -40,6 +40,7 @@ export const zh: Dictionnaire = {
   'nav.traitements': '慢病用药提醒',
   'nav.fidelite': '会员积分',
   'nav.rapports': '报表',
+  'nav.depenses': '支出与利润',
   'nav.equipe': '团队',
   'nav.abonnement': '我的订阅',
   'nav.support': '支持',

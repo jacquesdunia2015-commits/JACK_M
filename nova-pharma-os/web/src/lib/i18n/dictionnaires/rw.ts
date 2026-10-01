@@ -40,6 +40,7 @@ export const rw: Dictionnaire = {
   'nav.traitements': 'Imiti ya buri gihe',
   'nav.fidelite': 'Ibihembo by’abakiriya',
   'nav.rapports': 'Raporo',
+  'nav.depenses': 'Amafaranga yasohotse n’inyungu',
   'nav.equipe': 'Ikipe',
   'nav.abonnement': 'Ifatabuguzi ryanjye',
   'nav.support': 'Ubufasha',

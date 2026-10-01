@@ -825,6 +825,32 @@ de SMS. Le patient est alors marqué « prévenu ».
 
 Un patient qui arrête son traitement : **Arrêter**. Il ne sera plus rappelé.
 
+## Noter vos dépenses et connaître votre bénéfice réel
+
+Menu *Dépenses et bénéfice*.
+
+**1. Notez chaque dépense** : *Noter une dépense*, choisissez la catégorie
+(carburant du groupe, SNEL, loyer, salaires, frais Mobile Money…), le libellé
+et le montant, en dollars ou en francs (NOVA convertit au taux du jour). Payée
+en espèces au comptoir ? Laissez cochée **sortie de la caisse ouverte** : elle
+apparaît dans la caisse et la clôture tombe juste.
+
+**2. Lisez le compte du mois** : chiffre d'affaires, coût des médicaments
+vendus, marge, puis les points de fidélité utilisés, les pertes (périmés,
+casse) et chaque catégorie de dépenses — jusqu'au **bénéfice réel**. Les flèches
+en haut changent de mois ; le tableau des six derniers mois montre la tendance.
+
+**3. Facture normalisée de la DGI** : si votre pharmacie est assujettie à la
+TVA (chiffre d'affaires d'au moins 80 000 000 FC par an), la loi vous impose
+depuis le 1er décembre 2025 de délivrer des factures normalisées, émises par
+un dispositif fiscal de la DGI (l'e-MCF est gratuit). NOVA n'est pas encore
+homologué pour les émettre lui-même : émettez-la avec votre dispositif, puis,
+sur la page de la vente, **Noter** sa référence — elle s'imprime sur la facture
+et le ticket. Dans *Régime fiscal et facture normalisée*, cochez « assujettie à
+la TVA » : NOVA ne compte alors la TVA d'une dépense comme récupérable que si
+vous avez reçu une facture normalisée, et vous signale les ventes sans
+référence. Une pharmacie non assujettie n'est pas concernée.
+
 ## Fidéliser vos clients : points et remises
 
 Menu *Fidélité*.

@@ -40,6 +40,7 @@ export const bm: Dictionnaire = {
   'nav.traitements': 'Furakɛli jamanjan',
   'nav.fidelite': 'Kiliyanw ka sara',
   'nav.rapports': 'Rapɔrɔw',
+  'nav.depenses': 'Musaka ni tɔnɔ',
   'nav.equipe': 'Baarakɛlaw',
   'nav.abonnement': 'N ka abɔnɔmani',
   'nav.support': 'Dɛmɛ',

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { BoutonTicket } from '@/components/ImpressionTicket';
 import { notFound } from 'next/navigation';
+import { ReferenceNormalisee } from '@/components/Depenses';
 import { EmettreFacture } from '@/components/Facture';
 import { apiSafe } from '@/lib/api';
 import { date, dateTime, money, quantity } from '@/lib/format';
@@ -15,6 +16,7 @@ interface DetailVente {
     customer_id: string | null; customer_name: string | null; customer_code: string | null;
     customer_phone: string | null; sold_by_name: string | null; invoice_id: string | null;
     cancel_reason: string | null; change_currency: string | null; change_amount: string | null;
+    normalized_reference: string | null;
   };
   lines: {
     description: string; quantity: string; unit_price: string; line_total: string;
@@ -28,7 +30,8 @@ interface DetailVente {
 
 /** Une vente, et l'établissement de sa facture si le client la demande. */
 export default async function PageVente({ params }: { params: Promise<{ id: string }> }) {
-  if (!(await droits()).peut('sales.read')) return <AccesReserve titre={(await traduire()).t('nav.factures')} />;
+  const { peut } = await droits();
+  if (!peut('sales.read')) return <AccesReserve titre={(await traduire()).t('nav.factures')} />;
   const { id } = await params;
   const v = await apiSafe<DetailVente | null>(`/sales/${id}`, null);
   if (!v) notFound();
@@ -63,6 +66,14 @@ export default async function PageVente({ params }: { params: Promise<{ id: stri
           </>
         ) : (
           <EmettreFacture venteId={s.id} />
+        )}
+        {!annulee && (
+          <p className="small" style={{ marginBottom: 0 }}>
+            Facture normalisée (dispositif fiscal DGI) :{' '}
+            {peut('sales.create')
+              ? <ReferenceNormalisee venteId={s.id} reference={s.normalized_reference} />
+              : <span className="mono">{s.normalized_reference ?? 'non notée'}</span>}
+          </p>
         )}
       </section>
 

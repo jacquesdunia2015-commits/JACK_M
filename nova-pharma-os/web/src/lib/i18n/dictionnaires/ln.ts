@@ -40,6 +40,7 @@ export const ln: Dictionnaire = {
   'nav.traitements': 'Minganga ya ntango molai',
   'nav.fidelite': 'Mbano ya bakiliya',
   'nav.rapports': 'Ba rapports',
+  'nav.depenses': 'Babimisi ya mbongo mpe litomba',
   'nav.equipe': 'Basali',
   'nav.abonnement': 'Abonnement na ngai',
   'nav.support': 'Lisalisi',

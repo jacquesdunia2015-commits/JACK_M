@@ -40,6 +40,7 @@ export const rn: Dictionnaire = {
   'nav.traitements': 'Imiti ya karande',
   'nav.fidelite': 'Ishimwe ry’abaguzi',
   'nav.rapports': 'Raporo',
+  'nav.depenses': 'Amafaranga yasohotse n’inyungu',
   'nav.equipe': 'Umugwi',
   'nav.abonnement': 'Ikwiyandikisha canje',
   'nav.support': 'Imfashanyo',

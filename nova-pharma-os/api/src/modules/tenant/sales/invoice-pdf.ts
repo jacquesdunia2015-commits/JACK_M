@@ -45,6 +45,8 @@ export function documentFacture(entree: {
   date: string | Date;
   echeance: string | null;
   numeroVente: string | null;
+  /** Référence de la facture normalisée émise par le dispositif fiscal (DEF). */
+  referenceNormalisee?: string | null;
   devise: string;
   statut: string;
   client: ClientPdf | null;
@@ -75,6 +77,7 @@ export function documentFacture(entree: {
 
   const references = [`N° ${entree.numero}`, `Date : ${dateFr(entree.date)}`];
   if (entree.numeroVente) references.push(`Vente ${entree.numeroVente}`);
+  if (entree.referenceNormalisee) references.push(`Facture normalisée ${entree.referenceNormalisee}`);
   if (entree.echeance) references.push(`Échéance : ${dateFr(entree.echeance)}`);
   let y = ecrireEntete(doc, entree.officine, 'FACTURE', references);
 

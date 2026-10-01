@@ -16,7 +16,7 @@ interface Recu {
     number: string; status: string; currency: string; sold_at: string; subtotal: string; discount_total: string;
     tax_total: string; total: string; change_given: string; change_amount: string | null; change_currency: string | null;
     payer_share: string; patient_share: string | null; customer_name: string | null; sold_by_name: string | null;
-    authorization_number: string | null; created_at: string;
+    authorization_number: string | null; created_at: string; normalized_reference: string | null;
   };
   lines: { description: string; quantity: string; unit_price: string; discount_percent: string; line_total: string }[];
   payments: {
@@ -128,6 +128,7 @@ export default async function PageTicket({
             {r.loyalty.balance !== null && <div className="t-ligne t-gras"><span>Votre solde</span><span>{r.loyalty.balance} points</span></div>}
           </>
         )}
+        {s.normalized_reference && <div className="t-centre t-petit">Facture normalisée : {s.normalized_reference}</div>}
         <div className="t-trait" />
         <div className="t-centre">Merci de votre confiance.</div>
         <div className="t-centre t-petit">Conservez ce ticket : il vous sera demandé pour tout échange.</div>

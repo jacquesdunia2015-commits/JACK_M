@@ -38,6 +38,8 @@ import { InvoicesController } from './sales/invoices.controller';
 import { InvoicesService } from './sales/invoices.service';
 import { SalesController } from './sales/sales.controller';
 import { SalesService } from './sales/sales.service';
+import { DepensesController } from './depenses/depenses.controller';
+import { DepensesService } from './depenses/depenses.service';
 import { FideliteController } from './fidelite/fidelite.controller';
 import { FideliteService } from './fidelite/fidelite.service';
 import { TraitementsController } from './traitements/traitements.controller';
@@ -64,6 +66,7 @@ import { TraitementsService } from './traitements/traitements.service';
     PayersController,
     TraitementsController,
     FideliteController,
+    DepensesController,
     CashController,
     B2bController,
     DeliveryController,
@@ -88,6 +91,7 @@ import { TraitementsService } from './traitements/traitements.service';
     PayersService,
     TraitementsService,
     FideliteService,
+    DepensesService,
     CashService,
     B2bService,
     DeliveryService,
