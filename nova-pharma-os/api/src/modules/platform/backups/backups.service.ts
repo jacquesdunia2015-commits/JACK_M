@@ -8,32 +8,29 @@ import { DatabaseService, Tx } from '../../../common/database/database.service';
 import { RequestContext } from '../../../common/database/request-context';
 
 /**
- * Ordre d'export et de restauration des tables d'une pharmacie.
- * Les dépendances de clés étrangères imposent cet ordre : une table
- * n'apparaît qu'après celles qu'elle référence.
+ * Les tables d'une pharmacie ne sont plus listées à la main : une liste
+ * figée oubliait chaque table ajoutée depuis (traitements suivis,
+ * fidélité, devises de caisse…). Pire, la restauration vidait les tables
+ * listées et, par les clés étrangères en cascade, les tables oubliées — sans
+ * les avoir sauvegardées. Le plan est désormais lu dans la base : toutes les
+ * tables dotées de la politique « pharmacie » (nova.apply_tenant_rls), dans
+ * l'ordre de leurs clés étrangères.
  */
-const TENANT_TABLES = [
-  'branches', 'roles', 'role_permissions', 'users', 'user_roles', 'user_branches',
-  'document_sequences', 'tax_rates', 'product_categories', 'molecules', 'products',
-  'product_barcodes', 'price_lists', 'price_list_items',
-  'suppliers', 'supplier_products', 'product_lots', 'stock_items',
-  'customer_groups', 'customers', 'prescriptions',
-  'purchase_orders', 'purchase_order_lines', 'goods_receipts', 'goods_receipt_lines',
-  'supplier_payments',
-  'cash_sessions', 'sales', 'sale_lines', 'sale_payments',
-  'b2b_quotes', 'b2b_orders', 'b2b_order_lines', 'b2b_quote_lines',
-  'invoices', 'invoice_lines', 'customer_payments',
-  'deliveries', 'delivery_lines', 'delivery_events',
-  'stock_transfers', 'stock_transfer_lines',
-  'inventory_counts', 'inventory_count_lines',
-  'stock_movements', 'stock_alerts', 'cash_movements',
-  'documents', 'notifications', 'audit_logs',
-  'api_keys', 'webhook_endpoints', 'sync_operations',
-] as const;
+interface PlanSauvegarde {
+  /** Ordre d'insertion : une table vient après celles qu'elle référence. */
+  ordre: string[];
+  /** Colonnes insérées vides puis renseignées à la fin (cycles, autoréférences). */
+  differees: Map<string, string[]>;
+  /** Colonnes par table : générées (non réinsérables), JSON, binaires. */
+  colonnes: Map<string, { generees: Set<string>; json: Set<string>; binaires: Set<string> }>;
+}
+
+/** Valeur d'une ligne exportée en JSON sans perte (binaire en hexadécimal). */
+const exporterValeur = (v: unknown) => (Buffer.isBuffer(v) ? `\\x${v.toString('hex')}` : v);
 
 interface BackupFile {
   format: 'nova-pharma-os/organization-backup';
-  version: 1;
+  version: 1 | 2;
   organizationId: string;
   organizationSlug: string;
   exportedAt: string;
@@ -98,19 +95,21 @@ export class BackupsService {
       };
 
       const payload = await this.db.readTransaction(tenantCtx, async (tx) => {
+        const plan = await this.plan(tx);
         const tables: Record<string, Record<string, unknown>[]> = {};
-        for (const table of TENANT_TABLES) {
-          tables[table] = await tx.many(
-            `SELECT * FROM ${table} WHERE organization_id = $1`,
+        for (const table of plan.ordre) {
+          const lignes = await tx.many<Record<string, unknown>>(
+            `SELECT * FROM "${table}" WHERE organization_id = $1`,
             [organizationId],
           );
+          tables[table] = lignes.map((l) => Object.fromEntries(Object.entries(l).map(([k, v]) => [k, exporterValeur(v)])));
         }
         return tables;
       });
 
       const file: BackupFile = {
         format: 'nova-pharma-os/organization-backup',
-        version: 1,
+        version: 2,
         organizationId,
         organizationSlug: organization.slug,
         exportedAt: new Date().toISOString(),
@@ -216,23 +215,31 @@ export class BackupsService {
     };
 
     const restored = await this.db.transaction(tenantCtx, async (tx) => {
-      // Les contraintes sont différées le temps de la réinsertion :
-      // l'ordre des tables suffit, mais les cycles éventuels ne bloquent pas.
-      await tx.query('SET CONSTRAINTS ALL DEFERRED');
-
-      for (const table of [...TENANT_TABLES].reverse()) {
-        await tx.query(`DELETE FROM ${table} WHERE organization_id = $1`, [
-          backup.organization_id,
-        ]);
+      const plan = await this.plan(tx);
+      // On vide de la table la plus dépendante à la plus référencée.
+      for (const table of [...plan.ordre].reverse()) {
+        await tx.query(`DELETE FROM "${table}" WHERE organization_id = $1`, [backup.organization_id]);
       }
 
       const counts: Record<string, number> = {};
-      for (const table of TENANT_TABLES) {
+      const aCompleter: { table: string; id: unknown; valeurs: Record<string, unknown> }[] = [];
+      for (const table of plan.ordre) {
         const rows = file.tables[table] ?? [];
+        const differees = plan.differees.get(table) ?? [];
         for (const row of rows) {
-          await this.insertRow(tx, table, row);
+          // Cycle ou autoréférence : la colonne est insérée vide, puis renseignée.
+          const reportees = Object.fromEntries(differees.filter((c) => row[c] != null).map((c) => [c, row[c]]));
+          await this.insertRow(tx, plan, table, Object.keys(reportees).length ? { ...row, ...Object.fromEntries(Object.keys(reportees).map((c) => [c, null])) } : row);
+          if (Object.keys(reportees).length) aCompleter.push({ table, id: row.id, valeurs: reportees });
         }
         counts[table] = rows.length;
+      }
+      for (const c of aCompleter) {
+        const cols = Object.keys(c.valeurs);
+        await tx.query(
+          `UPDATE "${c.table}" SET ${cols.map((col, i) => `"${col}" = $${i + 2}`).join(', ')} WHERE id = $1`,
+          [c.id, ...cols.map((col) => c.valeurs[col])],
+        );
       }
       return counts;
     });
@@ -258,37 +265,99 @@ export class BackupsService {
 
   private async insertRow(
     tx: Tx,
+    plan: PlanSauvegarde,
     table: string,
     row: Record<string, unknown>,
   ): Promise<void> {
+    const infos = plan.colonnes.get(table);
     // Les colonnes générées ne sont pas réinsérables : la base les
     // recalcule à partir des colonnes sources.
-    const generated = await this.generatedColumns(tx, table);
-    const columns = Object.keys(row).filter((c) => !generated.includes(c));
+    const columns = Object.keys(row).filter((c) => !infos?.generees.has(c));
     if (columns.length === 0) return;
-
+    const valeurs = columns.map((c) => {
+      const v = row[c];
+      // Un tableau JSON serait pris pour un tableau PostgreSQL : on l'envoie en texte.
+      if (v !== null && v !== undefined && infos?.json.has(c)) return JSON.stringify(v);
+      return v;
+    });
     const placeholders = columns.map((_, index) => `$${index + 1}`).join(', ');
     await tx.query(
-      `INSERT INTO ${table} (${columns.map((c) => `"${c}"`).join(', ')})
+      `INSERT INTO "${table}" (${columns.map((c) => `"${c}"`).join(', ')})
        VALUES (${placeholders})`,
-      columns.map((column) => row[column]),
+      valeurs,
     );
   }
 
-  private generatedCache = new Map<string, string[]>();
-
-  private async generatedColumns(tx: Tx, table: string): Promise<string[]> {
-    const cached = this.generatedCache.get(table);
-    if (cached) return cached;
-    const rows = await tx.many<{ column_name: string }>(
-      `SELECT column_name FROM information_schema.columns
-        WHERE table_schema = 'public' AND table_name = $1
-          AND is_generated = 'ALWAYS'`,
-      [table],
+  /**
+   * Plan de sauvegarde lu dans le catalogue : tables « pharmacie », ordre
+   * des clés étrangères (Kahn), et, pour rompre un cycle, une clé
+   * facultative différée.
+   */
+  private async plan(tx: Tx): Promise<PlanSauvegarde> {
+    const tables = (await tx.many<{ t: string }>(
+      `SELECT DISTINCT c.relname AS t FROM pg_policy p
+         JOIN pg_class c ON c.oid = p.polrelid
+         JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public' AND p.polname = c.relname || '_tenant_select'
+        ORDER BY 1`,
+    )).map((r) => r.t);
+    const liens = await tx.many<{ de: string; vers: string; colonnes: string[]; facultatif: boolean }>(
+      `SELECT a.relname AS de, b.relname AS vers,
+              array_agg(att.attname::text ORDER BY att.attnum) AS colonnes,
+              bool_and(NOT att.attnotnull) AS facultatif
+         FROM pg_constraint con
+         JOIN pg_class a ON a.oid = con.conrelid
+         JOIN pg_class b ON b.oid = con.confrelid
+         JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = ANY(con.conkey)
+        WHERE con.contype = 'f' AND a.relname = ANY($1) AND b.relname = ANY($1)
+        GROUP BY con.oid, a.relname, b.relname`,
+      [tables],
     );
-    const columns = rows.map((r) => r.column_name);
-    this.generatedCache.set(table, columns);
-    return columns;
+    const differees = new Map<string, string[]>();
+    const differer = (table: string, cols: string[]) => differees.set(table, [...(differees.get(table) ?? []), ...cols]);
+    const dependances = new Map(tables.map((t) => [t, new Map<string, typeof liens>()]));
+    for (const l of liens) {
+      if (l.de === l.vers) { differer(l.de, l.colonnes); continue; }
+      const m = dependances.get(l.de) as Map<string, typeof liens>;
+      m.set(l.vers, [...(m.get(l.vers) ?? []), l]);
+    }
+    const ordre: string[] = [];
+    const restantes = new Set(tables);
+    while (restantes.size) {
+      const pretes = [...restantes].filter((t) => [...(dependances.get(t) as Map<string, unknown>).keys()].every((v) => !restantes.has(v)));
+      if (pretes.length) {
+        for (const t of pretes) { ordre.push(t); restantes.delete(t); }
+        continue;
+      }
+      // Cycle : on diffère une clé facultative entre deux tables restantes.
+      let rompu = false;
+      for (const t of restantes) {
+        for (const [v, ls] of dependances.get(t) as Map<string, typeof liens>) {
+          if (restantes.has(v) && ls.every((l) => l.facultatif)) {
+            for (const l of ls) differer(t, l.colonnes);
+            (dependances.get(t) as Map<string, unknown>).delete(v);
+            rompu = true;
+            break;
+          }
+        }
+        if (rompu) break;
+      }
+      if (!rompu) throw new Error(`Cycle de clés obligatoires entre : ${[...restantes].join(', ')}`);
+    }
+    const infos = await tx.many<{ table_name: string; column_name: string; data_type: string; is_generated: string }>(
+      `SELECT table_name, column_name, data_type, is_generated FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = ANY($1)`,
+      [tables],
+    );
+    const colonnes = new Map(tables.map((t) => [t, { generees: new Set<string>(), json: new Set<string>(), binaires: new Set<string>() }]));
+    for (const c of infos) {
+      const e = colonnes.get(c.table_name);
+      if (!e) continue;
+      if (c.is_generated === 'ALWAYS') e.generees.add(c.column_name);
+      if (c.data_type === 'json' || c.data_type === 'jsonb') e.json.add(c.column_name);
+      if (c.data_type === 'bytea') e.binaires.add(c.column_name);
+    }
+    return { ordre, differees, colonnes };
   }
 
   async list(ctx: RequestContext, organizationId?: string) {

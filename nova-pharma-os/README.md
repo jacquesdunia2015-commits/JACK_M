@@ -30,7 +30,7 @@ Deux espaces distincts, une seule base :
   kirundi, le wolof et le bambara ; l'arabe bascule la page de droite à gauche.
 - **Isolation** : PostgreSQL Row-Level Security, zéro table non protégée — vérifié par
   `nova.assert_rls_coverage()`, qui doit rendre zéro ligne.
-- **Tests** : 211 tests de bout en bout, dont les 17 critères d'acceptation du cahier
+- **Tests** : 213 tests de bout en bout, dont les 17 critères d'acceptation du cahier
   des charges.
 
 ### Fonctionner sans rien payer
@@ -537,6 +537,24 @@ aucune donnée ne sort, aucun service payant.
 | `GET /api/reports/forecast?horizon=30&coverDays=45&safetyPercent=20` | Prévisions, suggestions, saisons par catégorie |
 | `GET /api/reports/forecast/workbook` | Même chose en classeur Excel |
 
+## Sauvegarde et restauration d'une pharmacie
+
+Back-office : `POST /api/platform/organizations/:id/backups`, `POST /api/platform/backups/restore`
+(confirmation par l'identifiant de la pharmacie, empreinte SHA-256 vérifiée, opération
+atomique). Le plan de sauvegarde (format 2) est lu dans la base à chaque fois : toutes les
+tables dotées de la politique « pharmacie », dans l'ordre de leurs clés étrangères. Une
+table ajoutée par une migration future est donc sauvegardée sans rien modifier.
+
+- Correctif : l'ancienne liste figée ignorait une trentaine de tables récentes ; en
+  restaurant, elle vidait les tables listées et, par les clés `ON DELETE CASCADE`, des
+  tables jamais sauvegardées (traitements suivis, journal de fidélité, devises de la
+  caisse…). Elle échouait aussi sur le cycle devis → commande professionnelle → facture
+  (clés non différables).
+- Les cycles et autoréférences (catégorie parente, avoir sur facture) sont rompus par une
+  clé facultative insérée vide puis renseignée ; binaires (photos d'ordonnance) en
+  hexadécimal, colonnes JSON et tableaux restitués à l'identique. Vérifié par
+  `sauvegarde-complete.e2e-spec.ts`.
+
 ## Changer de base de données
 
 Une base gratuite d'hébergeur expire (Render : 30 jours, une seule base gratuite par
@@ -729,7 +747,7 @@ nova-pharma-os/
 │   │   ├── platform/     back-office SaaS
 │   │   ├── tenant/       espace pharmacie
 │   │   └── jobs/         traitements périodiques
-│   └── test/             211 tests de bout en bout
+│   └── test/             213 tests de bout en bout
 ├── web/                  Next.js — interface des deux espaces + application mobile
 │   ├── src/app/mobile/   écrans vendeur et livreur, pensés pour le pouce
 │   ├── src/lib/i18n/     15 dictionnaires, typés d'après le français
@@ -758,6 +776,7 @@ Quatre suites, exécutées sur une base recréée à chaque lancement :
 | `hors-connexion.e2e-spec.ts` | Catalogue du poste (lots vendables), vente envoyée à son heure réelle, rejeu sans doublon, limites |
 | `codes-barres.e2e-spec.ts` | Chiffre de contrôle, code unique, ajout d'un code scanné, codes internes, étiquettes, vente au scan |
 | `rapports.e2e-spec.ts` | Synthèse, marge hors taxes, regroupements, encaissements par devise, pertes par péremption, classeur Excel lu |
+| `sauvegarde-complete.e2e-spec.ts` | Sauvegarde de toutes les tables, restauration exacte malgré cycles de clés, autoréférences, photo binaire et JSON |
 | `previsions.e2e-spec.ts` | Produit saisonnier prévu plus haut qu'un produit régulier au même rythme, quantité à commander, fiabilité, export Excel |
 | `reservations.e2e-spec.ts` | Page invisible avant publication, disponibilité sans quantités, réservation et photo sans compte, abus refusés, statut et WhatsApp, suivi client |
 | `rappels.e2e-spec.ts` | Alerte du back-office reprise par la pharmacie, lot trouvé malgré accents et tirets, quarantaine hors vente, réception bloquée, clients prévenus, destruction, fausse alerte |
