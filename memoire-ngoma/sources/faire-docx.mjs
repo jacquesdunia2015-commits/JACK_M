@@ -11,6 +11,8 @@ import { AVERTISSEMENT, ETUDE, participants, guide } from "./echantillon.mjs";
 import { observations } from "./observations.mjs";
 import { participantsV2 } from "./echantillon-vague2.mjs";
 import { observationsV2 } from "./observations-vague2.mjs";
+import { consentementDe } from "./consentements.mjs";
+import { parCentre, fileActiveMnt, SOURCE as SOURCE_ROUTINE, RESERVE } from "./donnees-routine.mjs";
 import * as e12 from "./entretiens-01-02.mjs";
 import * as e34 from "./entretiens-03-04.mjs";
 import * as e56 from "./entretiens-05-06.mjs";
@@ -130,63 +132,50 @@ function couverture(liste) {
 ================================================================ */
 function documentAnnexes(cfg) {
   const { participants, observations } = cfg;
+  const nbV1 = participants.filter(x => cfg.vague1.has(x.code)).length;
   const enfants = [
     ...pageDeGarde(cfg.titre,
-      "Ce document contient les outils de collecte du protocole renseignés par des données simulées :\n" +
-      `· Annexe 3 — fiche de données sociodémographiques et professionnelles (${cfg.nbFiches} fiches)\n` +
-      `· Annexe 2 — guide d'observation du service (${cfg.nbGrilles} grilles)\n` +
+      "Ce document réunit TOUS les outils de collecte du protocole, renseignés par les données simulées des deux vagues :\n" +
+      `· Annexe 1 — guide d'entretien : ${participants.length} entretiens conduits (index ci-dessous ; transcriptions intégrales dans le document 2)\n` +
+      `· Annexe 2 — guide d'observation du service : ${observations.length} grilles, une par centre de santé\n` +
+      `· Annexe 3 — fiche de données sociodémographiques et professionnelles : ${participants.length} fiches\n` +
+      `· Annexe 4 — registre de suivi des consentements : ${participants.length} participants\n` +
+      `· Annexe 9 — données de routine du district : ${parCentre.length} centres\n` +
       "· Synthèse de l'échantillon au regard du Tableau II (matrice de variation)\n\n" +
-      "Tous les champs sont éditables : le document est destiné à servir de gabarit pour la collecte réelle.", cfg.echantillon),
+      "Tous les champs sont éditables : le document sert aussi de gabarit pour la collecte réelle.", cfg.echantillon),
     saut(),
 
     titre1("1. Synthèse de l'échantillon simulé"),
-    p("Le protocole (§ 4.2.3.2, Tableau II) prescrit un échantillonnage raisonné à variation maximale portant sur sept dimensions. Le tableau ci-dessous récapitule l'échantillon simulé et permet de vérifier, d'un coup d'œil, que chaque modalité est représentée — c'est le contrôle à faire pendant la collecte réelle, après chaque entretien.", { run: { size: 20 } }),
+    p(`Deux vagues simulées : la vague 1 (${nbV1} participants, 5 centres) puis la vague 2 (${participants.length - nbV1} participants, les ${observations.length - 5} autres centres). Ensemble, elles couvrent les ${observations.length} centres de santé du district, dans la fourchette de seize à vingt-quatre participants du § 4.2.3.1.`, { run: { size: 20 } }),
+    p("Le protocole (§ 4.2.3.2, Tableau II) prescrit un échantillonnage raisonné à variation maximale portant sur sept dimensions. Le tableau de couverture ci-dessous est CALCULÉ à partir des fiches : c'est le contrôle à refaire pendant la collecte réelle, après chaque entretien.", { run: { size: 20 } }),
     vide(),
     tableau([
-      ["Code", "Structure", "Qualification", "Titulaire", "Anc. CPN", "Secteur", "Hôpital", "Volume", "Form. MNT", "Langue"],
-      ...participants.map(x => [x.code, x.cs, x.qualif, x.titulaire ? "oui" : "non", x.ancCpn,
-        x.secteur === "urbain" ? "urbain" : "rural", x.distanceHopital, x.volume, x.formationMnt, x.langue.slice(0, 5) + "."]),
-    ], [700, 800, 1200, 800, 1000, 900, 900, 826, 1000, 900]),
+      ["Code", "Vague", "Structure", "Qualification", "Titulaire", "Anc. CPN", "Secteur", "Hôpital", "Volume", "Langue"],
+      ...participants.map(x => [x.code, cfg.vague1.has(x.code) ? "1" : "2", x.cs, x.qualif, x.titulaire ? "oui" : "non", x.ancCpn,
+        x.secteur === "urbain" ? "urbain" : "rural", x.distanceHopital, x.volume, x.langue.slice(0, 5) + "."]),
+    ], [650, 650, 800, 1250, 850, 1000, 850, 900, 876, 1200]),
     vide(),
-    titre2(cfg.titreCouverture),
+    titre2("Couverture des sept dimensions de variation (Tableau II)"),
     tableau(couverture(participants), [2200, 2400, 4426]),
     vide(),
-    ...(cfg.couvertureEnsemble ? [
-      titre2("Couverture de l'ensemble des deux vagues (21 participants, 16 centres)"),
-      p("C'est ce tableau-là que le protocole demande de remplir : la vague 2 a été composée pour compléter les modalités et couvrir les seize centres du district.", { run: { size: 20 } }),
-      vide(),
-      tableau(couverture(cfg.couvertureEnsemble), [2200, 2400, 4426]),
-      vide(),
-    ] : []),
-    p(cfg.vigilance, { run: { size: 20, italics: true } }),
+    p("Le protocole ne clôt pas la collecte sur un nombre : la suffisance informationnelle s'argumente dimension par dimension. Le projet QualiCode contient un mémo qui s'y exerce.", { run: { size: 20, italics: true } }),
     saut(),
 
-    titre1("2. Annexe 3 — Fiches de données sociodémographiques et professionnelles"),
-    p("Renseignée en début d'entretien. Aucun nom, aucune fonction nominative, aucun nom de structure. Le code de structure est conservé sur un document séparé sous la seule responsabilité du chercheur. Les tranches sont préférées aux valeurs exactes : dans des équipes réduites, une combinaison âge-qualification-ancienneté exacte permettrait d'identifier une personne.", { run: { size: 19, italics: true } }),
+    /* ---------- Annexe 1 ---------- */
+    titre1("2. Annexe 1 — Guide d'entretien : entretiens conduits"),
+    p("Le guide d'entretien se « remplit » par l'entretien lui-même : ses vingt-deux questions ont été posées aux participants ci-dessous, et leurs réponses sont transcrites intégralement, question par question, dans le document 2 (Transcriptions verbatim). Le journal de bord de chaque entretien y précède la transcription.", { run: { size: 20 } }),
+    vide(),
+    tableau([
+      ["Code", "Structure", "Date", "Durée", "Langue", "Traitement de la transcription (§ 4.2.6)"],
+      ...participants.map(x => [x.code, x.cs, x.date, x.duree, x.langue,
+        x.langue === "kinyarwanda" ? "Transcription en kinyarwanda, traduction française par le chercheur" : "Transcription directe par le chercheur"]),
+    ], [700, 900, 1150, 900, 1300, 4076]),
+    saut(),
+
+    /* ---------- Annexe 2 ---------- */
+    titre1("3. Annexe 2 — Guides d'observation du service remplis"),
+    p("Observation non participante, portant sur le service et non sur les personnes. Jamais observé ni consigné : identité ou performance individuelle d'un professionnel, contenu des échanges entre un prestataire et une femme enceinte, toute donnée permettant d'identifier une patiente, tout jugement de conformité d'un geste à une norme. Aucune présence dans la salle pendant l'examen clinique. Une demi-journée par centre.", { run: { size: 19, italics: true } }),
   ];
-
-  const coche = (valeur, attendu) => (valeur === attendu ? "☒" : "☐");
-  for (const x of participants) {
-    enfants.push(vide(), titre3(`Fiche ${x.code} — structure ${x.cs}`));
-    enfants.push(tableau([
-      ["Rubrique", "Réponse"],
-      ["Code du participant / de structure", `${x.code} / ${x.cs}`],
-      ["Sexe", `${coche(x.sexe, "féminin")} féminin   ${coche(x.sexe, "masculin")} masculin`],
-      ["Tranche d'âge", ["20-29", "30-39", "40-49", "50 et plus"].map(t => `${coche(x.age, t)} ${t}`).join("   ")],
-      ["Qualification", `${coche(x.qualif, "infirmier")} infirmier   ${coche(x.qualif, "sage-femme")} sage-femme   ☐ autre : ……`],
-      ["Niveau de formation", ["A2", "A1", "A0"].map(t => `${coche(x.niveau, t)} ${t}`).join("   ") + "   ☐ autre : ……"],
-      ["Ancienneté professionnelle totale", ["< 5 ans", "5-10 ans", "> 10 ans"].map(t => `${coche(x.ancTotale, t)} ${t}`).join("   ")],
-      ["Ancienneté en consultation prénatale", ["6 mois-2 ans", "> 2 ans"].map(t => `${coche(x.ancCpn, t)} ${t}`).join("   ")],
-      ["Fonction de titulaire de centre", `${x.titulaire ? "☒" : "☐"} oui   ${x.titulaire ? "☐" : "☒"} non`],
-      ["Formation reçue sur les MNT", ["oui", "non", "ne sait pas"].map(t => `${coche(x.formationMnt, t)} ${t}`).join("   ") + `  — année : ${x.anneeFormation || "……"}`],
-      ["Secteur d'implantation du centre", `${coche(x.secteur, "urbain")} urbain   ${coche(x.secteur, "rural périphérique")} rural périphérique`],
-      ["Langue de l'entretien", ["kinyarwanda", "français", "anglais"].map(t => `${coche(x.langue, t)} ${t}`).join("   ")],
-      ["Date et durée de l'entretien", `${x.date} — ${x.duree}`],
-    ], [3000, 6026]));
-  }
-
-  enfants.push(saut(), titre1("3. Annexe 2 — Guides d'observation du service remplis"));
-  enfants.push(p("Observation non participante, portant sur le service et non sur les personnes. Jamais observé ni consigné : identité ou performance individuelle d'un professionnel, contenu des échanges entre un prestataire et une femme enceinte, toute donnée permettant d'identifier une patiente, tout jugement de conformité d'un geste à une norme. Aucune présence dans la salle pendant l'examen clinique. Une demi-journée par centre.", { run: { size: 19, italics: true } }));
 
   for (const o of observations) {
     enfants.push(vide(), titre2(`Centre ${o.cs} — secteur ${o.secteur}`));
@@ -231,10 +220,97 @@ function documentAnnexes(cfg) {
     enfants.push(p(o.F, { run: { size: 20 } }));
     enfants.push(saut());
   }
-  enfants.pop(); // pas de saut de page final
+
+  /* ---------- Annexe 3 ---------- */
+  enfants.push(titre1("4. Annexe 3 — Fiches de données sociodémographiques et professionnelles"));
+  enfants.push(p("Renseignée en début d'entretien. Aucun nom, aucune fonction nominative, aucun nom de structure. Le code de structure est conservé sur un document séparé sous la seule responsabilité du chercheur. Les tranches sont préférées aux valeurs exactes : dans des équipes réduites, une combinaison âge-qualification-ancienneté exacte permettrait d'identifier une personne.", { run: { size: 19, italics: true } }));
+  const coche = (valeur, attendu) => (valeur === attendu ? "☒" : "☐");
+  for (const x of participants) {
+    enfants.push(vide(), titre3(`Fiche ${x.code} — structure ${x.cs}`));
+    enfants.push(tableau([
+      ["Rubrique", "Réponse"],
+      ["Code du participant / de structure", `${x.code} / ${x.cs}`],
+      ["Sexe", `${coche(x.sexe, "féminin")} féminin   ${coche(x.sexe, "masculin")} masculin`],
+      ["Tranche d'âge", ["20-29", "30-39", "40-49", "50 et plus"].map(t => `${coche(x.age, t)} ${t}`).join("   ")],
+      ["Qualification", `${coche(x.qualif, "infirmier")} infirmier   ${coche(x.qualif, "sage-femme")} sage-femme   ☐ autre : ……`],
+      ["Niveau de formation", ["A2", "A1", "A0"].map(t => `${coche(x.niveau, t)} ${t}`).join("   ") + "   ☐ autre : ……"],
+      ["Ancienneté professionnelle totale", ["< 5 ans", "5-10 ans", "> 10 ans"].map(t => `${coche(x.ancTotale, t)} ${t}`).join("   ")],
+      ["Ancienneté en consultation prénatale", ["6 mois-2 ans", "> 2 ans"].map(t => `${coche(x.ancCpn, t)} ${t}`).join("   ")],
+      ["Fonction de titulaire de centre", `${x.titulaire ? "☒" : "☐"} oui   ${x.titulaire ? "☐" : "☒"} non`],
+      ["Formation reçue sur les MNT", ["oui", "non", "ne sait pas"].map(t => `${coche(x.formationMnt, t)} ${t}`).join("   ") + `  — année : ${x.anneeFormation || "……"}`],
+      ["Secteur d'implantation du centre", `${coche(x.secteur, "urbain")} urbain   ${coche(x.secteur, "rural périphérique")} rural périphérique`],
+      ["Langue de l'entretien", ["kinyarwanda", "français", "anglais"].map(t => `${coche(x.langue, t)} ${t}`).join("   ")],
+      ["Date et durée de l'entretien", `${x.date} — ${x.duree}`],
+    ], [3000, 6026]));
+  }
+
+  /* ---------- Annexe 4 ---------- */
+  enfants.push(saut(), titre1("5. Annexe 4 — Registre de suivi des consentements"));
+  enfants.push(p("Le formulaire d'information et de consentement (annexe 4) est remis en deux exemplaires et signé par chaque participant. Le § 4.2.7 prévoit que l'enregistrement et la citation d'extraits font l'objet d'accords DISTINCTS : ce registre les suit un par un, pour que l'analyse puisse en tenir compte.", { run: { size: 20 } }));
+  enfants.push(vide());
+  enfants.push(bandeauSignature());
+  enfants.push(vide());
+  enfants.push(tableau([
+    ["Code", "Date", "Langue du formulaire", "Consentement écrit", "Enregistrement", "Citation d'extraits", "Recontact (vérification)", "Signature"],
+    ...participants.map(x => {
+      const c = consentementDe(x.code);
+      return [x.code, x.date, x.langue, c.ecrit, c.enregistrement, c.citation, c.recontact, "non simulée"];
+    }),
+  ], [650, 1000, 1150, 1050, 1150, 1500, 1250, 1276]));
+  const notes = participants.map(x => [x.code, consentementDe(x.code).note]).filter(([, n]) => n);
+  if (notes.length) {
+    enfants.push(vide(), titre3("Particularités à respecter dans l'analyse"));
+    enfants.push(tableau([["Code", "Accord particulier"], ...notes], [1000, 8026]));
+  }
+
+  /* ---------- Annexe 9 ---------- */
+  enfants.push(saut(), titre1("6. Annexe 9 — Données de routine du district"));
+  enfants.push(bandeauValeurs());
+  enfants.push(vide());
+  enfants.push(p(`Source et période : ${SOURCE_ROUTINE}. Les secteurs administratifs ne sont pas nommés : ils sont désignés par le code du centre qu'ils abritent, pour qu'aucun chiffre fictif ne puisse être attribué à un lieu réel.`, { run: { size: 19, italics: true } }));
+  enfants.push(vide());
+  enfants.push(tableau([
+    ["Centre", "CPN1", "CPN4", "CPN4 / CPN1", "1er contact au 1er trim.", "Référées HTA / prééclampsie", "Effectif CPN"],
+    ...parCentre.map(c => [c.cs, String(c.cpn1), String(c.cpn4), `${Math.round(100 * c.cpn4 / c.cpn1)} %`, `${c.t1} %`, String(c.refHta), String(c.effectif)]),
+  ], [900, 900, 900, 1200, 1700, 1900, 1526]));
+  enfants.push(vide());
+  enfants.push(tableau([
+    ["Centre", "Dépistages glycémiques en CPN", "Ruptures de bandelettes (mois)", "Secteur : pauvreté", "Taux fictif"],
+    ...parCentre.map(c => [c.cs, c.glyc, c.rupt, c.pauvrete, `${c.tauxPauvrete} %`]),
+  ], [900, 3300, 1900, 1700, 1226]));
+  enfants.push(vide());
+  enfants.push(tableau([["File active des consultations dédiées aux MNT (district)", fileActiveMnt]], [3400, 5626], { entete: false }));
+  const notesRoutine = parCentre.filter(c => c.note);
+  if (notesRoutine.length) {
+    enfants.push(vide(), titre3("Notes de lecture"));
+    enfants.push(tableau([["Centre", "Note"], ...notesRoutine.map(c => [c.cs, c.note])], [1000, 8026]));
+  }
+  enfants.push(vide());
+  enfants.push(p(RESERVE, { run: { size: 19, italics: true } }));
 
   return new Document({ styles: stylesCommuns(), sections: [{ children: enfants }] });
 }
+
+const encadreRouge = (titre, texte) => new Table({
+  width: { size: LARGEUR, type: WidthType.DXA }, columnWidths: [LARGEUR],
+  borders: {
+    top: { style: BorderStyle.SINGLE, size: 10, color: "C0392B" }, bottom: { style: BorderStyle.SINGLE, size: 10, color: "C0392B" },
+    left: { style: BorderStyle.SINGLE, size: 10, color: "C0392B" }, right: { style: BorderStyle.SINGLE, size: 10, color: "C0392B" },
+  },
+  rows: [new TableRow({ children: [new TableCell({
+    width: { size: LARGEUR, type: WidthType.DXA },
+    shading: { type: ShadingType.CLEAR, fill: "FDEDEC", color: "auto" },
+    margins: { top: 120, bottom: 120, left: 160, right: 160 },
+    children: [
+      new Paragraph({ children: [new TextRun({ text: titre, bold: true, color: "C0392B", size: 20 })] }),
+      new Paragraph({ children: [new TextRun({ text: texte, size: 19 })] }),
+    ],
+  })] })],
+});
+const bandeauSignature = () => encadreRouge("Aucune signature n'est simulée — et aucune ne doit l'être",
+  "Un formulaire de consentement signé est une pièce du dossier éthique. En fabriquer un, même pour s'exercer, produirait exactement le document qui ne doit jamais exister. Ce registre ne fait que suivre les accords ; les formulaires signés seront recueillis sur le terrain, en deux exemplaires.");
+const bandeauValeurs = () => encadreRouge("Valeurs entièrement fictives",
+  "Aucune donnée du système d'information sanitaire n'a été consultée. Les valeurs ont été construites pour rester cohérentes avec les observations et les entretiens simulés, afin que l'exercice de triangulation ait un sens. Elles ne décrivent aucun centre réel.");
 
 /* ================================================================
    Document 2 — Transcriptions verbatim
@@ -307,31 +383,17 @@ const ecrire = async (doc, nom) => {
 };
 
 const dossier = process.argv[2] || ".";
-const ech1 = "5 infirmiers et 5 sages-femmes, 5 centres de santé codés (CS02, CS03, CS07, CS11, CS14)";
-const ech2 = "5 infirmiers ou infirmières et 6 sages-femmes, 11 centres de santé codés " +
-  "(CS01, CS04, CS05, CS06, CS08, CS09, CS10, CS12, CS13, CS15, CS16)";
+const tous = [...participants, ...participantsV2];
+const obsTous = [...observations, ...observationsV2].sort((x, y) => x.cs.localeCompare(y.cs));
+const vague1 = new Set(participants.map(x => x.code));
+const echantillon = `${tous.filter(x => x.qualif === "infirmier").length} infirmiers ou infirmières et ` +
+  `${tous.filter(x => x.qualif === "sage-femme").length} sages-femmes, ${obsTous.length} centres de santé codés (CS01 à CS16), en deux vagues`;
 
-// Vague 1
 await ecrire(documentAnnexes({
-  participants, observations, echantillon: ech1, nbFiches: "dix", nbGrilles: "cinq",
+  participants: tous, observations: obsTous, vague1, echantillon,
   titre: "Annexes de collecte remplies",
-  titreCouverture: "Couverture des sept dimensions de variation",
-  vigilance: "Point de vigilance pour la collecte réelle : l'effectif retenu au protocole est de seize à vingt-quatre participants, à raison d'un à deux par centre sur les seize centres du district. Les dix participants simulés ici ne satisfont donc PAS le critère de suffisance informationnelle du § 4.2.3.1 ; ils suffisent à l'apprentissage de l'outil, pas à une analyse.",
 }), `${dossier}/1_Annexes_remplies_SIMULATION.docx`);
 await ecrire(documentTranscriptions({
-  participants, echantillon: ech1, nbTranscriptions: "Dix", titre: "Transcriptions verbatim",
+  participants: tous, echantillon, nbTranscriptions: String(tous.length),
+  titre: "Transcriptions verbatim",
 }), `${dossier}/2_Transcriptions_verbatim_SIMULATION.docx`);
-
-// Vague 2
-await ecrire(documentAnnexes({
-  participants: participantsV2, observations: observationsV2, echantillon: ech2,
-  nbFiches: "onze", nbGrilles: "onze",
-  titre: "Annexes de collecte remplies — vague 2",
-  titreCouverture: "Couverture des sept dimensions — vague 2 seule",
-  couvertureEnsemble: [...participants, ...participantsV2],
-  vigilance: "Avec la première vague, l'ensemble atteint 21 participants sur les 16 centres du district, dans la fourchette de seize à vingt-quatre du § 4.2.3.1. Le protocole ne clôt pourtant pas la collecte sur un nombre : la suffisance informationnelle doit être argumentée dimension par dimension. Le projet « complet » contient un mémo qui s'y exerce.",
-}), `${dossier}/4_Annexes_remplies_SIMULATION_vague2.docx`);
-await ecrire(documentTranscriptions({
-  participants: participantsV2, echantillon: ech2, nbTranscriptions: "Onze",
-  titre: "Transcriptions verbatim — vague 2",
-}), `${dossier}/5_Transcriptions_verbatim_SIMULATION_vague2.docx`);

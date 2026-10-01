@@ -18,9 +18,13 @@ function compte(fichier) {
   const inductifs = p.codes.filter(c => /inductif/.test(c.name)).length;
   return { ent, centres, codes: p.codes.length, seg: fr(p.segments.length), docs: p.documents.length, familles, inductifs };
 }
-const V1 = compte("Memoire_Ngoma_SIMULATION.projx");
-const V2 = compte("Memoire_Ngoma_SIMULATION_vague2.projx");
-const VC = compte("Memoire_Ngoma_SIMULATION_complet.projx");
+const V1 = compte("Memoire_Ngoma_SIMULATION.projx"); // le projet unique (deux vagues)
+const projetLu = JSON.parse(readFileSync(`${dossier}/Memoire_Ngoma_SIMULATION.projx`, "utf8"));
+const { interCoderAgreement } = await import("../../js/merge.js");
+const virgule = x => x.toFixed(3).replace(".", ",");
+const kInter = interCoderAgreement(projetLu, "C1", "C2");
+const kIntra = interCoderAgreement(projetLu, "C1", "C1b");
+const parVague = v => projetLu.documents.filter(d => d.variables?.vague === v && d.variables?.type_document === "entretien").length;
 
 const L = 9026;
 const p = (t, o = {}) => new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: t, size: 21, ...o })] });
@@ -97,22 +101,17 @@ const enfants = [
     ["20 mémos : journal de bord par entretien, mémos de phase, piste d'audit", "Onglet Mémos ▸ Gestionnaire de mémos"],
     ["8 requêtes sauvegardées correspondant aux thèmes provisoires", "Onglet Analyse ▸ Requêtes sauvegardées"],
     ["Une carte conceptuelle reprenant la figure 1 du protocole", "Onglet Visualisation ▸ Carte conceptuelle"],
-    ["Un second codage (codeur C2) sur trois entretiens", "Onglet Analyse ▸ Accord inter-codeurs (κ)"],
+    [`Un second codage (codeur C2) sur ${kInter.sharedDocs} entretiens, et un recodage intra-codeur (C1b) sur ${kIntra.sharedDocs}`, "Onglet Analyse ▸ Accord inter-codeurs (κ)"],
+    ["Les variables « vague », « citation_autorisee » et « recontact_accepte »", "Onglet Variables ▸ Éditeur de données"],
   ], [4600, 4426]),
   vide(),
-  h2("Les trois projets d'exercice"),
-  p("Une seconde vague simulée complète la première : onze participants (six sages-femmes, cinq infirmiers ou infirmières) dans les onze centres que la vague 1 ne couvrait pas. Trois fichiers en résultent :"),
-  vide(),
-  tab([
-    ["Fichier", "Contenu", "À quoi il sert"],
-    ["Memoire_Ngoma_SIMULATION.projx", `Vague 1 : ${V1.ent} entretiens, ${V1.centres} centres, ${V1.codes} codes, ${V1.seg} segments`, "Premiers gestes : coder, récupérer, annoter"],
-    ["Memoire_Ngoma_SIMULATION_vague2.projx", `Vague 2 : ${V2.ent} entretiens, ${V2.centres} centres, ${V2.codes} codes, ${V2.seg} segments`, "Voir naître des codes inductifs sur un matériau neuf"],
-    ["Memoire_Ngoma_SIMULATION_complet.projx", `Les deux vagues : ${VC.ent} entretiens, ${VC.centres} centres, ${VC.codes} codes, ${VC.seg} segments`, "L'analyse d'ensemble — c'est la configuration visée par le protocole"],
-  ], [3200, 3200, 2626]),
-  vide(),
-  p("Pour s'exercer à l'analyse elle-même — comparaison entre infirmiers et sages-femmes, revue des thèmes, suffisance informationnelle — ouvrez le projet complet. Il contient un mémo qui conduit l'exercice de suffisance informationnelle dimension par dimension, comme l'exige le § 4.2.3.1, et un mémo de positionnalité laissé VIDE : celui-là ne peut pas être simulé, il vous appartient."),
+  h2("Un seul projet, deux vagues"),
+  p(`Le projet « Mémoire Ngoma — SIMULATION de formation » réunit les deux vagues simulées : ${parVague("1")} entretiens en vague 1, ${parVague("2")} en vague 2, soit ${V1.ent} participants dans les ${V1.centres} centres de santé du district — la configuration visée par le § 4.2.3.1. La variable « vague » permet de retrouver l'une ou l'autre.`),
+  p("Il porte le même nom et le même identifiant que le projet de la vague 1 déjà présent dans votre application : l'ouvrir par Accueil ▸ Ouvrir (.projx) le REMPLACE, au lieu de créer un doublon. Si la version présente dans votre navigateur est plus récente que le fichier, l'application vous prévient avant de remplacer quoi que ce soit."),
   vide(),
   p("Ce que la vague 2 apporte en propre : un centre bien doté (CS01) qui montre ce que change l'équipement — et ce qu'il ne change pas ; un registre rempli sans que les actes suivent (CS13) ; les agents de santé communautaire comme relais ; le recours aux guérisseurs tel que les prestataires le perçoivent ; des femmes mobiles que le suivi perd ; et une participante qui refuse de classer les femmes en catégories. Onze codes inductifs en sont nés, signalés « [inductif, vague 2] ».", { italics: true }),
+  vide(),
+  p("Les mémos suivent les six phases de l'analyse thématique, puis les étapes de rigueur du protocole : contrôle de fidélité des transcriptions, double codage et stabilité intra-codeur, triangulation, vérification des interprétations auprès des participants, suffisance informationnelle, piste d'audit. La note de positionnalité est laissée VIDE : elle ne peut pas être simulée, elle vous appartient."),
   saut(),
 
   h1("3. Les six phases de l'analyse thématique, dans l'outil"),
@@ -133,7 +132,7 @@ const enfants = [
   puce("Un même passage peut porter plusieurs codes. Dans le projet d'exercice, la plupart en portent deux ou trois : c'est ce qui rend les co-occurrences interprétables."),
   vide(),
   encadre("Marquez vos codes inductifs", [
-    `Dans le projet de la vague 1, les ${V1.inductifs} codes nés du matériau portent la mention « [inductif] » dans leur intitulé ; le projet complet en compte ${VC.inductifs}. Ce n'est pas une coquetterie : c'est la trace qui permet au jury de vérifier que la grille est restée ouverte, comme l'annonce le § 4.2.6.`,
+    `Dans le projet d'exercice, les ${V1.inductifs} codes nés du matériau portent la mention « [inductif] » dans leur intitulé — « [inductif, vague 2] » pour ceux que la seconde vague a fait naître. Ce n'est pas une coquetterie : c'est la trace qui permet au jury de vérifier que la grille est restée ouverte, comme l'annonce le § 4.2.6.`,
     "Le mémo « Piste d'audit — décisions de codage » consigne, pour quatre d'entre eux, POURQUOI ils ont été créés. Faites de même pendant la collecte réelle : la raison s'oublie en trois semaines.",
   ], "2E86C1", "EAF2F8"),
 
@@ -174,7 +173,7 @@ const enfants = [
   ], [3400, 5626]),
   vide(),
   encadre("Un kappa flatteur : sachez pourquoi, le jury le demandera", [
-    "Sur le projet d'exercice, κ = 0,867 — « accord presque parfait » selon Landis et Koch. Ce chiffre est pourtant optimiste, et il faut savoir l'expliquer.",
+    `Sur le projet d'exercice, κ = ${virgule(kInter.overall.kappa)} entre les deux codeurs (${kInter.sharedDocs} entretiens) et ${virgule(kIntra.overall.kappa)} pour la stabilité intra-codeur (${kIntra.sharedDocs} entretiens recodés par le même codeur, étiquette C1b) — « accord presque parfait » selon Landis et Koch. Ces chiffres sont pourtant optimistes, et il faut savoir l'expliquer.`,
     "L'unité d'analyse est le paragraphe : pour un code donné, l'immense majorité des paragraphes n'est codée ni par l'un ni par l'autre. Ces accords négatifs gonflent l'accord observé et tirent le kappa vers le haut.",
     "Ce qu'il faut rapporter dans le mémoire : la valeur, l'unité d'analyse retenue, la part du corpus double-codée, et la manière dont les désaccords ont été tranchés. Un kappa nu, sans ces quatre éléments, ne prouve rien.",
   ]),

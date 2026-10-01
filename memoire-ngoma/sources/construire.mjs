@@ -5,6 +5,8 @@ import { AVERTISSEMENT, ETUDE, participants, guide } from "./echantillon.mjs";
 import { participantsV2 } from "./echantillon-vague2.mjs";
 import { observations } from "./observations.mjs";
 import { observationsV2 } from "./observations-vague2.mjs";
+import { consentementDe } from "./consentements.mjs";
+import { interCoderAgreement } from "../../js/merge.js";
 import { arbre, grilleParQuestion, ajustements, ajustementsV2, grilleObservation, ecarts, ecartsV2 } from "./codes.mjs";
 import * as e12 from "./entretiens-01-02.mjs";
 import * as e34 from "./entretiens-03-04.mjs";
@@ -239,10 +241,16 @@ function construireProjet(cfg) {
      3. Construction du projet
   ================================================================ */
   const maintenant = new Date(cfg.date).toISOString();
+  const vague1 = new Set(participants.map(x => x.code));
+  const centresV1 = new Set(observations.map(o => o.cs));
   const projet = {
     format: "qualicode-projx", version: 1, id: cfg.id,
     name: cfg.nom,
-    created: maintenant, modified: maintenant,
+    created: maintenant,
+    // Date de fabrication : plus récente que toute copie antérieure du même
+    // projet, elle évite l'avertissement « fichier plus ancien » à l'ouverture.
+    modified: cfg.modifie || maintenant,
+    versionSimulation: cfg.versionSimulation,
     memo: "", documentGroups: [], documents: [], codes: [], segments: [],
     memos: [], variables: [], trash: { documents: [], codes: [] },
     savedQueries: [], conceptMaps: [], bibliography: [],
@@ -254,6 +262,7 @@ function construireProjet(cfg) {
     "niveau_formation", "anciennete_totale", "anciennete_cpn", "titulaire",
     "formation_mnt", "secteur", "distance_hopital", "volume_activite",
     "pauvrete_secteur", "langue_entretien",
+    "vague", "enregistrement_autorise", "citation_autorisee", "recontact_accepte",
   ];
 
   // --- Groupes de documents
@@ -300,6 +309,10 @@ function construireProjet(cfg) {
         formation_mnt: p.formationMnt, secteur: p.secteur,
         distance_hopital: p.distanceHopital, volume_activite: p.volume,
         pauvrete_secteur: p.pauvreteSecteur, langue_entretien: p.langue,
+        vague: vague1.has(p.code) ? "1" : "2",
+        enregistrement_autorise: consentementDe(p.code).enregistrement,
+        citation_autorisee: consentementDe(p.code).citation,
+        recontact_accepte: consentementDe(p.code).recontact,
       },
     };
     projet.documents.push(doc);
@@ -336,6 +349,7 @@ function construireProjet(cfg) {
         type_document: "observation", code_structure: o.cs,
         secteur: o.secteur,
         volume_activite: o.A.femmesRecues >= 35 ? "élevé" : "modéré",
+        vague: centresV1.has(o.cs) ? "1" : "2",
       },
     };
     projet.documents.push(doc);
@@ -406,6 +420,28 @@ function construireProjet(cfg) {
     desaccords++;
   }
 
+  /* Stabilité intra-codeur (annexe 8 : « contrôle de stabilité intra-codeur »).
+     Le premier codeur recode deux entretiens plusieurs semaines plus tard, sans
+     revoir son premier codage. Les écarts sont plus rares qu'entre deux
+     codeurs — c'est ce qu'on attend — mais pas nuls : un codeur dérive. */
+  let ecartsIntra = 0;
+  for (const code of cfg.intraCodeur || []) {
+    const doc = docParParticipant[code];
+    if (!doc) continue;
+    const originaux = projet.segments.filter(s => s.docId === doc.id && s.coder === "C1");
+    originaux.forEach((s, i) => {
+      if (i % 12 === 7) { ecartsIntra++; return; }        // passage non recodé
+      const decalage = i % 20 === 11 ? 30 : 0;             // borne déplacée
+      if (decalage) ecartsIntra++;
+      const debut = Math.min(s.start + decalage, s.end - 1);
+      projet.segments.push({
+        id: uid(), docId: doc.id, codeId: s.codeId,
+        start: debut, end: s.end, text: doc.text.slice(debut, s.end),
+        weight: 1, comment: "", created: maintenant, coder: "C1b",
+      });
+    });
+  }
+
   /* ================================================================
      5. Mémos analytiques
   ================================================================ */
@@ -422,6 +458,12 @@ function construireProjet(cfg) {
     C: "Ce qui est transmis à la femme, fondement de sa capacité à agir. C'est la famille qui porte la dimension capacitante du dépistage : sans elle, mesurer n'est pas dépister. C4 (modulation) est le code central pour l'objectif spécifique 1.",
     G: "ATTENTION — représentations professionnelles, jamais descriptions de la réalité des femmes. Les femmes enceintes ne font pas partie de la population d'étude (§ 4.2.2.1). Tout extrait de cette famille se rapporte à ce que le prestataire perçoit et mobilise, et se rapporte ainsi dans le mémoire.",
     H: "Appréciation du caractère équitable de la distribution effective du dépistage, et jugement porté sur elle. Famille rattachée à la question Q19, qui porte à elle seule la dimension évaluative de l'étude. Coder les formulations sur le normal et l'anormal, le regret, la résignation, la révolte, et l'attribution de responsabilité.",
+    B: "Ce que les participants disent faire, matériellement : séquence de la consultation, gestes, outils, conduite devant un cas. Ce qu'ils en pensent va en famille 1 ; ce qu'ils expliquent à la femme, en famille 3.",
+    D: "Ce qui relève de la personne du professionnel : formation initiale et continue, sentiment de compétence, transmission entre collègues. Coder ici le doute exprimé autant que l'assurance.",
+    E: "Ce qui relève du fonctionnement du service : charge et flux, équipements, confidentialité, supervision, rotation du personnel. Les décisions prises au-dessus du centre vont en famille 6.",
+    F: "Ce qui relève du système et des politiques : directives, approvisionnement, circuit de référence et de contre-référence, indicateurs, continuité après l'accouchement.",
+    I: "Ce que les participants jugent nécessaire de changer (Q17, Q18), et — code I8 — ce qu'ils ont déjà changé eux-mêmes. Coder la justification du choix, pas seulement le choix.",
+    K: "Hors analyse thématique (questions d'ouverture O1, O2). Sert à la description de l'échantillon et à la mise en confiance ; ne pas en tirer de thème.",
     J: "Corpus secondaire. Sert de contexte et de contrepoint, non de preuve de ce que font les personnes : l'observation ne porte jamais sur un professionnel ni sur le contenu d'une consultation (annexe 2).",
   };
   for (const [famille, texte] of Object.entries(definitions)) {
@@ -449,6 +491,19 @@ function construireProjet(cfg) {
   q("Écarts déclaré / constaté", tousDocs, ["J5"]);
   q("Codes inductifs — révision du cadre", entretiensDocs, ["H7", "F4", "F6", "G8", "A5", "D5"]);
   for (const [nom, codes, surTout] of cfg.requetesSup || []) q(nom, surTout ? tousDocs : entretiensDocs, codes);
+  // Choisir les citations du mémoire ici : les entretiens dont l'auteur a
+  // refusé la citation en sont exclus (§ 4.2.7, accords distincts).
+  if (cfg.requeteCitables) {
+    const citables = projet.documents
+      .filter(d => d.variables.type_document === "entretien" && d.variables.citation_autorisee !== "non")
+      .map(d => d.id);
+    projet.savedQueries.push({
+      id: uid(), name: "Extraits citables (consentement à la citation)",
+      activatedDocs: citables,
+      activatedCodes: projet.codes.filter(c => c.parentId).map(c => c.id),
+      retrievalMode: "or", created: maintenant,
+    });
+  }
 
   /* ================================================================
      7. Carte conceptuelle (figure 1 du protocole, version codée)
@@ -500,7 +555,7 @@ function construireProjet(cfg) {
   ref({ type: "article", authors: "Landis JR, Koch GG", year: "1977", title: "The measurement of observer agreement for categorical data", container: "Biometrics, 33(1), 159-174", doi: "10.2307/2529310", notes: "Interprétation du kappa employée par l'application." });
   ref({ type: "rapport", authors: "Organisation mondiale de la Santé", year: "1986", title: "Charte d'Ottawa pour la promotion de la santé", container: "Première Conférence internationale sur la promotion de la santé, Ottawa", doi: "", notes: "Cadre théorique de l'étude (§ 3.1.1)." });
 
-  return { projet, desaccords };
+  return { projet, desaccords, ecartsIntra };
 }
 
 /* ================================================================
@@ -724,6 +779,275 @@ la confirmabilité (annexe 8). Questions pour la rédiger :
 }
 
 /* ================================================================
+   Mémos du projet unique — les deux vagues réunies
+   Les mémos déjà écrits sont REPRIS, pas réécrits : la piste d'audit garde
+   ainsi la trace de l'évolution de l'analyse (thèmes provisoires après la
+   vague 1, révisés après la vague 2). S'y ajoutent les étapes du § 4.2.6 que
+   la simulation n'avait pas encore documentées.
+================================================================ */
+function memosUnique({ projet, memoTheme, ecarts }) {
+  const recueillis = new Map();
+  const renommer = {
+    "Phase 1 — Familiarisation (journal)": "Phase 1 — Familiarisation, vague 1 (journal)",
+    "Vague 2 — Familiarisation (journal)": "Phase 1 — Familiarisation, vague 2 (journal)",
+    "Vague 2 — Codes inductifs nouveaux et leur motif": "Phase 2 — Codes inductifs nés de la vague 2",
+    "Phase 3 — Thèmes provisoires": "Phase 3 — Thèmes provisoires (après la vague 1)",
+    "Phase 4 — Revue : un thème écarté": "Phase 4 — Revue après la vague 1 : un thème écarté",
+    "Phase 4 — Revue des thèmes": "Phase 4 — Revue des thèmes après la vague 2",
+    "Piste d'audit — décisions de codage": "Piste d'audit 1 — décisions de codage (vague 1)",
+    "Vague 2 — Piste d'audit": "Piste d'audit 2 — décisions de codage (vague 2)",
+    "Piste d'audit — révision du cadre conceptuel": "Piste d'audit 3 — révision du cadre conceptuel",
+  };
+  // Remplacés par le mémo de triangulation de l'ensemble : les garder ferait
+  // trois versions du même constat.
+  const ignorer = new Set(["Triangulation — écarts déclaré / constaté", "Vague 2 — Triangulation"]);
+  const collecte = (titre, texte) => {
+    if (ignorer.has(titre)) return;
+    recueillis.set(renommer[titre] || titre, texte);
+  };
+  const brouillon = { memo: "" };
+  memosVague1({ projet: brouillon, memoTheme: collecte, ecarts });
+  memosVague2({ projet: brouillon, memoTheme: collecte, ecarts });
+  memosComplet({ projet: brouillon, memoTheme: collecte, ecarts });
+
+  /* ---------- Étapes ajoutées ---------- */
+  const entretiens = projet.documents.filter(d => d.variables.type_document === "entretien");
+  const inutilises = projet.codes.filter(c => c.parentId && !projet.segments.some(x => x.codeId === c.id)).map(c => c.name);
+  const inductifs = projet.codes.filter(c => /inductif/.test(c.name));
+
+  collecte("Phase 2 — Codage initial : grille déductive et ouverture inductive",
+`Grille initiale dérivée du Tableau III (« Grille d'opérationnalisation des
+concepts ») : une famille par concept — sens attribué, pratiques techniques,
+pratique informative, conditions individuelles, organisationnelles,
+systémiques, sociales perçues, portée en équité, transformations — plus le
+corpus d'observation (famille 10) et le parcours, hors analyse thématique
+(famille 0).
+
+La correspondance question → codes attendus (colonne « Source » du Tableau III,
+annexe 8) a servi de point de départ, jamais de carcan : elle est complétée ou
+remplacée entretien par entretien quand le matériau l'impose.
+
+Unité de codage : le tour de parole du participant. Un même passage peut porter
+plusieurs codes ; c'est ce qui rend les co-occurrences interprétables.
+
+Ouverture inductive : ${inductifs.length} codes sur ${projet.codes.length} n'étaient pas dans la grille
+(${inductifs.filter(c => !/vague 2/.test(c.name)).length} nés de la vague 1, motifs dans la piste d'audit 1 ;
+${inductifs.filter(c => /vague 2/.test(c.name)).length} nés de la vague 2, motifs dans le mémo suivant).
+
+Codes jamais utilisés à l'issue des deux vagues : ${inutilises.length ? inutilises.join(" ; ") : "aucun"}.
+« Utilité perçue pour la femme » était vide après la vague 1 et ne l'est plus
+après la vague 2 : un code vide n'est pas forcément un mauvais code, il peut
+attendre son matériau.`);
+
+  const kinyarwanda = entretiens.filter(d => d.variables.langue_entretien === "kinyarwanda");
+  const verifies = ["P01", "P04", "P06", "P10", "P13", "P17", "P20"];
+  collecte("Contrôle de fidélité des transcriptions (§ 4.2.6)",
+`Deux niveaux, comme prévu au protocole.
+
+1. Sondage par le chercheur contre l'enregistrement : un passage de cinq
+   minutes tiré au hasard dans chacun des ${entretiens.length} entretiens, réécouté et
+   comparé à la transcription. Écarts relevés (simulés) dans 9 entretiens :
+   pour l'essentiel des hésitations et deux silences non notés, corrigés.
+
+2. Vérification indépendante par une personne bilingue extérieure, liée par
+   l'engagement de l'annexe 7, sur des passages prélevés dans un tiers des
+   entretiens conduits en kinyarwanda : ${verifies.join(", ")} (${verifies.length} sur ${kinyarwanda.length}).
+   Six passages discutés : quatre tranchés en faveur de la traduction du
+   chercheur, deux corrigés. Exemple qui montre pourquoi ce contrôle compte :
+   dans l'entretien de P10, une première traduction attribuait à la femme la
+   décision d'attendre ; la vérification a rétabli que c'est le mari qui
+   décide. Le codage en dépend (G4, marge de décision de la femme) : passage
+   corrigé et recodé. La transcription du projet est la version corrigée.
+
+Les écarts, la manière dont ils ont été tranchés et par qui sont consignés ici,
+comme l'exige le protocole.
+
+NOTE : dans l'étude réelle, ce contrôle porte sur les transcriptions en
+kinyarwanda, qui n'existent pas dans cette simulation — seul le rendu français
+a été simulé.`);
+
+  collecte("Phase 5 — Définition et dénomination des thèmes",
+`Sept thèmes, chacun défini par ce qu'il est, ce qu'il n'est pas, et les codes
+qui le composent. OS1 et OS2 renvoient aux objectifs spécifiques du protocole.
+
+T1. UN DÉPISTAGE COUPÉ EN DEUX (OS1)
+    La mesure de la tension est un geste intégré presque partout ; la recherche
+    du diabète dépend entièrement des moyens du centre, et cesse d'être pensée
+    là où elle n'est pas possible.
+    N'est pas : un défaut de connaissance des professionnels.
+    Codes : B1, B2, B6, B7, E2, F5, A5, D5.
+
+T2. EXPLIQUER MOINS À CELLES QUI SAVENT LE MOINS (OS1)
+    L'explication qui suit la mesure varie selon l'heure, la charge et l'idée
+    que le soignant se fait de la femme — à l'inverse des besoins. Elle
+    persiste là où tous les intrants sont disponibles. Contre-pratiques
+    documentées : l'image commune, la vérification de la compréhension, le
+    refus de catégoriser.
+    N'est pas : une faute individuelle ; les participants la décrivent eux-mêmes.
+    Codes : C4, C5, C6, C8, C9, G3, G7, H5, H9.
+
+T3. TROUVER SANS POUVOIR SUIVRE (OS2)
+    La détection ne devient une prise en charge que si la référence aboutit
+    (transport, décision familiale) et si l'information revient ; elle
+    s'interrompt à l'accouchement et quand la femme se déplace.
+    Codes : B4, F2, F3, F6, F8, G2, G4, G11, I6.
+
+T4. CE QUI EST COMPTÉ EXISTE (OS2)
+    Intrants, maintenance et attention suivent les indicateurs ; le dépistage
+    n'en fait pas partie.
+    Codes : E4, E7, F4, I5.
+
+T5. CE QUE CHANGE LA DOTATION, ET CE QU'ELLE NE CHANGE PAS (OS2)
+    L'équipement supprime l'inégalité du test, pas celle de l'explication ; et
+    il est réparti au bénéfice des centres déjà les mieux placés.
+    Codes : B2, E2, F5, F8, C9, H8.
+
+T6. LE REGISTRE COMME ÉCRAN (OS2 et portée en équité)
+    Un contrôle portant sur la complétude produit de la complétude, et peut
+    rendre invisible l'inégalité qu'il devrait révéler.
+    Précaution : effet de système, jamais faute individuelle ; jamais rapporté
+    en association avec un code de structure.
+    Codes : F7, F4, E4.
+
+T7. LE DÉPISTAGE HORS DES MURS (OS2 et transformations)
+    Relais communautaires et initiatives locales prolongent le dépistage là où
+    le système ne prévoit rien. Elles reposent sur une personne : c'est leur
+    force et leur fragilité.
+    Codes : G9, I8, F6.
+
+La portée reconnue en équité (famille 8) n'est pas un thème : c'est le lieu où
+T2, T4, T5 et T6 se rejoignent dans le jugement des participants (Q19).`);
+
+  const citables = entretiens.filter(d => d.variables.citation_autorisee !== "non").length;
+  collecte("Phase 6 — Production du rapport : plan du chapitre Résultats",
+`Plan proposé, aligné sur les objectifs du protocole :
+
+  Résultats 1. Participants et centres — tableau descriptif (annexes 3 et 9),
+               sans croisement de caractéristiques qui identifierait quelqu'un.
+  Résultats 2. Objectif spécifique 1 — T1, T2.
+  Résultats 3. Objectif spécifique 2 — T3 à T7, dans l'ordre des niveaux du
+               cadre : individuel, organisationnel, systémique, communautaire.
+  Résultats 4. Portée reconnue en équité (Q19) : la distribution des jugements
+               et leurs justifications.
+  Résultats 5. Transformations proposées, et transformations déjà réalisées.
+  Résultats 6. Triangulation avec l'observation : écarts et concordances.
+
+Règles de citation :
+  · deux langues pour les entretiens conduits en kinyarwanda (§ 4.2.6) ;
+  · code du participant seul, jamais associé au code de structure ni à plus
+    d'une caractéristique (§ 4.2.7) ;
+  · P05 a refusé la citation : ses propos sont rapportés de façon agrégée,
+    jamais cités ;
+  · P19 : aucune citation contenant un élément qui identifierait son centre ;
+  · choisir les citations dans la requête « Extraits citables »
+    (${citables} entretiens sur ${entretiens.length}).
+
+Dans QualiCode : Rapports ▸ Rapport Word (.docx) à partir de chaque requête de
+thème ; Rapports ▸ Segments (CSV) pour le tableau de codage annexé ; Rapports ▸
+Système de codes pour l'arbre final ; Rapports ▸ REFI-QDA pour l'archivage.`);
+
+  const kInter = interCoderAgreement(projet, "C1", "C2");
+  const kIntra = interCoderAgreement(projet, "C1", "C1b");
+  collecte("Double codage et stabilité intra-codeur",
+`ACCORD INTER-CODEURS — ${kInter.sharedDocs} entretiens sur ${entretiens.length}, soit le tiers prévu au
+§ 4.2.6, recodés à l'aveugle par un second codeur (C2).
+  κ = ${kInter.overall.kappa.toFixed(3).replace(".", ",")} (accord observé ${(kInter.overall.po * 100).toFixed(1).replace(".", ",")} %), sur ${kInter.units} paragraphes.
+  Dans l'application : Analyse ▸ Accord inter-codeurs (κ), C1 contre C2.
+
+STABILITÉ INTRA-CODEUR (annexe 8) — ${kIntra.sharedDocs} entretiens recodés par le premier
+codeur plusieurs semaines après, sans revoir son codage (étiquette C1b).
+  κ = ${kIntra.overall.kappa.toFixed(3).replace(".", ",")} (accord observé ${(kIntra.overall.po * 100).toFixed(1).replace(".", ",")} %), sur ${kIntra.units} paragraphes.
+  Dans l'application : Analyse ▸ Accord inter-codeurs (κ), C1 contre C1b.
+
+LECTURE. Le kappa est calculé par paragraphe ; la plupart des paragraphes ne
+portant pas un code donné, ces accords « négatifs » le tirent vers le haut.
+Rapporter toujours la valeur AVEC l'unité d'analyse, la part du corpus recodée
+et la manière dont les désaccords ont été tranchés.
+
+DÉSACCORDS À TRANCHER en séance de consensus : passages non retenus, bornes
+déplacées, codes voisins (C4/C6, G3/G7, H2/H4…), et un code H5 posé par C2
+seul à la fin de chaque entretien recodé. Les décisions sont consignées dans la
+piste d'audit.`);
+
+  const recontact = entretiens.filter(d => d.variables.recontact_accepte === "oui");
+  const refus = entretiens.filter(d => d.variables.recontact_accepte !== "oui").map(d => d.name.match(/P\d+/)[0]);
+  collecte("Vérification des interprétations auprès des participants",
+`Procédure (annexe 1, clôture ; annexe 8, crédibilité) : les participants qui
+l'ont accepté reçoivent un résumé des thèmes qui les concernent et sont invités
+à dire s'ils s'y reconnaissent.
+
+Recontact accepté : ${recontact.length} sur ${entretiens.length} (refus ou indisponibilité : ${refus.join(", ")}).
+
+Retours (simulés) :
+  · P02 confirme T2 et demande que la modulation de l'explication ne soit pas
+    présentée comme une faute individuelle — formulation retenue.
+  · P09 confirme T4 ; précise que les observations écrites dans le rapport
+    mensuel ont été lues une fois, sans suite.
+  · P21 confirme T7 et signale que son cahier de suivi a été tenu par sa
+    remplaçante pendant un congé : ajouté à la définition de T7 — la
+    fragilité n'est pas une fatalité.
+  · P11 nuance T5 : son centre a lui aussi connu des ruptures, avant 2025.
+
+Ces retours changent des formulations, pas la structure des thèmes. Les
+désaccords éventuels se rapportent tels quels, sans être tranchés en faveur du
+chercheur.`);
+
+  /* ---------- Ordre de présentation ---------- */
+  const ordre = [
+    "Phase 1 — Familiarisation, vague 1 (journal)",
+    "Phase 1 — Familiarisation, vague 2 (journal)",
+    "Contrôle de fidélité des transcriptions (§ 4.2.6)",
+    "Phase 2 — Codage initial : grille déductive et ouverture inductive",
+    "Phase 2 — Codes inductifs nés de la vague 2",
+    "Phase 3 — Thèmes provisoires (après la vague 1)",
+    "Phase 3 — Thèmes révisés après la vague 2",
+    "Phase 4 — Revue après la vague 1 : un thème écarté",
+    "Phase 4 — Revue des thèmes après la vague 2",
+    "Phase 5 — Définition et dénomination des thèmes",
+    "Phase 6 — Production du rapport : plan du chapitre Résultats",
+    "Double codage et stabilité intra-codeur",
+    "Triangulation — ensemble des deux vagues",
+    "Vérification des interprétations auprès des participants",
+    "Suffisance informationnelle — dimension par dimension (§ 4.2.3.1)",
+    "Piste d'audit 1 — décisions de codage (vague 1)",
+    "Piste d'audit 2 — décisions de codage (vague 2)",
+    "Piste d'audit 3 — révision du cadre conceptuel",
+    "Note de positionnalité — À RÉDIGER PAR LE CHERCHEUR",
+  ];
+  const oublies = [...recueillis.keys()].filter(k => !ordre.includes(k));
+  const absents = ordre.filter(k => !recueillis.has(k));
+  if (oublies.length || absents.length) {
+    throw new Error(`mémos non placés : ${oublies.join(" | ")} ; mémos attendus absents : ${absents.join(" | ")}`);
+  }
+  for (const titre of ordre) memoTheme(titre, recueillis.get(titre));
+
+  projet.memo = `PROJET DE FORMATION — ${AVERTISSEMENT}
+
+Ce projet reproduit, de bout en bout, le traitement prévu au § 4.2.6 du
+protocole de recherche « ${ETUDE.titre} » (${ETUDE.chercheur}, ${ETUDE.institution}).
+
+Il réunit les deux vagues simulées : ${entretiens.length} entretiens (variable « vague » = 1
+ou 2) et ${projet.documents.length - entretiens.length} comptes rendus d'observation, soit les seize centres de santé du
+district — la configuration visée par le § 4.2.3.1.
+
+Il ne contient AUCUNE donnée réelle. Aucun extrait ne peut être cité, aucun
+résultat ne peut être rapporté. Quand la collecte réelle commencera, créez un
+projet NEUF : n'ajoutez jamais un entretien réel dans ce projet d'exercice.
+
+Les mémos suivent les six phases de l'analyse thématique (Braun & Clarke),
+puis les étapes de rigueur du protocole : fidélité des transcriptions, double
+codage et stabilité intra-codeur, triangulation, vérification des
+interprétations, suffisance informationnelle, piste d'audit. La note de
+positionnalité est laissée vide : elle vous appartient.
+
+Variables de consentement : « citation_autorisee » (P05 a refusé la citation,
+P19 l'a acceptée sans élément identifiant son centre) et « recontact_accepte ».
+
+NOTE SUR LE KINYARWANDA : les termes entre crochets sont illustratifs et
+doivent être vérifiés par un locuteur natif avant tout usage.`;
+}
+
+/* ================================================================
    Requêtes complémentaires (thèmes nés de la vague 2)
 ================================================================ */
 const requetesV2 = [
@@ -738,49 +1062,36 @@ const requetesV2 = [
 /* ================================================================
    9. Écriture des trois projets
 ================================================================ */
+// UN SEUL PROJET : celui qui porte déjà ce nom et cet identifiant dans
+// l'application. Ouvert par « Accueil ▸ Ouvrir (.projx) », il REMPLACE la
+// version antérieure (vague 1 seule) au lieu de s'y ajouter en double.
 const projets = [
   {
     fichier: "Memoire_Ngoma_SIMULATION.projx",
     cfg: {
       id: "memoire-ngoma-simulation", nom: "Mémoire Ngoma — SIMULATION de formation",
-      date: "2026-09-20T09:00:00Z", participants, observations, ajustements,
-      ecarts, relus: ["P02", "P06", "P09"], memos: memosVague1, exclureVague2: true,
-    },
-  },
-  {
-    fichier: "Memoire_Ngoma_SIMULATION_vague2.projx",
-    cfg: {
-      id: "memoire-ngoma-simulation-vague2", nom: "Mémoire Ngoma — SIMULATION vague 2",
-      date: "2026-10-01T09:00:00Z", participants: participantsV2, observations: observationsV2,
-      ajustements: ajustementsV2, ecarts: ecartsV2, relus: ["P11", "P18", "P19"],
-      memos: memosVague2, requetesSup: requetesV2,
-    },
-  },
-  {
-    fichier: "Memoire_Ngoma_SIMULATION_complet.projx",
-    cfg: {
-      id: "memoire-ngoma-simulation-complet",
-      nom: "Mémoire Ngoma — SIMULATION complète (21 participants, 16 centres)",
-      date: "2026-10-01T09:00:00Z",
+      date: "2026-09-20T09:00:00Z", modifie: new Date().toISOString(),
+      versionSimulation: "deux-vagues-21-participants-16-centres",
       participants: [...participants, ...participantsV2],
-      observations: [...observations, ...observationsV2].sort((a, b) => a.cs.localeCompare(b.cs)),
+      observations: [...observations, ...observationsV2].sort((x, y) => x.cs.localeCompare(y.cs)),
       ajustements: { ...ajustements, ...ajustementsV2 },
       ecarts: [...ecarts, ...ecartsV2],
       relus: ["P02", "P06", "P09", "P11", "P13", "P18", "P19"],
-      memos: memosComplet, requetesSup: requetesV2,
+      intraCodeur: ["P04", "P15"],
+      memos: memosUnique, requetesSup: requetesV2, requeteCitables: true,
     },
   },
 ];
 
 const dossier = process.argv[2] || ".";
 for (const { fichier, cfg } of projets) {
-  const { projet, desaccords } = construireProjet(cfg);
+  const { projet, desaccords, ecartsIntra } = construireProjet(cfg);
   writeFileSync(`${dossier}/${fichier}`, JSON.stringify(projet, null, 2), "utf8");
   const parCoder = projet.segments.reduce((a, s) => { a[s.coder] = (a[s.coder] || 0) + 1; return a; }, {});
   const ent = projet.documents.filter(d => d.variables.type_document === "entretien").length;
   const obs = projet.documents.filter(d => d.variables.type_document === "observation").length;
   console.log(`\n${fichier}`);
   console.log(`  ${projet.documents.length} documents (${ent} entretiens, ${obs} observations) · ${projet.codes.length} codes`);
-  console.log(`  ${projet.segments.length} segments — par codeur : ${JSON.stringify(parCoder)} · désaccords volontaires : ${desaccords}`);
+  console.log(`  ${projet.segments.length} segments — par codeur : ${JSON.stringify(parCoder)} · désaccords inter-codeurs : ${desaccords} · écarts intra-codeur : ${ecartsIntra}`);
   console.log(`  ${projet.memos.length} mémos · ${projet.savedQueries.length} requêtes · ${projet.documents.reduce((t, d) => t + d.text.length, 0).toLocaleString("fr-FR")} caractères`);
 }

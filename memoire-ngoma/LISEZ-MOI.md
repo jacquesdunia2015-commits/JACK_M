@@ -33,31 +33,42 @@ Le protocole lui-même **n'est pas inclus** dans ce dépôt.
 
 | Fichier | Contenu |
 |---|---|
-| `1_Annexes_remplies_SIMULATION.docx` | Annexe 3 (10 fiches sociodémographiques) et annexe 2 (5 grilles d'observation) renseignées, plus la vérification de couverture du Tableau II |
-| `2_Transcriptions_verbatim_SIMULATION.docx` | Les 10 transcriptions, question par question selon l'annexe 1, avec relances et journal de bord |
+| `1_Annexes_remplies_SIMULATION.docx` | **Tous les outils de collecte remplis** : index des 21 entretiens (annexe 1), 16 grilles d'observation (annexe 2), 21 fiches sociodémographiques (annexe 3), registre des consentements (annexe 4), données de routine du district (annexe 9), et la couverture du Tableau II |
+| `2_Transcriptions_verbatim_SIMULATION.docx` | Les 21 transcriptions, question par question selon l'annexe 1, avec relances et journal de bord |
 | `3_Guide_QualiCode_pour_ce_memoire.docx` | Les six phases de l'analyse thématique (§ 4.2.6) traduites en gestes dans l'application |
-| `4_Annexes_remplies_SIMULATION_vague2.docx` | Vague 2 : annexe 3 (11 fiches) et annexe 2 (11 grilles), avec la couverture du Tableau II pour la vague seule **et** pour l'ensemble |
-| `5_Transcriptions_verbatim_SIMULATION_vague2.docx` | Les 11 transcriptions de la vague 2 |
-| `Memoire_Ngoma_SIMULATION.projx` | Projet QualiCode — vague 1 (10 entretiens, 5 centres) |
-| `Memoire_Ngoma_SIMULATION_vague2.projx` | Projet QualiCode — vague 2 (11 entretiens, 11 centres) |
-| `Memoire_Ngoma_SIMULATION_complet.projx` | **Les deux vagues réunies : 21 entretiens, 16 centres** — le projet sur lequel s'exercer à l'analyse d'ensemble |
+| `Memoire_Ngoma_SIMULATION.projx` | **Le projet QualiCode « Mémoire Ngoma — SIMULATION de formation »**, les deux vagues réunies |
 
-À ouvrir par **Accueil ▸ Ouvrir (.projx)**.
+À ouvrir par **Accueil ▸ Ouvrir (.projx)**. Le projet porte le même nom et le
+même identifiant que la version antérieure (vague 1 seule) : il la **remplace**
+dans l'application, sans créer de doublon.
 
-### Les deux vagues
+### Le projet
 
-| | Vague 1 | Vague 2 | Ensemble |
+| | Vague 1 | Vague 2 | Projet |
 |---|---|---|---|
-| Participants | 5 infirmiers, 5 sages-femmes | 5 infirmiers ou infirmières, 6 sages-femmes | 10 + 11 = **21** |
+| Participants | 5 infirmiers, 5 sages-femmes | 5 infirmiers ou infirmières, 6 sages-femmes | **21** |
 | Centres | CS02, CS03, CS07, CS11, CS14 | les 11 autres | **les 16 du district** |
-| Codes | 79 (21 inductifs) | 90 (32 inductifs) | 90 |
-| Segments codés | 1 220 | 1 118 | 2 401 |
-| Double codage | 3 entretiens | 3 entretiens | 7 sur 21, soit un tiers (§ 4.2.6) |
 
-L'ensemble atteint la fourchette de seize à vingt-quatre participants du
-§ 4.2.3.1 et la règle « au moins un participant par centre ». Le projet complet
-contient un mémo de suffisance informationnelle conduit dimension par dimension,
-et une note de positionnalité laissée vide — elle ne peut pas être simulée.
+| Projet | |
+|---|---|
+| Documents | 37 (21 entretiens, 16 comptes rendus d'observation) |
+| Codes | 90 en 11 familles, dont 32 inductifs |
+| Segments codés | 2 559 |
+| Double codage | 7 entretiens sur 21 (codeur C2), soit le tiers prévu au § 4.2.6 |
+| Stabilité intra-codeur | 2 entretiens recodés par le premier codeur (étiquette C1b) |
+| Mémos | 19 mémos d'analyse, 21 journaux de bord, 11 définitions de familles |
+
+La variable « vague » distingue les deux vagues. Les variables
+« citation_autorisee » et « recontact_accepte » reprennent le registre des
+consentements : **P05 a refusé la citation** (ses propos s'analysent, ils ne se
+citent pas), **P19 l'a acceptée sans élément identifiant son centre**. La
+requête « Extraits citables » en tient compte.
+
+Les mémos suivent les six phases de l'analyse thématique, puis les étapes de
+rigueur du protocole : contrôle de fidélité des transcriptions, double codage
+et stabilité intra-codeur, triangulation, vérification des interprétations,
+suffisance informationnelle, piste d'audit. La note de positionnalité est
+laissée vide : elle ne peut pas être simulée.
 
 La vague 2 n'est pas une répétition de la première. Elle introduit un centre bien
 doté (ce que change l'équipement, et ce qu'il ne change pas), un registre rempli
@@ -65,6 +76,15 @@ sans que les actes suivent, les agents de santé communautaire comme relais, le
 recours aux guérisseurs tel que les prestataires le perçoivent, des femmes
 mobiles que le suivi perd, et une participante qui refuse de classer les femmes
 en catégories.
+
+### Pourquoi aucune signature, et aucun nom de secteur
+
+Le registre des consentements (annexe 4) ne simule **aucune signature** : un
+formulaire de consentement signé est une pièce du dossier éthique, et en
+fabriquer un produirait exactement le document qui ne doit jamais exister. Les
+données de routine (annexe 9) désignent les secteurs par le code du centre
+qu'ils abritent : inventer des chiffres de pauvreté sous le nom d'un secteur
+réel produirait une statistique fausse sur un lieu réel.
 
 ### `sources/`
 
@@ -74,9 +94,9 @@ diverger.
 
 ```bash
 cd memoire-ngoma/sources
-node construire.mjs ../livrables     # → les trois projets .projx
+node construire.mjs ../livrables     # → le projet .projx
 npm install docx                     # nécessaire uniquement pour les documents Word
-node faire-docx.mjs ../livrables     # → annexes remplies + transcriptions (deux vagues)
+node faire-docx.mjs ../livrables     # → annexes remplies + transcriptions
 node faire-guide.mjs ../livrables    # → guide d'utilisation (lit les projets pour ses chiffres)
 ```
 
