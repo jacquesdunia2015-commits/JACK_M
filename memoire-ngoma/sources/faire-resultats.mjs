@@ -62,10 +62,12 @@ function tableauCentres() {
   ajouter("Distance à l'hôpital", effectifs(centres, "distance", ["proche", "éloignée"]));
   ajouter("Volume d'activité prénatale", effectifs(centres, "volume", ["élevé", "modéré"]));
   ajouter("Profil de pauvreté du secteur", effectifs(centres, "pauvrete", ["plus faible", "plus élevée"]));
-  ajouter("Glycémie le jour de l'observation", [
-    ["réalisable (appareil et bandelettes utilisables)", valeurs.glycPossible],
-    ["glucomètre présent, inutilisable", valeurs.glucoInutilisable],
+  ajouter("Glycémie pour une femme enceinte, le jour de l'observation", [
+    ["réalisable au laboratoire, sur bon de la CPN", valeurs.glycPossible],
+    ["glucomètre réservé à la consultation des maladies chroniques", valeurs.glycMnt],
+    ["impossible (appareil en panne, bandelettes absentes ou périmées)", valeurs.glucoInutilisable],
     ["pas de glucomètre", valeurs.glucoAbsent]]);
+  lignes.push(["Glucomètre en salle de CPN", "présent", String(valeurs.glucoEnCpn)]);
   const femmes = obsTous.map(o => o.A.femmesRecues);
   lignes.push(["Femmes reçues pendant la demi-journée observée", "étendue", `${Math.min(...femmes)} à ${Math.max(...femmes)}`]);
   return [legende(`Tableau VII. Caractéristiques des centres de santé (n = ${obsTous.length})`), tableau(lignes, [2800, 4226, 2000]), source("grilles d'observation (annexe 2), données de routine (annexe 9)")];
@@ -125,7 +127,7 @@ function tableauRoutine() {
 
 function tableauThemes() {
   const themes = [
-    ["T1. Un dépistage coupé en deux", "OS1", "La tension est intégrée ; la glycémie dépend des moyens du centre et cesse d'être pensée là où elle est impossible."],
+    ["T1. Un dépistage coupé en deux", "OS1", "La tension est intégrée à la CPN ; la glycémie se fait au laboratoire ou à la consultation des maladies chroniques, et cesse d'être pensée là où ce circuit est fermé à la femme enceinte."],
     ["T2. Expliquer moins à celles qui savent le moins", "OS1", "L'explication varie avec l'heure, la charge et l'idée que l'on se fait de la femme, à l'inverse des besoins."],
     ["T3. Trouver sans pouvoir suivre", "OS2", "La détection ne devient prise en charge que si la référence aboutit et si l'information revient."],
     ["T4. Ce qui est compté existe", "OS2", "Intrants, maintenance et attention suivent les indicateurs ; le dépistage n'en fait pas partie."],

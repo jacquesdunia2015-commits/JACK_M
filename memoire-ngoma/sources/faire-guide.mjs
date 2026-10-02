@@ -112,7 +112,7 @@ const enfants = [
   vide(),
   p("Ce que la vague 2 apporte en propre : un centre bien doté (CS01) qui montre ce que change l'équipement — et ce qu'il ne change pas ; un registre rempli sans que les actes suivent (CS13) ; les agents de santé communautaire comme relais ; le recours aux guérisseurs tel que les prestataires le perçoivent ; des femmes mobiles que le suivi perd ; et une participante qui refuse de classer les femmes en catégories. Onze codes inductifs en sont nés, signalés « [inductif, vague 2] ».", { italics: true }),
   vide(),
-  p("Les mémos suivent les six phases de l'analyse thématique, puis les étapes de rigueur du protocole : contrôle de fidélité des transcriptions, double codage et stabilité intra-codeur, triangulation, vérification des interprétations auprès des participants, suffisance informationnelle, piste d'audit. La note de positionnalité est un MODÈLE D'EXERCICE : ses passages entre crochets (profession, lien avec le district, sexe, âge) sont des hypothèses à remplacer par votre situation réelle, et la note réelle s'écrira à partir de votre propre journal."),
+  p("Les mémos suivent les six phases de l'analyse thématique, puis les étapes de rigueur du protocole : contrôle de fidélité des transcriptions, double codage et stabilité intra-codeur, triangulation, vérification des interprétations auprès des participants, suffisance informationnelle, piste d'audit. La note de positionnalité est un MODÈLE D'EXERCICE : ses éléments biographiques viennent du protocole corrigé, ses passages entre crochets sont à préciser, et la note réelle s'écrira à partir de votre propre journal."),
   saut(),
 
   h1("3. Les six phases de l'analyse thématique, dans l'outil"),
@@ -234,7 +234,7 @@ const enfants = [
     ["Après chaque séance", "Exporter le .projx et le copier ailleurs", "Accueil ▸ Enregistrer (.projx)"],
     ["Toutes les semaines", "Relire la piste d'audit et y consigner les décisions de codage", "Mémos ▸ Gestionnaire de mémos"],
     ["À la clôture de la collecte", "Documenter la suffisance informationnelle dimension par dimension", "Mémo de projet"],
-    ["Avant rédaction", "Faire double-coder un tiers des entretiens, fusionner, calculer κ", "Accueil ▸ Fusionner, puis Analyse ▸ κ"],
+    ["Avant rédaction", "Faire double-coder trois entretiens par un pair extérieur et en recoder trois soi-même quatre semaines après (§ 4.2.5.6), fusionner, calculer κ", "Accueil ▸ Fusionner, puis Analyse ▸ κ"],
     ["Avant dépôt", "Exporter en REFI-QDA et archiver avec les transcriptions", "Rapports ▸ REFI-QDA (.qdpx)"],
   ], [2300, 4200, 2526]),
   saut(),

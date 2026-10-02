@@ -666,9 +666,8 @@ informationnelle.
 
 Aucune donnée réelle. Aucun extrait ne peut être cité, aucun résultat rapporté.
 
-Double codage : sept entretiens sur vingt et un, soit un tiers — la proportion
-prévue au § 4.2.6 pour la vérification indépendante (P02, P06, P09, P11, P13,
-P18, P19 ; codeur C2).
+Double codage : trois entretiens recodés par un pair extérieur (P02, P11, P18 ;
+codeur C2), comme prévu au § 4.2.5.6.
 
 NOTE SUR LE KINYARWANDA : les termes entre crochets sont illustratifs et
 doivent être vérifiés par un locuteur natif.`;
@@ -677,9 +676,12 @@ doivent être vérifiés par un locuteur natif.`;
 `Les quatre thèmes provisoires de la vague 1 tiennent, mais deux sont précisés
 et trois s'ajoutent.
 
-T1. « Un dépistage coupé en deux » — PRÉCISÉ. Vrai dans la plupart des centres,
-    faux à CS01, ce qui montre qu'il ne tient pas à la nature du dépistage
-    glycémique mais à la répartition des moyens entre centres.
+T1. « Un dépistage coupé en deux » — PRÉCISÉ. Aucun centre n'a de glucomètre en
+    salle de CPN : la glycémie passe par le laboratoire du centre ou par la
+    consultation des maladies chroniques, qui gèrent les bandelettes. Le thème
+    est faux à CS01, où le circuit « bon de CPN → laboratoire » fonctionne : il
+    ne tient donc pas à la nature du dépistage glycémique, mais à l'organisation
+    de ce circuit et aux moyens du laboratoire. Nouveau code B8.
 T2. « Expliquer moins à celles qui savent le moins » — PRÉCISÉ. Persiste là où
     tous les intrants sont disponibles (P11) : la modulation de l'explication
     est indépendante de l'équipement. Deux contre-pratiques documentées :
@@ -749,12 +751,15 @@ ecarts.map(x => `${x.cs} — ${x.constat}`).join("\n\n") +
 écart n'est imputé à une intention du participant (§ 4.2.6).`);
 
   memoTheme("Piste d'audit — révision du cadre conceptuel",
-`32 codes inductifs sur 90 : 21 nés de la vague 1, 11 de la vague 2. Le § 3.2
+`${arbre.flatMap(f => f.enfants).filter(e => /inductif/.test(e.nom)).length} codes inductifs sur ${arbre.length + arbre.flatMap(f => f.enfants).length} : ${arbre.flatMap(f => f.enfants).filter(e => /\[inductif\]/.test(e.nom)).length} nés de la vague 1, ${arbre.flatMap(f => f.enfants).filter(e => /vague 2/.test(e.nom)).length} de la vague 2, ${arbre.flatMap(f => f.enfants).filter(e => /révision/.test(e.nom)).length} de la révision
+faite à la lecture des grilles d'observation (glycémie hors de la CPN). Le § 3.2
 prévoit que le cadre est « heuristique et révisable » ; ces codes appellent
 trois révisions possibles, à discuter en supervision :
 
-1. Ajouter au niveau organisationnel la distinction entre un intrant PRÉSENT et
-   un intrant UTILISABLE (CS05 : bandelettes périmées, glucomètre en état).
+1. Ajouter au niveau organisationnel la distinction entre un intrant PRÉSENT,
+   un intrant UTILISABLE (CS05 : bandelettes périmées, glucomètre en état) et
+   un intrant ACCESSIBLE À LA CPN (glucomètre au laboratoire, bandelettes
+   réservées à la consultation des maladies chroniques : code B8).
 2. Ajouter un niveau ou une articulation « communautaire » entre le service et
    le social perçu : les relais communautaires (G9) prolongent le dépistage
    hors du centre, ce que le cadre actuel ne prévoit pas.
@@ -861,11 +866,13 @@ a été simulé.`);
 qui le composent. OS1 et OS2 renvoient aux objectifs spécifiques du protocole.
 
 T1. UN DÉPISTAGE COUPÉ EN DEUX (OS1)
-    La mesure de la tension est un geste intégré presque partout ; la recherche
-    du diabète dépend entièrement des moyens du centre, et cesse d'être pensée
-    là où elle n'est pas possible.
+    La mesure de la tension est un geste intégré à la CPN presque partout ; la
+    recherche du diabète se fait hors de la CPN — au laboratoire du centre ou à
+    la consultation des maladies chroniques — et dépend de bandelettes que la
+    CPN ne gère pas. Là où ce circuit n'est pas ouvert à la femme enceinte,
+    elle cesse d'être pensée.
     N'est pas : un défaut de connaissance des professionnels.
-    Codes : B1, B2, B6, B7, E2, F5, A5, D5.
+    Codes : B1, B2, B6, B7, B8, E2, F5, A5, D5.
 
 T2. EXPLIQUER MOINS À CELLES QUI SAVENT LE MOINS (OS1)
     L'explication qui suit la mesure varie selon l'heure, la charge et l'idée
@@ -939,13 +946,14 @@ Système de codes pour l'arbre final ; Rapports ▸ REFI-QDA pour l'archivage.`)
   const kInter = interCoderAgreement(projet, "C1", "C2");
   const kIntra = interCoderAgreement(projet, "C1", "C1b");
   collecte("Double codage et stabilité intra-codeur",
-`ACCORD INTER-CODEURS — ${kInter.sharedDocs} entretiens sur ${entretiens.length}, soit le tiers prévu au
-§ 4.2.6, recodés à l'aveugle par un second codeur (C2).
+`ACCORD INTER-CODEURS — ${kInter.sharedDocs} entretiens sur ${entretiens.length}, comme prévu au § 4.2.5.6,
+recodés à l'aveugle par un pair extérieur (codeur C2), un par profil :
+sage-femme de la vague 1, sage-femme du centre le mieux doté, infirmière de la vague 2.
   κ = ${kInter.overall.kappa.toFixed(3).replace(".", ",")} (accord observé ${(kInter.overall.po * 100).toFixed(1).replace(".", ",")} %), sur ${kInter.units} paragraphes.
   Dans l'application : Analyse ▸ Accord inter-codeurs (κ), C1 contre C2.
 
-STABILITÉ INTRA-CODEUR (annexe 8) — ${kIntra.sharedDocs} entretiens recodés par le premier
-codeur plusieurs semaines après, sans revoir son codage (étiquette C1b).
+STABILITÉ INTRA-CODEUR (§ 4.2.5.6, annexe 8) — ${kIntra.sharedDocs} entretiens recodés par le
+premier codeur quatre semaines après, sans revoir son codage (étiquette C1b).
   κ = ${kIntra.overall.kappa.toFixed(3).replace(".", ",")} (accord observé ${(kIntra.overall.po * 100).toFixed(1).replace(".", ",")} %), sur ${kIntra.units} paragraphes.
   Dans l'application : Analyse ▸ Accord inter-codeurs (κ), C1 contre C1b.
 
@@ -962,11 +970,14 @@ piste d'audit.`);
   const recontact = entretiens.filter(d => d.variables.recontact_accepte === "oui");
   const refus = entretiens.filter(d => d.variables.recontact_accepte !== "oui").map(d => d.name.match(/P\d+/)[0]);
   collecte("Vérification des interprétations auprès des participants",
-`Procédure (annexe 1, clôture ; annexe 8, crédibilité) : les participants qui
-l'ont accepté reçoivent un résumé des thèmes qui les concernent et sont invités
-à dire s'ils s'y reconnaissent.
+`Procédure (§ 4.2.5.6 ; annexe 1, clôture ; annexe 8, crédibilité) : en fin
+d'analyse, QUATRE participants volontaires, choisis parmi ceux qui avaient
+accepté d'être recontactés, reçoivent un résumé des thèmes et sont invités à
+dire s'ils s'y reconnaissent. Les quatre couvrent les deux qualifications, les
+deux vagues, un centre urbain et des centres ruraux.
 
 Recontact accepté : ${recontact.length} sur ${entretiens.length} (refus ou indisponibilité : ${refus.join(", ")}).
+Volontaires retenus : P02, P09, P11, P21.
 
 Retours (simulés) :
   · P02 confirme T2 et demande que la modulation de l'explication ne soit pas
@@ -1090,13 +1101,15 @@ const projets = [
     cfg: {
       id: "memoire-ngoma-simulation", nom: "Mémoire Ngoma — SIMULATION de formation",
       date: "2026-09-20T09:00:00Z", modifie: new Date().toISOString(),
-      versionSimulation: "deux-vagues-21-participants-16-centres-chapitre5",
+      versionSimulation: "deux-vagues-glycemie-laboratoire-protocole-corrige",
       participants: [...participants, ...participantsV2],
       observations: [...observations, ...observationsV2].sort((x, y) => x.cs.localeCompare(y.cs)),
       ajustements: { ...ajustements, ...ajustementsV2 },
       ecarts: [...ecarts, ...ecartsV2],
-      relus: ["P02", "P06", "P09", "P11", "P13", "P18", "P19"],
-      intraCodeur: ["P04", "P15"],
+      // § 4.2.5.6 du protocole : double codage indépendant de TROIS entretiens
+      // par un pair extérieur ; recodage de TROIS entretiens après quatre semaines.
+      relus: ["P02", "P11", "P18"],
+      intraCodeur: ["P04", "P15", "P21"],
       memos: memosUnique, requetesSup: requetesV2, requeteCitables: true,
     },
   },

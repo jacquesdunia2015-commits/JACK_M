@@ -62,10 +62,10 @@ dans l'application, sans créer de doublon.
 | Projet | |
 |---|---|
 | Documents | 37 (21 entretiens, 16 comptes rendus d'observation) |
-| Codes | 90 en 11 familles, dont 32 inductifs |
-| Segments codés | 2 559 |
-| Double codage | 7 entretiens sur 21 (codeur C2), soit le tiers prévu au § 4.2.6 |
-| Stabilité intra-codeur | 2 entretiens recodés par le premier codeur (étiquette C1b) |
+| Codes | 91 en 11 familles, dont 33 inductifs |
+| Segments codés | 2 361 |
+| Double codage | 3 entretiens recodés par un pair extérieur (codeur C2), comme prévu au § 4.2.5.6 |
+| Stabilité intra-codeur | 3 entretiens recodés par le premier codeur quatre semaines après (étiquette C1b) |
 | Mémos | 20 mémos d'analyse, 21 journaux de bord, 11 définitions de familles |
 
 La variable « vague » distingue les deux vagues. Les variables
@@ -78,9 +78,9 @@ Les mémos suivent les six phases de l'analyse thématique, puis les étapes de
 rigueur du protocole : contrôle de fidélité des transcriptions, double codage
 et stabilité intra-codeur, triangulation, vérification des interprétations,
 suffisance informationnelle, piste d'audit. La note de positionnalité est
-rédigée comme un **modèle d'exercice** : les faits biographiques que ni le
-protocole ni la simulation ne donnent (profession, lien avec le district,
-sexe, âge) sont laissés entre crochets, comme des hypothèses à remplacer.
+rédigée comme un **modèle d'exercice** : les éléments biographiques viennent du
+protocole corrigé (page de garde, § 4.2.5.6) ; ce qu'il ne dit pas reste entre
+crochets, à préciser.
 
 La vague 2 n'est pas une répétition de la première. Elle introduit un centre bien
 doté (ce que change l'équipement, et ce qu'il ne change pas), un registre rempli

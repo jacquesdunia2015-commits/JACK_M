@@ -17,7 +17,8 @@ export const TITRE_POSITIONNALITE =
 
 export const TEXTE_POSITIONNALITE = `MODÈLE D'EXERCICE — DONNÉES SIMULÉES. Cette note montre la forme attendue
 d'une note de positionnalité ; elle ne décrit pas une collecte réelle.
-Les passages [entre crochets] sont des HYPOTHÈSES D'EXERCICE : remplacez-les
+Les éléments biographiques viennent du protocole (page de garde, § 4.2.5.6).
+Les passages [entre crochets] restent des HYPOTHÈSES D'EXERCICE : remplacez-les
 par votre situation réelle, puis réécrivez le reste avec vos propres mots.
 
 Le protocole la prévoit au titre de la confirmabilité (annexe 8 : « journal
@@ -42,15 +43,13 @@ trilingue a transcrit en kinyarwanda les entretiens conduits dans cette
 langue ; j'en ai fait la traduction française. J'ai transcrit moi-même les
 4 entretiens conduits en français à la demande des participantes.
 
-[Profession : hypothèse d'exercice — « Avant ce master, j'ai exercé comme
-professionnel de santé pendant N années, dont N en consultation prénatale /
-en santé communautaire / en administration sanitaire. » Remplacez par votre
-parcours réel. C'est l'élément qui pèse le plus sur la note : un ancien
-soignant de CPN ne regarde pas un registre comme un gestionnaire de
-programme.]
-
-[Sexe et âge : à préciser. Ils comptent ici parce que 15 des 21 participants
-sont des femmes et que 4 ont entre 20 et 29 ans.]
+Je suis un homme, né en 1977 à Bukavu (République démocratique du Congo) ;
+j'avais 48 ans pendant la collecte. J'exerce depuis plus de vingt ans dans le
+domaine de la santé, notamment en biologie médicale, mais jamais en
+consultation prénatale (protocole, § 4.2.5.6). Ces trois éléments comptent
+ici : 15 des 21 participants sont des femmes, dont 4 ont entre 20 et 29 ans ;
+je suis plus âgé que la plupart d'entre eux ; et mon métier m'a appris à
+regarder un laboratoire avant de regarder une salle de consultation.
 
 Formation à la recherche qualitative : [les enseignements de méthodologie du
 master ; cette simulation est mon premier exercice complet de codage]. Je
@@ -72,21 +71,23 @@ peut-être pensé sans le dire. C'est la principale source possible de
 désirabilité sociale dans ce matériau : décrire le service tel qu'il devrait
 être plutôt que tel qu'il est.
 
-[Lien avec le district de Ngoma : hypothèse d'exercice — « Je n'ai aucun
-lien hiérarchique avec les centres de santé du district et je n'y ai jamais
-exercé. » Si vous y avez travaillé, ou si vous connaissez certains
-participants, dites-le ici et indiquez comment vous l'avez géré : c'est
-précisément ce que la note doit rendre visible.]
+Je n'exerce ni en consultation prénatale ni dans la hiérarchie des
+participants (protocole, § 4.2.5.6). [À préciser : ai-je exercé dans le
+district de Ngoma, ou connais-je personnellement certains participants ?
+Si oui, le dire ici et indiquer comment cela a été géré.]
 
-Une position à la fois proche et extérieure. Proche, parce que je partage la
-langue de la plupart des participants (17 entretiens en kinyarwanda) et que
+Une position à la fois proche et extérieure. Proche, parce que j'ai conduit
+17 entretiens en kinyarwanda — langue que je maîtrise à un niveau permettant un
+entretien compréhensif, sans que ce soit ma langue première — et que
 je connais le système de santé rwandais : registres, indicateurs de CPN,
 supervision, références vers l'hôpital. Cela m'a permis de comprendre sans
 explication des allusions qu'un observateur étranger n'aurait pas saisies.
 Le risque est symétrique : ne pas faire expliciter ce qui « va de soi »,
 alors que c'est souvent là que se loge la représentation professionnelle.
 Extérieure, parce que je viens d'une université étrangère, que je n'exerce
-pas dans ces centres et que je n'y reviendrai pas au quotidien.
+pas dans ces centres, que je n'y reviendrai pas au quotidien, et que le
+kinyarwanda n'est pas ma langue première : certaines nuances ont pu
+m'échapper, que la vérification indépendante des traductions devait rattraper.
 
 Les asymétries. Les non-titulaires (15 participants sur 21), souvent les
 plus jeunes dans le métier, étaient les plus exposés : ils parlaient d'un service dont ils
@@ -162,8 +163,15 @@ fait apparaître des moments précis où j'ai pu orienter le matériau :
   l'observation de la veille m'avait montrée et dont je n'avais rien dit.
 
 Ce qui m'a surpris. Mon premier présupposé ne s'est pas vérifié : dans
-plusieurs centres, l'équipement existe ; ce qui manque, c'est un espace où
-dire un résultat sans qu'il soit entendu, et du temps pour l'expliquer.
+presque tous les centres, le glucomètre existe — mais au laboratoire ou à la
+consultation des maladies chroniques, jamais en salle de CPN ; ce qui manque
+à la femme enceinte, c'est l'accès à cet appareil, un espace où dire un
+résultat sans qu'il soit entendu, et du temps pour l'expliquer. Mon
+expérience de la biologie médicale a sans doute joué ici : c'est en
+demandant où se trouvait le glucomètre, et pour qui servaient ses
+bandelettes, que ce circuit hors de la CPN est apparu (code B8). Le risque
+inverse existe aussi : surinterpréter ce qui relève du laboratoire, parce que
+c'est le monde que je connais.
 L'analyse a ensuite fait apparaître des thèmes que je n'attendais pas : le
 dispositif de contrôle oriente l'attention (T4 — Ce qui est compté existe),
 le registre peut masquer l'inégalité (T6 — Le registre comme écran), et le

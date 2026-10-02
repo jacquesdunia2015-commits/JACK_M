@@ -59,14 +59,9 @@ export async function calculs(dossier) {
 
   /* ---------- Valeurs calculées ---------- */
   const minutes = tous.map(x => parseInt(x.duree, 10));
-  const etatGluco = o => {
-    const g = o.B.find(i => i.item === "Glucomètre");
-    const b = o.B.find(i => i.item === "Bandelettes de glycémie");
-    const glucoOk = g.present === "oui" && /fonctionnel/i.test(g.etat) && !/non fonctionnel|panne/i.test(g.etat);
-    const bandOk = b.present === "oui" && !/périm/i.test(b.etat);
-    if (g.present !== "oui") return "absent";
-    return glucoOk && bandOk ? "réalisable" : "inutilisable";
-  };
+  // Accès de la CPN à la glycémie, relevé par l'observation (champ glycemieCpn).
+  const etatGluco = o => o.glycemieCpn;
+  const gluco = o => o.B.find(i => i.item === "Glucomètre");
   // Centres qu'aucun élément du chapitre ne doit permettre d'identifier.
   const centresProteges = new Set(tous.filter(x => /sans élément identifiant le centre/.test(consentementDe(x.code).citation)).map(x => x.cs));
   const equiteSpontane = Object.values(entretiens).filter(e =>
@@ -78,9 +73,12 @@ export async function calculs(dossier) {
     nbSf: tous.filter(x => x.qualif === "sage-femme").length,
     nbTitulaires: tous.filter(x => x.titulaire).length,
     dureeMin: Math.min(...minutes), dureeMax: Math.max(...minutes),
-    glycPossible: obsTous.filter(o => etatGluco(o) === "réalisable").length,
-    glucoInutilisable: obsTous.filter(o => etatGluco(o) === "inutilisable").length,
+    glycPossible: obsTous.filter(o => etatGluco(o) === "laboratoire").length,
+    glycMnt: obsTous.filter(o => etatGluco(o) === "réservée MNT").length,
+    glucoInutilisable: obsTous.filter(o => etatGluco(o) === "impossible").length,
     glucoAbsent: obsTous.filter(o => etatGluco(o) === "absent").length,
+    glucoPresent: obsTous.filter(o => gluco(o).present === "oui").length,
+    glucoEnCpn: obsTous.filter(o => gluco(o).present === "oui" && !/laboratoire|consultation MNT/.test(gluco(o).etat)).length,
     nbConstats: constats.length,
     nbEcarts: constats.filter(x => x.nature === "écart").length,
     nbConcordances: constats.filter(x => x.nature === "concordance").length,

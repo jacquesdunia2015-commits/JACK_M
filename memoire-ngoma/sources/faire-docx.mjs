@@ -282,7 +282,7 @@ function documentTranscriptions(cfg) {
 function documentPositionnalite(cfg) {
   const enfants = [...pageDeGarde("Note de positionnalité — modèle d'exercice",
     "Modèle rédigé pour s'entraîner. Il suit le protocole (annexe 8 : « journal réflexif et note de positionnalité », au titre de la confirmabilité) et les items 1 à 8 de la grille COREQ.\n\n" +
-    "Les passages SURLIGNÉS entre crochets sont des hypothèses d'exercice : ni le protocole ni la simulation ne disent votre profession, votre lien avec le district, votre sexe ou votre âge. Remplacez-les par votre situation réelle. Les exemples de la partie 5 viennent des journaux de bord simulés.\n\n" +
+    "Les éléments biographiques viennent du protocole corrigé (page de garde, § 4.2.5.6). Les passages SURLIGNÉS entre crochets sont des hypothèses d'exercice : ce que le protocole ne dit pas, à préciser. Remplacez-les par votre situation réelle. Les exemples de la partie 5 viennent des journaux de bord simulés.\n\n" +
     "Ce même texte figure dans le projet QualiCode, parmi les mémos de projet.", cfg.echantillon), saut()];
   const segments = texte => texte.split(/(\[[^\]]*\])/).filter(Boolean).map(t => t.startsWith("[")
     ? new TextRun({ text: t, size: 21, highlight: "yellow" }) : new TextRun({ text: t, size: 21 }));
