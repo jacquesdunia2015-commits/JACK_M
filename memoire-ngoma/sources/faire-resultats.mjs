@@ -11,138 +11,23 @@
 //   · le code d'un centre dont un participant a demandé qu'il ne soit jamais
 //     identifié ne peut apparaître nulle part dans le chapitre ;
 //   · chaque {n:…} et {v:…} est remplacé par une valeur calculée.
-import { readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import {
   Document, Packer, Paragraph, TextRun, AlignmentType,
   titre1, titre2, titre3, vide, saut, tableau, pageDeGarde, encadreRouge, stylesCommuns,
   Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle, LARGEUR,
 } from "./mise-en-page.mjs";
-import { ETUDE, participants } from "./echantillon.mjs";
-import { participantsV2 } from "./echantillon-vague2.mjs";
-import { observations } from "./observations.mjs";
-import { observationsV2 } from "./observations-vague2.mjs";
-import { arbre, ecarts, ecartsV2 } from "./codes.mjs";
-import { consentementDe } from "./consentements.mjs";
-import { parCentre, SOURCE as SOURCE_ROUTINE, RESERVE } from "./donnees-routine.mjs";
+import { participants } from "./echantillon.mjs";
+import { arbre } from "./codes.mjs";
+import { parCentre, SOURCE as SOURCE_ROUTINE } from "./donnees-routine.mjs";
 import { TITRE_CHAPITRE, blocs, constatsChapitre } from "./resultats.mjs";
-import * as e12 from "./entretiens-01-02.mjs";
-import * as e34 from "./entretiens-03-04.mjs";
-import * as e56 from "./entretiens-05-06.mjs";
-import * as e78 from "./entretiens-07-08.mjs";
-import * as e910 from "./entretiens-09-10.mjs";
-import * as e1113 from "./entretiens-11-13.mjs";
-import * as e1416 from "./entretiens-14-16.mjs";
-import * as e1719 from "./entretiens-17-19.mjs";
-import * as e2021 from "./entretiens-20-21.mjs";
-const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910, ...e1113, ...e1416, ...e1719, ...e2021 };
+import { calculs } from "./calculs.mjs";
 
 const dossier = process.argv[2] || ".";
-const projet = JSON.parse(readFileSync(`${dossier}/Memoire_Ngoma_SIMULATION.projx`, "utf8"));
-const tous = [...participants, ...participantsV2];
-const obsTous = [...observations, ...observationsV2].sort((x, y) => x.cs.localeCompare(y.cs));
-const constats = [...ecarts, ...ecartsV2];
-
-/* ---------- Correspondance codes du projet ↔ identifiants courts ---------- */
-const familleParNom = new Map(arbre.map(f => [f.nom, f]));
-const court = new Map();
-for (const c of projet.codes) {
-  if (!c.parentId) continue;
-  const parent = projet.codes.find(x => x.id === c.parentId);
-  const e = familleParNom.get(parent?.name)?.enfants.find(e => e.nom === c.name);
-  if (e) court.set(c.id, e.id);
-}
-const docEntretien = new Map(projet.documents
-  .filter(d => d.variables.type_document === "entretien")
-  .map(d => [d.name.match(/P\d+/)[0], d]));
-const segmentsC1 = projet.segments.filter(s => s.coder === "C1");
-
-/** Participants ayant au moins un passage C1 codé avec l'un des codes. */
-function participantsAvec(codes) {
-  const ids = new Set(codes);
-  return [...docEntretien.entries()]
-    .filter(([, d]) => segmentsC1.some(s => s.docId === d.id && ids.has(court.get(s.codeId))))
-    .map(([code]) => code);
-}
-
-/* ---------- Valeurs calculées ---------- */
-const minutes = tous.map(x => parseInt(x.duree, 10));
-const etatGluco = o => {
-  const g = o.B.find(i => i.item === "Glucomètre");
-  const b = o.B.find(i => i.item === "Bandelettes de glycémie");
-  const glucoOk = g.present === "oui" && /fonctionnel/i.test(g.etat) && !/non fonctionnel|panne/i.test(g.etat);
-  const bandOk = b.present === "oui" && !/périm/i.test(b.etat);
-  if (g.present !== "oui") return "absent";
-  return glucoOk && bandOk ? "réalisable" : "inutilisable";
-};
-// Centres qu'aucun élément du chapitre ne doit permettre d'identifier.
-const centresProteges = new Set(tous.filter(x => /sans élément identifiant le centre/.test(consentementDe(x.code).citation)).map(x => x.cs));
-const equiteSpontane = Object.values(entretiens).filter(e =>
-  Object.values(e.reponses).some(tours => tours.some(([qui, t]) => qui === "P" && /équit/i.test(t)))).length;
-
-const valeurs = {
-  nbCentres: obsTous.length,
-  nbInf: tous.filter(x => x.qualif === "infirmier").length,
-  nbSf: tous.filter(x => x.qualif === "sage-femme").length,
-  nbTitulaires: tous.filter(x => x.titulaire).length,
-  dureeMin: Math.min(...minutes), dureeMax: Math.max(...minutes),
-  glycPossible: obsTous.filter(o => etatGluco(o) === "réalisable").length,
-  glucoInutilisable: obsTous.filter(o => etatGluco(o) === "inutilisable").length,
-  glucoAbsent: obsTous.filter(o => etatGluco(o) === "absent").length,
-  nbConstats: constats.length,
-  nbEcarts: constats.filter(x => x.nature === "écart").length,
-  nbConcordances: constats.filter(x => x.nature === "concordance").length,
-  sourceRoutine: SOURCE_ROUTINE,
-  reserveRoutine: RESERVE,
-  equiteSpontane,
-};
-
-const LETTRES = ["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze",
-  "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf", "vingt", "vingt et un", "vingt-deux"];
-function remplir(texte) {
-  // Une phrase ne commence pas par un chiffre : le nombre y est écrit en lettres.
-  const enTete = /(^|[.!?]\s+)(\{(?:N|n:[A-Z0-9+]+|v:\w+)\})/g;
-  texte = texte.replace(enTete, (_, avant, ph) => {
-    const valeur = remplacer(ph);
-    if (!/^\d+$/.test(valeur)) return avant + valeur;   // une valeur textuelle reste telle quelle
-    const n = Number(valeur);
-    if (!LETTRES[n]) throw new Error(`nombre en début de phrase non écrivable en lettres : ${ph}`);
-    return avant + LETTRES[n][0].toUpperCase() + LETTRES[n].slice(1);
-  });
-  return remplacer(texte);
-}
-function remplacer(texte) {
-  return texte
-    .replace(/\{N\}/g, String(docEntretien.size))
-    .replace(/\{n:([A-Z0-9+]+)\}/g, (_, codes) => String(participantsAvec(codes.split("+")).length))
-    .replace(/\{v:(\w+)\}/g, (_, cle) => {
-      if (!(cle in valeurs)) throw new Error(`valeur inconnue : {v:${cle}}`);
-      return String(valeurs[cle]);
-    });
-}
-
-/* ---------- Contrôle des citations ---------- */
-const normaliser = t => t.replace(/\s+/g, " ").trim();
-function verifierCitation(b) {
-  const doc = docEntretien.get(b.cite);
-  if (!doc) throw new Error(`citation : participant inconnu ${b.cite}`);
-  const consentement = consentementDe(b.cite);
-  if (consentement.citation === "non") throw new Error(`citation refusée par ${b.cite} : ses propos ne peuvent pas être cités`);
-  const cible = normaliser(b.t);
-  const ok = segmentsC1.some(s => s.docId === doc.id && b.codes.includes(court.get(s.codeId)) && normaliser(s.text).includes(cible));
-  if (!ok) throw new Error(`citation introuvable dans un passage de ${b.cite} codé ${b.codes.join("/")} : « ${b.t.slice(0, 70)}… »`);
-}
+const { projet, tous, obsTous, constats, court, docEntretien, segmentsC1, participantsAvec,
+  centresProteges, valeurs, remplir, verifierCitation, etiquette } = await calculs(dossier);
 for (const b of blocs) if (b.cite) verifierCitation(b);
-
-function etiquette(code) {
-  const x = tous.find(y => y.code === code);
-  const c = consentementDe(code);
-  const qualif = x.qualif === "infirmier" ? (x.sexe === "féminin" ? "infirmière" : "infirmier") : "sage-femme";
-  // Citation sous condition : ni centre ni caractéristique.
-  const carac = /sans élément identifiant/.test(c.citation) ? "" : `, ${qualif}`;
-  const langue = x.langue === "kinyarwanda" ? " — traduit du kinyarwanda" : "";
-  return `(${code}${carac}${langue})`;
-}
 
 /* ---------- Tableaux calculés ---------- */
 const effectifs = (liste, cle, ordre) => {

@@ -45,6 +45,7 @@ commence le travail réel ; ce dossier-ci reste l'exercice.
 | `3_Guide_QualiCode_pour_ce_memoire.docx` | Les six phases de l'analyse thématique (§ 4.2.6) traduites en gestes dans l'application |
 | `4_Note_de_positionnalite_MODELE.docx` | La note de positionnalité (confirmabilité, annexe 8), en modèle d'exercice modifiable : avant le codage, puis à la fin de l'analyse — la même que dans le projet |
 | `5_Chapitre_Resultats_SIMULATION.docx` | **Le chapitre 5 (Résultats)** rédigé à partir du projet, en exercice : participants et centres, objectifs spécifiques 1 et 2, sept thèmes, équité, transformations, triangulation. Chaque citation et chaque effectif sont vérifiés contre le codage à la production du document |
+| `6_Chapitre_Discussion_SIMULATION.docx` | **Le chapitre 6 (Discussion)** en exercice : rappel des résultats, confrontation thème par thème à la littérature et au cadre conceptuel, révisions du cadre, forces et limites, recommandations par destinataire, perspectives. Seules sont citées les références du protocole dont le contenu est connu ; les références complémentaires [C1]… sont à vérifier ; les emplacements surlignés attendent une référence de votre revue |
 | `Memoire_Ngoma_SIMULATION.projx` | **Le projet QualiCode « Mémoire Ngoma — SIMULATION de formation »**, les deux vagues réunies |
 
 À ouvrir par **Accueil ▸ Ouvrir (.projx)**. Le projet porte le même nom et le
