@@ -247,6 +247,22 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
       `${nEcarts} constats sans la mention CONCORDANCE`);
   }
 
+  // Le dossier de la collecte réelle : vierge, sans aucune trace de l'exercice.
+  const kit = join(racine, "memoire-ngoma", "kit-donnees-reelles");
+  if (existsSync(kit)) {
+    titre("Dossier vierge pour les données réelles");
+    const reel = JSON.parse(readFileSync(join(kit, "Memoire_Ngoma_DONNEES_REELLES_vierge.projx"), "utf8"));
+    const exo = JSON.parse(readFileSync(join(racine, "memoire-ngoma", "livrables", "Memoire_Ngoma_SIMULATION.projx"), "utf8"));
+    verifier("le projet réel ne remplace pas le projet d'exercice (identifiant distinct)", reel.id !== exo.id && reel.name !== exo.name);
+    verifier("il ne contient aucun document, segment ni requête", !reel.documents.length && !reel.segments.length && !reel.savedQueries.length);
+    verifier("aucun code inductif de l'exercice n'y est repris", !reel.codes.some(c => /inductif/i.test(c.name)));
+    verifier("aucun mémo de l'exercice n'y est recopié", !reel.memos.some(m => exo.memos.some(e => e.text === m.text)));
+    verifier("aucune mention de simulation ni de valeur fictive", !/simul|fictif|fictiv/i.test(JSON.stringify(reel)));
+    verifier("la note de positionnalité y est à rédiger avant le codage", reel.memos.some(m => /positionnalité/i.test(m.title) && /AVANT/.test(m.title)));
+    verifier("le dossier refuse tout fichier autre que les gabarits",
+      readFileSync(join(kit, ".gitignore"), "utf8").split("\n").some(l => l.trim() === "*"));
+  }
+
   // Les anciens fichiers par vague ne doivent pas revenir : ils ont causé la
   // confusion que le projet unique corrige.
   for (const f of ["Memoire_Ngoma_SIMULATION_vague2.projx", "Memoire_Ngoma_SIMULATION_complet.projx",
