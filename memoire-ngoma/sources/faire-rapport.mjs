@@ -22,6 +22,7 @@ import { recommandations } from "./discussion.mjs";
 import { legende, source, rendu } from "./rendu.mjs";
 import { A_COMPLETER, A_VERIFIER, AVERTISSEMENT } from "./a-verifier.mjs";
 import { stylesAcademiques, pageAcademique, appliquerGabarit } from "./gabarit-academique.mjs";
+import { renumeroter } from "./vancouver.mjs";
 
 const require = createRequire(import.meta.url);
 const { Footer, PageNumber } = require("docx");
@@ -64,7 +65,7 @@ const MESSAGES = [
 const enfants = [];
 enfants.push(...pageDeGarde("Rapport de mémoire (rédaction d'exercice)",
   "Synthèse du mémoire à l'intention des lecteurs qui ne liront pas le document entier : direction de mémoire, direction de la santé du district, responsables des centres participants.\n\n" +
-  "Les chiffres sont calculés à partir du projet d'analyse ; les thèmes, les citations et les recommandations sont ceux des chapitres 5 et 6. Les numéros entre crochets renvoient à la bibliographie du mémoire complet.\n\n" +
+  "Les chiffres sont calculés à partir du projet d'analyse ; les thèmes, les citations et les recommandations sont ceux des chapitres 5 et 6. Les références sont numérotées dans l'ordre de leur première citation (Vancouver).\n\n" +
   "Ce texte est un MODÈLE de forme, rédigé sur des données simulées. Le rapport réel portera sur les résultats réels et ne reprendra rien de celui-ci.",
   `${v.nbInf} infirmiers ou infirmières et ${v.nbSf} sages-femmes, ${v.nbCentres} centres de santé, en deux vagues`));
 
@@ -143,10 +144,10 @@ enfants.push(titre1("8. CONCLUSION"),
   paragraphe("Le dépistage de l'hypertension et du diabète en CPN est accepté par les professionnels comme relevant de leur mandat, mais il n'est réalisé qu'à moitié : la tension est mesurée, la glycémie dépend d'un circuit qui n'est ouvert à la femme enceinte que dans {v:glycPossible} centres sur {v:nbCentres}, sur des signes d'appel et à ses frais. Inscrire la glycémie dans le paquet de soins de la CPN, sans frais pour la femme, compter les actes de dépistage et leur suite, et soutenir la pratique informative sont les trois leviers qui ressortent de l'étude."));
 
 // Références citées dans le rapport.
-enfants.push(titre1("RÉFÉRENCES CITÉES"),
-  paragraphe("Numérotation de la bibliographie du mémoire complet."),
-  ...[...citees].sort((a, b) => a - b).map(n => new Paragraph({ spacing: { after: 80 }, indent: { left: 567, hanging: 567 },
-    children: [new TextRun({ text: `${n}.\t${PROTOCOLE[n - 1]}`, size: 20 })] })));
+// Les numéros du protocole sont renumérotés dans l'ordre de citation (vancouver.mjs).
+enfants.push(titre1("RÉFÉRENCES"),
+  ...[...citees].sort((a, b) => a - b).map(n => new Paragraph({ style: "Bibliographie",
+    children: [new TextRun({ text: `${n}.\t${PROTOCOLE[n - 1]}` })] })));
 
 // Page d'exercice.
 enfants.push(saut(), encadreRouge("PAGE D'EXERCICE — À RETIRER", AVERTISSEMENT), vide(),
@@ -158,9 +159,11 @@ const pied = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CE
   new TextRun({ text: "Rapport de mémoire Ngoma — exercice de formation, données simulées · ", size: 16, color: "888888" }),
   new TextRun({ children: [PageNumber.CURRENT], size: 18 }),
 ] })] });
-const tampon = await appliquerGabarit(await Packer.toBuffer(new Document({ styles: stylesAcademiques(),
-  sections: [{ properties: { page: pageAcademique }, footers: { default: pied }, children: enfants }] })));
-const xml = await (await JSZip.loadAsync(tampon)).file("word/document.xml").async("string");
+const zipRapport = await JSZip.loadAsync(await appliquerGabarit(await Packer.toBuffer(new Document({ styles: stylesAcademiques(),
+  sections: [{ properties: { page: pageAcademique }, footers: { default: pied }, children: enfants }] }))));
+const { xml } = renumeroter(await zipRapport.file("word/document.xml").async("string"));
+zipRapport.file("word/document.xml", xml);
+const tampon = await zipRapport.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 const texte = xml.replace(/<[^>]+>/g, "");
 const centres = texte.match(/\bCS\d{2}\b/g);
 if (centres) throw new Error(`le rapport désigne des centres : ${[...new Set(centres)].join(", ")}`);

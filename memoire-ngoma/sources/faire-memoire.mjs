@@ -20,7 +20,6 @@ import {
   ShadingType, BorderStyle, LARGEUR, titre1, titre2, titre3, vide, saut, tableau, stylesCommuns, encadreRouge,
 } from "./mise-en-page.mjs";
 import { ETUDE } from "./echantillon.mjs";
-import { parCentre, SOURCE as SOURCE_ROUTINE, RESERVE } from "./donnees-routine.mjs";
 import { arbre } from "./codes.mjs";
 import { consentementDe } from "./consentements.mjs";
 import { calculs } from "./calculs.mjs";
@@ -29,8 +28,8 @@ import { chapitre5 } from "./chapitre5.mjs";
 import { chapitre6 } from "./chapitre6.mjs";
 import { legende, rendu } from "./rendu.mjs";
 import * as T from "./memoire-textes.mjs";
-import { A_COMPLETER, A_VERIFIER, AVERTISSEMENT } from "./a-verifier.mjs";
 import { stylesAcademiques, pageAcademique, appliquerGabarit } from "./gabarit-academique.mjs";
+import { renumeroter } from "./vancouver.mjs";
 
 const require = createRequire(import.meta.url);
 const { ImageRun, TableOfContents, Footer, PageNumber, NumberFormat, SectionType } = require("docx");
@@ -110,20 +109,43 @@ function verifierRefsLitterales(t) {
     for (const n of contenu.split(/[-,]/).map(Number)) refs.protocole(n);
   }
 }
-const corps = t => new Paragraph({ spacing: { after: 140 }, alignment: AlignmentType.JUSTIFIED, children: [new TextRun({ text: t, size: 22 })] });
+const corps = (t, style) => new Paragraph({ style, spacing: { after: style ? 80 : 140 }, alignment: AlignmentType.JUSTIFIED, children: [new TextRun({ text: t, size: 22 })] });
+// Paragraphes compacts (12 pt, interligne simple) : annexes, sigles, listes.
+const compact = (t, o = {}) => new Paragraph({ style: "Compact", spacing: { after: o.after ?? 40 }, children: [new TextRun({ text: t, bold: o.gras })] });
+const sousTitreAnnexe = t => new Paragraph({ style: "CompactTitre", children: [new TextRun({ text: t })] });
 const tableauProtocole = lignes => {
   const n = Math.max(...lignes.map(l => l.length));
   const l2 = lignes.map(l => [...l, ...Array(n - l.length).fill("")]);
   return tableau(l2, Array(n).fill(Math.floor(LARGEUR / n)));
 };
-function protocole(de, a, { transformer = t => t, sauterTitre = false } = {}) {
+// Condensation des chapitres 1 à 3 pour respecter la limite de 70 pages : les
+// paragraphes du protocole qui suivent ne sont pas repris dans le mémoire. Ce
+// sont des passages qui recoupent un autre endroit du texte (revue de la
+// littérature, cadre conceptuel, chapitre 4) ; aucune phrase gardée n'est
+// réécrite. Liste à relire avec la direction de mémoire.
+const CONDENSATION = [
+  "Le gradient social du recours :", "Ces déterminants ne sont pas abstraits pour Ngoma.", "Les obstacles normatifs :",
+  "Une campagne communautaire conduite dans le district de Kirehe", "Le contenu du suivi prénatal a lui-même été mesuré.",
+  "Les données de routine ne suffisent pas à documenter ce contenu", "Une particularité organisationnelle :",
+  "Or cette dimension demeure peu documentée.",
+  "Justice sociale :", "Déterminants sociaux de la santé et gradient social :", "Participation :", "Prestataire de soins :",
+  "Trois valeurs en découlent", "La justice sociale fournit l’horizon normatif", "L’équité en constitue le critère observable",
+  "La capacitation désigne le résultat attendu", "La Charte d’Ottawa est un texte de référence politique",
+  "Précision de lecture :", "Stratégies mobilisées :", "Composantes écartées :",
+  "Les qualificatifs « politique » et « communautaire »", "Quatre précisions délimitent la portée du cadre.",
+];
+const condenses = new Set();
+function protocole(de, a, { transformer = t => t, sauterTitre = false, annexe = false, sansSaut = false } = {}) {
   const out = [];
   for (let i = de; i < a; i++) {
     const b = proto[i];
     if (sauterTitre && i === de) continue;
-    if (b.type === "h1") out.push(saut(), titre1(b.texte));
-    else if (b.type === "h2") out.push(titre2(b.texte));
-    else if (b.type === "h3") out.push(titre3(b.texte.replace(/\.$/, "")));
+    const retire = b.type === "p" && !annexe && CONDENSATION.find(d => b.texte.replace(/[\u00a0\u202f]/g, " ").startsWith(d));
+    if (retire) { condenses.add(retire); continue; }
+    if (b.type === "h1") out.push(...(sansSaut && i === de ? [] : [saut()]), titre1(b.texte));
+    // Dans les annexes, les intertitres ne sont pas des titres : ils n'entrent pas dans la table des matières.
+    else if (b.type === "h2") out.push(annexe ? sousTitreAnnexe(b.texte) : titre2(b.texte));
+    else if (b.type === "h3") out.push(annexe ? sousTitreAnnexe(b.texte.replace(/\.$/, "")) : titre3(b.texte.replace(/\.$/, "")));
     else if (b.type === "table") out.push(tableauProtocole(b.lignes), vide());
     else if (b.type === "image") out.push(image(b.fichier, 560));
     else {
@@ -134,7 +156,7 @@ function protocole(de, a, { transformer = t => t, sauterTitre = false } = {}) {
         out.push(legende(t));
         if (/^Figure 2\./.test(t)) out.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 },
           children: [new TextRun({ text: "Source : [à préciser — origine de la carte].", italics: true, size: 18, highlight: "yellow" })] }));
-      } else out.push(corps(t));
+      } else out.push(corps(t, annexe ? "Compact" : undefined));
     }
   }
   return out;
@@ -219,30 +241,27 @@ for (const [dest, items] of T.SUGGESTIONS) {
 // Références (Vancouver).
 corpsMemoire.push(saut(), titre1("RÉFÉRENCES"));
 const listeRefs = [...PROTOCOLE.map((t, i) => ({ numero: i + 1, texte: t })), ...refs.ajoutees()];
-for (const r of listeRefs) corpsMemoire.push(new Paragraph({ spacing: { after: 80 }, indent: { left: 567, hanging: 567 },
-  children: [new TextRun({ text: `${r.numero}.\t${r.texte}`, size: 20 })] }));
+for (const r of listeRefs) corpsMemoire.push(new Paragraph({ style: "Bibliographie",
+  children: [new TextRun({ text: `${r.numero}.\t${r.texte}` })] }));
+const nonTrouves = CONDENSATION.filter(d => !condenses.has(d));
+if (nonTrouves.length) throw new Error(`paragraphes à condenser introuvables : ${nonTrouves.join(" | ")}`);
 if (refs.nonCitees().length) throw new Error(`références ajoutées jamais citées : ${refs.nonCitees().join(", ")}`);
 // Annexes.
 corpsMemoire.push(saut(), titre1("ANNEXES"));
 const annexes = [["ANNEXE 1.", "ANNEXE 2."], ["ANNEXE 2.", "ANNEXE 3."], ["ANNEXE 3.", "ANNEXE 4."], ["ANNEXE 4.", "ANNEXE 5."]];
-for (const [de, a] of annexes) corpsMemoire.push(...protocole(indice(de), indice(a)));
+// L'annexe 1 suit le titre « ANNEXES » sur la même page.
+annexes.forEach(([de, a], k) => corpsMemoire.push(...protocole(indice(de), indice(a), { annexe: true, sansSaut: k === 0 })));
 corpsMemoire.push(saut(), titre1("ANNEXE 5. VERSIONS TRADUITES DES OUTILS"), aCompleter("[Insérer les versions kinyarwanda et anglaise des outils, issues de la traduction et de la rétro-traduction indépendantes.]"));
-corpsMemoire.push(saut(), titre1("ANNEXE 6. AUTORISATIONS ADMINISTRATIVES ET ÉTHIQUES"), aCompleter("[Insérer les copies de l'approbation du comité d'éthique et de l'autorisation du district.]"));
-corpsMemoire.push(...protocole(indice("ANNEXE 7."), indice("ANNEXE 8.")));
-corpsMemoire.push(...protocole(indice("ANNEXE 8."), indice("ANNEXE 9.")));
-// Annexe 9 : données de routine (valeurs par centre, sans note qui rapprocherait un centre d'un propos).
-corpsMemoire.push(saut(), titre1("ANNEXE 9. DONNÉES DE ROUTINE DU DISTRICT DE NGOMA"),
-  corps(`Source et période : ${SOURCE_ROUTINE}.`),
-  tableau([["Centre", "CPN1", "CPN4", "CPN4 / CPN1", "1er contact au 1er trim.", "Référées HTA / prééclampsie", "Glycémies de CPN déclarées"],
-    ...parCentre.map(c => [c.cs, String(c.cpn1), String(c.cpn4), `${Math.round(100 * c.cpn4 / c.cpn1)} %`, `${c.t1} %`, String(c.refHta), c.glyc])],
-    [800, 800, 800, 1000, 1300, 1500, 2826]),
-  vide(), corps(RESERVE));
-// Annexe 10 : arbre de codes final.
-corpsMemoire.push(saut(), titre1("ANNEXE 10. ARBRE DE CODES FINAL"),
-  corps("Familles dérivées du tableau III et codes de l'arbre final. Les codes marqués « inductif » sont nés du matériau au cours de l'analyse. L'effectif indique le nombre de participants dont au moins un passage a été codé."));
-const lignesArbre = [["Famille", "Code", "Participants"]];
-for (const f of arbre) f.enfants.forEach((e, k) => lignesArbre.push([k === 0 ? f.nom : "", e.nom, String(calc.participantsAvec([e.id]).length)]));
-corpsMemoire.push(tableau(lignesArbre, [2800, 4826, 1400]));
+corpsMemoire.push(titre1("ANNEXE 6. AUTORISATIONS ADMINISTRATIVES ET ÉTHIQUES"), aCompleter("[Insérer les copies de l'approbation du comité d'éthique et de l'autorisation du district.]"));
+corpsMemoire.push(...protocole(indice("ANNEXE 7."), indice("ANNEXE 8."), { annexe: true }));
+corpsMemoire.push(...protocole(indice("ANNEXE 8."), indice("ANNEXE 9."), { annexe: true }));
+// Annexe 9 : arbre de codes final, une ligne par famille. Les données de routine
+// sont résumées au chapitre 5 (tableau IX) et ne sont pas reproduites centre par centre.
+corpsMemoire.push(saut(), titre1("ANNEXE 9. ARBRE DE CODES FINAL"),
+  compact("Familles dérivées du tableau III et codes de l'arbre final ; (i) signale un code inductif, né du matériau au cours de l'analyse. Le nombre entre parenthèses est celui des participants dont au moins un passage porte le code.", { after: 120 }));
+corpsMemoire.push(tableau([["Famille", "Codes"], ...arbre.map(f => [f.nom.replace(/^\d+\.\s*/, ""),
+  f.enfants.map(e => `${e.id} ${e.nom.replace(/\s*\[inductif[^\]]*\]/, " (i)")} (${calc.participantsAvec([e.id]).length})`).join(" ; ")])],
+  [2300, 6726]));
 
 /* ---------- Fin du document : table des matières, résumé, abstract ---------- */
 const fin = [
@@ -254,12 +273,6 @@ const fin = [
   saut(), titrePage(T.ABSTRACT.titre),
   ...T.ABSTRACT.blocs.map(([t, x]) => new Paragraph({ spacing: { after: 120 }, alignment: AlignmentType.JUSTIFIED,
     children: [new TextRun({ text: `${t}. `, bold: true, size: 22 }), ...runs(x)] })),
-  // Liste de contrôle de l'exercice : hors plan ENATSE, à retirer avant dépôt.
-  saut(), encadreRouge("PAGE D'EXERCICE — À RETIRER AVANT DÉPÔT", AVERTISSEMENT),
-  vide(), titrePage("CE QUI RESTE À COMPLÉTER"),
-  ...A_COMPLETER.map(t => new Paragraph({ bullet: { level: 0 }, spacing: { after: 80 }, children: [new TextRun({ text: t, size: 21 })] })),
-  titrePage("CE QUI RESTE À VÉRIFIER"),
-  ...A_VERIFIER.map(t => new Paragraph({ bullet: { level: 0 }, spacing: { after: 80 }, children: [new TextRun({ text: t, size: 21 })] })),
 ];
 
 /* ---------- Pages liminaires (après le corps, pour disposer des légendes) ---------- */
@@ -272,11 +285,11 @@ const liminaires = [
   ...T.HOMMAGES.flatMap(([a, t]) => [new Paragraph({ spacing: { before: 160, after: 60 }, children: [new TextRun({ text: a, bold: true, size: 22 })] }),
     /\[/.test(t) ? aCompleter(t) : corps(t)]),
   saut(), titrePage("SIGLES ET ABRÉVIATIONS"),
-  ...sigles.map(s => new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: s, size: 21 })] })),
+  ...sigles.map(t => compact(t)),
   saut(), titrePage("LISTE DES TABLEAUX"),
-  ...legendes.tableaux.map(t => new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: t, size: 21 })] })),
+  ...legendes.tableaux.map(t => compact(t)),
   titrePage("LISTE DES FIGURES"),
-  ...legendes.figures.map(t => new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: t, size: 21 })] })),
+  ...legendes.figures.map(t => compact(t)),
   saut(), titrePage("SOMMAIRE"),
   new TableOfContents("Sommaire", { hyperlink: true, headingStyleRange: "1-1" }),
   saut(), titrePage("EXECUTIVE SUMMARY"),
@@ -302,10 +315,13 @@ const document = new Document({
   ],
 });
 // Gabarit académique (Times New Roman 14, interligne 1,5…) ; la page de garde garde sa composition.
-const tampon = await appliquerGabarit(await Packer.toBuffer(document), { preserverPremiereSection: true });
+const zipMemoire = await JSZip.loadAsync(await appliquerGabarit(await Packer.toBuffer(document), { preserverPremiereSection: true }));
+// Vancouver : numéros dans l'ordre de première citation, liste limitée aux références citées.
+const { xml, nbCitees } = renumeroter(await zipMemoire.file("word/document.xml").async("string"));
+zipMemoire.file("word/document.xml", xml);
+const tampon = await zipMemoire.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 
 // Contrôles sur le document produit.
-const xml = await (await JSZip.loadAsync(tampon)).file("word/document.xml").async("string");
 const texte = xml.replace(/<[^>]+>/g, "");
 // Aucun paragraphe n'associe un code de participant à un code de centre (§ 4.2.7).
 for (const p of xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || []) {
@@ -322,4 +338,4 @@ if (libres) throw new Error(`champs non remplacés : ${[...new Set(libres)].join
 const fichier = `${dossier}/8_Memoire_complet_SIMULATION.docx`;
 writeFileSync(fichier, tampon);
 console.log("écrit :", fichier);
-console.log(`  ${legendes.tableaux.length} tableaux, ${legendes.figures.length} figures · ${listeRefs.length} références (dont ${refs.ajoutees().length} ajoutées) · ${Math.round(texte.length / 1000)} k caractères`);
+console.log(`  ${legendes.tableaux.length} tableaux, ${legendes.figures.length} figures · ${nbCitees} références citées · ${Math.round(texte.length / 1000)} k caractères`);

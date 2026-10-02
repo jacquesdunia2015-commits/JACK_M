@@ -9,10 +9,10 @@ import { legende, source, rendu } from "./rendu.mjs";
 export function chapitre6(calc, { refs }) {
   const { paragraphe, encadre } = rendu({ remplir: calc.remplir, refs });
   const tableaux = {
-    cadre: () => [legende("Tableau XI. Révisions du cadre conceptuel suggérées par les codes inductifs"),
+    cadre: () => [legende("Tableau VIII. Révisions du cadre conceptuel suggérées par les codes inductifs"),
       tableau([["Niveau du cadre", "Révision suggérée", "Résultats qui l'appellent"], ...revisionsCadre], [2300, 2900, 3826]),
       source("mémo « Piste d'audit 3 — révision du cadre conceptuel » du projet QualiCode")],
-    recommandations: () => [legende("Tableau XII. Recommandations par destinataire"),
+    recommandations: () => [legende("Tableau IX. Recommandations par destinataire"),
       tableau([["Destinataire", "Recommandations", "Résultats d'appui"], ...recommandations], [2200, 5126, 1700]),
       source("chapitre 5 (thèmes 1 à 7 et transformations proposées par les participants)")],
   };
