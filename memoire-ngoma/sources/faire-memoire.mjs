@@ -179,7 +179,9 @@ const centre = (t, o = {}) => new Paragraph({ alignment: AlignmentType.CENTER, s
   children: [new TextRun({ text: t, bold: o.gras, italics: o.italique, size: o.taille ?? 22, color: o.couleur })] });
 // Titres des pages liminaires et finales : hors des styles de titre, pour ne pas
 // figurer dans le sommaire ni dans la table des matières.
-const titrePage = t => new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 240, after: 240 },
+// `nouvellePage` : saut de page porté par le titre lui-même, qui ne laisse jamais de page blanche
+// (un paragraphe de saut isolé peut tomber seul en haut d'une page).
+const titrePage = (t, { nouvellePage = false } = {}) => new Paragraph({ alignment: AlignmentType.CENTER, pageBreakBefore: nouvellePage, spacing: { before: 240, after: 240 },
   children: [new TextRun({ text: t, bold: true, size: 30, color: "17334F" })] });
 const aCompleter = t => new Paragraph({ spacing: { after: 140 }, children: [new TextRun({ text: t, italics: true, size: 22, highlight: "yellow" })] });
 
@@ -262,12 +264,12 @@ corpsMemoire.push(titre1("ANNEXE 6. AUTORISATIONS ADMINISTRATIVES ET ÉTHIQUES")
 corpsMemoire.push(...protocole(indice("ANNEXE 7."), indice("ANNEXE 8."), { annexe: true, sansSaut: true }));
 /* ---------- Fin du document : table des matières, résumé, abstract ---------- */
 const fin = [
-  saut(), titrePage("TABLE DES MATIÈRES"),
+  titrePage("TABLE DES MATIÈRES", { nouvellePage: true }),
   new TableOfContents("Table des matières", { hyperlink: true, headingStyleRange: "1-2" }),
-  saut(), titrePage(T.RESUME.titre),
+  titrePage(T.RESUME.titre, { nouvellePage: true }),
   ...T.RESUME.blocs.map(([t, x]) => new Paragraph({ spacing: { after: 120 }, alignment: AlignmentType.JUSTIFIED,
     children: [new TextRun({ text: `${t}. `, bold: true, size: 22 }), ...runs(x)] })),
-  saut(), titrePage(T.ABSTRACT.titre),
+  titrePage(T.ABSTRACT.titre, { nouvellePage: true }),
   ...T.ABSTRACT.blocs.map(([t, x]) => new Paragraph({ spacing: { after: 120 }, alignment: AlignmentType.JUSTIFIED,
     children: [new TextRun({ text: `${t}. `, bold: true, size: 22 }), ...runs(x)] })),
 ];

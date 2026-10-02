@@ -683,9 +683,9 @@ T1. « Un dépistage coupé en deux » — PRÉCISÉ. Aucun centre n'a de glucom
     est faux à CS01, où le circuit « bon de CPN → laboratoire » fonctionne : il
     ne tient donc pas à la nature du dépistage glycémique, mais à l'organisation
     de ce circuit et aux moyens du laboratoire. Nouveau code B8. Même là où le
-    circuit fonctionne, le test n'est demandé que sur des signes d'appel et
-    reste payé par la femme, faute de figurer dans le paquet de soins de la CPN
-    (CS01 : dispense accordée sans écrit par le titulaire). Nouveau code B9.
+    circuit fonctionne, la glycémie prévue pour toutes à la première CPN reste
+    unique : elle n'est refaite que sur signes d'appel, sans épreuve de charge
+    à 24-28 semaines, quand apparaît le diabète gestationnel. Nouveau code B9.
 T2. « Expliquer moins à celles qui savent le moins » — PRÉCISÉ. Persiste là où
     tous les intrants sont disponibles (P11) : la modulation de l'explication
     est indépendante de l'équipement. Deux contre-pratiques documentées :
@@ -764,8 +764,8 @@ trois révisions possibles, à discuter en supervision :
    un intrant UTILISABLE (CS05 : bandelettes périmées, glucomètre en état) et
    un intrant ACCESSIBLE À LA CPN (glucomètre au laboratoire, bandelettes
    réservées à la consultation des maladies chroniques : code B8) et un test
-   ACCESSIBLE SANS FRAIS À LA FEMME (test hors du paquet de la CPN, payé au
-   laboratoire : code B9).
+   FAIT AU BON MOMENT (glycémie unique à la première CPN, non refaite à
+   24-28 semaines : code B9).
 2. Ajouter un niveau ou une articulation « communautaire » entre le service et
    le social perçu : les relais communautaires (G9) prolongent le dépistage
    hors du centre, ce que le cadre actuel ne prévoit pas.

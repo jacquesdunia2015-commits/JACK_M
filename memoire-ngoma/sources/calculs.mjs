@@ -75,8 +75,8 @@ export async function calculs(dossier) {
     dureeMin: Math.min(...minutes), dureeMax: Math.max(...minutes),
     glycPossible: obsTous.filter(o => etatGluco(o) === "laboratoire").length,
     glycMnt: obsTous.filter(o => etatGluco(o) === "réservée MNT").length,
-    // Là où la glycémie est réalisable, le test est-il payé par la femme (hors paquet de la CPN) ?
-    glycPayante: obsTous.filter(o => etatGluco(o) === "laboratoire" && /payé par la femme/.test(gluco(o).obs)).length,
+    // Glycémie refaite systématiquement à 24-28 semaines (épreuve du protocole national de 2012).
+    glycT3Systematique: obsTous.filter(o => o.glycemieT3 === "systématique").length,
     glucoInutilisable: obsTous.filter(o => etatGluco(o) === "impossible").length,
     glucoAbsent: obsTous.filter(o => etatGluco(o) === "absent").length,
     glucoPresent: obsTous.filter(o => gluco(o).present === "oui").length,

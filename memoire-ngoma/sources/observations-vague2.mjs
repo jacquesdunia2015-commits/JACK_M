@@ -17,7 +17,7 @@ export const observationsV2 = [
     },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 3, etat: "2 électroniques et 1 manuel, tous fonctionnels", obs: "Brassard grande taille présent — seul centre observé à en disposer." },
-      { item: "Glucomètre", present: "oui", nombre: 2, etat: "fonctionnels — au laboratoire du centre, un de réserve sous clé", obs: "Aucun glucomètre en salle de CPN. Glycémies de CPN réalisées au laboratoire sur bon, le matin même ; plusieurs bons de CPN au registre du laboratoire pendant la demi-journée. Test payé par la femme à la caisse du laboratoire (hors paquet de la CPN) ; le titulaire en dispense, sans écrit, celles qui ne peuvent pas payer." },
+      { item: "Glucomètre", present: "oui", nombre: 2, etat: "fonctionnels — au laboratoire du centre, un de réserve sous clé", obs: "Aucun glucomètre en salle de CPN. Glycémies de CPN réalisées au laboratoire sur bon, le matin même ; plusieurs bons de CPN au registre du laboratoire pendant la demi-journée. Glycémie de la première CPN pour toutes ; contrôle ultérieur sur facteurs de risque, sans épreuve de charge à 24-28 semaines." },
       { item: "Bandelettes de glycémie", present: "oui", nombre: 48, etat: "péremption 04/2027", obs: "Au laboratoire. Fiche de stock tenue à jour, part réservée à la CPN, seuil de réapprovisionnement inscrit." },
       { item: "Balance", present: "oui", nombre: 2, etat: "fonctionnelles", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "toise fixée au mur", obs: "" },
@@ -25,7 +25,7 @@ export const observationsV2 = [
       hygiene(),
     ],
     ruptureTroisMois: "non — aucune rupture signalée sur la période",
-    glycemieCpn: "laboratoire",
+    glycemieCpn: "laboratoire", glycemieT3: "sur facteurs de risque",
     C: [
       { item: "Protocole / algorithme HTA", present: "oui", accessible: "oui", obs: "Affiché au poste de constantes, en kinyarwanda, avec seuils et conduite à tenir." },
       { item: "Protocole diabète en grossesse", present: "oui", accessible: "oui", obs: "Algorithme affiché à côté du précédent, avec les critères de dépistage ciblé." },
@@ -119,7 +119,7 @@ export const observationsV2 = [
     },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 2, etat: "1 électronique fonctionnel ; 1 électronique en panne", obs: "" },
-      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; la glycémie est demandée par bon, pour les femmes présentant un signe d'appel. Le test est payé par la femme à la caisse du laboratoire : il ne figure pas dans le paquet de soins de la CPN." },
+      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; glycémie de la première CPN demandée par bon pour toutes, avec le bilan ; ensuite sur facteurs de risque seulement. Au registre du laboratoire, aucune glycémie de contrôle systématique au troisième trimestre." },
       { item: "Bandelettes de glycémie", present: "oui", nombre: 5, etat: "péremption 12/2026", obs: "Au laboratoire. Stock très faible." },
       { item: "Balance", present: "oui", nombre: 1, etat: "fonctionnelle", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "toise", obs: "" },
@@ -127,7 +127,7 @@ export const observationsV2 = [
       hygiene(),
     ],
     ruptureTroisMois: "oui — bandelettes de glycémie en quantité insuffisante, réapprovisionnement partiel",
-    glycemieCpn: "laboratoire",
+    glycemieCpn: "laboratoire", glycemieT3: "sur facteurs de risque",
     C: [
       { item: "Protocole / algorithme HTA", present: "oui", accessible: "oui", obs: "Affiché, en anglais." },
       { item: "Protocole diabète en grossesse", present: "non", accessible: "—", obs: "" },
@@ -221,7 +221,7 @@ export const observationsV2 = [
     },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "électronique, fonctionnel", obs: "" },
-      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; le laboratoire accepte les bons de la CPN, pour les femmes à risque. Le test est payé par la femme à la caisse du laboratoire : il ne figure pas dans le paquet de soins de la CPN." },
+      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; le laboratoire accepte les bons de la CPN : glycémie de la première CPN pour toutes, puis sur facteurs de risque. Aucune glycémie de contrôle systématique au troisième trimestre." },
       { item: "Bandelettes de glycémie", present: "oui", nombre: 14, etat: "péremption 01/2027", obs: "Au laboratoire." },
       { item: "Balance", present: "oui", nombre: 1, etat: "fonctionnelle", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "mètre ruban", obs: "" },
@@ -229,7 +229,7 @@ export const observationsV2 = [
       hygiene(),
     ],
     ruptureTroisMois: "non",
-    glycemieCpn: "laboratoire",
+    glycemieCpn: "laboratoire", glycemieT3: "sur facteurs de risque",
     C: [
       { item: "Protocole / algorithme HTA", present: "oui", accessible: "oui", obs: "Affiché." },
       { item: "Protocole diabète en grossesse", present: "non", accessible: "—", obs: "" },
@@ -289,7 +289,7 @@ export const observationsV2 = [
     },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 2, etat: "1 électronique fonctionnel ; 1 manuel fonctionnel", obs: "" },
-      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; la glycémie est demandée par bon, pour les femmes présentant un signe d'appel. Le test est payé par la femme à la caisse du laboratoire : il ne figure pas dans le paquet de soins de la CPN." },
+      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; glycémie de la première CPN demandée par bon pour toutes, avec le bilan ; ensuite sur facteurs de risque seulement. Au registre du laboratoire, aucune glycémie de contrôle systématique au troisième trimestre." },
       { item: "Bandelettes de glycémie", present: "oui", nombre: 9, etat: "péremption 11/2026", obs: "Au laboratoire." },
       { item: "Balance", present: "oui", nombre: 1, etat: "fonctionnelle", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "mètre ruban", obs: "" },
@@ -297,7 +297,7 @@ export const observationsV2 = [
       hygiene(),
     ],
     ruptureTroisMois: "non",
-    glycemieCpn: "laboratoire",
+    glycemieCpn: "laboratoire", glycemieT3: "sur facteurs de risque",
     C: [
       { item: "Protocole / algorithme HTA", present: "oui", accessible: "oui", obs: "" },
       { item: "Protocole diabète en grossesse", present: "non", accessible: "—", obs: "" },

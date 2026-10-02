@@ -54,7 +54,7 @@ const extrait = (code, debut) => {
 
 /* ---------- Messages clés ---------- */
 const MESSAGES = [
-  "Le dépistage est coupé en deux. La tension est mesurée en CPN ; la glycémie se fait au laboratoire ou à la consultation des maladies chroniques. Aucun des {v:nbCentres} centres n'avait de glucomètre en salle de CPN, et la glycémie n'était accessible à la femme enceinte que dans {v:glycPossible} d'entre eux — sur des signes d'appel seulement, et à ses frais, car le test ne figure pas dans le paquet de soins de la CPN.",
+  "Le dépistage est coupé en deux. La tension est mesurée à chaque visite ; la glycémie, prévue pour toutes à la première CPN, se fait au laboratoire ou à la consultation des maladies chroniques. Aucun des {v:nbCentres} centres n'avait de glucomètre en salle de CPN ; le test de la première CPN n'était effectivement réalisé que dans {v:glycPossible} d'entre eux, et aucun ne le refaisait de façon systématique entre 24 et 28 semaines, quand apparaît le diabète gestationnel.",
   "L'explication — la part du dépistage qui permet à la femme d'agir — se raccourcit pour celles qui arrivent tard, posent peu de questions ou n'ont pas d'autre source d'information : elle est distribuée à l'inverse des besoins.",
   "Le dépistage ne figure dans aucun indicateur de la CPN : ses intrants ne sont pas suivis, ses appareils pas réparés, ses actes pas supervisés. Le contrôle porte sur la complétude du registre, qui peut masquer l'inégalité.",
   "La référence dépend d'un véhicule et revient rarement ; le suivi s'interrompt à l'accouchement.",
@@ -102,17 +102,17 @@ enfants.push(titre1("4. PRINCIPAUX RÉSULTATS"),
   tableau([
     ["Situation observée", "Centres"],
     ["Glucomètre en salle de CPN", String(v.glucoEnCpn)],
-    ["Glycémie réalisable au laboratoire, sur bon de la CPN", String(v.glycPossible)],
-    ["   dont test payé par la femme (hors paquet de la CPN)", String(v.glycPayante)],
+    ["Glycémie de la première CPN réalisée au laboratoire, sur bon de la CPN", String(v.glycPossible)],
+    ["   dont glycémie refaite systématiquement à 24-28 semaines", String(v.glycT3Systematique)],
     ["Glucomètre et bandelettes réservés à la consultation des maladies chroniques", String(v.glycMnt)],
     ["Glycémie impossible : appareil en panne, bandelettes absentes ou périmées", String(v.glucoInutilisable)],
     ["Pas de glucomètre dans le centre", String(v.glucoAbsent)],
     ["Total", String(v.nbCentres)],
   ], [7026, 2000]),
   source("observation non participante des services de CPN et des laboratoires"),
-  ...extrait("P20", "Le sucre, il y a un appareil"),
-  paragraphe("Là où la glycémie est possible, elle reste doublement sélective : le bon n'est rédigé que pour les femmes présentant un signe d'appel ou un facteur de risque, et le test, absent du paquet de soins de la CPN, est payé par la femme au laboratoire. Celles qui n'ont pas l'argent le jour même repartent sans l'avoir fait."),
-  ...extrait("P01", "Le test n'est pas dans le paquet de la CPN"),
+  ...extrait("P20", "Le sucre, normalement c'est pour toutes"),
+  paragraphe("Là où le circuit fonctionne, le test de la première CPN est fait à toutes, mais il reste unique : la glycémie n'est refaite qu'en présence d'un signe d'appel ou d'un facteur de risque, et l'épreuve de charge prévue entre 24 et 28 semaines n'est pratiquée nulle part. Une femme normale au premier trimestre n'est plus suivie sur ce point."),
+  ...extrait("P01", "À la première visite, toutes font le sucre"),
   titre2("4.2. Sept thèmes"),
   paragraphe("L'analyse a dégagé sept thèmes, dont deux répondent au premier objectif et cinq au second (tableau 3)."),
   legende("Tableau 3. Synthèse des thèmes"),
@@ -127,7 +127,7 @@ enfants.push(titre1("4. PRINCIPAUX RÉSULTATS"),
 
 enfants.push(titre1("5. POINTS DE DISCUSSION"),
   puce("Deux programmes dans le même centre. La glycémie appartient au programme des maladies non transmissibles, la CPN au programme de santé maternelle. Tant que ce partage n'est pas organisé, la femme enceinte reste en dehors du circuit du glucomètre, ce qui rejoint le caractère non systématique du dépistage rapporté au niveau national {p:27}."),
-  puce("Un test payant pour la femme. La couverture de l'assurance communautaire atteint 85,3 % {p:59}, mais le recours reste concentré parmi les plus aisés {p:61,62}. Un test hors du paquet de la CPN, payé au laboratoire, ajoute à la sélection sur les signes une sélection sur les moyens : c'est elle que la Charte d'Ottawa demande de corriger en conférant à chacun les moyens de sa santé {p:23}."),
+  puce("Un test unique, trop précoce. La règle prévoit la glycémie pour toutes à la première CPN, mais le diabète gestationnel apparaît surtout entre 24 et 28 semaines, période pour laquelle le protocole national prévoit une épreuve de charge {p:27} que les centres ne pratiquent pas. Le dépistage repère ainsi un diabète préexistant plutôt que le diabète de la grossesse."),
   puce("L'explication, distribuée à l'inverse des besoins. L'inégalité ne tient pas seulement à l'accès au test, mais au temps d'explication, qui se raréfie là où il serait le plus utile ; c'est la dimension capacitante du dépistage qui se distribue mal {p:23}."),
   puce("Ce qui est compté existe. Les indicateurs orientent intrants, maintenance et supervision. Un dépistage absent du rapport mensuel n'est ni approvisionné ni contrôlé, et un contrôle de complétude du registre peut produire une égalité apparente."),
   puce("La dotation ne suffit pas. Là où l'équipement est présent, l'inégalité du test diminue, mais celles du coût et de l'explication demeurent : la réponse ne peut être seulement matérielle."));
@@ -141,7 +141,7 @@ enfants.push(titre1("7. LIMITES"),
   paragraphe("Les résultats portent sur des perceptions et des pratiques déclarées ; le point de vue des femmes n'a pas été recueilli. L'observation, d'une demi-journée par centre, est exposée à un effet de la présence de l'observateur. Les données de routine, de qualité limitée {p:69}, ne servent qu'à décrire le contexte. L'étude porte sur un seul district : ses résultats ne se généralisent pas, mais la description du contexte permet d'apprécier leur transférabilité."));
 
 enfants.push(titre1("8. CONCLUSION"),
-  paragraphe("Le dépistage de l'hypertension et du diabète en CPN est accepté par les professionnels comme relevant de leur mandat, mais il n'est réalisé qu'à moitié : la tension est mesurée, la glycémie dépend d'un circuit qui n'est ouvert à la femme enceinte que dans {v:glycPossible} centres sur {v:nbCentres}, sur des signes d'appel et à ses frais. Inscrire la glycémie dans le paquet de soins de la CPN, sans frais pour la femme, compter les actes de dépistage et leur suite, et soutenir la pratique informative sont les trois leviers qui ressortent de l'étude."));
+  paragraphe("Le dépistage de l'hypertension et du diabète en CPN est accepté par les professionnels comme relevant de leur mandat, mais il n'est réalisé qu'à moitié : la tension est mesurée, la glycémie, prévue pour toutes à la première CPN, n'est effectivement faite que dans {v:glycPossible} centres sur {v:nbCentres} et n'est pas refaite entre 24 et 28 semaines. Garantir les bandelettes du test initial et rendre praticable le dépistage à 24-28 semaines, compter les actes de dépistage et leur suite, et soutenir la pratique informative sont les trois leviers qui ressortent de l'étude."));
 
 // Références citées dans le rapport.
 // Les numéros du protocole sont renumérotés dans l'ordre de citation (vancouver.mjs).

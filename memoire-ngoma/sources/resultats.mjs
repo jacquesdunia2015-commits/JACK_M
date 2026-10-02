@@ -28,7 +28,7 @@ export const blocs = [
   { p: "Les {N} participants se répartissent en {v:nbInf} infirmiers ou infirmières et {v:nbSf} sages-femmes, dont {v:nbTitulaires} titulaires ; les entretiens ont duré de {v:dureeMin} à {v:dureeMax} minutes. Les tableaux IV et V ne sont pas croisés : associer une caractéristique individuelle à un centre identifierait la personne." },
   { tableau: "participants" },
   { tableau: "centres" },
-  { p: "Le tensiomètre était présent en salle de CPN dans les {v:nbCentres} centres. Un glucomètre existait dans {v:glucoPresent} centres, mais jamais en salle de CPN : il était au laboratoire ou à la consultation des maladies chroniques. La glycémie d'une femme enceinte n'était réalisable, sur bon de la CPN, que dans {v:glycPossible} centres, pour les seules femmes présentant un signe d'appel ; dans {v:glycPayante} d'entre eux, le test, qui ne figure pas dans le paquet de soins de la CPN, restait payé par la femme. Ailleurs, le glucomètre était réservé aux malades chroniques ({v:glycMnt}), inutilisable ({v:glucoInutilisable}) ou absent ({v:glucoAbsent})." },
+  { p: "Le tensiomètre était présent en salle de CPN dans les {v:nbCentres} centres. Un glucomètre existait dans {v:glucoPresent} centres, mais jamais en salle de CPN : il était au laboratoire ou à la consultation des maladies chroniques. La glycémie de la première CPN, prévue pour toutes les femmes, n'était effectivement réalisée, sur bon de la CPN, que dans {v:glycPossible} centres ; ailleurs, le glucomètre était réservé aux malades chroniques ({v:glycMnt}), inutilisable ({v:glucoInutilisable}) ou absent ({v:glucoAbsent}). Aucun centre ({v:glycT3Systematique}) ne refaisait la glycémie de façon systématique entre 24 et 28 semaines." },
 
   { h2: "5.2. Sens attribué au dépistage et pratiques déclarées (objectif spécifique 1)" },
   { h3: "5.2.1. Un dépistage légitime, mais inégalement investi" },
@@ -36,11 +36,11 @@ export const blocs = [
   { cite: "P06", codes: ["A3", "A5"], t: "La tension, je peux seulement la trouver et l'envoyer ailleurs. Le sucre, je ne peux même pas le trouver. Plus on est impuissant, moins on y pense — et ça, c'est grave." },
 
   { h3: "5.2.2. Thème 1 — Un dépistage coupé en deux" },
-  { p: "Définition. La tension est mesurée en CPN ; la recherche du diabète se fait ailleurs, au laboratoire ou à la consultation des maladies chroniques, sur des signes d'appel, avec des bandelettes que la CPN ne gère pas et un test que la femme paie. Là où ce circuit est fermé à la femme enceinte, la glycémie cesse d'être pensée." },
+  { p: "Définition. La tension est mesurée à chaque visite ; la glycémie, prévue pour toutes à la première CPN, se fait ailleurs, au laboratoire ou à la consultation des maladies chroniques, avec des bandelettes que la CPN ne gère pas, et elle n'est plus refaite ensuite que sur des signes d'appel. Là où le circuit est fermé à la femme enceinte, même le test de la première CPN disparaît." },
   { p: "Même la tension connaît des omissions faute d'appareil disponible ({n:B6} participants), et le savoir glycémique s'érode quand il n'est pas pratiqué ({n:D5}). Pour la glycémie, aucun ne décrit un geste réalisé en salle de CPN ; {n:B8} décrivent le circuit du bon, du laboratoire et des bandelettes réservées d'abord aux malades chroniques." },
-  { cite: "P20", codes: ["B8"], t: "Le sucre, il y a un appareil au laboratoire, pour les malades chroniques. Pour les femmes enceintes, on ne l'a jamais fait. Jamais." },
-  { p: "Là où le circuit est ouvert, deux sélections s'ajoutent. La première porte sur les signes : le bon n'est rédigé que pour les femmes qui présentent un signe d'appel ou un facteur de risque, selon le jugement du professionnel ou une habitude transmise entre collègues. La seconde porte sur les moyens : {n:B9} participants rapportent que le test, absent du paquet de soins de la CPN, est payé au laboratoire, et que celles qui n'ont pas l'argent le jour même repartent sans l'avoir fait." },
-  { cite: "P01", codes: ["B9"], t: "Le test n'est pas dans le paquet de la CPN : au laboratoire, elle doit le payer. Celle qui n'a pas l'argent ce jour-là repart avec le bon dans son carnet, et pour ça, souvent, elle ne revient pas." },
+  { cite: "P20", codes: ["B8"], t: "Le sucre, normalement c'est pour toutes à la première visite, c'est sur la fiche. Mais l'appareil est au laboratoire, pour les malades chroniques, et les bandelettes vont d'abord à eux. Pour les femmes enceintes, ici, la case du sucre reste presque toujours vide." },
+  { p: "Là où le circuit est ouvert, le test de la première CPN est fait à toutes, mais il reste unique : {n:B9} participants décrivent une glycémie qui n'est refaite qu'en présence d'un signe d'appel ou d'un facteur de risque — surpoids, antécédent de gros bébé, diabète dans la famille, sucre dans les urines, âge —, et aucune épreuve de charge entre 24 et 28 semaines, la période où le diabète gestationnel apparaît. Une femme normale au premier trimestre n'est donc plus suivie sur ce point." },
+  { cite: "P01", codes: ["B9"], t: "À la première visite, toutes font le sucre avec le bilan. Après, plus rien, sauf si quelque chose m'inquiète. Une femme normale à trois mois, je ne sais plus rien d'elle à sept mois." },
 
   { h3: "5.2.3. Thème 2 — Expliquer moins à celles qui savent le moins" },
   { p: "Définition. L'explication qui suit la mesure varie selon l'heure, la charge de travail et l'idée que le soignant se fait de la femme, à l'inverse des besoins. Ce sont les participants eux-mêmes qui le décrivent ; le thème ne désigne pas une faute individuelle." },
@@ -58,8 +58,8 @@ export const blocs = [
   { cite: "P07", codes: ["F4", "F5"], t: "Le fer, on l'a toujours. La moustiquaire, on l'a toujours. Parce qu'ils sont dans les indicateurs. Les bandelettes de glycémie ne sont dans aucun indicateur, donc elles arrivent en dernier ou pas du tout." },
 
   { h3: "5.3.3. Thème 5 — Ce que change la dotation, et ce qu'elle ne change pas" },
-  { p: "Définition. L'équipement réduit l'inégalité du test, mais ni celle du coût ni celle de l'explication, et il est réparti au bénéfice des centres déjà les mieux placés. Là où le laboratoire accepte les bons de la CPN, le dépistage glycémique devient une routine ciblée ; mais même dans le centre le mieux pourvu, le test reste payé par la femme, et l'explication reste soumise au temps disponible. {n:H8} participants estiment que le lieu d'exercice décide de ce que reçoivent les femmes." },
-  { cite: "P11", codes: ["B9", "I8"], t: "Le titulaire laisse passer celles qui ne peuvent pas payer, mais c'est un arrangement, ce n'est écrit nulle part." },
+  { p: "Définition. L'équipement rend possible le test de la première CPN, mais ne règle ni le contrôle au troisième trimestre ni l'explication, et il est réparti au bénéfice des centres déjà les mieux placés. Même dans le centre le mieux pourvu, la glycémie n'est refaite qu'aux femmes à risque, faute d'une épreuve de charge praticable entre 24 et 28 semaines, et l'explication reste soumise au temps disponible. {n:H8} participants estiment que le lieu d'exercice décide de ce que reçoivent les femmes." },
+  { cite: "P11", codes: ["B9"], t: "Le protocole parle d'une épreuve à ce moment-là, mais ici personne ne la fait : il faudrait que la femme vienne à jeun et reste deux heures." },
 
   { h3: "5.3.4. Thème 3 — Trouver sans pouvoir suivre" },
   { p: "Définition. La détection ne devient une prise en charge que si la référence aboutit et si l'information revient. Devant une tension élevée, la conduite décrite est la même partout : reprise après repos, recherche de protéines, référence. La suite diverge : dans les centres éloignés, la référence dépend d'un véhicule, de l'argent de la famille et de la personne qui décide ({n:G4} participants) ; {n:F3} participants rapportent l'absence de tout retour écrit de l'hôpital ; {n:F6} décrivent des femmes dépistées qui, après l'accouchement, ne relèvent plus d'aucun service." },
@@ -91,11 +91,11 @@ export const blocs = [
 
 // Tableau VII — synthèse des thèmes (mémo « Phase 5 » du projet).
 export const THEMES = [
-  ["T1. Un dépistage coupé en deux", "OS1", "La tension est intégrée à la CPN ; la glycémie, demandée sur des signes d'appel, se fait au laboratoire ou à la consultation des maladies chroniques, aux frais de la femme, et cesse d'être pensée là où ce circuit est fermé à la femme enceinte."],
+  ["T1. Un dépistage coupé en deux", "OS1", "La tension est mesurée à chaque visite ; la glycémie, prévue pour toutes à la première CPN, dépend du laboratoire et n'est pas refaite à 24-28 semaines ; là où le circuit est fermé, même le test initial disparaît."],
   ["T2. Expliquer moins à celles qui savent le moins", "OS1", "L'explication varie avec l'heure, la charge et l'idée que l'on se fait de la femme, à l'inverse des besoins."],
   ["T3. Trouver sans pouvoir suivre", "OS2", "La détection ne devient prise en charge que si la référence aboutit et si l'information revient."],
   ["T4. Ce qui est compté existe", "OS2", "Intrants, maintenance et attention suivent les indicateurs ; le dépistage n'en fait pas partie."],
-  ["T5. Ce que change la dotation, et ce qu'elle ne change pas", "OS2", "L'équipement réduit l'inégalité du test, mais ni celle du coût ni celle de l'explication."],
+  ["T5. Ce que change la dotation, et ce qu'elle ne change pas", "OS2", "L'équipement rend possible le test initial, mais ne règle ni le contrôle tardif ni l'explication."],
   ["T6. Le registre comme écran", "OS2, équité", "Un contrôle de complétude produit de la complétude et peut masquer l'inégalité."],
   ["T7. Le dépistage hors des murs", "OS2, transformations", "Relais communautaires et initiatives locales prolongent le dépistage ; ils reposent sur une personne."],
 ];

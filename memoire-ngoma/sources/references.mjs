@@ -21,6 +21,8 @@ export const AJOUTEES = {
   campbell: "Campbell DT. Assessing the impact of planned social change. Eval Program Plann. 1979;2(1):67-90.",
   rurangirwa: "Rurangirwa AA, Mogren I, Ntaganira J, Govender K, Krantz G. Quality of antenatal care services in Rwanda: assessing practices of health care providers. BMC Health Serv Res. 2018;18(1):865.",
   mccambridge: "McCambridge J, Witton J, Elbourne DR. Systematic review of the Hawthorne effect: new concepts are needed to study research participation effects. J Clin Epidemiol. 2014;67(3):267-77.",
+  // Relevée en ligne le 2 octobre 2026 (texte intégral inaccessible) : liste des auteurs à compléter.
+  schmidt: "Schmidt CN, Butrick E, Musange S, Mulindahabi N, Walker D, et al. Towards stronger antenatal care: understanding predictors of late presentation to antenatal services and implications for obstetric risk management in Rwanda. PLoS One. 2021;16(8):e0256415.",
 };
 
 /** Numérotation des références ajoutées, dans l'ordre de première citation. */

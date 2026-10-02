@@ -49,9 +49,10 @@ export function chapitre5(calc, { refs = null } = {}) {
       ["Volume d'activité prénatale", enLigne(effectifs(centres, "volume", ["élevé", "modéré"]))],
       ["Profil de pauvreté du secteur", enLigne(effectifs(centres, "pauvrete", ["plus faible", "plus élevée"]))],
       ["Glucomètre en salle de CPN", enLigne([["présent", valeurs.glucoEnCpn], ["absent", obsTous.length - valeurs.glucoEnCpn]])],
-      ["Glycémie pour une femme enceinte", enLigne([["au laboratoire, sur bon de la CPN", valeurs.glycPossible], ["dont payée par la femme", valeurs.glycPayante],
+      ["Glycémie de la première CPN", enLigne([["réalisée au laboratoire, sur bon de la CPN", valeurs.glycPossible],
         ["glucomètre réservé aux malades chroniques", valeurs.glycMnt], ["impossible (panne, bandelettes absentes ou périmées)", valeurs.glucoInutilisable],
         ["pas de glucomètre", valeurs.glucoAbsent]])],
+      ["Glycémie refaite systématiquement à 24-28 semaines", enLigne([["oui", valeurs.glycT3Systematique], ["non (sur facteurs de risque au mieux)", obsTous.length - valeurs.glycT3Systematique]])],
       ["Femmes reçues pendant la demi-journée", `${Math.min(...femmes)} à ${Math.max(...femmes)}`],
     ];
     return [legende(`Tableau V. Caractéristiques des centres de santé (n = ${obsTous.length})`), tableau(lignes, [3000, 6026]), source("grilles d'observation (annexe 2) et données de routine du district")];

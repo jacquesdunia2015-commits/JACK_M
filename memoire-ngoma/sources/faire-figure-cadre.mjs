@@ -25,10 +25,9 @@ const cascade = {
   present: calc.obsTous.filter(o => glucometre(o).present === "oui").length,
   utilisable: calc.obsTous.filter(o => ["laboratoire", "réservée MNT"].includes(o.glycemieCpn)).length,
   accessible: v.glycPossible,
-  sansFrais: v.glycPossible - v.glycPayante,
+  refaite: v.glycT3Systematique,   // glycémie refaite systématiquement à 24-28 semaines
 };
-const dispense = calc.obsTous.filter(o => o.glycemieCpn === "laboratoire" && /dispense/.test(glucometre(o).obs)).length;
-if (!(cascade.present >= cascade.utilisable && cascade.utilisable >= cascade.accessible && cascade.accessible >= cascade.sansFrais)) {
+if (!(cascade.present >= cascade.utilisable && cascade.utilisable >= cascade.accessible && cascade.accessible >= cascade.refaite)) {
   throw new Error(`cascade incohérente : ${JSON.stringify(cascade)}`);
 }
 
@@ -115,7 +114,7 @@ function cascadeCadre(col) {
         texte(col.x + col.w / 2, y + decal + 32, "Organisationnel — accès à la glycémie", { taille: 21, gras: true }) +
         etiquette(col.x + col.w - 14, y, "révision");
       const etapes = [["présent", "", cascade.present], ["utilisable", "", cascade.utilisable],
-        ["accessible", "à la CPN", cascade.accessible], ["sans frais", "pour la femme", cascade.sansFrais]];
+        ["faite à la", "1re CPN", cascade.accessible], ["refaite à", "24-28 sem.", cascade.refaite]];
       const lw = 110, gap = (w - 24 - 4 * lw) / 3;
       etapes.forEach(([lib, sous, val], i) => {
         const bx = x + 12 + i * (lw + gap), by = y + decal + 48;
@@ -124,7 +123,7 @@ function cascadeCadre(col) {
           texte(bx + lw / 2, by + 60, lib, { taille: 19 }) + (sous ? texte(bx + lw / 2, by + 81, sous, { taille: 16, italique: true }) : "");
         if (i < 3) out += fleche(bx + lw + 3, by + 46, bx + lw + gap - 3, by + 46);
       });
-      out += texte(col.x + col.w / 2, y + decal + 168, `centres où le glucomètre est… ; dispense informelle dans ${dispense} centre`, { taille: 17, italique: true });
+      out += texte(col.x + col.w / 2, y + decal + 168, `centres où le glucomètre est… ; la glycémie est prévue pour toutes à la 1re CPN`, { taille: 17, italique: true });
       return out;
     },
   };
@@ -132,7 +131,7 @@ function cascadeCadre(col) {
 const gauche = [
   sousCadre(G, "Sens attribué au dépistage", `Mandat reconnu par tous (${n("A2")}) ; ce qui est impossible cesse d'être pensé.`),
   sousCadre(G, "Un dépistage coupé en deux", "Tension intégrée aux constantes ; glycémie au laboratoire ou à la consultation des maladies chroniques."),
-  sousCadre(G, "Double sélection à l'accès au test glycémique", `Sur des signes d'appel, faute de critères écrits ; puis sur la capacité de payer : test hors du paquet de soins de la CPN (${n("B9")}).`, { revision: "révision" }),
+  sousCadre(G, "Un test unique, trop précoce", `Glycémie prévue pour toutes à la 1re CPN, souvent non faite faute de bandelettes ; non refaite à 24-28 semaines, sauf signes d'appel (${n("B9")}).`, { revision: "révision" }),
   sousCadre(G, "Pratique informative et capacitante", `Modulée à l'inverse des besoins (${n("C4")}) ; contre-pratiques : faire reformuler, image commune.`),
 ];
 const droite = [
@@ -167,7 +166,7 @@ parts.push(fleche(305, basCol + 4, 470, E.y - 6), fleche(895, basCol + 4, 730, E
   texte(L / 2, E.y + 40, "ÉQUITÉ D'ACCÈS AU DÉPISTAGE CAPACITANT", { taille: 26, gras: true }),
   etiquette(E.x + E.w, E.y, "révision : trois dimensions"));
 const dims = [
-  ["Accès au test", `Tension intégrée ; glycémie dans ${v.glycPossible} centres sur ${v.nbCentres}, sur signes d'appel, aux frais de la femme.`],
+  ["Accès au test", `Tension intégrée ; glycémie de la 1re CPN faite dans ${v.glycPossible} centres sur ${v.nbCentres}, jamais refaite à 24-28 semaines.`],
   ["Accès à l'explication", "La capacité d'agir de la femme, distribuée à l'inverse des besoins."],
   ["Continuité", "Référence aboutie, retour d'information, suivi après l'accouchement."],
 ];
@@ -211,4 +210,4 @@ await page.setContent(`<!doctype html><html><body style="margin:0">${svg}</body>
 await page.screenshot({ path: cheminPng, clip: { x: 0, y: 0, width: L, height: H } });
 await navigateur.close();
 console.log("écrit :", cheminSvg, "et", cheminPng);
-console.log(`  cascade : présent ${cascade.present} → utilisable ${cascade.utilisable} → accessible à la CPN ${cascade.accessible} → sans frais ${cascade.sansFrais} (sur ${v.nbCentres})`);
+console.log(`  cascade : présent ${cascade.present} → utilisable ${cascade.utilisable} → faite à la 1re CPN ${cascade.accessible} → refaite à 24-28 sem. ${cascade.refaite} (sur ${v.nbCentres})`);

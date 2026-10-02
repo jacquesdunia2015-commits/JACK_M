@@ -26,7 +26,7 @@ export const arbre = [
     { id: "B6", nom: "Mesure omise faute d'appareil disponible [inductif]" },
     { id: "B7", nom: "Dotation incomplète d'un centre neuf [inductif, vague 2]" },
     { id: "B8", nom: "Glycémie hors de la CPN : laboratoire ou consultation MNT [inductif, révision]" },
-    { id: "B9", nom: "Glycémie hors du paquet de soins de la CPN : test payé par la femme [inductif, révision]" },
+    { id: "B9", nom: "Glycémie unique à la première CPN, non refaite à 24-28 semaines [inductif, révision]" },
   ]},
   { id: "C", nom: "3. Pratique informative et éducative", couleur: "#f28e2b", enfants: [
     { id: "C1", nom: "Explication de la mesure et du risque" },
@@ -136,10 +136,10 @@ export const grilleParQuestion = {
  * Cette table EST la trace de l'ouverture inductive exigée au § 4.2.6.
  */
 export const ajustements = {
-  P01: { Q2: "+B5,E2,B8,B9,G1", Q3: "+G1,G4", Q5: "+C3", Q6: "+C4,G3,H5", Q7: "+A3,F4", Q10: "+E2,F5,G2",
+  P01: { Q2: "+B5,E2,B8,B9", Q3: "+G1,G4", Q5: "+C3", Q6: "+C4,G3,H5", Q7: "+A3,F4", Q10: "+E2,F5,G2",
          Q11: "+G7,H7", Q12: "+G1,G2,F2", Q13: "+F3", Q16: "+F4,E4", Q17: "+I1,E2", Q18: "+I5,I7",
          Q19: "+H2,H4,H5", Q20: "+F6,A4" },
-  P02: { Q2: "+B2,E2,H1,B8,B9,G1", Q3: "+C6,B4", Q5: "+C6,G7", Q6: "=C4,G3,H5,C6", Q7: "+A5,D5",
+  P02: { Q2: "+B2,E2,H1,B8,B9", Q3: "+C6,B4", Q5: "+C6,G7", Q6: "=C4,G3,H5,C6", Q7: "+A5,D5",
          Q8: "+A2,A4", Q9: "+E5,D2", Q10: "+E2,F5,G1,G2", Q11: "+G7,H7,E1", Q12: "+G1,G2,G4,H5",
          Q13: "+F2,F3", Q14: "+G1,G2,G5", Q15: "+D1,D4", Q16: "+F4,E4", Q17: "=I4,C4,H5",
          Q18: "+I5,I4", Q19: "+H2,H5,H4", Q20: "+H5" },
@@ -147,7 +147,7 @@ export const ajustements = {
          Q6: "+C4,C8", Q7: "+A3", Q8: "+A2", Q9: "+E2,D4", Q10: "+B6,E2,E6",
          Q11: "+H1,E1,G2", Q12: "+G3,G7,E1", Q13: "+F2,F3", Q14: "+G2,G5", Q15: "+D1,F1,D3",
          Q16: "+E4,F4", Q17: "=I2,D3", Q18: "+I7,H8", Q19: "+H3,H2,H1", Q20: "+D3" },
-  P04: { O2: "+E1,E6", Q1: "+B3,E1", Q2: "+B1,B2,E2,E1,B8,B9,G1", Q3: "+B4,G1,G2,F2",
+  P04: { O2: "+E1,E6", Q1: "+B3,E1", Q2: "+B1,B2,E2,E1,B8", Q3: "+B4,G1,G2,F2",
          Q4: "+C2,G4", Q5: "+C6,C3", Q6: "=C4,E1,H7,H5", Q7: "+A3,E1", Q8: "+A2,E1",
          Q9: "+E1,I3", Q10: "+E1,E6,B6,F4", Q11: "+H1,E1,G2", Q12: "+G1,G2,F2",
          Q13: "+F2,F3", Q14: "+G1,G2,G5", Q15: "+D1,D3", Q16: "+E4,F4", Q17: "=I3,E1",
@@ -187,7 +187,7 @@ export const ajustements = {
 
 /** Ajustements de la vague 2 — même logique : « = » remplace, « + » complète. */
 export const ajustementsV2 = {
-  P11: { Q2: "+B2,E2,F5,H8,B8,B9,G1,I8", Q3: "+B4,F2,F8", Q4: "+C1,C2,C3,C9", Q5: "+C9,C3,C6",
+  P11: { Q2: "+B2,E2,F5,H8,B8,B9", Q3: "+B4,F2,F8", Q4: "+C1,C2,C3,C9", Q5: "+C9,C3,C6",
          Q6: "=C4,E1,H7,H5", Q7: "+A3,A5", Q8: "+A2,A4", Q9: "+E5,F8,F5", Q10: "+F3,F8",
          Q11: "+H1,H7,G1", Q12: "+G2,G11", Q13: "+F2,F8", Q14: "+G1,G5", Q15: "+D2,D4",
          Q16: "+F4,E4,I5", Q17: "=I6,F3,F8", Q18: "+I7,H8", Q19: "+H2,H8,H4", Q20: "+H8,A4" },
@@ -200,7 +200,7 @@ export const ajustementsV2 = {
          Q10: "+F5,E2,G2", Q11: "+H1,G2", Q12: "+G2,G4,G10", Q13: "+F2,G2,F3",
          Q14: "+G2,G1,G5,G10", Q15: "+D2,D5", Q16: "+E4,F4,F5", Q17: "=I1,F5",
          Q18: "+I6,I7,G10", Q19: "+H2,H8,G2", Q20: "+G10" },
-  P14: { O1: "+E8", O2: "+E1,E8", Q2: "+B1,B2,D4,D3,E8,B8,B9,G1", Q3: "+B4,D3", Q4: "=C7",
+  P14: { O1: "+E8", O2: "+E1,E8", Q2: "+B1,B2,D4,D3,E8,B8,B9", Q3: "+B4,D3", Q4: "=C7",
          Q5: "+C6,D3", Q6: "=C4,D3", Q7: "+A3,D3", Q8: "+A2", Q9: "+D4,D3",
          Q10: "+B6,E8,E1", Q11: "+H1,G7,D3", Q12: "+G7", Q13: "+C7,F2", Q14: "+G1,G8",
          Q15: "+D1,D4,E8", Q16: "+E4", Q17: "=I3,E8", Q18: "+I7,F1,E8", Q19: "+H3,H5,E8",
@@ -215,7 +215,7 @@ export const ajustementsV2 = {
          Q10: "+B7,E2,F5", Q11: "+H1,B7", Q12: "=H6", Q13: "+F3", Q14: "+G5,G8",
          Q15: "+D1", Q16: "+E4,B7", Q17: "=I1,B7", Q18: "+I7,B7", Q19: "+H3,B7,H1",
          Q20: "+B7" },
-  P17: { O2: "+G11", Q2: "+B1,B2,D2,B8,B9,G1,G11", Q3: "+B4,G11", Q4: "+C1,C2,C3,G11",
+  P17: { O2: "+G11", Q2: "+B1,B2,D2,B8,B9,G11", Q3: "+B4,G11", Q4: "+C1,C2,C3,G11",
          Q5: "+C6,G11", Q6: "=C4,G11", Q7: "+A3,D2", Q8: "+A2,A4", Q9: "+D2,E2",
          Q10: "+G11,F2,F6", Q11: "+H1,G11", Q12: "+G11", Q13: "+F2,G11", Q14: "=G11,G5",
          Q15: "+D2", Q16: "+E4,F4,G11", Q17: "=I6,G11", Q18: "+I5,G11,I7",
@@ -225,7 +225,7 @@ export const ajustementsV2 = {
          Q11: "=H9,G1,G4", Q12: "=H9,C5", Q13: "+F2,G1", Q14: "+G1,G4,G8,H9",
          Q15: "+D2,D4", Q16: "+E4,F4", Q17: "=I1,F5", Q18: "+I7,F5", Q19: "+H2,H9,H5",
          Q20: "+H9" },
-  P19: { O2: "+E1", Q1: "+B3,E1", Q2: "+B1,B2,B8", Q3: "+B4,F2,G5", Q4: "+C2", Q5: "+C6",
+  P19: { O2: "+E1", Q1: "+B3,E1", Q2: "+B1,B2,B8,B9", Q3: "+B4,F2,G5", Q4: "+C2", Q5: "+C6",
          Q6: "=C4,E1,H7", Q7: "+A3,F7", Q8: "+A2,F7", Q9: "+D2,E2,E1", Q10: "=F7,E1,F4,B6",
          Q11: "+H1,H7,F7", Q12: "+H7,F7", Q13: "+F2", Q14: "+G8,G2,G1", Q15: "+D2,E1",
          Q16: "+E4,F4,F7", Q17: "=I3,E1,F7", Q18: "+I5,F7,I7", Q19: "+H2,F7,H4", Q20: "+F7" },

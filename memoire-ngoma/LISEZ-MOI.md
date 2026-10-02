@@ -70,7 +70,7 @@ dans l'application, sans créer de doublon.
 |---|---|
 | Documents | 35 (20 entretiens, 15 comptes rendus d'observation) |
 | Codes | 92 en 11 familles, dont 34 inductifs |
-| Segments codés | 2 317 |
+| Segments codés | 2 296 |
 | Double codage | 3 entretiens recodés par un pair extérieur (codeur C2), comme prévu au § 4.2.5.6 |
 | Stabilité intra-codeur | 3 entretiens recodés par le premier codeur quatre semaines après (étiquette C1b) |
 | Mémos | 20 mémos d'analyse, 20 journaux de bord, 11 définitions de familles |
@@ -133,13 +133,14 @@ glucomètre relève le plus souvent du laboratoire ou de la consultation des
 maladies non transmissibles, pas de la salle de CPN. La simulation le reflète :
 aucun centre n'a de glucomètre en CPN ; la glycémie est réalisable sur bon de
 la CPN dans 5 centres, réservée aux malades chroniques dans 3, impossible (panne,
-bandelettes absentes ou périmées) dans 6, et un centre n'a pas d'appareil. Là où
-elle est réalisable, le test n'est demandé qu'aux femmes présentant des signes
-d'appel, et il est payé par la femme : il ne figure pas dans le paquet de soins
-de la CPN (code inductif B9). Ces
+bandelettes absentes ou périmées) dans 6, et un centre n'a pas d'appareil. La
+glycémie est prévue pour toutes les femmes à la première CPN (registre de
+maternité), mais elle n'est effectivement faite que là où le laboratoire le
+permet, et elle n'est refaite nulle part de façon systématique entre 24 et 28
+semaines, quand apparaît le diabète gestationnel (code inductif B9). Ces
 proportions sont **simulées** ; elles s'inspirent des données nationales citées
-au chapitre 6 (STEPS 2022, Meharry et al. 2019), qui sont à confirmer dans leur
-texte intégral.
+au chapitre 6 (STEPS 2022, Meharry et al. 2019, Schmidt et al. 2021,
+Rurangirwa et al. 2018), qui sont à confirmer dans leur texte intégral.
 
 Les tableaux de couverture du Tableau II et les effectifs cités par le guide sont
 **calculés** à partir des données, jamais recopiés : modifier un participant et
