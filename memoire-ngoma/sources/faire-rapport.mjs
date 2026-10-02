@@ -21,6 +21,7 @@ import { blocs as blocsResultats, THEMES } from "./resultats.mjs";
 import { recommandations } from "./discussion.mjs";
 import { legende, source, rendu } from "./rendu.mjs";
 import { A_COMPLETER, A_VERIFIER, AVERTISSEMENT } from "./a-verifier.mjs";
+import { stylesAcademiques, pageAcademique, appliquerGabarit } from "./gabarit-academique.mjs";
 
 const require = createRequire(import.meta.url);
 const { Footer, PageNumber } = require("docx");
@@ -52,7 +53,7 @@ const extrait = (code, debut) => {
 
 /* ---------- Messages clés ---------- */
 const MESSAGES = [
-  "Le dépistage est coupé en deux. La tension est mesurée en CPN ; la glycémie se fait au laboratoire ou à la consultation des maladies chroniques. Aucun des {v:nbCentres} centres n'avait de glucomètre en salle de CPN, et la glycémie n'était accessible à la femme enceinte que dans {v:glycPossible} d'entre eux.",
+  "Le dépistage est coupé en deux. La tension est mesurée en CPN ; la glycémie se fait au laboratoire ou à la consultation des maladies chroniques. Aucun des {v:nbCentres} centres n'avait de glucomètre en salle de CPN, et la glycémie n'était accessible à la femme enceinte que dans {v:glycPossible} d'entre eux — sur des signes d'appel seulement, et à ses frais, car le test ne figure pas dans le paquet de soins de la CPN.",
   "L'explication — la part du dépistage qui permet à la femme d'agir — se raccourcit pour celles qui arrivent tard, posent peu de questions ou n'ont pas d'autre source d'information : elle est distribuée à l'inverse des besoins.",
   "Le dépistage ne figure dans aucun indicateur de la CPN : ses intrants ne sont pas suivis, ses appareils pas réparés, ses actes pas supervisés. Le contrôle porte sur la complétude du registre, qui peut masquer l'inégalité.",
   "La référence dépend d'un véhicule et revient rarement ; le suivi s'interrompt à l'accouchement.",
@@ -84,7 +85,7 @@ enfants.push(titre1("3. MÉTHODES"),
   tableau([
     ["Élément", "Description"],
     ["Type d'étude", "Qualitative descriptive"],
-    ["Cadre", `District de Ngoma (Province de l'Est) : les ${v.nbCentres} centres de santé`],
+    ["Cadre", `District de Ngoma (Province de l'Est) : ${v.nbCentres} des 16 centres de santé, le seizième ayant servi au pré-test`],
     ["Participants", calc.remplir("{N} prestataires de CPN ({v:nbInf} infirmiers ou infirmières, {v:nbSf} sages-femmes, dont {v:nbTitulaires} titulaires), échantillonnage à variation maximale")],
     ["Collecte", calc.remplir("Entretiens semi-structurés ({v:dureeMin} à {v:dureeMax} minutes) ; observation non participante d'une demi-journée par centre, service de CPN et laboratoire ; données de routine du district")],
     ["Analyse", "Analyse thématique en six phases, codage hybride (déductif à partir du cadre conceptuel, inductif)"],
@@ -101,6 +102,7 @@ enfants.push(titre1("4. PRINCIPAUX RÉSULTATS"),
     ["Situation observée", "Centres"],
     ["Glucomètre en salle de CPN", String(v.glucoEnCpn)],
     ["Glycémie réalisable au laboratoire, sur bon de la CPN", String(v.glycPossible)],
+    ["   dont test payé par la femme (hors paquet de la CPN)", String(v.glycPayante)],
     ["Glucomètre et bandelettes réservés à la consultation des maladies chroniques", String(v.glycMnt)],
     ["Glycémie impossible : appareil en panne, bandelettes absentes ou périmées", String(v.glucoInutilisable)],
     ["Pas de glucomètre dans le centre", String(v.glucoAbsent)],
@@ -108,6 +110,8 @@ enfants.push(titre1("4. PRINCIPAUX RÉSULTATS"),
   ], [7026, 2000]),
   source("observation non participante des services de CPN et des laboratoires"),
   ...extrait("P20", "Le sucre, il y a un appareil"),
+  paragraphe("Là où la glycémie est possible, elle reste doublement sélective : le bon n'est rédigé que pour les femmes présentant un signe d'appel ou un facteur de risque, et le test, absent du paquet de soins de la CPN, est payé par la femme au laboratoire. Celles qui n'ont pas l'argent le jour même repartent sans l'avoir fait."),
+  ...extrait("P01", "Le test n'est pas dans le paquet de la CPN"),
   titre2("4.2. Sept thèmes"),
   paragraphe("L'analyse a dégagé sept thèmes, dont deux répondent au premier objectif et cinq au second (tableau 3)."),
   legende("Tableau 3. Synthèse des thèmes"),
@@ -122,9 +126,10 @@ enfants.push(titre1("4. PRINCIPAUX RÉSULTATS"),
 
 enfants.push(titre1("5. POINTS DE DISCUSSION"),
   puce("Deux programmes dans le même centre. La glycémie appartient au programme des maladies non transmissibles, la CPN au programme de santé maternelle. Tant que ce partage n'est pas organisé, la femme enceinte reste en dehors du circuit du glucomètre, ce qui rejoint le caractère non systématique du dépistage rapporté au niveau national {p:27}."),
+  puce("Un test payant pour la femme. La couverture de l'assurance communautaire atteint 85,3 % {p:59}, mais le recours reste concentré parmi les plus aisés {p:61,62}. Un test hors du paquet de la CPN, payé au laboratoire, ajoute à la sélection sur les signes une sélection sur les moyens : c'est elle que la Charte d'Ottawa demande de corriger en conférant à chacun les moyens de sa santé {p:23}."),
   puce("L'explication, distribuée à l'inverse des besoins. L'inégalité ne tient pas seulement à l'accès au test, mais au temps d'explication, qui se raréfie là où il serait le plus utile ; c'est la dimension capacitante du dépistage qui se distribue mal {p:23}."),
   puce("Ce qui est compté existe. Les indicateurs orientent intrants, maintenance et supervision. Un dépistage absent du rapport mensuel n'est ni approvisionné ni contrôlé, et un contrôle de complétude du registre peut produire une égalité apparente."),
-  puce("La dotation ne suffit pas. Là où l'équipement est présent, l'inégalité du test disparaît mais celle de l'explication demeure : la réponse ne peut être seulement matérielle."));
+  puce("La dotation ne suffit pas. Là où l'équipement est présent, l'inégalité du test diminue, mais celles du coût et de l'explication demeurent : la réponse ne peut être seulement matérielle."));
 
 enfants.push(titre1("6. RECOMMANDATIONS"),
   legende("Tableau 4. Recommandations par destinataire"),
@@ -135,7 +140,7 @@ enfants.push(titre1("7. LIMITES"),
   paragraphe("Les résultats portent sur des perceptions et des pratiques déclarées ; le point de vue des femmes n'a pas été recueilli. L'observation, d'une demi-journée par centre, est exposée à un effet de la présence de l'observateur. Les données de routine, de qualité limitée {p:69}, ne servent qu'à décrire le contexte. L'étude porte sur un seul district : ses résultats ne se généralisent pas, mais la description du contexte permet d'apprécier leur transférabilité."));
 
 enfants.push(titre1("8. CONCLUSION"),
-  paragraphe("Le dépistage de l'hypertension et du diabète en CPN est accepté par les professionnels comme relevant de leur mandat, mais il n'est réalisé qu'à moitié : la tension est mesurée, la glycémie dépend d'un circuit qui n'est ouvert à la femme enceinte que dans {v:glycPossible} centres sur {v:nbCentres}. Rattacher la glycémie à la CPN, compter les actes de dépistage et leur suite, et soutenir la pratique informative sont les trois leviers qui ressortent de l'étude."));
+  paragraphe("Le dépistage de l'hypertension et du diabète en CPN est accepté par les professionnels comme relevant de leur mandat, mais il n'est réalisé qu'à moitié : la tension est mesurée, la glycémie dépend d'un circuit qui n'est ouvert à la femme enceinte que dans {v:glycPossible} centres sur {v:nbCentres}, sur des signes d'appel et à ses frais. Inscrire la glycémie dans le paquet de soins de la CPN, sans frais pour la femme, compter les actes de dépistage et leur suite, et soutenir la pratique informative sont les trois leviers qui ressortent de l'étude."));
 
 // Références citées dans le rapport.
 enfants.push(titre1("RÉFÉRENCES CITÉES"),
@@ -153,7 +158,8 @@ const pied = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CE
   new TextRun({ text: "Rapport de mémoire Ngoma — exercice de formation, données simulées · ", size: 16, color: "888888" }),
   new TextRun({ children: [PageNumber.CURRENT], size: 18 }),
 ] })] });
-const tampon = await Packer.toBuffer(new Document({ styles: stylesCommuns(), sections: [{ footers: { default: pied }, children: enfants }] }));
+const tampon = await appliquerGabarit(await Packer.toBuffer(new Document({ styles: stylesAcademiques(),
+  sections: [{ properties: { page: pageAcademique }, footers: { default: pied }, children: enfants }] })));
 const xml = await (await JSZip.loadAsync(tampon)).file("word/document.xml").async("string");
 const texte = xml.replace(/<[^>]+>/g, "");
 const centres = texte.match(/\bCS\d{2}\b/g);

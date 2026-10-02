@@ -48,7 +48,7 @@ export const observations = [
     },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 2, etat: "2 électroniques fonctionnels", obs: "Brassard grande taille absent ; signalé par l'équipe comme une gêne pour les patientes corpulentes." },
-      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; la glycémie est demandée par bon." },
+      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; la glycémie est demandée par bon, pour les femmes présentant un signe d'appel. Le test est payé par la femme à la caisse du laboratoire : il ne figure pas dans le paquet de soins de la CPN." },
       { item: "Bandelettes de glycémie", present: "oui", nombre: 12, etat: "péremption 11/2026", obs: "Au laboratoire. Stock faible, réservé en priorité à la consultation MNT et aux demandes de CPN jugées justifiées." },
       { item: "Balance", present: "oui", nombre: 1, etat: "fonctionnelle", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "toise fonctionnelle", obs: "" },

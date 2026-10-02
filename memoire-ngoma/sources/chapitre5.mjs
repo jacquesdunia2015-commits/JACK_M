@@ -48,6 +48,7 @@ export function chapitre5(calc, { refs = null } = {}) {
     ajouter("Profil de pauvreté du secteur", effectifs(centres, "pauvrete", ["plus faible", "plus élevée"]));
     ajouter("Glycémie pour une femme enceinte, le jour de l'observation", [
       ["réalisable au laboratoire, sur bon de la CPN", valeurs.glycPossible],
+      ["dont test payé par la femme (hors paquet de la CPN)", valeurs.glycPayante],
       ["glucomètre réservé à la consultation des maladies chroniques", valeurs.glycMnt],
       ["impossible (appareil en panne, bandelettes absentes ou périmées)", valeurs.glucoInutilisable],
       ["pas de glucomètre", valeurs.glucoAbsent]]);

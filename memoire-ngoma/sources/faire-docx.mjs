@@ -20,8 +20,8 @@ import * as e910 from "./entretiens-09-10.mjs";
 import * as e1113 from "./entretiens-11-13.mjs";
 import * as e1416 from "./entretiens-14-16.mjs";
 import * as e1719 from "./entretiens-17-19.mjs";
-import * as e2021 from "./entretiens-20-21.mjs";
-const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910, ...e1113, ...e1416, ...e1719, ...e2021 };
+import * as e20 from "./entretiens-20.mjs";
+const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910, ...e1113, ...e1416, ...e1719, ...e20 };
 
 
 /* ================================================================
@@ -75,7 +75,7 @@ function documentAnnexes(cfg) {
     saut(),
 
     titre1("1. Synthèse de l'échantillon simulé"),
-    p(`Deux vagues simulées : la vague 1 (${nbV1} participants, 5 centres) puis la vague 2 (${participants.length - nbV1} participants, les ${observations.length - 5} autres centres). Ensemble, elles couvrent les ${observations.length} centres de santé du district, dans la fourchette de seize à vingt-quatre participants du § 4.2.3.1.`, { run: { size: 20 } }),
+    p(`Deux vagues simulées : la vague 1 (${nbV1} participants, 5 centres) puis la vague 2 (${participants.length - nbV1} participants, les ${observations.length - 5} autres centres). Ensemble, elles couvrent ${observations.length} des seize centres de santé du district (le seizième a servi au pré-test), dans la fourchette de seize à vingt-quatre participants du § 4.2.3.1.`, { run: { size: 20 } }),
     p("Le protocole (§ 4.2.3.2, Tableau II) prescrit un échantillonnage raisonné à variation maximale portant sur sept dimensions. Le tableau de couverture ci-dessous est CALCULÉ à partir des fiches : c'est le contrôle à refaire pendant la collecte réelle, après chaque entretien.", { run: { size: 20 } }),
     vide(),
     tableau([
@@ -127,7 +127,7 @@ function documentAnnexes(cfg) {
       ["Élément", "Présent", "Nombre", "État de fonctionnement", "Observations"],
       ...o.B.map(x => [x.item, x.present, x.nombre === null || x.nombre === undefined ? "—" : String(x.nombre), x.etat, x.obs || "—"]),
       ["Rupture de stock signalée au cours des trois derniers mois", "", "", "", o.ruptureTroisMois],
-    ], [1900, 900, 800, 2400, 3026]));
+    ], [1800, 1050, 1050, 2200, 2926]));
 
     enfants.push(vide(), titre3("C. Protocoles et supports"));
     enfants.push(tableau([
@@ -322,7 +322,7 @@ const tous = [...participants, ...participantsV2];
 const obsTous = [...observations, ...observationsV2].sort((x, y) => x.cs.localeCompare(y.cs));
 const vague1 = new Set(participants.map(x => x.code));
 const echantillon = `${tous.filter(x => x.qualif === "infirmier").length} infirmiers ou infirmières et ` +
-  `${tous.filter(x => x.qualif === "sage-femme").length} sages-femmes, ${obsTous.length} centres de santé codés (CS01 à CS16), en deux vagues`;
+  `${tous.filter(x => x.qualif === "sage-femme").length} sages-femmes, ${obsTous.length} centres de santé codés (CS01 à CS${String(obsTous.length).padStart(2, "0")}), en deux vagues`;
 
 await ecrire(documentAnnexes({
   participants: tous, observations: obsTous, vague1, echantillon,

@@ -19,7 +19,9 @@ export const A_COMPLETER = [
 export const A_VERIFIER = [
   "Figure 2 (carte du district de Ngoma) : la source n'est pas indiquée dans le protocole ; l'ajouter sous la figure.",
   "Annexe 1 (guide d'entretien) : la numérotation passe de la section 5 à la section 7 dans le protocole ; corriger ou expliquer.",
-  "Pré-test : le protocole le situe dans « un centre non retenu », alors que les seize centres du district sont échantillonnés ; préciser où il a eu lieu (district voisin, par exemple).",
+  "Protocole : passer de seize à quinze centres (§ 4.2.2.2 et § 4.2.3.2) et préciser que le pré-test a lieu dans le seizième centre, exclu de l'échantillon — déjà fait dans le mémoire, à reporter dans le protocole.",
+  "Glycémie hors du paquet de soins de la CPN et payée par la femme : vérifier dans les documents du Ministère de la Santé (paquet de la CPN, tarification des centres de santé, couverture de la mutuelle) avant de l'écrire comme un fait dans le mémoire réel.",
+  "Mise en forme appliquée (Times New Roman 14, interligne 1,5, marges de 2,5 cm et 3 cm à gauche) : à confronter au document des règles de rédaction de l'ENATSE.",
   `Références ${premiereAjoutee} à ${derniereAjoutee}, ajoutées pendant la rédaction de la discussion : vérifier chacune dans sa source (auteurs, année, volume, pages) avant de la conserver.`,
   "Chiffres nationaux cités dans la discussion (STEPS 2022 [16] : 87,0 % des femmes jamais testées pour la glycémie, 38 % jamais pour la tension ; Meharry 2019 [27] : protocole national de 2012 et prévalence de 3,2 %) : relevés dans les résumés publiés ; les confirmer dans le texte intégral.",
   "Objectif spécifique 1 du protocole : « information capacitances » est une coquille pour « information capacitante » (corrigée dans le rapport et le mémoire, à corriger dans le protocole).",

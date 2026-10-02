@@ -17,7 +17,7 @@
 //   · un centre BIEN doté (CS01), contrepoint indispensable : ce que change la
 //     disponibilité réelle du glucomètre et des bandelettes ;
 //   · un registre rempli sans suite clinique (CS13) : compter ne suffit pas ;
-//   · les agents de santé communautaire comme relais (CS16, CS08) ;
+//   · les agents de santé communautaire comme relais (CS08) ;
 //   · le recours au traitement traditionnel, tel que perçu (CS05, CS15) ;
 //   · une population frontalière et mobile (CS10) ;
 //   · la rotation du personnel (CS06, CS09) ;
@@ -94,12 +94,5 @@ export const participantsV2 = [
     formationMnt: "non", anneeFormation: "", secteur: "rural périphérique",
     distanceHopital: "éloignée", volume: "modéré", pauvreteSecteur: "plus élevée",
     langue: "kinyarwanda", date: "29/09/2026", duree: "45 min",
-  },
-  {
-    code: "P21", cs: "CS16", sexe: "féminin", age: "30-39", qualif: "sage-femme",
-    niveau: "A1", ancTotale: "5-10 ans", ancCpn: "> 2 ans", titulaire: true,
-    formationMnt: "non", anneeFormation: "", secteur: "rural périphérique",
-    distanceHopital: "éloignée", volume: "modéré", pauvreteSecteur: "plus élevée",
-    langue: "kinyarwanda", date: "30/09/2026", duree: "52 min",
   },
 ];

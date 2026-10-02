@@ -26,8 +26,8 @@ import * as e910 from "./entretiens-09-10.mjs";
 import * as e1113 from "./entretiens-11-13.mjs";
 import * as e1416 from "./entretiens-14-16.mjs";
 import * as e1719 from "./entretiens-17-19.mjs";
-import * as e2021 from "./entretiens-20-21.mjs";
-const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910, ...e1113, ...e1416, ...e1719, ...e2021 };
+import * as e20 from "./entretiens-20.mjs";
+const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910, ...e1113, ...e1416, ...e1719, ...e20 };
 
 export async function calculs(dossier) {
   const projet = JSON.parse(readFileSync(`${dossier}/Memoire_Ngoma_SIMULATION.projx`, "utf8"));
@@ -75,6 +75,8 @@ export async function calculs(dossier) {
     dureeMin: Math.min(...minutes), dureeMax: Math.max(...minutes),
     glycPossible: obsTous.filter(o => etatGluco(o) === "laboratoire").length,
     glycMnt: obsTous.filter(o => etatGluco(o) === "réservée MNT").length,
+    // Là où la glycémie est réalisable, le test est-il payé par la femme (hors paquet de la CPN) ?
+    glycPayante: obsTous.filter(o => etatGluco(o) === "laboratoire" && /payé par la femme/.test(gluco(o).obs)).length,
     glucoInutilisable: obsTous.filter(o => etatGluco(o) === "impossible").length,
     glucoAbsent: obsTous.filter(o => etatGluco(o) === "absent").length,
     glucoPresent: obsTous.filter(o => gluco(o).present === "oui").length,

@@ -17,7 +17,7 @@ export const observationsV2 = [
     },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 3, etat: "2 électroniques et 1 manuel, tous fonctionnels", obs: "Brassard grande taille présent — seul centre observé à en disposer." },
-      { item: "Glucomètre", present: "oui", nombre: 2, etat: "fonctionnels — au laboratoire du centre, un de réserve sous clé", obs: "Aucun glucomètre en salle de CPN. Glycémies de CPN réalisées au laboratoire sur bon, le matin même ; plusieurs bons de CPN au registre du laboratoire pendant la demi-journée." },
+      { item: "Glucomètre", present: "oui", nombre: 2, etat: "fonctionnels — au laboratoire du centre, un de réserve sous clé", obs: "Aucun glucomètre en salle de CPN. Glycémies de CPN réalisées au laboratoire sur bon, le matin même ; plusieurs bons de CPN au registre du laboratoire pendant la demi-journée. Test payé par la femme à la caisse du laboratoire (hors paquet de la CPN) ; le titulaire en dispense, sans écrit, celles qui ne peuvent pas payer." },
       { item: "Bandelettes de glycémie", present: "oui", nombre: 48, etat: "péremption 04/2027", obs: "Au laboratoire. Fiche de stock tenue à jour, part réservée à la CPN, seuil de réapprovisionnement inscrit." },
       { item: "Balance", present: "oui", nombre: 2, etat: "fonctionnelles", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "toise fixée au mur", obs: "" },
@@ -119,7 +119,7 @@ export const observationsV2 = [
     },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 2, etat: "1 électronique fonctionnel ; 1 électronique en panne", obs: "" },
-      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; la glycémie est demandée par bon." },
+      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; la glycémie est demandée par bon, pour les femmes présentant un signe d'appel. Le test est payé par la femme à la caisse du laboratoire : il ne figure pas dans le paquet de soins de la CPN." },
       { item: "Bandelettes de glycémie", present: "oui", nombre: 5, etat: "péremption 12/2026", obs: "Au laboratoire. Stock très faible." },
       { item: "Balance", present: "oui", nombre: 1, etat: "fonctionnelle", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "toise", obs: "" },
@@ -221,7 +221,7 @@ export const observationsV2 = [
     },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "électronique, fonctionnel", obs: "" },
-      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; le laboratoire accepte les bons de la CPN." },
+      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; le laboratoire accepte les bons de la CPN, pour les femmes à risque. Le test est payé par la femme à la caisse du laboratoire : il ne figure pas dans le paquet de soins de la CPN." },
       { item: "Bandelettes de glycémie", present: "oui", nombre: 14, etat: "péremption 01/2027", obs: "Au laboratoire." },
       { item: "Balance", present: "oui", nombre: 1, etat: "fonctionnelle", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "mètre ruban", obs: "" },
@@ -289,7 +289,7 @@ export const observationsV2 = [
     },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 2, etat: "1 électronique fonctionnel ; 1 manuel fonctionnel", obs: "" },
-      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; la glycémie est demandée par bon." },
+      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; la glycémie est demandée par bon, pour les femmes présentant un signe d'appel. Le test est payé par la femme à la caisse du laboratoire : il ne figure pas dans le paquet de soins de la CPN." },
       { item: "Bandelettes de glycémie", present: "oui", nombre: 9, etat: "péremption 11/2026", obs: "Au laboratoire." },
       { item: "Balance", present: "oui", nombre: 1, etat: "fonctionnelle", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "mètre ruban", obs: "" },
@@ -346,39 +346,5 @@ export const observationsV2 = [
     },
     E: "Équipement le plus vétuste de la série après CS11. Le tensiomètre réparé fonctionne mais allonge chaque mesure. Ambiance calme, rapports cordiaux.",
     F: "La porte qui ne ferme pas résume l'absence d'espace confidentiel mieux que toute catégorie de la grille. Rien de marquant entre propos et constats ; le participant décrit lui-même l'appareil réparé.",
-  },
-  {
-    cs: "CS16", secteur: "rural périphérique", date: "29/09/2026", heures: "08h30 – 12h00",
-    A: {
-      sallesCpn: 1, echangeNonEntendu: "oui",
-      detail: "Salle fermée ; électricité fournie par un panneau solaire, éclairage limité par temps couvert.",
-      femmesRecues: 21, professionnels: 2, posteConstantes: "non",
-      dureeMoyenne: "environ 1 h 40",
-    },
-    B: [
-      { item: "Tensiomètre", present: "oui", nombre: 1, etat: "électronique sur piles, fonctionnel ce jour-là", obs: "L'équipe indique que les piles manquent régulièrement et qu'elle en achète parfois elle-même." },
-      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire (technicien présent deux jours par semaine)", obs: "Aucun glucomètre en salle de CPN." },
-      { item: "Bandelettes de glycémie", present: "non", nombre: 0, etat: "—", obs: "Aucune au laboratoire depuis le début du mois selon l'équipe." },
-      { item: "Balance", present: "oui", nombre: 1, etat: "mécanique", obs: "" },
-      { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "mètre ruban", obs: "" },
-      { item: "Bandelettes urinaires", present: "oui", nombre: 12, etat: "péremption 01/2027", obs: "" },
-      hygiene("savon présent"),
-    ],
-    ruptureTroisMois: "oui — piles du tensiomètre, de façon répétée",
-    glycemieCpn: "impossible",
-    C: [
-      { item: "Protocole / algorithme HTA", present: "non", accessible: "—", obs: "" },
-      { item: "Protocole diabète en grossesse", present: "non", accessible: "—", obs: "" },
-      { item: "Fiche ou circuit de référence formalisé", present: "oui", accessible: "oui", obs: "" },
-      { item: "Supports d'information destinés aux femmes", present: "non", accessible: "—", obs: "" },
-      { item: "Registre de consultation prénatale", present: "oui", accessible: "oui", obs: "Complété par un CAHIER DE SUIVI APRÈS L'ACCOUCHEMENT, créé par la titulaire, où sont notées les femmes dépistées avec une tension élevée pendant la grossesse." },
-    ],
-    D: {
-      rubriqueTa: "oui", rubriqueGlycemie: "non",
-      renseignement: "Tension renseignée régulièrement.",
-      tracageReference: "oui — et suivi après l'accouchement tracé dans le cahier dédié",
-    },
-    E: "Centre le plus éloigné du district. Un agent de santé communautaire vient signaler une femme enceinte qui n'est pas revenue ; la titulaire lui demande de lui rappeler son rendez-vous. Le cahier de suivi après l'accouchement compte une douzaine de noms — consulté par l'observateur sans relevé nominatif.",
-    F: "Le cahier de suivi après l'accouchement répond exactement à la « discontinuité après l'accouchement » que plusieurs participants de la vague 1 avaient soulevée sans qu'aucun ne décrive de réponse. Il est l'œuvre d'une personne : fragile, non prévu par le système, et pourtant le seul dispositif de ce type observé dans le district.",
   },
 ];

@@ -1,9 +1,9 @@
 # ⚠️ DONNÉES ENTIÈREMENT SIMULÉES — NE PAS CITER
 
-**Ce dossier ne contient aucune donnée de terrain.** Les 21 entretiens et les
-16 observations qu'on y trouve ont été **entièrement fabriqués**. Aucun
+**Ce dossier ne contient aucune donnée de terrain.** Les 20 entretiens et les
+15 observations qu'on y trouve ont été **entièrement fabriqués**. Aucun
 entretien n'a été conduit, aucun centre de santé n'a été visité, aucune des
-personnes décrites n'existe. Les codes de structure (CS01 à CS16) sont fictifs
+personnes décrites n'existe. Les codes de structure (CS01 à CS15) sont fictifs
 et ne désignent aucun établissement réel.
 
 Ces fichiers servent à **une seule chose** : apprendre à manipuler QualiCode
@@ -45,14 +45,14 @@ commence le travail réel ; ce dossier-ci reste l'exercice.
 
 | Fichier | Contenu |
 |---|---|
-| `1_Annexes_remplies_SIMULATION.docx` | **Tous les outils de collecte remplis** : index des 21 entretiens (annexe 1), 16 grilles d'observation (annexe 2), 21 fiches sociodémographiques (annexe 3), registre des consentements (annexe 4), données de routine du district (annexe 9), et la couverture du Tableau II |
-| `2_Transcriptions_verbatim_SIMULATION.docx` | Les 21 transcriptions, question par question selon l'annexe 1, avec relances et journal de bord |
+| `1_Annexes_remplies_SIMULATION.docx` | **Tous les outils de collecte remplis** : index des 20 entretiens (annexe 1), 15 grilles d'observation (annexe 2), 20 fiches sociodémographiques (annexe 3), registre des consentements (annexe 4), données de routine du district (annexe 9), et la couverture du Tableau II |
+| `2_Transcriptions_verbatim_SIMULATION.docx` | Les 20 transcriptions, question par question selon l'annexe 1, avec relances et journal de bord |
 | `3_Guide_QualiCode_pour_ce_memoire.docx` | Les six phases de l'analyse thématique (§ 4.2.6) traduites en gestes dans l'application |
 | `4_Note_de_positionnalite_MODELE.docx` | La note de positionnalité (confirmabilité, annexe 8), en modèle d'exercice modifiable : avant le codage, puis à la fin de l'analyse — la même que dans le projet |
 | `5_Chapitre_Resultats_SIMULATION.docx` | **Le chapitre 5 (Résultats)** rédigé à partir du projet, en exercice : participants et centres, objectifs spécifiques 1 et 2, sept thèmes, équité, transformations, triangulation. Chaque citation et chaque effectif sont vérifiés contre le codage à la production du document |
 | `6_Chapitre_Discussion_SIMULATION.docx` | **Le chapitre 6 (Discussion)** en exercice : rappel des résultats, confrontation thème par thème à la littérature et au cadre conceptuel, révisions du cadre, forces et limites, recommandations par destinataire, perspectives. Seules sont citées les références du protocole dont le contenu est connu ; les références ajoutées pendant la rédaction (72 à 79) sont à vérifier dans leur source |
 | `7_Rapport_de_memoire_SIMULATION.docx` | **Le rapport de mémoire** : une synthèse d'une dizaine de pages (messages clés, contexte, objectifs, méthodes, résultats avec l'accès à la glycémie centre par centre, thèmes, discussion, recommandations, limites), suivie de la liste de ce qui reste à compléter ou à vérifier |
-| `8_Memoire_complet_SIMULATION.docx` | **Le mémoire complet** selon le plan type de l'ENATSE (pages liminaires, executive summary, introduction, chapitres 1 à 6, conclusion et suggestions, 79 références en Vancouver, annexes, table des matières, résumé et abstract). **Non versé au dépôt** : produit sur le poste par `faire-memoire.mjs`, qui a besoin du protocole extrait. Dans Word, mettre à jour le sommaire et la table des matières (Ctrl+A puis F9) |
+| `8_Memoire_complet_SIMULATION.docx` | **Le mémoire complet** selon le plan type de l'ENATSE (pages liminaires, executive summary, introduction, chapitres 1 à 6, conclusion et suggestions, 79 références en Vancouver, annexes, table des matières, résumé et abstract). **Non versé au dépôt** : produit sur le poste par `faire-memoire.mjs`, qui a besoin du protocole extrait. Mise en forme : Times New Roman 14, interligne 1,5, texte justifié, marges de 2,5 cm (3 cm à gauche), styles Word modifiables. Dans Word, mettre à jour le sommaire et la table des matières (Ctrl+A puis F9) |
 | `Memoire_Ngoma_SIMULATION.projx` | **Le projet QualiCode « Mémoire Ngoma — SIMULATION de formation »**, les deux vagues réunies |
 
 À ouvrir par **Accueil ▸ Ouvrir (.projx)**. Le projet porte le même nom et le
@@ -63,17 +63,17 @@ dans l'application, sans créer de doublon.
 
 | | Vague 1 | Vague 2 | Projet |
 |---|---|---|---|
-| Participants | 5 infirmiers, 5 sages-femmes | 5 infirmiers ou infirmières, 6 sages-femmes | **21** |
-| Centres | CS02, CS03, CS07, CS11, CS14 | les 11 autres | **les 16 du district** |
+| Participants | 5 infirmiers, 5 sages-femmes | 5 infirmiers ou infirmières, 5 sages-femmes | **20** |
+| Centres | CS02, CS03, CS07, CS11, CS14 | les 10 autres | **15 des 16 du district** (le seizième a servi au pré-test) |
 
 | Projet | |
 |---|---|
-| Documents | 37 (21 entretiens, 16 comptes rendus d'observation) |
-| Codes | 91 en 11 familles, dont 33 inductifs |
-| Segments codés | 2 361 |
+| Documents | 35 (20 entretiens, 15 comptes rendus d'observation) |
+| Codes | 92 en 11 familles, dont 34 inductifs |
+| Segments codés | 2 317 |
 | Double codage | 3 entretiens recodés par un pair extérieur (codeur C2), comme prévu au § 4.2.5.6 |
 | Stabilité intra-codeur | 3 entretiens recodés par le premier codeur quatre semaines après (étiquette C1b) |
-| Mémos | 20 mémos d'analyse, 21 journaux de bord, 11 définitions de familles |
+| Mémos | 20 mémos d'analyse, 20 journaux de bord, 11 définitions de familles |
 
 La variable « vague » distingue les deux vagues. Les variables
 « citation_autorisee » et « recontact_accepte » reprennent le registre des
@@ -130,7 +130,10 @@ glucomètre relève le plus souvent du laboratoire ou de la consultation des
 maladies non transmissibles, pas de la salle de CPN. La simulation le reflète :
 aucun centre n'a de glucomètre en CPN ; la glycémie est réalisable sur bon de
 la CPN dans 5 centres, réservée aux malades chroniques dans 3, impossible (panne,
-bandelettes absentes ou périmées) dans 7, et un centre n'a pas d'appareil. Ces
+bandelettes absentes ou périmées) dans 6, et un centre n'a pas d'appareil. Là où
+elle est réalisable, le test n'est demandé qu'aux femmes présentant des signes
+d'appel, et il est payé par la femme : il ne figure pas dans le paquet de soins
+de la CPN (code inductif B9). Ces
 proportions sont **simulées** ; elles s'inspirent des données nationales citées
 au chapitre 6 (STEPS 2022, Meharry et al. 2019), qui sont à confirmer dans leur
 texte intégral.

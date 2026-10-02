@@ -30,6 +30,7 @@ import { chapitre6 } from "./chapitre6.mjs";
 import { legende, rendu } from "./rendu.mjs";
 import * as T from "./memoire-textes.mjs";
 import { A_COMPLETER, A_VERIFIER, AVERTISSEMENT } from "./a-verifier.mjs";
+import { stylesAcademiques, pageAcademique, appliquerGabarit } from "./gabarit-academique.mjs";
 
 const require = createRequire(import.meta.url);
 const { ImageRun, TableOfContents, Footer, PageNumber, NumberFormat, SectionType } = require("docx");
@@ -143,7 +144,9 @@ const auPasse = t => t
   .replace("Un échantillonnage raisonné à variation maximale est mis en œuvre. L’étude se fera dans un seul type de structure, la diversification porte sur les dimensions suivantes.",
     "Un échantillonnage raisonné à variation maximale a été mis en œuvre. L’étude s’est déroulée dans un seul type de structure ; la diversification a porté sur les dimensions suivantes.")
   .replace("Le recrutement vise chacune des modalités et couvre les seize centres, à raison d’un à deux participants par structure.",
-    "Le recrutement a visé chacune des modalités et a couvert les seize centres, à raison d’un à deux participants par structure.")
+    "Le recrutement a visé chacune des modalités et a couvert quinze des seize centres, à raison d’un à deux participants par structure ; le seizième a accueilli le pré-test et n’a pas été retenu.")
+  .replace("4.2.2.2. La population source : Les seize centres de santé du district de Ngoma.",
+    "4.2.2.2. La population source : Les centres de santé du district de Ngoma, au nombre de seize ; quinze ont été retenus, le seizième ayant servi au pré-test.")
   .replace("Un effectif de seize à vingt-quatre participants est retenu,", "Un effectif de seize à vingt-quatre participants avait été retenu,");
 
 /* ---------- Pages liminaires ---------- */
@@ -198,7 +201,7 @@ corpsMemoire.push(paragraphe("Ce mémoire rend compte de cette étude en six cha
 corpsMemoire.push(...protocole(indice("1. PROBLÉMATIQUE"), indice("4.2.5. Collecte des données"), { transformer: auPasse }));
 // 4.2.3 : échantillon obtenu (inséré après le tableau II, avant 4.2.4).
 const i424 = corpsMemoire.findIndex(el => JSON.stringify(el).includes("4.2.4. Variables à l’étude"));
-corpsMemoire.splice(i424, 0, paragraphe("Échantillon obtenu. {N} participants ont été inclus dans les {v:nbCentres} centres de santé du district : {v:nbInf} infirmiers ou infirmières et {v:nbSf} sages-femmes, dont {v:nbTitulaires} titulaires. Chacune des modalités des sept dimensions du tableau II a été couverte ; la répartition est présentée au chapitre 5 (tableau IV)."));
+corpsMemoire.splice(i424, 0, paragraphe("Échantillon obtenu. {N} participants ont été inclus dans {v:nbCentres} des seize centres de santé du district, le seizième ayant accueilli le pré-test : {v:nbInf} infirmiers ou infirmières et {v:nbSf} sages-femmes, dont {v:nbTitulaires} titulaires. Chacune des modalités des sept dimensions du tableau II a été couverte ; la répartition est présentée au chapitre 5 (tableau IV)."));
 // 4.2.5 à 4.2.7 : tels que conduits.
 for (const b of T.METHODES_CONDUITES) corpsMemoire.push(b.h3 ? titre3(b.h3) : paragraphe(b.p));
 // Chapitres 5 et 6.
@@ -289,16 +292,17 @@ const piedDePage = romain => new Footer({ children: [new Paragraph({ alignment: 
 ] })] });
 const document = new Document({
   features: { updateFields: true },
-  styles: stylesCommuns(),
+  styles: stylesAcademiques(),
   sections: [
-    { children: pageDeGarde },
-    { properties: { type: SectionType.NEXT_PAGE, page: { pageNumbers: { start: 1, formatType: NumberFormat.LOWER_ROMAN } } },
+    { properties: { page: pageAcademique }, children: pageDeGarde },
+    { properties: { type: SectionType.NEXT_PAGE, page: { ...pageAcademique, pageNumbers: { start: 1, formatType: NumberFormat.LOWER_ROMAN } } },
       footers: { default: piedDePage(true) }, children: liminaires },
-    { properties: { type: SectionType.NEXT_PAGE, page: { pageNumbers: { start: 1, formatType: NumberFormat.DECIMAL } } },
+    { properties: { type: SectionType.NEXT_PAGE, page: { ...pageAcademique, pageNumbers: { start: 1, formatType: NumberFormat.DECIMAL } } },
       footers: { default: piedDePage(false) }, children: [...corpsMemoire, ...fin] },
   ],
 });
-const tampon = await Packer.toBuffer(document);
+// Gabarit académique (Times New Roman 14, interligne 1,5…) ; la page de garde garde sa composition.
+const tampon = await appliquerGabarit(await Packer.toBuffer(document), { preserverPremiereSection: true });
 
 // Contrôles sur le document produit.
 const xml = await (await JSZip.loadAsync(tampon)).file("word/document.xml").async("string");
@@ -307,6 +311,10 @@ const texte = xml.replace(/<[^>]+>/g, "");
 for (const p of xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || []) {
   const t = p.replace(/<[^>]+>/g, "");
   if (/\bP\d{2}\b/.test(t) && /\bCS\d{2}\b/.test(t)) throw new Error(`participant et centre associés : « ${t.slice(0, 80)} »`);
+}
+// Les transformations du texte du protocole doivent toutes avoir porté.
+for (const attendu of ["a couvert quinze des seize centres", "quinze ont été retenus, le seizième ayant servi au pré-test", "information capacitante"]) {
+  if (!texte.includes(attendu)) throw new Error(`transformation du protocole sans effet : « ${attendu} »`);
 }
 const libres = texte.match(/\{[A-Za-z]+:[^}]*\}|\{N\}/g);
 if (libres) throw new Error(`champs non remplacés : ${[...new Set(libres)].join(", ")}`);

@@ -18,9 +18,9 @@ import * as e910 from "./entretiens-09-10.mjs";
 import * as e1113 from "./entretiens-11-13.mjs";
 import * as e1416 from "./entretiens-14-16.mjs";
 import * as e1719 from "./entretiens-17-19.mjs";
-import * as e2021 from "./entretiens-20-21.mjs";
+import * as e20 from "./entretiens-20.mjs";
 
-const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910, ...e1113, ...e1416, ...e1719, ...e2021 };
+const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910, ...e1113, ...e1416, ...e1719, ...e20 };
 
 let compteur = 0;
 const uid = () => "s" + (++compteur).toString(36).padStart(5, "0");
@@ -566,9 +566,9 @@ function construireProjet(cfg) {
 function memosVague2({ projet, memoTheme, ecarts }) {
   projet.memo = `PROJET DE FORMATION — VAGUE 2 — ${AVERTISSEMENT}
 
-Seconde vague simulée : onze participants (6 sages-femmes, 5 infirmiers ou
-infirmières) dans les onze centres de santé que la vague 1 ne couvrait pas
-(CS01, CS04, CS05, CS06, CS08, CS09, CS10, CS12, CS13, CS15, CS16), avec une
+Seconde vague simulée : dix participants (5 sages-femmes, 5 infirmiers ou
+infirmières) dans les dix centres de l'échantillon que la vague 1 ne couvrait pas
+(CS01, CS04, CS05, CS06, CS08, CS09, CS10, CS12, CS13, CS15), avec une
 grille d'observation par centre.
 
 Aucune donnée réelle. Aucun extrait ne peut être cité, aucun résultat rapporté.
@@ -577,11 +577,11 @@ Même grille de codage que la vague 1, ouverte : onze codes inductifs nouveaux
 sont nés de ce matériau, signalés « [inductif, vague 2] ». Double codage sur
 trois entretiens (P11, P18, P19, codeur C2).
 
-Pour l'analyse d'ensemble — 21 participants, 16 centres — ouvrir plutôt
+Pour l'analyse d'ensemble — 20 participants, 15 centres — ouvrir plutôt
 Memoire_Ngoma_SIMULATION_complet.projx.`;
 
   memoTheme("Vague 2 — Familiarisation (journal)",
-`Lecture des onze transcriptions et des onze comptes rendus avant codage.
+`Lecture des dix transcriptions et des dix comptes rendus avant codage.
 
 1. Le centre CS01 change la lecture de l'ensemble. Il montre que le dépistage
    complet est réalisable dans le district — et qu'il l'est là où le secteur
@@ -595,8 +595,8 @@ Memoire_Ngoma_SIMULATION_complet.projx.`;
    indicateur de complétude produit de la complétude, pas nécessairement des
    actes.
 4. Plusieurs équipes ont inventé des réponses locales sans attendre le système :
-   une affiche dessinée à la main, un cahier de suivi après l'accouchement,
-   des piles achetées sur fonds propres, un relais par les agents
+   une affiche dessinée à la main, des piles achetées sur fonds propres,
+   un relais par les agents
    communautaires.
 5. Une participante (P18) refuse de répondre en catégories de femmes. Ce refus
    est une donnée : il contredit la tendance à la catégorisation observée en
@@ -615,7 +615,7 @@ F7  Registre rempli sans acte — P19 et l'observation de CS13. Code sensible :
     il désigne un effet de système, jamais une faute individuelle.
 F8  Contre-référence effective — CS01 : le volet de retour de l'hôpital, seul
     exemple d'une référence qui ne se perd pas.
-G9  Relais communautaire — P15, P21 : l'agent de santé communautaire comme
+G9  Relais communautaire — P15, P10 : l'agent de santé communautaire comme
     « yeux après la référence ».
 G10 Recours au traitement traditionnel, tel que perçu — P13, P20. Représentation
     professionnelle, à rapporter sans jugement (P13 : « parlez des guérisseurs,
@@ -654,8 +654,9 @@ terrain.`);
 function memosComplet({ projet, memoTheme, ecarts }) {
   projet.memo = `PROJET DE FORMATION — CORPUS COMPLET — ${AVERTISSEMENT}
 
-Réunion des deux vagues simulées : 21 participants (11 sages-femmes, 10
-infirmiers ou infirmières) dans les 16 centres de santé du district, et une
+Réunion des deux vagues simulées : 20 participants (10 sages-femmes, 10
+infirmiers ou infirmières) dans 15 des 16 centres de santé du district — le
+seizième a servi au pré-test et n'appartient pas à l'échantillon —, et une
 grille d'observation par centre.
 
 C'est la configuration que vise le protocole : seize à vingt-quatre
@@ -681,7 +682,10 @@ T1. « Un dépistage coupé en deux » — PRÉCISÉ. Aucun centre n'a de glucom
     consultation des maladies chroniques, qui gèrent les bandelettes. Le thème
     est faux à CS01, où le circuit « bon de CPN → laboratoire » fonctionne : il
     ne tient donc pas à la nature du dépistage glycémique, mais à l'organisation
-    de ce circuit et aux moyens du laboratoire. Nouveau code B8.
+    de ce circuit et aux moyens du laboratoire. Nouveau code B8. Même là où le
+    circuit fonctionne, le test n'est demandé que sur des signes d'appel et
+    reste payé par la femme, faute de figurer dans le paquet de soins de la CPN
+    (CS01 : dispense accordée sans écrit par le titulaire). Nouveau code B9.
 T2. « Expliquer moins à celles qui savent le moins » — PRÉCISÉ. Persiste là où
     tous les intrants sont disponibles (P11) : la modulation de l'explication
     est indépendante de l'équipement. Deux contre-pratiques documentées :
@@ -696,7 +700,7 @@ T6. « Le registre comme écran » — NOUVEAU. Codes : F7, F4, E4. Un contrôle
     invisible l'inégalité qu'il devrait révéler (P19 : « une inégalité qu'on
     ne voit pas, personne ne la corrigera »). Revers de T4.
 T7. « Le dépistage hors des murs » — NOUVEAU. Codes : G9, I8, F6. Relais
-    communautaires, cahier de suivi, affiche faite main : ce que les équipes
+    communautaires, affiche faite main, piles achetées : ce que les équipes
     construisent là où le système ne prévoit rien.`);
 
   memoTheme("Phase 4 — Revue des thèmes",
@@ -720,7 +724,7 @@ T7. « Le dépistage hors des murs » — NOUVEAU. Codes : G9, I8, F6. Relais
 sur une appréciation documentée de la suffisance informationnelle au regard de
 CHAQUE dimension du cadre conceptuel. Exercice sur le corpus simulé :
 
-1. Sens attribué ..................... SUFFISANT. 21 participants, positions
+1. Sens attribué ..................... SUFFISANT. 20 participants, positions
    contrastées (priorité, étape de la fiche, désinvestissement).
 2. Pratiques techniques déclarées ..... SUFFISANT. Tension et glycémie
    documentées dans des conditions matérielles très variées.
@@ -740,13 +744,13 @@ CHAQUE dimension du cadre conceptuel. Exercice sur le corpus simulé :
 9. Transformations proposées .......... SUFFISANT ; enrichi en vague 2 par des
    transformations DÉJÀ réalisées (I8).
 
-Conclusion de l'exercice : la collecte pourrait être close à 21 participants.
+Conclusion de l'exercice : la collecte pourrait être close à 20 participants.
 Dans la collecte réelle, cette conclusion devra être argumentée sur les
 données, dimension par dimension, et non reprise de ce modèle.`);
 
   memoTheme("Triangulation — ensemble des deux vagues",
 ecarts.map(x => `${x.cs} — ${x.constat}`).join("\n\n") +
-`\n\nSur seize centres, ${ecarts.length} ont fait l'objet d'un constat consigné : ` +
+`\n\nSur quinze centres, ${ecarts.length} ont fait l'objet d'un constat consigné : ` +
 `${ecarts.filter(x => x.nature === "écart").length} écarts et ${ecarts.filter(x => x.nature === "concordance").length} concordances. Aucun
 écart n'est imputé à une intention du participant (§ 4.2.6).`);
 
@@ -759,7 +763,9 @@ trois révisions possibles, à discuter en supervision :
 1. Ajouter au niveau organisationnel la distinction entre un intrant PRÉSENT,
    un intrant UTILISABLE (CS05 : bandelettes périmées, glucomètre en état) et
    un intrant ACCESSIBLE À LA CPN (glucomètre au laboratoire, bandelettes
-   réservées à la consultation des maladies chroniques : code B8).
+   réservées à la consultation des maladies chroniques : code B8) et un test
+   ACCESSIBLE SANS FRAIS À LA FEMME (test hors du paquet de la CPN, payé au
+   laboratoire : code B9).
 2. Ajouter un niveau ou une articulation « communautaire » entre le service et
    le social perçu : les relais communautaires (G9) prolongent le dépistage
    hors du centre, ce que le cadre actuel ne prévoit pas.
@@ -971,22 +977,19 @@ piste d'audit.`);
   const refus = entretiens.filter(d => d.variables.recontact_accepte !== "oui").map(d => d.name.match(/P\d+/)[0]);
   collecte("Vérification des interprétations auprès des participants",
 `Procédure (§ 4.2.5.6 ; annexe 1, clôture ; annexe 8, crédibilité) : en fin
-d'analyse, QUATRE participants volontaires, choisis parmi ceux qui avaient
+d'analyse, TROIS participants volontaires, choisis parmi ceux qui avaient
 accepté d'être recontactés, reçoivent un résumé des thèmes et sont invités à
-dire s'ils s'y reconnaissent. Les quatre couvrent les deux qualifications, les
-deux vagues, un centre urbain et des centres ruraux.
+dire s'ils s'y reconnaissent. Les trois couvrent les deux qualifications, les
+deux vagues, un centre urbain et un centre rural.
 
 Recontact accepté : ${recontact.length} sur ${entretiens.length} (refus ou indisponibilité : ${refus.join(", ")}).
-Volontaires retenus : P02, P09, P11, P21.
+Volontaires retenus : P02, P09, P11.
 
 Retours (simulés) :
   · P02 confirme T2 et demande que la modulation de l'explication ne soit pas
     présentée comme une faute individuelle — formulation retenue.
   · P09 confirme T4 ; précise que les observations écrites dans le rapport
     mensuel ont été lues une fois, sans suite.
-  · P21 confirme T7 et signale que son cahier de suivi a été tenu par sa
-    remplaçante pendant un congé : ajouté à la définition de T7 — la
-    fragilité n'est pas une fatalité.
   · P11 nuance T5 : son centre a lui aussi connu des ruptures, avant 2025.
 
 Ces retours changent des formulations, pas la structure des thèmes. Les
@@ -1056,8 +1059,8 @@ Ce projet reproduit, de bout en bout, le traitement prévu au § 4.2.6 du
 protocole de recherche « ${ETUDE.titre} » (${ETUDE.chercheur}, ${ETUDE.institution}).
 
 Il réunit les deux vagues simulées : ${entretiens.length} entretiens (variable « vague » = 1
-ou 2) et ${projet.documents.length - entretiens.length} comptes rendus d'observation, soit les seize centres de santé du
-district — la configuration visée par le § 4.2.3.1.
+ou 2) et ${projet.documents.length - entretiens.length} comptes rendus d'observation, soit quinze des seize centres de santé du
+district, le seizième ayant servi au pré-test — la configuration visée par le § 4.2.3.1.
 
 Il ne contient AUCUNE donnée réelle. Aucun extrait ne peut être cité, aucun
 résultat ne peut être rapporté. Quand la collecte réelle commencera, créez un
@@ -1109,7 +1112,7 @@ const projets = [
       // § 4.2.5.6 du protocole : double codage indépendant de TROIS entretiens
       // par un pair extérieur ; recodage de TROIS entretiens après quatre semaines.
       relus: ["P02", "P11", "P18"],
-      intraCodeur: ["P04", "P15", "P21"],
+      intraCodeur: ["P04", "P13", "P15"],
       memos: memosUnique, requetesSup: requetesV2, requeteCitables: true,
     },
   },

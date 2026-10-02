@@ -3,7 +3,7 @@
 // Rédigée à la demande du chercheur, pour s'entraîner. Elle s'appuie
 // uniquement sur ce que le protocole et la simulation établissent déjà :
 // l'introduction lue aux participants, la composition de l'échantillon
-// simulé, les journaux de bord des 21 entretiens et les notes réflexives
+// simulé, les journaux de bord des 20 entretiens et les notes réflexives
 // (rubrique F) des grilles d'observation.
 //
 // Les faits biographiques que ni le protocole ni la simulation ne donnent
@@ -38,7 +38,7 @@ Promotion de la santé, à l'ENATSE (Université de Parakou, Bénin). Ce travail
 est mon mémoire de fin de formation, dirigé par la Professeure N. Fanny M.
 HOUNKPONOU AHOUINGNAN.
 
-J'ai conduit moi-même les 21 entretiens et les 16 observations. Un collaborateur
+J'ai conduit moi-même les 20 entretiens et les 15 observations. Un collaborateur
 trilingue a transcrit en kinyarwanda les entretiens conduits dans cette
 langue ; j'en ai fait la traduction française. J'ai transcrit moi-même les
 4 entretiens conduits en français à la demande des participantes.
@@ -47,7 +47,7 @@ Je suis un homme, né en 1977 à Bukavu (République démocratique du Congo) ;
 j'avais 48 ans pendant la collecte. J'exerce depuis plus de vingt ans dans le
 domaine de la santé, notamment en biologie médicale, mais jamais en
 consultation prénatale (protocole, § 4.2.5.6). Ces trois éléments comptent
-ici : 15 des 21 participants sont des femmes, dont 4 ont entre 20 et 29 ans ;
+ici : 14 des 20 participants sont des femmes, dont 4 ont entre 20 et 29 ans ;
 je suis plus âgé que la plupart d'entre eux ; et mon métier m'a appris à
 regarder un laboratoire avant de regarder une salle de consultation.
 
@@ -89,7 +89,7 @@ pas dans ces centres, que je n'y reviendrai pas au quotidien, et que le
 kinyarwanda n'est pas ma langue première : certaines nuances ont pu
 m'échapper, que la vérification indépendante des traductions devait rattraper.
 
-Les asymétries. Les non-titulaires (15 participants sur 21), souvent les
+Les asymétries. Les non-titulaires (15 participants sur 20), souvent les
 plus jeunes dans le métier, étaient les plus exposés : ils parlaient d'un service dont ils
 ne sont pas responsables, parfois en présence de leur titulaire dans le
 bâtiment. Une jeune sage-femme (P03) a demandé deux fois si sa réponse

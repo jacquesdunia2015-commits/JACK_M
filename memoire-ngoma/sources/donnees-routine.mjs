@@ -39,7 +39,6 @@ export const parCentre = [
   { cs: "CS13", cpn1: 410, cpn4: 361, t1: 41, refHta: 14, glyc: "non collecté", rupt: "0", effectif: 3, pauvrete: "plus élevée", tauxPauvrete: 39, note: "Taux de CPN4 (88 %) nettement supérieur au reste du district : à lire avec la réserve de qualité ci-dessous, et à rapprocher de la note d'observation sur la complétude du registre." },
   { cs: "CS14", cpn1: 215, cpn4: 116, t1: 40, refHta: 9, glyc: "non collecté (glucomètre du laboratoire en panne)", rupt: "sans objet (appareil en panne)", effectif: 2, pauvrete: "plus élevée", tauxPauvrete: 40 },
   { cs: "CS15", cpn1: 200, cpn4: 92, t1: 34, refHta: 6, glyc: "non collecté pour la CPN (glucomètre réservé à la consultation MNT)", rupt: "1", effectif: 2, pauvrete: "plus élevée", tauxPauvrete: 42 },
-  { cs: "CS16", cpn1: 190, cpn4: 101, t1: 36, refHta: 8, glyc: "non collecté", rupt: "3", effectif: 2, pauvrete: "plus élevée", tauxPauvrete: 45 },
 ];
 
 export const fileActiveMnt = "1 240 personnes suivies en consultation dédiée aux maladies non transmissibles (hôpital et centres), dont aucune ventilation disponible pour les femmes dépistées pendant la grossesse.";
