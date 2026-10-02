@@ -12,6 +12,7 @@ import { observationsV2 } from "./observations-vague2.mjs";
 import { consentementDe } from "./consentements.mjs";
 import { TEXTE_POSITIONNALITE } from "./positionnalite.mjs";
 import { parCentre, fileActiveMnt, SOURCE as SOURCE_ROUTINE, RESERVE } from "./donnees-routine.mjs";
+import { REPERES } from "./donnees-rwanda.mjs";
 import * as e12 from "./entretiens-01-02.mjs";
 import * as e34 from "./entretiens-03-04.mjs";
 import * as e56 from "./entretiens-05-06.mjs";
@@ -216,6 +217,13 @@ function documentAnnexes(cfg) {
   }
   enfants.push(vide());
   enfants.push(p(RESERVE, { run: { size: 19, italics: true } }));
+
+  // Repères RÉELS : ils situent les valeurs simulées sans s'y mêler.
+  const totalCpn1 = parCentre.reduce((t, c) => t + c.cpn1, 0);
+  const totalCpn4 = parCentre.reduce((t, c) => t + c.cpn4, 0);
+  enfants.push(vide(), titre3("Repères réels pour situer les valeurs simulées"));
+  enfants.push(p(`Les valeurs simulées ci-dessus ont été calées sur ces données publiées : ${totalCpn1.toLocaleString("fr-FR")} premières CPN pour les ${parCentre.length} centres (environ 11 800 naissances attendues par an dans le district, CPN assurée par les seuls centres de santé), ${Math.round(100 * totalCpn4 / totalCpn1)} % de quatrièmes visites, premier contact au premier trimestre et pauvreté sectorielle répartis autour des valeurs de la province de l'Est et du district. Contrairement au reste de l'annexe, chaque ligne de ce tableau est réelle et vérifiable dans sa source.`, { run: { size: 19, italics: true } }));
+  enfants.push(tableau([["Repère", "Valeur publiée", "Source"], ...REPERES], [2600, 3000, 3426]));
 
   return new Document({ styles: stylesCommuns(), sections: [{ children: enfants }] });
 }

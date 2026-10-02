@@ -16,7 +16,7 @@ import {
   Document, Packer, Paragraph, TextRun, AlignmentType, titre1, titre2, vide, saut, tableau, pageDeGarde, stylesCommuns, encadreRouge,
 } from "./mise-en-page.mjs";
 import { calculs } from "./calculs.mjs";
-import { numeroteur, PROTOCOLE } from "./references.mjs";
+import { numeroteur, PROTOCOLE, AJOUTEES } from "./references.mjs";
 import { blocs as blocsResultats, THEMES } from "./resultats.mjs";
 import { recommandations } from "./discussion.mjs";
 import { legende, source, rendu } from "./rendu.mjs";
@@ -32,14 +32,16 @@ const dossier = process.argv[2] || ".";
 const calc = await calculs(dossier);
 const { valeurs: v, verifierCitation, etiquette } = calc;
 
-// Références : numérotation du mémoire, relevé de celles qui sont citées ici.
-// Le rapport ne cite que des références du protocole ({p:n}), dont le numéro
-// est le même dans le mémoire quel que soit l'ordre de citation.
+// Références : numérotation provisoire, relevé de celles qui sont citées ici.
+// Le rapport cite des références du protocole ({p:n}) et des références
+// ajoutées ({c:cle}) ; renumeroter() les numérote ensuite dans l'ordre de
+// première citation.
 const base = numeroteur();
 const citees = new Set();
+const ajoutees = new Map();
 const refs = {
   protocole(n) { base.protocole(n); citees.add(n); return n; },
-  numero() { throw new Error("le rapport ne cite que des références du protocole ({p:n})"); },
+  numero(cle) { const n = base.numero(cle); citees.add(n); ajoutees.set(n, AJOUTEES[cle]); return n; },
 };
 const { runs, paragraphe, citation } = rendu({ remplir: calc.remplir, refs, etiquette });
 const puce = t => new Paragraph({ bullet: { level: 0 }, spacing: { after: 80 }, alignment: AlignmentType.JUSTIFIED, children: runs(t) });
@@ -73,7 +75,7 @@ enfants.push(saut(), titre1("MESSAGES CLÉS"), ...MESSAGES.map(puce));
 
 enfants.push(titre1("1. CONTEXTE ET JUSTIFICATION"),
   paragraphe("L'hypertension artérielle et le diabète de la grossesse exposent la mère et l'enfant à des complications évitables, à condition d'être détectés et pris en charge à temps. La consultation prénatale est le contact le plus régulier entre une femme jeune et un professionnel qualifié ; l'Organisation mondiale de la Santé y recommande la mesure systématique de la pression artérielle et un dépistage du diabète orienté par les facteurs de risque {p:11}. Le Rwanda a adopté le paquet d'interventions essentielles de l'OMS contre les maladies non transmissibles {p:14}."),
-  paragraphe("Les données nationales montrent l'écart entre ces recommandations et la pratique. Selon l'enquête STEPS de 2022, 87,0 % des femmes n'avaient jamais eu de mesure de la glycémie, contre 38 % qui n'avaient jamais eu de mesure de la tension {p:16}. Le dépistage du diabète gestationnel n'est pas systématique ; le protocole national de 2012 prévoit une glycémie capillaire à jeun et une épreuve de charge entre 24 et 28 semaines, et la seule estimation de prévalence en centre de santé public, 3,2 %, provient d'une étude de recherche {p:27}."),
+  paragraphe("Les données nationales montrent l'écart entre ces recommandations et la pratique. Selon l'enquête STEPS de 2022, 87,0 % des femmes n'avaient jamais eu de mesure de la glycémie, contre 38 % qui n'avaient jamais eu de mesure de la tension {p:16} ; en CPN, la tension a été mesurée chez 93,5 % des femmes suivies dans la province de l'Est selon l'EDS 2025 {c:eds2025}. Le modèle national de CPN compte huit contacts, le premier avant 12 semaines et l'un à 26 semaines {c:rbcAnc} ; le diabète figure parmi les affections recherchées chez toutes les femmes à la première CPN et cochées au registre de maternité {c:schmidt}. Le dépistage du diabète gestationnel n'est pas systématique ; le protocole national de 2012 prévoit une glycémie capillaire à jeun et une épreuve de charge entre 24 et 28 semaines, et la seule estimation de prévalence en centre de santé public, 3,2 %, provient d'une étude de recherche {p:27}."),
   paragraphe("Au regard de la Charte d'Ottawa {p:23}, intégrer ce dépistage à la CPN est une réorientation des services, dont la portée dépend de ceux qui la réalisent : un dépistage n'est capacitant que si son résultat est expliqué et compris. L'étude s'intéresse donc aux infirmiers et sages-femmes de CPN, et à la manière dont ce dépistage se distribue entre les femmes."));
 
 enfants.push(titre1("2. OBJECTIFS"),
@@ -127,10 +129,10 @@ enfants.push(titre1("4. PRINCIPAUX RÉSULTATS"),
 
 enfants.push(titre1("5. POINTS DE DISCUSSION"),
   puce("Deux programmes dans le même centre. La glycémie appartient au programme des maladies non transmissibles, la CPN au programme de santé maternelle. Tant que ce partage n'est pas organisé, la femme enceinte reste en dehors du circuit du glucomètre, ce qui rejoint le caractère non systématique du dépistage rapporté au niveau national {p:27}."),
-  puce("Un test unique, trop précoce. La règle prévoit la glycémie pour toutes à la première CPN, mais le diabète gestationnel apparaît surtout entre 24 et 28 semaines, période pour laquelle le protocole national prévoit une épreuve de charge {p:27} que les centres ne pratiquent pas. Le dépistage repère ainsi un diabète préexistant plutôt que le diabète de la grossesse."),
+  puce("Un test unique, trop précoce. La règle prévoit la glycémie pour toutes à la première CPN, mais le diabète gestationnel apparaît surtout entre 24 et 28 semaines, période pour laquelle le protocole national prévoit une épreuve de charge {p:27} que les centres ne pratiquent pas, alors que le contact de 26 semaines s'y prêterait {c:rbcAnc}. Le dépistage repère ainsi un diabète préexistant plutôt que le diabète de la grossesse."),
   puce("L'explication, distribuée à l'inverse des besoins. L'inégalité ne tient pas seulement à l'accès au test, mais au temps d'explication, qui se raréfie là où il serait le plus utile ; c'est la dimension capacitante du dépistage qui se distribue mal {p:23}."),
-  puce("Ce qui est compté existe. Les indicateurs orientent intrants, maintenance et supervision. Un dépistage absent du rapport mensuel n'est ni approvisionné ni contrôlé, et un contrôle de complétude du registre peut produire une égalité apparente."),
-  puce("La dotation ne suffit pas. Là où l'équipement est présent, l'inégalité du test diminue, mais celles du coût et de l'explication demeurent : la réponse ne peut être seulement matérielle."));
+  puce("Ce qui est compté existe. Les indicateurs orientent intrants, maintenance et supervision. Un dépistage absent du rapport mensuel n'est ni approvisionné ni contrôlé, et un contrôle de complétude du registre peut produire une égalité apparente. Le financement basé sur la performance rémunère les centres pour la première CPN précoce et les quatre visites {c:schmidt}, et son effet est plus net sur les services les mieux payés et les moins exigeants {c:basinga}."),
+  puce("La dotation ne suffit pas. Là où l'équipement est présent, l'inégalité du test diminue, mais celles de la référence vers l'hôpital et de l'explication demeurent : la réponse ne peut être seulement matérielle."));
 
 enfants.push(titre1("6. RECOMMANDATIONS"),
   legende("Tableau 4. Recommandations par destinataire"),
@@ -147,7 +149,7 @@ enfants.push(titre1("8. CONCLUSION"),
 // Les numéros du protocole sont renumérotés dans l'ordre de citation (vancouver.mjs).
 enfants.push(titre1("RÉFÉRENCES"),
   ...[...citees].sort((a, b) => a - b).map(n => new Paragraph({ style: "Bibliographie",
-    children: [new TextRun({ text: `${n}.\t${PROTOCOLE[n - 1]}` })] })));
+    children: [new TextRun({ text: `${n}.\t${n <= PROTOCOLE.length ? PROTOCOLE[n - 1] : ajoutees.get(n)}` })] })));
 
 // Page d'exercice.
 enfants.push(saut(), encadreRouge("PAGE D'EXERCICE — À RETIRER", AVERTISSEMENT), vide(),

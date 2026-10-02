@@ -76,7 +76,7 @@ export const arbre = [
     { id: "G6", nom: "Responsabilité attribuée à la femme [inductif]" },
     { id: "G7", nom: "Assurance et capacité à demander [inductif]" },
     { id: "G8", nom: "Le service comme cause du non-retour [inductif]" },
-    { id: "G9", nom: "Relais communautaire (agents de santé communautaire) [inductif, vague 2]" },
+    { id: "G9", nom: "Relais communautaire (animatrices de santé maternelle) [inductif, vague 2]" },
     { id: "G10", nom: "Recours au traitement traditionnel, tel que perçu [inductif, vague 2]" },
     { id: "G11", nom: "Mobilité des femmes et rupture du suivi [inductif, vague 2]" },
   ]},

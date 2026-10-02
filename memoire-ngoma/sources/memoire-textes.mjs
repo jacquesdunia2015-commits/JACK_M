@@ -41,7 +41,8 @@ export const HOMMAGES = [
 ];
 
 export const SIGLES_AJOUTES = [
-  "ASC : agent de santé communautaire",
+  "ASM : animatrice de santé maternelle (agent de santé communautaire chargée de la santé maternelle)",
+  "EDS : enquête démographique et de santé",
   "HGPO : hyperglycémie provoquée par voie orale",
   "κ : coefficient kappa de Cohen",
   "REFI-QDA : format d'échange des logiciels d'analyse qualitative",
@@ -77,7 +78,7 @@ export const CONCLUSION = [
 
 export const SUGGESTIONS = [
   ["Au Ministère de la Santé et au Rwanda Biomedical Centre", [
-    "garantir les bandelettes nécessaires à la glycémie de la première CPN, et rendre praticable le dépistage du diabète gestationnel entre 24 et 28 semaines, avec des critères écrits pour les femmes à risque ;",
+    "garantir les bandelettes nécessaires à la glycémie de la première CPN, et rendre praticable le dépistage du diabète gestationnel entre 24 et 28 semaines, au contact de 26 semaines du modèle national à huit contacts ;",
     "introduire dans le rapport mensuel de la CPN un indicateur portant sur les actes de dépistage et leur suite.",
   ]],
   ["À la Direction de la santé du district de Ngoma", [

@@ -21,8 +21,16 @@ export const AJOUTEES = {
   campbell: "Campbell DT. Assessing the impact of planned social change. Eval Program Plann. 1979;2(1):67-90.",
   rurangirwa: "Rurangirwa AA, Mogren I, Ntaganira J, Govender K, Krantz G. Quality of antenatal care services in Rwanda: assessing practices of health care providers. BMC Health Serv Res. 2018;18(1):865.",
   mccambridge: "McCambridge J, Witton J, Elbourne DR. Systematic review of the Hawthorne effect: new concepts are needed to study research participation effects. J Clin Epidemiol. 2014;67(3):267-77.",
-  // Relevée en ligne le 2 octobre 2026 (texte intégral inaccessible) : liste des auteurs à compléter.
-  schmidt: "Schmidt CN, Butrick E, Musange S, Mulindahabi N, Walker D, et al. Towards stronger antenatal care: understanding predictors of late presentation to antenatal services and implications for obstetric risk management in Rwanda. PLoS One. 2021;16(8):e0256415.",
+  // Références ci-dessous relevées le 2 octobre 2026 : articles vérifiés dans PubMed
+  // (auteurs, revue, volume, pages et DOI) ; données de l'EDS 2025 relevées par
+  // l'API du programme DHS ; directives nationales sur le site du RBC.
+  schmidt: "Schmidt CN, Butrick E, Musange S, Mulindahabi N, Walker D. Towards stronger antenatal care: understanding predictors of late presentation to antenatal services and implications for obstetric risk management in Rwanda. PLoS One. 2021;16(8):e0256415. doi:10.1371/journal.pone.0256415",
+  eds2025: "National Institute of Statistics of Rwanda, Ministry of Health, ICF. Rwanda Demographic and Health Survey 2025: indicateurs de soins prénatals [Internet]. Rockville (MD): The DHS Program, ICF; 2026 [cité le 2 oct 2026]. Disponible sur: https://api.dhsprogram.com",
+  nshimiyumuremyi: "Nshimiyumuremyi E, Nigatu BK, Amberbir A, Gilson GJ, Manzi S, Nkubito V, et al. Maternal, fetal and neonatal adverse outcomes associated with gestational diabetes: a prospective cohort study at King Faisal Hospital, Kigali. BMJ Open. 2025;15(8):e098248. doi:10.1136/bmjopen-2024-098248",
+  rbcAnc: "Rwanda Biomedical Centre, Ministry of Health. National antenatal care guidelines. Kigali: RBC; 2021. Disponible sur: https://rbc.gov.rw/MCCH/wp-content/uploads/2025/02/ANC-guideline_-final-Edited-4-February-2021-1-1.pdf",
+  basinga: "Basinga P, Gertler PJ, Binagwaho A, Soucat AL, Sturdy J, Vermeersch CM. Effect on maternal and child health services in Rwanda of payment to primary health-care providers for performance: an impact evaluation. Lancet. 2011;377(9775):1421-8. doi:10.1016/S0140-6736(11)60177-3",
+  rulisa: "Rulisa S, Ntihinyurwa P, Ntirushwa D, Wong A, Olufolabi A. Causes of maternal mortality in Rwanda, 2017-2019. Obstet Gynecol. 2021;138(4):552-6. doi:10.1097/AOG.0000000000004534",
+  condo: "Condo J, Mugeni C, Naughton B, Hall K, Tuazon MA, Omwega A, et al. Rwanda's evolving community health worker system: a qualitative assessment of client and provider perspectives. Hum Resour Health. 2014;12:71. doi:10.1186/1478-4491-12-71",
 };
 
 /** Numérotation des références ajoutées, dans l'ordre de première citation. */

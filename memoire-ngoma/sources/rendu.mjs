@@ -42,18 +42,28 @@ export function tableauSections(lignes, largeurs) {
 export function rendu({ remplir, refs = null, etiquette = null }) {
   function runs(texte, taille = 22, italique = false) {
     const t = remplir(texte).replace(/\s+(\{[pc]:)/g, "$1");   // l'espace est ajouté avec la référence
-    return t.split(/(\{[pc]:[^}]+\})/).filter(Boolean).map(m => {
+    // Des appels contigus ({p:10}{c:cle}) forment un seul appel : [10,72].
+    const morceaux = [];
+    for (const m of t.split(/(\{[pc]:[^}]+\})/).filter(Boolean)) {
       const r = m.match(/^\{([pc]):([^}]+)\}$/);
       if (!r) {
         if (/[{}]/.test(m)) throw new Error(`champ non remplacé : « ${m.slice(0, 60)} »`);
-        return new TextRun({ text: m, size: taille, italics: italique });
+        morceaux.push(new TextRun({ text: m, size: taille, italics: italique }));
+        continue;
       }
       if (!refs) throw new Error(`référence ${m} dans un texte rendu sans bibliographie`);
-      if (r[1] === "c") return new TextRun({ text: ` [${refs.numero(r[2])}]`, size: taille });
-      // {p:6,7,35-37} : chaque numéro est vérifié contre la bibliographie du protocole.
-      for (const morceau of r[2].split(",")) for (const n of morceau.split("-")) refs.protocole(Number(n));
-      return new TextRun({ text: ` [${r[2]}]`, size: taille });
-    });
+      let numeros;
+      if (r[1] === "c") numeros = String(refs.numero(r[2]));
+      else {
+        // {p:6,7,35-37} : chaque numéro est vérifié contre la bibliographie du protocole.
+        for (const morceau of r[2].split(",")) for (const n of morceau.split("-")) refs.protocole(Number(n));
+        numeros = r[2];
+      }
+      const precedent = morceaux[morceaux.length - 1];
+      if (precedent?.appel) precedent.appel.push(numeros);
+      else morceaux.push({ appel: [numeros] });
+    }
+    return morceaux.map(m => m.appel ? new TextRun({ text: ` [${m.appel.join(",")}]`, size: taille }) : m);
   }
   const paragraphe = t => new Paragraph({ spacing: { after: 140 }, alignment: AlignmentType.JUSTIFIED, children: runs(t) });
   const citation = b => [

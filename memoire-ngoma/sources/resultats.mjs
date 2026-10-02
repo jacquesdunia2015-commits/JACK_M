@@ -74,7 +74,7 @@ export const blocs = [
   { cite: "P19", codes: ["F7"], t: "Dans le registre, toutes les femmes ont une tension. Dans la réalité, certaines n'en ont pas eu. Le registre dit que tout est égal ; c'est faux. Une inégalité qu'on ne voit pas, personne ne la corrigera." },
 
   { h3: "5.3.7. Thème 7 — Le dépistage hors des murs" },
-  { p: "Définition. Relais communautaires et initiatives locales prolongent le dépistage là où le système ne prévoit rien ; ils reposent sur une personne. {n:G9} participantes de centres ruraux s'appuient sur les agents de santé communautaire pour suivre les femmes référées, sans qu'aucune règle ne le prévoie ; l'écart passe alors entre les villages qui ont un agent actif et les autres." },
+  { p: "Définition. Relais communautaires et initiatives locales prolongent le dépistage là où le système ne prévoit rien ; ils reposent sur une personne. {n:G9} participantes de centres ruraux s'appuient sur l'animatrice de santé maternelle (ASM) du village pour vérifier qu'une femme référée s'est rendue à l'hôpital ; aucun circuit de contre-référence ne formalise ce retour d'information, et l'écart passe alors entre les villages dont l'ASM est active et les autres." },
 
   { h2: "5.4. Portée reconnue en équité et transformations proposées" },
   { p: "Le mot « équité » n'a jamais été prononcé par l'enquêteur ; il apparaît spontanément dans {v:equiteSpontane} entretiens. Le jugement dominant est celui d'une inégalité inacceptable ({n:H2} participants), attribuée au système ({n:H4}) mais aussi, pour {n:H5} participants, à une part qui leur revient : l'explication (tableau VI). L'heure d'arrivée ({n:H7}) et le lieu ({n:H8}) apparaissent comme des facteurs d'inégalité qui ne dépendent pas de la femme. Une minorité exprime une résignation ({n:H3}) ou refuse de juger ({n:H6})." },
@@ -85,7 +85,7 @@ export const blocs = [
 
   { h2: "5.5. Triangulation et synthèse" },
   { p: "Sur les {v:nbCentres} centres observés, {v:nbConstats} ont fait l'objet d'un constat de confrontation entre propos et observation : {v:nbConcordances} concordances et {v:nbEcarts} écarts. L'observation a situé le glucomètre au laboratoire, confirmé le circuit de la glycémie là où il fonctionne et corroboré l'effet de registre du thème 6 ; les écarts, consignés sans être imputés à une intention, portent sur une mesure déclarée systématique et sur une explication déclarée individualisée. Les données de routine, qui ne collectent pas la glycémie de CPN, montrent un premier contact plus tardif dans les secteurs les plus pauvres." },
-  { p: "Le tableau VII rassemble les sept thèmes. Ils décrivent un dépistage dont la réalisation dépend moins de la volonté des professionnels que de conditions qu'ils ne maîtrisent pas — le circuit et le coût de la glycémie, le temps, le véhicule, l'indicateur —, mais aussi d'une part qui leur revient : l'explication." },
+  { p: "Le tableau VII rassemble les sept thèmes. Ils décrivent un dépistage dont la réalisation dépend moins de la volonté des professionnels que de conditions qu'ils ne maîtrisent pas — le circuit de la glycémie et son coût quand elle est référée hors du centre, le temps, le véhicule, l'indicateur —, mais aussi d'une part qui leur revient : l'explication." },
   { tableau: "themes" },
 ];
 

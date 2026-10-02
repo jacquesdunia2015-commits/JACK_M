@@ -124,7 +124,7 @@ const tableauProtocole = lignes => {
 // littérature, cadre conceptuel, chapitre 4) ; aucune phrase gardée n'est
 // réécrite. Liste à relire avec la direction de mémoire.
 const CONDENSATION = [
-  "Le gradient social du recours :", "Ces déterminants ne sont pas abstraits pour Ngoma.", "Les obstacles normatifs :",
+  "Consultation prénatale : Ensemble des contacts planifiés", "Positionnement : Quatre constats fondent cette recherche.", "Le gradient social du recours :", "Ces déterminants ne sont pas abstraits pour Ngoma.", "Les obstacles normatifs :",
   "Une campagne communautaire conduite dans le district de Kirehe", "Le contenu du suivi prénatal a lui-même été mesuré.",
   "Les données de routine ne suffisent pas à documenter ce contenu", "Une particularité organisationnelle :",
   "Or cette dimension demeure peu documentée.",
@@ -145,7 +145,7 @@ function protocole(de, a, { transformer = t => t, sauterTitre = false, annexe = 
     if (sauterTitre && i === de) continue;
     const retire = b.type === "p" && !annexe && CONDENSATION.find(d => b.texte.replace(/[\u00a0\u202f]/g, " ").startsWith(d));
     if (retire) { condenses.add(retire); continue; }
-    if (b.type === "h1") out.push(...(sansSaut && i === de ? [] : [saut()]), titre1(b.texte));
+    if (b.type === "h1") out.push(sansSaut && i === de ? titre1(b.texte) : titre1Page(b.texte));
     // Dans les annexes, les intertitres ne sont pas des titres : ils n'entrent pas dans la table des matières.
     else if (b.type === "h2") out.push(annexe ? sousTitreAnnexe(b.texte) : titre2(b.texte));
     else if (b.type === "h3") out.push(annexe ? sousTitreAnnexe(b.texte.replace(/\.$/, "")) : titre3(b.texte.replace(/\.$/, "")));
@@ -179,6 +179,10 @@ const centre = (t, o = {}) => new Paragraph({ alignment: AlignmentType.CENTER, s
   children: [new TextRun({ text: t, bold: o.gras, italics: o.italique, size: o.taille ?? 22, color: o.couleur })] });
 // Titres des pages liminaires et finales : hors des styles de titre, pour ne pas
 // figurer dans le sommaire ni dans la table des matières.
+// Titre de chapitre ouvrant une page : le saut est porté par le titre lui-même
+// (un paragraphe de saut distinct laisserait une page blanche quand la page
+// précédente est pleine).
+const titre1Page = t => new Paragraph({ text: t, heading: HeadingLevel.HEADING_1, pageBreakBefore: true, spacing: { before: 280, after: 160 } });
 // `nouvellePage` : saut de page porté par le titre lui-même, qui ne laisse jamais de page blanche
 // (un paragraphe de saut isolé peut tomber seul en haut d'une page).
 const titrePage = (t, { nouvellePage = false } = {}) => new Paragraph({ alignment: AlignmentType.CENTER, pageBreakBefore: nouvellePage, spacing: { before: 240, after: 240 },
@@ -236,7 +240,7 @@ const ch5 = chapitre5(calc, { refs }).enfants; noterDepuis(ch5);
 const ch6 = chapitre6(calc, { refs }).enfants; noterDepuis(ch6);
 corpsMemoire.push(saut(), ...ch5, saut(), ...ch6);
 // Conclusion et suggestions.
-corpsMemoire.push(saut(), titre1("CONCLUSION ET SUGGESTIONS"));
+corpsMemoire.push(titre1Page("CONCLUSION ET SUGGESTIONS"));
 for (const b of T.CONCLUSION) corpsMemoire.push(paragraphe(b.p));
 corpsMemoire.push(titre2("Suggestions"));
 for (const [dest, items] of T.SUGGESTIONS) {
@@ -244,7 +248,7 @@ for (const [dest, items] of T.SUGGESTIONS) {
   for (const it of items) corpsMemoire.push(new Paragraph({ bullet: { level: 0 }, spacing: { after: 60 }, children: runs(it) }));
 }
 // Références (Vancouver).
-corpsMemoire.push(saut(), titre1("RÉFÉRENCES"));
+corpsMemoire.push(titre1Page("RÉFÉRENCES"));
 const listeRefs = [...PROTOCOLE.map((t, i) => ({ numero: i + 1, texte: t })), ...refs.ajoutees()];
 for (const r of listeRefs) corpsMemoire.push(new Paragraph({ style: "Bibliographie",
   children: [new TextRun({ text: `${r.numero}.\t${r.texte}` })] }));
@@ -252,7 +256,7 @@ const nonTrouves = CONDENSATION.filter(d => !condenses.has(d));
 if (nonTrouves.length) throw new Error(`paragraphes à condenser introuvables : ${nonTrouves.join(" | ")}`);
 if (refs.nonCitees().length) throw new Error(`références ajoutées jamais citées : ${refs.nonCitees().join(", ")}`);
 // Annexes.
-corpsMemoire.push(saut(), titre1("ANNEXES"));
+corpsMemoire.push(titre1Page("ANNEXES"));
 const annexes = [["ANNEXE 1.", "ANNEXE 2."], ["ANNEXE 2.", "ANNEXE 3."], ["ANNEXE 3.", "ANNEXE 4."], ["ANNEXE 4.", "ANNEXE 5."]];
 // Les annexes se suivent sans saut de page : l'annexe 1 suit le titre « ANNEXES », chacune suit la précédente.
 // Le tableau de cohérence (annexe 8 du protocole) n'est pas repris : le renvoi du guide d'entretien pointe vers le protocole.

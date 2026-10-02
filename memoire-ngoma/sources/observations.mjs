@@ -31,8 +31,8 @@ export const observations = [
       { item: "Registre de consultation prénatale", present: "oui", accessible: "oui", obs: "" },
     ],
     D: {
-      rubriqueTa: "oui", rubriqueGlycemie: "non",
-      renseignement: "La colonne tension artérielle est renseignée sur la quasi-totalité des lignes consultées. Aucune colonne glycémie dans le registre en usage.",
+      rubriqueTa: "oui", rubriqueGlycemie: "oui",
+      renseignement: "La colonne tension artérielle est renseignée sur la quasi-totalité des lignes consultées. Le registre comporte, à la première CPN, la case « diabète » du modèle national ; elle est vide sur les pages de 2026, période de rupture des bandelettes.",
       tracageReference: "oui — souches du carnet de référence conservées, 4 références pour tension élevée sur le mois en cours",
     },
     E: "Affluence forte dès 07h30 ; file d'attente extérieure sous auvent. Deux interruptions pour une urgence obstétricale, la consultation prénatale suspendue environ vingt-cinq minutes. Le personnel s'organise sans consigne écrite visible : la répartition des tâches se règle oralement. Une professionnelle annonce à voix haute, depuis le couloir, une valeur de tension à une collègue située dans la salle.",
@@ -66,7 +66,7 @@ export const observations = [
     ],
     D: {
       rubriqueTa: "oui", rubriqueGlycemie: "oui",
-      renseignement: "Tension artérielle renseignée régulièrement. Colonne glycémie présente mais renseignée sur une minorité de lignes.",
+      renseignement: "Tension artérielle renseignée régulièrement. Case « diabète » de la première CPN renseignée sur la majorité des lignes de première visite ; rubrique absente des visites suivantes.",
       tracageReference: "oui — colonne d'orientation renseignée, 7 références sur le mois en cours dont 5 pour tension élevée",
     },
     E: "Organisation la plus formalisée des cinq centres observés. Un agent affecté aux constantes pendant toute la matinée. Une femme est repassée deux fois au poste de constantes, la première mesure ayant été jugée élevée : la reprise après repos est une pratique visible, non écrite. Affluence soutenue mais file gérée par numéros d'ordre.",
@@ -99,8 +99,8 @@ export const observations = [
       { item: "Registre de consultation prénatale", present: "oui", accessible: "oui", obs: "" },
     ],
     D: {
-      rubriqueTa: "oui", rubriqueGlycemie: "non",
-      renseignement: "Colonne tension artérielle présente, renseignée de façon irrégulière : plusieurs lignes vides sur les pages consultées.",
+      rubriqueTa: "oui", rubriqueGlycemie: "oui",
+      renseignement: "Colonne tension artérielle présente, renseignée de façon irrégulière : plusieurs lignes vides sur les pages consultées. Case « diabète » de la première CPN présente et vide : le test n'est pas fait pour la CPN.",
       tracageReference: "non — aucune trace systématique des orientations ; mention manuscrite sur le carnet de la femme uniquement",
     },
     E: "Deux professionnelles assurent seules la matinée, dont une également chargée de la vaccination : elle quitte la salle à plusieurs reprises. Le rideau laisse passer les voix ; une femme baisse la sienne lorsqu'elle répond. Le tensiomètre est emporté vers le service curatif pendant environ quarante minutes, période pendant laquelle les constantes ne sont pas prises.",
@@ -133,8 +133,8 @@ export const observations = [
       { item: "Registre de consultation prénatale", present: "oui", accessible: "oui", obs: "" },
     ],
     D: {
-      rubriqueTa: "oui", rubriqueGlycemie: "non",
-      renseignement: "Colonne tension artérielle souvent vide : sur une page de trente lignes consultée, quatorze valeurs manquantes.",
+      rubriqueTa: "oui", rubriqueGlycemie: "oui",
+      renseignement: "Colonne tension artérielle souvent vide : sur une page de trente lignes consultée, quatorze valeurs manquantes. Case « diabète » de la première CPN vide depuis la rupture des bandelettes.",
       tracageReference: "non",
     },
     E: "Le centre le plus démuni des cinq. La mesure de la tension dépend de la disponibilité du tensiomètre manuel partagé : pendant l'observation, plusieurs femmes sortent de la salle sans qu'une mesure ait été prise. Ambiance calme, sans tension apparente entre les professionnels et les femmes. Une femme demande spontanément qu'on lui « mesure le bras », ce qui suggère une attente installée.",
@@ -167,8 +167,8 @@ export const observations = [
       { item: "Registre de consultation prénatale", present: "oui", accessible: "oui", obs: "" },
     ],
     D: {
-      rubriqueTa: "oui", rubriqueGlycemie: "non",
-      renseignement: "Colonne tension artérielle renseignée sur la grande majorité des lignes : la tenue du registre est ici la plus soignée des trois centres ruraux observés.",
+      rubriqueTa: "oui", rubriqueGlycemie: "oui",
+      renseignement: "Colonne tension artérielle renseignée sur la grande majorité des lignes : la tenue du registre est ici la plus soignée des trois centres ruraux observés. Case « diabète » de la première CPN vide depuis la panne du glucomètre.",
       tracageReference: "oui — cahier de référence distinct, 3 cas orientés sur le mois, avec mention du motif",
     },
     E: "Affluence modérée. La titulaire tient un cahier de référence de sa propre initiative, hors support officiel. Une femme arrivée à un terme avancé pour un premier contact est reçue en priorité. Un agent de santé communautaire passe déposer une liste de femmes enceintes de son village.",

@@ -53,7 +53,7 @@ export const participants = [
   },
   {
     code: "P04", cs: "CS07", sexe: "féminin", age: "30-39", qualif: "infirmier",
-    niveau: "A2", ancTotale: "5-10 ans", ancCpn: "> 2 ans", titulaire: false,
+    niveau: "A1", ancTotale: "5-10 ans", ancCpn: "> 2 ans", titulaire: false,
     formationMnt: "ne sait pas", anneeFormation: "", secteur: "rural périphérique",
     distanceHopital: "éloignée", volume: "modéré", pauvreteSecteur: "plus élevée",
     langue: "kinyarwanda", date: "25/08/2026", duree: "47 min",
