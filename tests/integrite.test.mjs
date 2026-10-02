@@ -226,6 +226,25 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
       lisezMoi.includes(`| Segments codés | ${fr(projx.segments.length)} |`), `attendu : ${fr(projx.segments.length)}`);
     verifier("le LISEZ-MOI annonce le bon nombre de documents",
       lisezMoi.includes(`| Documents | ${projx.documents.length} `), `attendu : ${projx.documents.length}`);
+
+    const parCible = t => projx.memos.filter(m => m.targetType === t).length;
+    verifier("le LISEZ-MOI annonce le bon nombre de mémos",
+      lisezMoi.includes(`| Mémos | ${parCible("project")} mémos d'analyse, ${parCible("document")} journaux de bord, ${parCible("code")} définitions de familles |`),
+      `attendu : ${parCible("project")} / ${parCible("document")} / ${parCible("code")}`);
+
+    // Les chiffres écrits dans les mémos doivent suivre le codage
+    const memo = debut => projx.memos.find(m => m.title.startsWith(debut))?.text || "";
+    const enLettres = ["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix"];
+    const codeMaint = projx.codes.find(c => c.name.startsWith("Absence de maintenance"));
+    const nMaint = new Set(projx.segments.filter(s => s.coder === "C1" && s.codeId === codeMaint?.id).map(s => s.docId)).size;
+    verifier("le mémo de suffisance compte bien les participants qui évoquent la maintenance",
+      memo("Suffisance").includes(`évoquée que par ${enLettres[nMaint]} participants`), `attendu : ${enLettres[nMaint]}`);
+    const triang = memo("Triangulation");
+    const nEcarts = (triang.match(/^CS\d+ — (?!CONCORDANCE)/gm) || []).length;
+    verifier("le mémo de triangulation annonce un total cohérent avec ses constats",
+      /(\d+) écarts et (\d+) concordances/.test(triang) &&
+      Number(triang.match(/(\d+) écarts et (\d+) concordances/)[1]) + Number(triang.match(/(\d+) écarts et (\d+) concordances/)[2]) === (triang.match(/^CS\d+ — /gm) || []).length,
+      `${nEcarts} constats sans la mention CONCORDANCE`);
   }
 
   // Les anciens fichiers par vague ne doivent pas revenir : ils ont causé la
