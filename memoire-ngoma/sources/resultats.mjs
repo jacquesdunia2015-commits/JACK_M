@@ -26,7 +26,7 @@ export const blocs = [
   { encadre: "Langue des extraits", t: "Les entretiens conduits en kinyarwanda sont cités dans leur traduction française, signalée par la mention « traduit du kinyarwanda ». Dans le mémoire réel, chaque extrait traduit est accompagné de sa version originale (§ 4.2.6) ; les transcriptions simulées n'existant qu'en français, cette version n'est pas reproduite ici." },
 
   { h2: "5.1. Caractéristiques des participants et des centres" },
-  { p: "Les {N} participants se répartissent en {v:nbInf} infirmiers ou infirmières et {v:nbSf} sages-femmes ; {v:nbTitulaires} exercent la fonction de titulaire. La durée des entretiens varie de {v:dureeMin} à {v:dureeMax} minutes. Le tableau VI présente leurs caractéristiques de manière agrégée, et le tableau VII celles des centres. Les deux tableaux ne sont pas croisés : associer une caractéristique individuelle à un centre identifierait la personne." },
+  { p: "Les {N} participants se répartissent en {v:nbInf} infirmiers ou infirmières et {v:nbSf} sages-femmes ; {v:nbTitulaires} exercent la fonction de titulaire. La durée des entretiens varie de {v:dureeMin} à {v:dureeMax} minutes. Le tableau IV présente leurs caractéristiques de manière agrégée, et le tableau V celles des centres. Les deux tableaux ne sont pas croisés : associer une caractéristique individuelle à un centre identifierait la personne." },
   { tableau: "participants" },
   { tableau: "centres" },
   { p: "Le jour de l'observation, le tensiomètre était présent en salle de CPN dans les {v:nbCentres} centres. Un glucomètre existait dans {v:glucoPresent} centres, mais dans aucun il ne se trouvait en salle de CPN ({v:glucoEnCpn}) : il était au laboratoire du centre ou à la consultation des maladies chroniques. La glycémie d'une femme enceinte n'était réalisable, sur bon de la CPN, que dans {v:glycPossible} centres ; dans {v:glycMnt} autres, le glucomètre et ses bandelettes étaient réservés à la consultation des maladies chroniques ; dans {v:glucoInutilisable}, l'appareil était en panne ou les bandelettes absentes ou périmées ; le centre le plus récent n'en était pas encore doté. Cette distribution forme l'arrière-plan des propos rapportés dans la suite du chapitre." },
@@ -136,7 +136,7 @@ export const blocs = [
   { cite: "P21", codes: ["I3", "I8"], t: "Parce que mon cahier repose sur moi. Si je pars, il s'arrête. Et pourtant c'est la seule chose ici qui suit ces femmes après la grossesse." },
 
   { h2: "5.4. Portée reconnue en équité" },
-  { p: "La question 19 invitait les participants à dire s'ils jugeaient normales les différences qu'ils avaient décrites. Le mot « équité » n'a jamais été prononcé par l'enquêteur ; il apparaît spontanément dans {v:equiteSpontane} entretiens. Le tableau VIII présente la distribution des jugements et des attributions de responsabilité ; un même participant peut figurer dans plusieurs lignes." },
+  { p: "La question 19 invitait les participants à dire s'ils jugeaient normales les différences qu'ils avaient décrites. Le mot « équité » n'a jamais été prononcé par l'enquêteur ; il apparaît spontanément dans {v:equiteSpontane} entretiens. Le tableau VI présente la distribution des jugements et des attributions de responsabilité ; un même participant peut figurer dans plusieurs lignes." },
   { tableau: "equite" },
   { p: "Le jugement dominant est celui d'une inégalité inacceptable ({n:H2} participants). Il s'accompagne le plus souvent d'une attribution au système ({n:H4}) ; mais {n:H5} participants reconnaissent aussi une part qui leur revient, généralement la part de l'explication." },
   { cite: "P07", codes: ["H5"], t: "Il y a l'inégalité qui vient du système — le stock, l'absence de retour, l'absence d'indicateur : celle-là, je la subis autant que les femmes. Et il y a l'inégalité qui vient de moi — le temps que je donne, les mots que je choisis selon la personne que j'ai devant moi : celle-là, elle est à moi, et c'est la seule sur laquelle j'ai prise." },
@@ -148,7 +148,7 @@ export const blocs = [
   { cite: "P08", codes: ["H6"], t: "Ce n'est pas à moi de juger. Je fais ce qu'on me demande." },
 
   { h2: "5.5. Transformations proposées et transformations déjà réalisées" },
-  { p: "Invités à désigner une seule priorité, puis ses destinataires, les participants se partagent entre les intrants, la formation, le personnel, la référence et la redevabilité (tableau IX). Le choix est souvent argumenté contre une autre option : l'appareil contre le temps, les bandelettes contre l'explication, le glucomètre contre le transport." },
+  { p: "Invités à désigner une seule priorité, puis ses destinataires, les participants se partagent entre les intrants, la formation, le personnel, la référence et la redevabilité (tableau VII). Le choix est souvent argumenté contre une autre option : l'appareil contre le temps, les bandelettes contre l'explication, le glucomètre contre le transport." },
   { tableau: "transformations" },
   { cite: "P04", codes: ["I3"], t: "Un appareil ne me donne pas de temps. Une personne, oui." },
   { cite: "P02", codes: ["I4"], t: "Si j'ai une image à montrer, je donne la même chose à celle qui a fait l'école et à celle qui ne l'a pas faite. Ça corrige mon propre biais. Les bandelettes ne le corrigent pas." },
@@ -158,14 +158,14 @@ export const blocs = [
   { p: "Les destinataires désignés sont d'abord le district (supervision, approvisionnement, maintenance), puis l'hôpital (retour d'information). Plusieurs demandes portent sur la manière de regarder plutôt que sur des moyens : venir observer une matinée entière, sans prévenir, et vérifier si la tension est prise et non si elle est écrite. Enfin, {n:I8} participantes ne proposent pas seulement des transformations : elles en décrivent qu'elles ont déjà réalisées (section 5.3.8)." },
 
   { h2: "5.6. Triangulation avec l'observation et les données de routine" },
-  { p: "Sur les {v:nbCentres} centres observés, {v:nbConstats} ont fait l'objet d'un constat consigné de confrontation entre propos et observation : {v:nbEcarts} écarts et {v:nbConcordances} concordances (tableau X). Aucun écart n'est imputé à une intention du participant ; un écart renseigne sur la distance entre la norme intériorisée et la condition d'exercice." },
+  { p: "Sur les {v:nbCentres} centres observés, {v:nbConstats} ont fait l'objet d'un constat consigné de confrontation entre propos et observation : {v:nbEcarts} écarts et {v:nbConcordances} concordances (tableau VIII). Aucun écart n'est imputé à une intention du participant ; un écart renseigne sur la distance entre la norme intériorisée et la condition d'exercice." },
   { tableau: "triangulation" },
-  { p: "Les données de routine du district ({v:sourceRoutine}) caractérisent le contexte sans mesurer la pratique de dépistage. Rapportées à la catégorie de pauvreté du secteur, elles montrent un premier contact plus tardif et une rétention plus faible jusqu'à la quatrième visite dans les secteurs les plus pauvres (tableau XI). Le dépistage glycémique n'y est pas collecté, ce qui confirme, du côté du système d'information, le constat du thème 4." },
+  { p: "Les données de routine du district ({v:sourceRoutine}) caractérisent le contexte sans mesurer la pratique de dépistage. Rapportées à la catégorie de pauvreté du secteur, elles montrent un premier contact plus tardif et une rétention plus faible jusqu'à la quatrième visite dans les secteurs les plus pauvres (tableau IX). Le dépistage glycémique n'y est pas collecté, ce qui confirme, du côté du système d'information, le constat du thème 4." },
   { tableau: "routine" },
   { encadre: "Réserve sur les données de routine", t: "{v:reserveRoutine}" },
 
   { h2: "5.7. Synthèse des résultats" },
-  { p: "Le tableau XII rassemble les sept thèmes. Pris ensemble, ils décrivent un dépistage dont la réalisation dépend moins de la volonté ou de la compétence des professionnels que de conditions qu'ils ne maîtrisent pas : le matériel, le temps, le véhicule, l'indicateur. Mais les participants identifient aussi une part qui leur revient — l'explication — et des initiatives locales qui réduisent une partie de l'écart. Ce double constat, systémique et professionnel, est repris dans la discussion." },
+  { p: "Le tableau X rassemble les sept thèmes. Pris ensemble, ils décrivent un dépistage dont la réalisation dépend moins de la volonté ou de la compétence des professionnels que de conditions qu'ils ne maîtrisent pas : le matériel et son circuit — une glycémie qui se fait, quand elle se fait, au laboratoire ou à la consultation des maladies non transmissibles plutôt qu'en CPN —, le temps, le véhicule, l'indicateur. Mais les participants identifient aussi une part qui leur revient — l'explication — et des initiatives locales qui réduisent une partie de l'écart. Ce double constat, systémique et professionnel, est repris dans la discussion." },
   { tableau: "themes" },
 ];
 
@@ -175,6 +175,17 @@ export const blocs = [
 // la personne (« la titulaire ») et citent ses mots. Ici, aucun code de centre,
 // aucune fonction, aucune citation : seulement ce que la confrontation établit.
 // faire-resultats.mjs exige une formulation pour chaque constat du projet.
+// Tableau X — synthèse des thèmes (mémo « Phase 5 » du projet).
+export const THEMES = [
+  ["T1. Un dépistage coupé en deux", "OS1", "La tension est intégrée à la CPN ; la glycémie se fait au laboratoire ou à la consultation des maladies chroniques, et cesse d'être pensée là où ce circuit est fermé à la femme enceinte."],
+  ["T2. Expliquer moins à celles qui savent le moins", "OS1", "L'explication varie avec l'heure, la charge et l'idée que l'on se fait de la femme, à l'inverse des besoins."],
+  ["T3. Trouver sans pouvoir suivre", "OS2", "La détection ne devient prise en charge que si la référence aboutit et si l'information revient."],
+  ["T4. Ce qui est compté existe", "OS2", "Intrants, maintenance et attention suivent les indicateurs ; le dépistage n'en fait pas partie."],
+  ["T5. Ce que change la dotation, et ce qu'elle ne change pas", "OS2", "L'équipement supprime l'inégalité du test, pas celle de l'explication."],
+  ["T6. Le registre comme écran", "OS2, équité", "Un contrôle de complétude produit de la complétude et peut masquer l'inégalité."],
+  ["T7. Le dépistage hors des murs", "OS2, transformations", "Relais communautaires et initiatives locales prolongent le dépistage ; ils reposent sur une personne."],
+];
+
 export const constatsChapitre = {
   CS11: "Dans un centre rural, la tension est déclarée prise à toutes les femmes ; le registre observé présente de nombreuses valeurs manquantes (quatorze sur une page de trente lignes) et l'appareil électronique est hors d'usage. Un second entretien conduit dans le même centre décrit ces mesures manquantes.",
   CS02: "Dans un centre urbain, l'explication du résultat est décrite comme individualisée ; la configuration observée — constantes prises dans le couloir d'attente, valeurs annoncées à voix audible — rend cette individualisation difficile à tenir.",

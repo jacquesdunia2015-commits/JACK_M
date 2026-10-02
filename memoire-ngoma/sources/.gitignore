@@ -1,0 +1,4 @@
+# Le dépôt est public : le texte du protocole (non publié) et ses figures
+# restent sur le poste. Les produire avec extraire-protocole.py.
+protocole.json
+figures/

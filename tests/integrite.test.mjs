@@ -269,6 +269,36 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
       readFileSync(join(kit, ".gitignore"), "utf8").split("\n").some(l => l.trim() === "*"));
   }
 
+  // Mémoire complet et rapport : bibliographie du protocole et liste de contrôle.
+  const sources = join(racine, "memoire-ngoma/sources");
+  const { PROTOCOLE, AJOUTEES } = await import(join(sources, "references.mjs"));
+  verifier("la bibliographie reprend les 71 références du protocole", PROTOCOLE.length === 71);
+  const { A_COMPLETER, A_VERIFIER } = await import(join(sources, "a-verifier.mjs"));
+  const nAjoutees = Object.keys(AJOUTEES).length;
+  verifier("la liste de contrôle désigne exactement les références ajoutées",
+    A_VERIFIER.some(t => t.includes(`Références 72 à ${71 + nAjoutees},`)));
+  verifier("la liste de contrôle rappelle l'approbation éthique à recopier, jamais à inventer",
+    A_COMPLETER.some(t => /éthique/.test(t) && /jamais inventés/.test(t)));
+  // Les effectifs de glycémie annoncés par le LISEZ-MOI sont ceux des observations.
+  const { observations } = await import(join(sources, "observations.mjs"));
+  const { observationsV2 } = await import(join(sources, "observations-vague2.mjs"));
+  const etats = [...observations, ...observationsV2].map(o => o.glycemieCpn);
+  const n = e => etats.filter(x => x === e).length;
+  verifier("le LISEZ-MOI annonce les effectifs de glycémie observés",
+    lisezMoi.includes(`la CPN dans ${n("laboratoire")} centres, réservée aux malades chroniques dans ${n("réservée MNT")}, impossible`) &&
+    lisezMoi.includes(`bandelettes absentes ou périmées) dans ${n("impossible")}`) && n("absent") === 1);
+  verifier("le rapport de mémoire est produit", existsSync(join(racine, "memoire-ngoma/livrables/7_Rapport_de_memoire_SIMULATION.docx")));
+  // Le dépôt est public : ni le texte du protocole, ni ses figures, ni le
+  // mémoire complet qui le reprend ne doivent y entrer.
+  const ignoreSources = readFileSync(join(sources, ".gitignore"), "utf8").split("\n").map(l => l.trim());
+  const ignoreLivrables = readFileSync(join(racine, "memoire-ngoma/livrables/.gitignore"), "utf8").split("\n").map(l => l.trim());
+  verifier("le texte du protocole et ses figures restent hors du dépôt",
+    ignoreSources.includes("protocole.json") && ignoreSources.includes("figures/"));
+  verifier("le mémoire complet reste hors du dépôt", ignoreLivrables.includes("8_Memoire_complet_SIMULATION.docx"));
+  const suivis = execFileSync("git", ["ls-files", "memoire-ngoma"], { cwd: racine, encoding: "utf8" }).split("\n");
+  verifier("aucun de ces fichiers n'est suivi par git",
+    !suivis.some(f => /\/protocole\.json$|\/figures\/|8_Memoire_complet/.test(f)), suivis.filter(f => /\/protocole\.json$|\/figures\/|8_Memoire/.test(f)).join(", "));
+
   // Les anciens fichiers par vague ne doivent pas revenir : ils ont causé la
   // confusion que le projet unique corrige.
   for (const f of ["Memoire_Ngoma_SIMULATION_vague2.projx", "Memoire_Ngoma_SIMULATION_complet.projx",

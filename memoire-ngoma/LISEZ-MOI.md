@@ -25,7 +25,12 @@ diabète en consultation prénatale : perceptions et pratiques déclarées des
 infirmiers et sages-femmes de Ngoma (Rwanda) »* (MUKAKI DUNIA Jacques, Master en
 Santé publique — Promotion de la santé, ENATSE, Université de Parakou).
 
-Le protocole lui-même **n'est pas inclus** dans ce dépôt.
+Le protocole lui-même **n'est pas inclus** dans ce dépôt, qui est public : son
+texte et ses figures restent sur le poste (voir `sources/extraire-protocole.py`).
+Seule la liste de ses 71 références, faite de publications, est versée
+(`sources/references-protocole.json`). Pour la même raison, le **mémoire complet**,
+qui reprend le texte intégral du protocole, n'est pas versé : il se produit sur
+le poste.
 
 ## Pour la collecte réelle : `kit-donnees-reelles/`
 
@@ -45,7 +50,9 @@ commence le travail réel ; ce dossier-ci reste l'exercice.
 | `3_Guide_QualiCode_pour_ce_memoire.docx` | Les six phases de l'analyse thématique (§ 4.2.6) traduites en gestes dans l'application |
 | `4_Note_de_positionnalite_MODELE.docx` | La note de positionnalité (confirmabilité, annexe 8), en modèle d'exercice modifiable : avant le codage, puis à la fin de l'analyse — la même que dans le projet |
 | `5_Chapitre_Resultats_SIMULATION.docx` | **Le chapitre 5 (Résultats)** rédigé à partir du projet, en exercice : participants et centres, objectifs spécifiques 1 et 2, sept thèmes, équité, transformations, triangulation. Chaque citation et chaque effectif sont vérifiés contre le codage à la production du document |
-| `6_Chapitre_Discussion_SIMULATION.docx` | **Le chapitre 6 (Discussion)** en exercice : rappel des résultats, confrontation thème par thème à la littérature et au cadre conceptuel, révisions du cadre, forces et limites, recommandations par destinataire, perspectives. Seules sont citées les références du protocole dont le contenu est connu ; les références complémentaires [C1]… sont à vérifier ; les emplacements surlignés attendent une référence de votre revue |
+| `6_Chapitre_Discussion_SIMULATION.docx` | **Le chapitre 6 (Discussion)** en exercice : rappel des résultats, confrontation thème par thème à la littérature et au cadre conceptuel, révisions du cadre, forces et limites, recommandations par destinataire, perspectives. Seules sont citées les références du protocole dont le contenu est connu ; les références ajoutées pendant la rédaction (72 à 79) sont à vérifier dans leur source |
+| `7_Rapport_de_memoire_SIMULATION.docx` | **Le rapport de mémoire** : une synthèse d'une dizaine de pages (messages clés, contexte, objectifs, méthodes, résultats avec l'accès à la glycémie centre par centre, thèmes, discussion, recommandations, limites), suivie de la liste de ce qui reste à compléter ou à vérifier |
+| `8_Memoire_complet_SIMULATION.docx` | **Le mémoire complet** selon le plan type de l'ENATSE (pages liminaires, executive summary, introduction, chapitres 1 à 6, conclusion et suggestions, 79 références en Vancouver, annexes, table des matières, résumé et abstract). **Non versé au dépôt** : produit sur le poste par `faire-memoire.mjs`, qui a besoin du protocole extrait. Dans Word, mettre à jour le sommaire et la table des matières (Ctrl+A puis F9) |
 | `Memoire_Ngoma_SIMULATION.projx` | **Le projet QualiCode « Mémoire Ngoma — SIMULATION de formation »**, les deux vagues réunies |
 
 À ouvrir par **Accueil ▸ Ouvrir (.projx)**. Le projet porte le même nom et le
@@ -110,7 +117,23 @@ node construire.mjs ../livrables     # → le projet .projx
 npm install docx                     # nécessaire uniquement pour les documents Word
 node faire-docx.mjs ../livrables     # → annexes remplies + transcriptions
 node faire-guide.mjs ../livrables    # → guide d'utilisation (lit les projets pour ses chiffres)
+node faire-resultats.mjs ../livrables     # → chapitre 5
+node faire-discussion.mjs ../livrables    # → chapitre 6
+node faire-rapport.mjs ../livrables       # → rapport de mémoire
+# Mémoire complet : extraire d'abord le protocole (python-docx), sur le poste seulement
+python3 extraire-protocole.py chemin/Protocole_corrige.docx
+node faire-memoire.mjs ../livrables       # → mémoire complet (non versé)
 ```
+
+**Le glucomètre au laboratoire.** Dans les centres de santé rwandais, le
+glucomètre relève le plus souvent du laboratoire ou de la consultation des
+maladies non transmissibles, pas de la salle de CPN. La simulation le reflète :
+aucun centre n'a de glucomètre en CPN ; la glycémie est réalisable sur bon de
+la CPN dans 5 centres, réservée aux malades chroniques dans 3, impossible (panne,
+bandelettes absentes ou périmées) dans 7, et un centre n'a pas d'appareil. Ces
+proportions sont **simulées** ; elles s'inspirent des données nationales citées
+au chapitre 6 (STEPS 2022, Meharry et al. 2019), qui sont à confirmer dans leur
+texte intégral.
 
 Les tableaux de couverture du Tableau II et les effectifs cités par le guide sont
 **calculés** à partir des données, jamais recopiés : modifier un participant et
