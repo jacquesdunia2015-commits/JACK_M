@@ -197,7 +197,9 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
     memeContenu("les deux vagues sont identifiées (10 + 11)",
       ["1", "2"].map(v => ent.filter(d => d.variables.vague === v).length), [10, 11]);
     const relus = new Set(projx.segments.filter(s => s.coder === "C2").map(s => s.docId));
-    verifier("un tiers des entretiens est double-codé (§ 4.2.6)", relus.size * 3 >= ent.length, `${relus.size} sur ${ent.length}`);
+    egal("trois entretiens sont double-codés par un pair extérieur (§ 4.2.5.6)", relus.size, 3);
+    egal("trois entretiens sont recodés par le premier codeur (§ 4.2.5.6)",
+      new Set(projx.segments.filter(sg => sg.coder === "C1b").map(sg => sg.docId)).size, 3);
     verifier("la stabilité intra-codeur est documentée (C1b)", projx.segments.some(s => s.coder === "C1b"));
 
     // Consentements : un refus de citation doit être respecté par la requête
@@ -217,8 +219,8 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
     const posit = projx.memos.find(m => m.targetType === "project" && /positionnalité/i.test(m.title));
     verifier("la note de positionnalité est présentée comme un modèle d'exercice",
       !!posit && /MODÈLE D'EXERCICE/.test(posit.title) && /HYPOTHÈSES D'EXERCICE/.test(posit.text));
-    verifier("ses faits biographiques restent des hypothèses entre crochets",
-      !!posit && /\[Profession :/.test(posit.text) && /\[Lien avec le district/.test(posit.text) && /\[Sexe et âge : à préciser/.test(posit.text));
+    verifier("ses faits biographiques viennent du protocole, le reste est à préciser entre crochets",
+      !!posit && /§ 4\.2\.5\.6/.test(posit.text) && /\[À préciser/.test(posit.text));
 
     // Les chiffres du LISEZ-MOI sont écrits à la main : ils doivent suivre le projet
     const fr = n => n.toLocaleString("fr-FR").replace(/\u202f|\u00a0/g, " ");
@@ -227,6 +229,10 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
     verifier("le LISEZ-MOI annonce le bon nombre de documents",
       lisezMoi.includes(`| Documents | ${projx.documents.length} `), `attendu : ${projx.documents.length}`);
 
+    const nInductifs = projx.codes.filter(c => /inductif/.test(c.name)).length;
+    verifier("le LISEZ-MOI annonce le bon nombre de codes",
+      lisezMoi.includes(`| Codes | ${projx.codes.length} en ${projx.codes.filter(c => !c.parentId).length} familles, dont ${nInductifs} inductifs |`),
+      `attendu : ${projx.codes.length} codes, ${nInductifs} inductifs`);
     const parCible = t => projx.memos.filter(m => m.targetType === t).length;
     verifier("le LISEZ-MOI annonce le bon nombre de mémos",
       lisezMoi.includes(`| Mémos | ${parCible("project")} mémos d'analyse, ${parCible("document")} journaux de bord, ${parCible("code")} définitions de familles |`),
