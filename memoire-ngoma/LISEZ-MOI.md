@@ -17,6 +17,18 @@ pas dans ce dossier.**
 
 ---
 
+## Décisions de l'auteur (à respecter)
+
+- **Pas d'enregistrement audio** (décision du 2 octobre 2026) : les entretiens
+  ne seront pas enregistrés. Les mentions d'enregistrement, d'enregistreur, de
+  transcription à partir de l'audio et d'autorisation d'enregistrement dans les
+  documents sont **corrigées à la main par l'auteur**.
+- **Les livrables Word sont désormais corrigés manuellement.** Ne pas les
+  régénérer avec les scripts de `sources/` sans l'accord de l'auteur :
+  une régénération écraserait ses corrections.
+
+---
+
 ## Ce que c'est
 
 Un exercice de formation adossé au protocole de recherche de mémoire
