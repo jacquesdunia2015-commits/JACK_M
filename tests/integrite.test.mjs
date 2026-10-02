@@ -190,12 +190,14 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
 
     // Composition visée par le protocole
     const ent = projx.documents.filter(d => d.variables?.type_document === "entretien");
-    egal("21 participants", ent.length, 21);
-    egal("11 sages-femmes", ent.filter(d => d.variables.qualification === "sage-femme").length, 11);
+    egal("20 participants", ent.length, 20);
+    egal("10 sages-femmes", ent.filter(d => d.variables.qualification === "sage-femme").length, 10);
     egal("10 infirmiers ou infirmières", ent.filter(d => d.variables.qualification === "infirmier").length, 10);
-    egal("les 16 centres du district", new Set(projx.documents.map(d => d.variables?.code_structure)).size, 16);
-    memeContenu("les deux vagues sont identifiées (10 + 11)",
-      ["1", "2"].map(v => ent.filter(d => d.variables.vague === v).length), [10, 11]);
+    // Quinze des seize centres : le seizième a servi au pré-test et n'appartient pas à l'échantillon.
+    egal("15 centres (le seizième a servi au pré-test)", new Set(projx.documents.map(d => d.variables?.code_structure)).size, 15);
+    verifier("aucun document ne vient du centre du pré-test", !projx.documents.some(d => d.variables?.code_structure === "CS16"));
+    memeContenu("les deux vagues sont identifiées (10 + 10)",
+      ["1", "2"].map(v => ent.filter(d => d.variables.vague === v).length), [10, 10]);
     const relus = new Set(projx.segments.filter(s => s.coder === "C2").map(s => s.docId));
     egal("trois entretiens sont double-codés par un pair extérieur (§ 4.2.5.6)", relus.size, 3);
     egal("trois entretiens sont recodés par le premier codeur (§ 4.2.5.6)",
