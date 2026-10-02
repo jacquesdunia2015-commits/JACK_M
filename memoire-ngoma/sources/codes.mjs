@@ -252,24 +252,24 @@ export const grilleObservation = {
 
 /** Écarts déclaré / constaté relevés à la lecture croisée (code J5). */
 export const ecarts = [
-  { cs: "CS11", code: "J5",
+  { cs: "CS11", code: "J5", nature: "écart",
     constat: "Un participant de ce centre déclare que la tension est prise « systématiquement, à toutes les femmes » ; l'observation et le registre montrent quatorze valeurs manquantes sur une page de trente lignes, et l'appareil électronique est hors d'usage. L'autre participant du même centre décrit ces mesures manquantes explicitement. Écart consigné sans être imputé à une intention : il informe sur la distance entre la norme intériorisée et la condition d'exercice (§ 4.2.6)." },
-  { cs: "CS02", code: "J5",
+  { cs: "CS02", code: "J5", nature: "écart",
     constat: "Les deux participants décrivent une explication individualisée du résultat ; la configuration observée — constantes prises dans le couloir d'attente, valeurs annoncées à voix audible — rend cette individualisation matériellement difficile à tenir." },
-  { cs: "CS14", code: "J5",
+  { cs: "CS14", code: "J5", nature: "concordance",
     constat: "La titulaire déclare vérifier chaque semaine le remplissage de la colonne tension ; le registre observé est effectivement le mieux tenu des trois centres ruraux. Concordance, à consigner autant qu'un écart." },
-  { cs: "CS07", code: "J5",
+  { cs: "CS07", code: "J5", nature: "concordance",
     constat: "Une participante déclare n'avoir jamais réalisé de glycémie ; l'absence totale de glucomètre dans le centre est confirmée par l'observation. La déclaration s'explique par la condition matérielle et non par la pratique individuelle." },
 ];
 
 /** Écarts et concordances relevés à la lecture croisée de la vague 2. */
 export const ecartsV2 = [
-  { cs: "CS13", code: "J5",
+  { cs: "CS13", code: "J5", nature: "concordance",
     constat: "CONCORDANCE sur un point sensible. La participante déclare d'elle-même que la colonne tension du registre est toujours remplie, y compris quand la mesure n'a pas été faite sous la pression de l'affluence ; l'observation relève une proportion inhabituelle de valeurs identiques dans un registre intégralement renseigné. Ni l'un ni l'autre ne prouve quoi que ce soit sur une personne. Consigné comme ce que produit un contrôle portant sur la complétude des registres plutôt que sur les actes (§ 4.2.6), jamais comme une faute individuelle." },
-  { cs: "CS01", code: "J5",
+  { cs: "CS01", code: "J5", nature: "concordance",
     constat: "CONCORDANCE. Le dépistage glycémique ciblé décrit par la participante est observé directement — seul centre de la série où il l'est — et la colonne glycémie du registre est renseignée dans une proportion compatible avec un dépistage ciblé." },
-  { cs: "CS05", code: "J5",
+  { cs: "CS05", code: "J5", nature: "concordance",
     constat: "CONCORDANCE. Le paradoxe décrit — glucomètre fonctionnel et bandelettes périmées — est constaté. L'observation suggère d'ajouter à la grille la distinction entre « présent » et « utilisable »." },
-  { cs: "CS16", code: "J5",
+  { cs: "CS16", code: "J5", nature: "concordance",
     constat: "CONCORDANCE. Le cahier de suivi après l'accouchement décrit par la titulaire est observé, et les piles du tensiomètre sont signalées comme un intrant manquant de façon répétée." },
 ];

@@ -4,8 +4,8 @@
   "id": "memoire-ngoma-simulation",
   "name": "Mémoire Ngoma — SIMULATION de formation",
   "created": "2026-09-20T09:00:00.000Z",
-  "modified": "2026-10-01T23:35:07.679Z",
-  "versionSimulation": "deux-vagues-21-participants-16-centres-positionnalite",
+  "modified": "2026-10-02T00:04:14.165Z",
+  "versionSimulation": "deux-vagues-21-participants-16-centres-chapitre5",
   "memo": "PROJET DE FORMATION — DONNÉES SIMULÉES — EXERCICE DE FORMATION. Aucun entretien réel. Ne peut être cité ni utilisé comme résultat de recherche.\n\nCe projet reproduit, de bout en bout, le traitement prévu au § 4.2.6 du\nprotocole de recherche « L'équité d'accès au dépistage capacitant de l'hypertension artérielle et du diabète en consultation prénatale : perceptions et pratiques déclarées des infirmiers et sages-femmes de Ngoma (Rwanda) » (MUKAKI DUNIA Jacques, ENATSE, Université de Parakou (Bénin) — Master en Santé publique, Promotion de la santé).\n\nIl réunit les deux vagues simulées : 21 entretiens (variable « vague » = 1\nou 2) et 16 comptes rendus d'observation, soit les seize centres de santé du\ndistrict — la configuration visée par le § 4.2.3.1.\n\nIl ne contient AUCUNE donnée réelle. Aucun extrait ne peut être cité, aucun\nrésultat ne peut être rapporté. Quand la collecte réelle commencera, créez un\nprojet NEUF : n'ajoutez jamais un entretien réel dans ce projet d'exercice.\n\nLes mémos suivent les six phases de l'analyse thématique (Braun & Clarke),\npuis les étapes de rigueur du protocole : fidélité des transcriptions, double\ncodage et stabilité intra-codeur, triangulation, vérification des\ninterprétations, suffisance informationnelle, piste d'audit. La note de\npositionnalité est un MODÈLE D'EXERCICE : les passages entre crochets sont\ndes hypothèses à remplacer par votre situation réelle.\n\nVariables de consentement : « citation_autorisee » (P05 a refusé la citation,\nP19 l'a acceptée sans élément identifiant son centre) et « recontact_accepte ».\n\nNOTE SUR LE KINYARWANDA : les termes entre crochets sont illustratifs et\ndoivent être vérifiés par un locuteur natif avant tout usage.",
   "documentGroups": [
     {
@@ -32434,20 +32434,28 @@
       "id": "s0023l",
       "targetType": "project",
       "targetId": null,
-      "title": "Double codage et stabilité intra-codeur",
-      "text": "ACCORD INTER-CODEURS — 7 entretiens sur 21, soit le tiers prévu au\n§ 4.2.6, recodés à l'aveugle par un second codeur (C2).\n  κ = 0,864 (accord observé 99,6 %), sur 483 paragraphes.\n  Dans l'application : Analyse ▸ Accord inter-codeurs (κ), C1 contre C2.\n\nSTABILITÉ INTRA-CODEUR (annexe 8) — 2 entretiens recodés par le premier\ncodeur plusieurs semaines après, sans revoir son codage (étiquette C1b).\n  κ = 0,957 (accord observé 99,9 %), sur 136 paragraphes.\n  Dans l'application : Analyse ▸ Accord inter-codeurs (κ), C1 contre C1b.\n\nLECTURE. Le kappa est calculé par paragraphe ; la plupart des paragraphes ne\nportant pas un code donné, ces accords « négatifs » le tirent vers le haut.\nRapporter toujours la valeur AVEC l'unité d'analyse, la part du corpus recodée\net la manière dont les désaccords ont été tranchés.\n\nDÉSACCORDS À TRANCHER en séance de consensus : passages non retenus, bornes\ndéplacées, codes voisins (C4/C6, G3/G7, H2/H4…), et un code H5 posé par C2\nseul à la fin de chaque entretien recodé. Les décisions sont consignées dans la\npiste d'audit.",
+      "title": "Phase 6 — Rédaction du chapitre 5 : d'où vient chaque citation",
+      "text": "Le chapitre 5 (5_Chapitre_Resultats_SIMULATION.docx) cite 49 extraits de\n19 participants. Chacun a été vérifié automatiquement à la\nproduction du document : il figure mot pour mot dans un passage du participant\ncodé (codeur C1) avec l'un des codes indiqués sous l'extrait. P05 n'est jamais cité ;\nles extraits de P19 ne portent ni code de centre ni caractéristique.\n\nPour retrouver un extrait : Recherche ▸ coller quelques mots, ou Requêtes ▸\nactiver le participant et le code.\n\n5.2.1. Un dépistage légitime, mais inégalement investi\n  · P01 — « La femme enceinte vient chez nous quatre fois, cinq fois ; c'est souvent la seule fois… »\n      codé : Légitimité au regard du mandat de la CPN\n  · P06 — « La tension, je peux seulement la trouver et l'envoyer ailleurs. Le sucre, je ne peux même… »\n      codé : Hiérarchisation face aux autres tâches ; Désinvestissement par impuissance\n\n5.2.2. Thème 1 — Un dépistage coupé en deux\n  · P06 — « la différence ne vient pas des femmes, elle vient de l'heure et du matériel. La femme qui… »\n      codé : Mesure omise faute d'appareil disponible\n  · P13 — « Quand on n'a rien, on n'y pense plus. Quand on a tout sous les yeux et qu'on ne peut pas… »\n      codé : Glycémie : dépistage absent ou sélectif ; Approvisionnement en intrants\n  · P14 — « Il y avait une sage-femme qui faisait le test aux femmes grosses ou qui avaient eu un… »\n      codé : Tension : geste intégré aux constantes ; Glycémie : dépistage absent ou sélectif\n  · P06 — « J'ai la connaissance et je n'ai pas l'outil. C'est comme apprendre à conduire et ne pas… »\n      codé : Glycémie : dépistage absent ou sélectif ; Compétence acquise puis désapprise\n\n5.2.3. Thème 2 — Expliquer moins à celles qui savent le moins\n  · P02 — « Celle qui a fait le secondaire, elle ira chercher l'information ailleurs, elle a un… »\n      codé : Modulation de l'information selon les femmes\n  · P04 — « Si vous venez à sept heures trente, vous aurez une infirmière qui vous explique. Si vous… »\n      codé : Modulation de l'information selon les femmes\n  · P01 — « c'est vrai que celle qui aurait le plus besoin d'explications, c'est peut-être celle-là.… »\n      codé : Modulation de l'information selon les femmes\n  · P20 — « Je dis la même chose à toutes. Après trente ans, on a ses phrases. »\n      codé : Modulation contestée ou niée\n  · P09 — « Dire à quelqu'un de se faire suivre quand il n'y a pas de service pour le suivre, ça crée… »\n      codé : Risque au-delà de la grossesse ; Écart perçu entre information et compréhension\n  · P15 — « Avec l'affiche, j'explique pareil à toutes, c'est ça l'avantage : l'image est la même… »\n      codé : Modulation de l'information selon les femmes ; Support visuel d'information\n  · P18 — « quand j'étais jeune, j'adaptais selon ce que je croyais : celle-ci a l'air pauvre, elle… »\n      codé : Refus de catégoriser les femmes\n\n5.3.1. Conditions individuelles et professionnelles\n  · P06 — « une personne formée qui part en congé, c'est un centre qui redevient comme avant. »\n      codé : Formation ; Absence de maintenance des appareils\n  · P08 — « On est nombreux dans les centres, et on n'est ni formés ni consultés. C'est nous qui… »\n      codé : Porte d'entrée vers les maladies chroniques ; Formation\n\n5.3.2. Conditions organisationnelles\n  · P10 — « Nous sommes deux pour la CPN et la maternité en même temps. Un accouchement ne peut pas… »\n      codé : Mesure omise faute d'appareil disponible\n  · P09 — « Il n'y a pas de service qui répare : quand un appareil tombe, il reste sur la table. »\n      codé : Glycémie : dépistage absent ou sélectif ; Approvisionnement en intrants\n  · P01 — « la personne aux constantes ne fait que ça, elle ne saute pas la tension parce qu'elle est… »\n      codé : Facilitateur : poste de constantes dédié\n\n5.3.3. Thème 4 — Ce qui est compté existe\n  · P07 — « Le fer, on l'a toujours. La moustiquaire, on l'a toujours. Parce qu'ils sont dans les… »\n      codé : Ce qui est compté existe ; Approvisionnement en intrants\n  · P09 — « S'il y avait un chiffre à rendre sur les glycémies faites, l'appareil serait réparé… »\n      codé : Ce qui est compté existe ; Absence de maintenance des appareils\n  · P12 — « Comme titulaire, je vois le travail par les rapports. Et dans les rapports, la tension… »\n      codé : Ce qui est compté existe\n\n5.3.4. Thème 5 — Ce que change la dotation, et ce qu'elle ne change pas\n  · P11 — « Le matériel ne crée pas de temps. Nous avons les bandelettes, mais quand il y a cinquante… »\n      codé : Modulation de l'information selon les femmes\n  · P11 — « Ne présentez pas mon centre comme la preuve que tout est possible. Présentez-le comme la… »\n      codé : Porte d'entrée vers les maladies chroniques\n  · P21 — « Les piles, personne n'y pense dans les commandes : on commande des appareils, pas les… »\n      codé : Approvisionnement en intrants\n\n5.3.5. Thème 3 — Trouver sans pouvoir suivre\n  · P10 — « pour nous qui sommes loin, une référence n'est pas une feuille de papier, c'est un… »\n      codé : Transport et référence effective\n  · P10 — « Nous, nous avions trouvé. Nous avions bien trouvé. Nous avions même bien expliqué. Ça n'a… »\n      codé : Conduite devant un cas détecté ; Circuit de référence\n  · P10 — « Ce n'est pas la compréhension qui a manqué. C'est qu'elle n'était pas celle qui décide. »\n      codé : Écart perçu entre information et compréhension ; Marge de décision de la femme (conjoint, famille)\n  · P07 — « Aujourd'hui je réfère dans le vide. Et tant que je réfère dans le vide, mon dépistage… »\n      codé : Transport et référence effective\n  · P11 — « C'est la première fois depuis que je travaille que j'ai ce genre de retour régulièrement.… »\n      codé : Contre-référence effective\n  · P07 — « Elles ne sont plus enceintes, donc plus à la CPN ; elles ne sont pas malades déclarées,… »\n      codé : Discontinuité après l'accouchement\n  · P17 — « Le système suppose qu'elle reste au même endroit pendant toute sa grossesse. Beaucoup ne… »\n      codé : Discontinuité après l'accouchement ; Mobilité des femmes et rupture du suivi\n\n5.3.6. Conditions sociales perçues\n  · P06 — « celles qui sont venues une fois et qui ont attendu trois heures pour rien, parce qu'il… »\n      codé : Recours tardif et non-retour ; Le service comme cause du non-retour\n  · P11 — « Une femme m'a dit une fois : « si je ne viens pas, on ne me trouvera pas de maladie ». Ce… »\n      codé : Recours tardif et non-retour\n  · P13 — « Je ne leur en veux pas : l'hôpital est loin, le guérisseur est à côté et il les connaît.… »\n      codé : Recours au traitement traditionnel, tel que perçu\n  · P18 — « Les différences qui comptent pour le dépistage, ce sont des situations, pas des… »\n      codé : Marge de décision de la femme (conjoint, famille) ; Refus de catégoriser les femmes\n\n5.3.7. Thème 6 — Le registre comme écran\n  · P04 — « Un registre bien rempli, ça compte plus que ce qu'on a fait. Je peux avoir un beau… »\n      codé : Supervision et attentes de l'encadrement ; Ce qui est compté existe\n  · P19 — « On ne contrôle pas si la tension a été prise : on contrôle si la case est remplie. Alors… »\n      codé : Registre rempli sans acte\n  · P19 — « Dans le registre, toutes les femmes ont une tension. Dans la réalité, certaines n'en ont… »\n      codé : Registre rempli sans acte\n\n5.3.8. Thème 7 — Le dépistage hors des murs\n  · P15 — « Il y a les villages où l'agent communautaire est actif et ceux où il ne l'est pas. La… »\n      codé : Relais communautaire (agents de santé communautaire)\n  · P21 — « Parce que mon cahier repose sur moi. Si je pars, il s'arrête. Et pourtant c'est la seule… »\n      codé : Personnel et organisation ; Initiative locale déjà mise en œuvre\n\n5.4. Portée reconnue en équité\n  · P07 — « Il y a l'inégalité qui vient du système — le stock, l'absence de retour, l'absence… »\n      codé : Responsabilité reconnue comme sienne\n  · P09 — « l'équité, si je comprends bien ce mot — vous ne l'avez pas employé, c'est moi qui le dis… »\n      codé : Le lieu décide de ce qu'on reçoit\n  · P04 — « Du personnel, du jour de la semaine, de l'heure à laquelle la femme arrive. Vous voyez,… »\n      codé : L'heure d'arrivée comme facteur d'inégalité\n  · P16 — « Les femmes qui viennent maintenant ont moins que celles qui viendront dans un an. C'est… »\n      codé : Jugement : normalisation ou résignation\n  · P08 — « Ce n'est pas à moi de juger. Je fais ce qu'on me demande. »\n      codé : Refus de juger\n\n5.5. Transformations proposées et transformations déjà réalisées\n  · P04 — « Un appareil ne me donne pas de temps. Une personne, oui. »\n      codé : Personnel et organisation\n  · P02 — « Si j'ai une image à montrer, je donne la même chose à celle qui a fait l'école et à celle… »\n      codé : Supports d'information adaptés\n  · P09 — « Une seule ligne dans le rapport mensuel : nombre de femmes dont la tension a été mesurée,… »\n      codé : Indicateur et redevabilité\n  · P01 — « S'il est demandé, qu'il entre dans les indicateurs et que les intrants suivent. S'il… »\n      codé : Indicateur et redevabilité ; Destinataires désignés",
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
       "id": "s0023m",
       "targetType": "project",
       "targetId": null,
-      "title": "Triangulation — ensemble des deux vagues",
-      "text": "CS11 — Un participant de ce centre déclare que la tension est prise « systématiquement, à toutes les femmes » ; l'observation et le registre montrent quatorze valeurs manquantes sur une page de trente lignes, et l'appareil électronique est hors d'usage. L'autre participant du même centre décrit ces mesures manquantes explicitement. Écart consigné sans être imputé à une intention : il informe sur la distance entre la norme intériorisée et la condition d'exercice (§ 4.2.6).\n\nCS02 — Les deux participants décrivent une explication individualisée du résultat ; la configuration observée — constantes prises dans le couloir d'attente, valeurs annoncées à voix audible — rend cette individualisation matériellement difficile à tenir.\n\nCS14 — La titulaire déclare vérifier chaque semaine le remplissage de la colonne tension ; le registre observé est effectivement le mieux tenu des trois centres ruraux. Concordance, à consigner autant qu'un écart.\n\nCS07 — Une participante déclare n'avoir jamais réalisé de glycémie ; l'absence totale de glucomètre dans le centre est confirmée par l'observation. La déclaration s'explique par la condition matérielle et non par la pratique individuelle.\n\nCS13 — CONCORDANCE sur un point sensible. La participante déclare d'elle-même que la colonne tension du registre est toujours remplie, y compris quand la mesure n'a pas été faite sous la pression de l'affluence ; l'observation relève une proportion inhabituelle de valeurs identiques dans un registre intégralement renseigné. Ni l'un ni l'autre ne prouve quoi que ce soit sur une personne. Consigné comme ce que produit un contrôle portant sur la complétude des registres plutôt que sur les actes (§ 4.2.6), jamais comme une faute individuelle.\n\nCS01 — CONCORDANCE. Le dépistage glycémique ciblé décrit par la participante est observé directement — seul centre de la série où il l'est — et la colonne glycémie du registre est renseignée dans une proportion compatible avec un dépistage ciblé.\n\nCS05 — CONCORDANCE. Le paradoxe décrit — glucomètre fonctionnel et bandelettes périmées — est constaté. L'observation suggère d'ajouter à la grille la distinction entre « présent » et « utilisable ».\n\nCS16 — CONCORDANCE. Le cahier de suivi après l'accouchement décrit par la titulaire est observé, et les piles du tensiomètre sont signalées comme un intrant manquant de façon répétée.\n\nSur seize centres, quatre écarts et six concordances ont été consignés. Aucun\nécart n'est imputé à une intention du participant (§ 4.2.6).",
+      "title": "Double codage et stabilité intra-codeur",
+      "text": "ACCORD INTER-CODEURS — 7 entretiens sur 21, soit le tiers prévu au\n§ 4.2.6, recodés à l'aveugle par un second codeur (C2).\n  κ = 0,864 (accord observé 99,6 %), sur 483 paragraphes.\n  Dans l'application : Analyse ▸ Accord inter-codeurs (κ), C1 contre C2.\n\nSTABILITÉ INTRA-CODEUR (annexe 8) — 2 entretiens recodés par le premier\ncodeur plusieurs semaines après, sans revoir son codage (étiquette C1b).\n  κ = 0,957 (accord observé 99,9 %), sur 136 paragraphes.\n  Dans l'application : Analyse ▸ Accord inter-codeurs (κ), C1 contre C1b.\n\nLECTURE. Le kappa est calculé par paragraphe ; la plupart des paragraphes ne\nportant pas un code donné, ces accords « négatifs » le tirent vers le haut.\nRapporter toujours la valeur AVEC l'unité d'analyse, la part du corpus recodée\net la manière dont les désaccords ont été tranchés.\n\nDÉSACCORDS À TRANCHER en séance de consensus : passages non retenus, bornes\ndéplacées, codes voisins (C4/C6, G3/G7, H2/H4…), et un code H5 posé par C2\nseul à la fin de chaque entretien recodé. Les décisions sont consignées dans la\npiste d'audit.",
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
       "id": "s0023n",
+      "targetType": "project",
+      "targetId": null,
+      "title": "Triangulation — ensemble des deux vagues",
+      "text": "CS11 — Un participant de ce centre déclare que la tension est prise « systématiquement, à toutes les femmes » ; l'observation et le registre montrent quatorze valeurs manquantes sur une page de trente lignes, et l'appareil électronique est hors d'usage. L'autre participant du même centre décrit ces mesures manquantes explicitement. Écart consigné sans être imputé à une intention : il informe sur la distance entre la norme intériorisée et la condition d'exercice (§ 4.2.6).\n\nCS02 — Les deux participants décrivent une explication individualisée du résultat ; la configuration observée — constantes prises dans le couloir d'attente, valeurs annoncées à voix audible — rend cette individualisation matériellement difficile à tenir.\n\nCS14 — La titulaire déclare vérifier chaque semaine le remplissage de la colonne tension ; le registre observé est effectivement le mieux tenu des trois centres ruraux. Concordance, à consigner autant qu'un écart.\n\nCS07 — Une participante déclare n'avoir jamais réalisé de glycémie ; l'absence totale de glucomètre dans le centre est confirmée par l'observation. La déclaration s'explique par la condition matérielle et non par la pratique individuelle.\n\nCS13 — CONCORDANCE sur un point sensible. La participante déclare d'elle-même que la colonne tension du registre est toujours remplie, y compris quand la mesure n'a pas été faite sous la pression de l'affluence ; l'observation relève une proportion inhabituelle de valeurs identiques dans un registre intégralement renseigné. Ni l'un ni l'autre ne prouve quoi que ce soit sur une personne. Consigné comme ce que produit un contrôle portant sur la complétude des registres plutôt que sur les actes (§ 4.2.6), jamais comme une faute individuelle.\n\nCS01 — CONCORDANCE. Le dépistage glycémique ciblé décrit par la participante est observé directement — seul centre de la série où il l'est — et la colonne glycémie du registre est renseignée dans une proportion compatible avec un dépistage ciblé.\n\nCS05 — CONCORDANCE. Le paradoxe décrit — glucomètre fonctionnel et bandelettes périmées — est constaté. L'observation suggère d'ajouter à la grille la distinction entre « présent » et « utilisable ».\n\nCS16 — CONCORDANCE. Le cahier de suivi après l'accouchement décrit par la titulaire est observé, et les piles du tensiomètre sont signalées comme un intrant manquant de façon répétée.\n\nSur seize centres, 8 ont fait l'objet d'un constat consigné : 2 écarts et 6 concordances. Aucun\nécart n'est imputé à une intention du participant (§ 4.2.6).",
+      "created": "2026-09-20T09:00:00.000Z"
+    },
+    {
+      "id": "s0023o",
       "targetType": "project",
       "targetId": null,
       "title": "Vérification des interprétations auprès des participants",
@@ -32455,15 +32463,15 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023o",
+      "id": "s0023p",
       "targetType": "project",
       "targetId": null,
       "title": "Suffisance informationnelle — dimension par dimension (§ 4.2.3.1)",
-      "text": "Le protocole ne clôt pas la collecte sur un nombre ni sur une saturation, mais\nsur une appréciation documentée de la suffisance informationnelle au regard de\nCHAQUE dimension du cadre conceptuel. Exercice sur le corpus simulé :\n\n1. Sens attribué ..................... SUFFISANT. 21 participants, positions\n   contrastées (priorité, étape de la fiche, désinvestissement).\n2. Pratiques techniques déclarées ..... SUFFISANT. Tension et glycémie\n   documentées dans des conditions matérielles très variées.\n3. Pratique informative et éducative .. SUFFISANT. Modulation décrite, contre-\n   pratiques décrites (image commune, vérification de la compréhension).\n4. Conditions individuelles ........... SUFFISANT. Formés et non formés,\n   jeunes et anciens, transmission informelle.\n5. Conditions organisationnelles ...... SUFFISANT. Charge, équipement,\n   rotation, charge administrative.\n6. Conditions systémiques ............. SUFFISANT, avec une réserve : la\n   maintenance des appareils n'est évoquée que par quatre participants.\n7. Conditions sociales perçues ........ SUFFISANT pour les représentations des\n   prestataires — ce que l'étude vise. Le point de vue des femmes reste hors\n   champ, limite assumée au § 4.2.6.\n8. Portée reconnue en équité .......... SUFFISANT. Jugements contrastés :\n   inacceptable, résignation, refus de juger, responsabilité reconnue.\n9. Transformations proposées .......... SUFFISANT ; enrichi en vague 2 par des\n   transformations DÉJÀ réalisées (I8).\n\nConclusion de l'exercice : la collecte pourrait être close à 21 participants.\nDans la collecte réelle, cette conclusion devra être argumentée sur les\ndonnées, dimension par dimension, et non reprise de ce modèle.",
+      "text": "Le protocole ne clôt pas la collecte sur un nombre ni sur une saturation, mais\nsur une appréciation documentée de la suffisance informationnelle au regard de\nCHAQUE dimension du cadre conceptuel. Exercice sur le corpus simulé :\n\n1. Sens attribué ..................... SUFFISANT. 21 participants, positions\n   contrastées (priorité, étape de la fiche, désinvestissement).\n2. Pratiques techniques déclarées ..... SUFFISANT. Tension et glycémie\n   documentées dans des conditions matérielles très variées.\n3. Pratique informative et éducative .. SUFFISANT. Modulation décrite, contre-\n   pratiques décrites (image commune, vérification de la compréhension).\n4. Conditions individuelles ........... SUFFISANT. Formés et non formés,\n   jeunes et anciens, transmission informelle.\n5. Conditions organisationnelles ...... SUFFISANT. Charge, équipement,\n   rotation, charge administrative.\n6. Conditions systémiques ............. SUFFISANT, avec une réserve : la\n   maintenance des appareils n'est évoquée que par cinq participants.\n7. Conditions sociales perçues ........ SUFFISANT pour les représentations des\n   prestataires — ce que l'étude vise. Le point de vue des femmes reste hors\n   champ, limite assumée au § 4.2.6.\n8. Portée reconnue en équité .......... SUFFISANT. Jugements contrastés :\n   inacceptable, résignation, refus de juger, responsabilité reconnue.\n9. Transformations proposées .......... SUFFISANT ; enrichi en vague 2 par des\n   transformations DÉJÀ réalisées (I8).\n\nConclusion de l'exercice : la collecte pourrait être close à 21 participants.\nDans la collecte réelle, cette conclusion devra être argumentée sur les\ndonnées, dimension par dimension, et non reprise de ce modèle.",
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023p",
+      "id": "s0023q",
       "targetType": "project",
       "targetId": null,
       "title": "Piste d'audit 1 — décisions de codage (vague 1)",
@@ -32471,7 +32479,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023q",
+      "id": "s0023r",
       "targetType": "project",
       "targetId": null,
       "title": "Piste d'audit 2 — décisions de codage (vague 2)",
@@ -32479,7 +32487,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023r",
+      "id": "s0023s",
       "targetType": "project",
       "targetId": null,
       "title": "Piste d'audit 3 — révision du cadre conceptuel",
@@ -32487,7 +32495,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023s",
+      "id": "s0023t",
       "targetType": "project",
       "targetId": null,
       "title": "Note de positionnalité — MODÈLE D'EXERCICE (à réécrire avec vos éléments réels)",
@@ -32495,7 +32503,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023t",
+      "id": "s0023u",
       "targetType": "code",
       "targetId": "s00003",
       "title": "Définition et règle d'application",
@@ -32503,7 +32511,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023u",
+      "id": "s0023v",
       "targetType": "code",
       "targetId": "s0000h",
       "title": "Définition et règle d'application",
@@ -32511,7 +32519,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023v",
+      "id": "s0023w",
       "targetType": "code",
       "targetId": "s0001g",
       "title": "Définition et règle d'application",
@@ -32519,7 +32527,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023w",
+      "id": "s0023x",
       "targetType": "code",
       "targetId": "s0001s",
       "title": "Définition et règle d'application",
@@ -32527,7 +32535,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023x",
+      "id": "s0023y",
       "targetType": "code",
       "targetId": "s00009",
       "title": "Définition et règle d'application",
@@ -32535,7 +32543,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023y",
+      "id": "s0023z",
       "targetType": "code",
       "targetId": "s0000r",
       "title": "Définition et règle d'application",
@@ -32543,7 +32551,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0023z",
+      "id": "s00240",
       "targetType": "code",
       "targetId": "s0000x",
       "title": "Définition et règle d'application",
@@ -32551,7 +32559,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s00240",
+      "id": "s00241",
       "targetType": "code",
       "targetId": "s00017",
       "title": "Définition et règle d'application",
@@ -32559,7 +32567,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s00241",
+      "id": "s00242",
       "targetType": "code",
       "targetId": "s00022",
       "title": "Définition et règle d'application",
@@ -32567,7 +32575,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s00242",
+      "id": "s00243",
       "targetType": "code",
       "targetId": "s0002i",
       "title": "Définition et règle d'application",
@@ -32575,7 +32583,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s00243",
+      "id": "s00244",
       "targetType": "code",
       "targetId": "s0002b",
       "title": "Définition et règle d'application",
@@ -32610,7 +32618,7 @@
   },
   "savedQueries": [
     {
-      "id": "s00244",
+      "id": "s00245",
       "name": "T2 — Modulation de l'information (mécanisme d'inégalité)",
       "activatedDocs": [
         "s0002l",
@@ -32646,7 +32654,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s00245",
+      "id": "s00246",
       "name": "T1 — Le dépistage coupé en deux",
       "activatedDocs": [
         "s0002l",
@@ -32682,7 +32690,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s00246",
+      "id": "s00247",
       "name": "T3 — Trouver sans pouvoir suivre",
       "activatedDocs": [
         "s0002l",
@@ -32718,7 +32726,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s00247",
+      "id": "s00248",
       "name": "T4 — Ce qui est compté existe",
       "activatedDocs": [
         "s0002l",
@@ -32753,7 +32761,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s00248",
+      "id": "s00249",
       "name": "Q19 — Jugements d'équité",
       "activatedDocs": [
         "s0002l",
@@ -32792,7 +32800,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s00249",
+      "id": "s0024a",
       "name": "Représentations sur les femmes (à manier avec précaution)",
       "activatedDocs": [
         "s0002l",
@@ -32826,7 +32834,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0024a",
+      "id": "s0024b",
       "name": "Écarts déclaré / constaté",
       "activatedDocs": [
         "s0002l",
@@ -32874,7 +32882,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0024b",
+      "id": "s0024c",
       "name": "Codes inductifs — révision du cadre",
       "activatedDocs": [
         "s0002l",
@@ -32911,7 +32919,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0024c",
+      "id": "s0024d",
       "name": "T5 — Ce que change la dotation, et ce qu'elle ne change pas",
       "activatedDocs": [
         "s0002l",
@@ -32947,7 +32955,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0024d",
+      "id": "s0024e",
       "name": "T6 — Le registre comme écran",
       "activatedDocs": [
         "s0002l",
@@ -32981,7 +32989,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0024e",
+      "id": "s0024f",
       "name": "T7 — Le dépistage hors des murs",
       "activatedDocs": [
         "s0002l",
@@ -33015,7 +33023,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0024f",
+      "id": "s0024g",
       "name": "Femmes mobiles et rupture du suivi",
       "activatedDocs": [
         "s0002l",
@@ -33047,7 +33055,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0024g",
+      "id": "s0024h",
       "name": "Recours au traitement traditionnel (représentations)",
       "activatedDocs": [
         "s0002l",
@@ -33079,7 +33087,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0024h",
+      "id": "s0024i",
       "name": "Codes inductifs nés de la vague 2",
       "activatedDocs": [
         "s0002l",
@@ -33121,7 +33129,7 @@
       "created": "2026-09-20T09:00:00.000Z"
     },
     {
-      "id": "s0024i",
+      "id": "s0024j",
       "name": "Extraits citables (consentement à la citation)",
       "activatedDocs": [
         "s0002l",
@@ -33232,7 +33240,7 @@
   ],
   "conceptMaps": [
     {
-      "id": "s0024j",
+      "id": "s0024k",
       "name": "Cadre conceptuel — articulation des deux ensembles",
       "nodes": [
         {
@@ -33443,7 +33451,7 @@
   ],
   "bibliography": [
     {
-      "id": "s0024k",
+      "id": "s0024l",
       "type": "article",
       "authors": "Braun V, Clarke V",
       "year": "2006",
@@ -33453,7 +33461,7 @@
       "notes": "Les six phases suivies au § 4.2.6."
     },
     {
-      "id": "s0024l",
+      "id": "s0024m",
       "type": "article",
       "authors": "Braun V, Clarke V",
       "year": "2021",
@@ -33463,7 +33471,7 @@
       "notes": "Mise en question de la saturation comme justification d'effectif (§ 4.2.3.1)."
     },
     {
-      "id": "s0024m",
+      "id": "s0024n",
       "type": "article",
       "authors": "Malterud K, Siersma VD, Guassora AD",
       "year": "2016",
@@ -33473,7 +33481,7 @@
       "notes": "Principe de puissance informationnelle retenu pour la taille de l'échantillon."
     },
     {
-      "id": "s0024n",
+      "id": "s0024o",
       "type": "article",
       "authors": "Tong A, Sainsbury P, Craig J",
       "year": "2007",
@@ -33483,7 +33491,7 @@
       "notes": "Grille de rapportage annoncée en annexe 8."
     },
     {
-      "id": "s0024o",
+      "id": "s0024p",
       "type": "article",
       "authors": "Landis JR, Koch GG",
       "year": "1977",
@@ -33493,7 +33501,7 @@
       "notes": "Interprétation du kappa employée par l'application."
     },
     {
-      "id": "s0024p",
+      "id": "s0024q",
       "type": "rapport",
       "authors": "Organisation mondiale de la Santé",
       "year": "1986",

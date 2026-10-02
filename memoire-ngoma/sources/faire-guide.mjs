@@ -24,6 +24,7 @@ const { interCoderAgreement } = await import("../../js/merge.js");
 const virgule = x => x.toFixed(3).replace(".", ",");
 const kInter = interCoderAgreement(projetLu, "C1", "C2");
 const kIntra = interCoderAgreement(projetLu, "C1", "C1b");
+const nbVariables = new Set(projetLu.documents.flatMap(d => Object.keys(d.variables || {}))).size;
 const parVague = v => projetLu.documents.filter(d => d.variables?.vague === v && d.variables?.type_document === "entretien").length;
 
 const L = 9026;
@@ -95,11 +96,11 @@ const enfants = [
   vide(),
   tab([
     ["Ce que contient le projet", "Où le voir"],
-    ["10 transcriptions d'entretiens + 5 comptes rendus d'observation", "Volet « Système de documents », à gauche"],
+    [`${V1.ent} transcriptions d'entretiens + ${V1.docs - V1.ent} comptes rendus d'observation`, "Volet « Système de documents », à gauche"],
     [`${V1.codes} codes en ${V1.familles} familles, dont ${V1.inductifs} créés en cours de codage`, "Volet « Système de codes », en bas à gauche"],
-    ["15 variables de document (qualification, secteur, ancienneté…)", "Onglet Variables ▸ Éditeur de données"],
-    ["20 mémos : journal de bord par entretien, mémos de phase, piste d'audit", "Onglet Mémos ▸ Gestionnaire de mémos"],
-    ["8 requêtes sauvegardées correspondant aux thèmes provisoires", "Onglet Analyse ▸ Requêtes sauvegardées"],
+    [`${nbVariables} variables de document (qualification, secteur, ancienneté…)`, "Onglet Variables ▸ Éditeur de données"],
+    [`${projetLu.memos.length} mémos : journal de bord par entretien, mémos de phase, piste d'audit, définitions des familles`, "Onglet Mémos ▸ Gestionnaire de mémos"],
+    [`${projetLu.savedQueries.length} requêtes sauvegardées (thèmes, extraits citables…)`, "Onglet Analyse ▸ Requêtes sauvegardées"],
     ["Une carte conceptuelle reprenant la figure 1 du protocole", "Onglet Visualisation ▸ Carte conceptuelle"],
     [`Un second codage (codeur C2) sur ${kInter.sharedDocs} entretiens, et un recodage intra-codeur (C1b) sur ${kIntra.sharedDocs}`, "Onglet Analyse ▸ Accord inter-codeurs (κ)"],
     ["Les variables « vague », « citation_autorisee » et « recontact_accepte »", "Onglet Variables ▸ Éditeur de données"],

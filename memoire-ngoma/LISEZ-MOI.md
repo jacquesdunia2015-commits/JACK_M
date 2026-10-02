@@ -37,6 +37,7 @@ Le protocole lui-même **n'est pas inclus** dans ce dépôt.
 | `2_Transcriptions_verbatim_SIMULATION.docx` | Les 21 transcriptions, question par question selon l'annexe 1, avec relances et journal de bord |
 | `3_Guide_QualiCode_pour_ce_memoire.docx` | Les six phases de l'analyse thématique (§ 4.2.6) traduites en gestes dans l'application |
 | `4_Note_de_positionnalite_MODELE.docx` | La note de positionnalité (confirmabilité, annexe 8), en modèle d'exercice modifiable : avant le codage, puis à la fin de l'analyse — la même que dans le projet |
+| `5_Chapitre_Resultats_SIMULATION.docx` | **Le chapitre 5 (Résultats)** rédigé à partir du projet, en exercice : participants et centres, objectifs spécifiques 1 et 2, sept thèmes, équité, transformations, triangulation. Chaque citation et chaque effectif sont vérifiés contre le codage à la production du document |
 | `Memoire_Ngoma_SIMULATION.projx` | **Le projet QualiCode « Mémoire Ngoma — SIMULATION de formation »**, les deux vagues réunies |
 
 À ouvrir par **Accueil ▸ Ouvrir (.projx)**. Le projet porte le même nom et le
@@ -57,7 +58,7 @@ dans l'application, sans créer de doublon.
 | Segments codés | 2 559 |
 | Double codage | 7 entretiens sur 21 (codeur C2), soit le tiers prévu au § 4.2.6 |
 | Stabilité intra-codeur | 2 entretiens recodés par le premier codeur (étiquette C1b) |
-| Mémos | 19 mémos d'analyse, 21 journaux de bord, 11 définitions de familles |
+| Mémos | 20 mémos d'analyse, 21 journaux de bord, 11 définitions de familles |
 
 La variable « vague » distingue les deux vagues. Les variables
 « citation_autorisee » et « recontact_accepte » reprennent le registre des

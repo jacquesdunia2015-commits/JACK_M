@@ -1,6 +1,7 @@
 // construire.mjs — assemble le corpus et produit le projet QualiCode (.projx).
 //   node construire.mjs
 import { TITRE_POSITIONNALITE, TEXTE_POSITIONNALITE } from "./positionnalite.mjs";
+import { blocs as blocsResultats } from "./resultats.mjs";
 import { writeFileSync } from "node:fs";
 import { AVERTISSEMENT, ETUDE, participants, guide } from "./echantillon.mjs";
 import { participantsV2 } from "./echantillon-vague2.mjs";
@@ -728,7 +729,7 @@ CHAQUE dimension du cadre conceptuel. Exercice sur le corpus simulé :
 5. Conditions organisationnelles ...... SUFFISANT. Charge, équipement,
    rotation, charge administrative.
 6. Conditions systémiques ............. SUFFISANT, avec une réserve : la
-   maintenance des appareils n'est évoquée que par quatre participants.
+   maintenance des appareils n'est évoquée que par cinq participants.
 7. Conditions sociales perçues ........ SUFFISANT pour les représentations des
    prestataires — ce que l'étude vise. Le point de vue des femmes reste hors
    champ, limite assumée au § 4.2.6.
@@ -743,7 +744,8 @@ données, dimension par dimension, et non reprise de ce modèle.`);
 
   memoTheme("Triangulation — ensemble des deux vagues",
 ecarts.map(x => `${x.cs} — ${x.constat}`).join("\n\n") +
-`\n\nSur seize centres, quatre écarts et six concordances ont été consignés. Aucun
+`\n\nSur seize centres, ${ecarts.length} ont fait l'objet d'un constat consigné : ` +
+`${ecarts.filter(x => x.nature === "écart").length} écarts et ${ecarts.filter(x => x.nature === "concordance").length} concordances. Aucun
 écart n'est imputé à une intention du participant (§ 4.2.6).`);
 
   memoTheme("Piste d'audit — révision du cadre conceptuel",
@@ -981,6 +983,33 @@ désaccords éventuels se rapportent tels quels, sans être tranchés en faveur 
 chercheur.`);
 
   /* ---------- Ordre de présentation ---------- */
+  // Piste d'audit de la rédaction : chaque citation du chapitre 5 renvoie à
+  // son participant et aux codes sous lesquels elle a été trouvée. Le texte
+  // du chapitre et ses contrôles sont dans resultats.mjs et faire-resultats.mjs.
+  {
+    const lignes = [];
+    let section = "";
+    for (const b of blocsResultats) {
+      if (b.h2 || b.h3) section = b.h2 || b.h3;
+      if (!b.cite) continue;
+      if (section) { lignes.push("", section); section = ""; }
+      const extrait = b.t.length > 90 ? b.t.slice(0, 90).replace(/\s+\S*$/, "") + "…" : b.t;
+      const noms = b.codes.map(id => arbre.flatMap(f => f.enfants).find(e => e.id === id).nom.replace(/\s*\[inductif[^\]]*\]/, ""));
+      lignes.push(`  · ${b.cite} — « ${extrait} »\n      codé : ${noms.join(" ; ")}`);
+    }
+    const cites = blocsResultats.filter(b => b.cite);
+    collecte("Phase 6 — Rédaction du chapitre 5 : d'où vient chaque citation",
+`Le chapitre 5 (5_Chapitre_Resultats_SIMULATION.docx) cite ${cites.length} extraits de
+${new Set(cites.map(b => b.cite)).size} participants. Chacun a été vérifié automatiquement à la
+production du document : il figure mot pour mot dans un passage du participant
+codé (codeur C1) avec l'un des codes indiqués sous l'extrait. P05 n'est jamais cité ;
+les extraits de P19 ne portent ni code de centre ni caractéristique.
+
+Pour retrouver un extrait : Recherche ▸ coller quelques mots, ou Requêtes ▸
+activer le participant et le code.
+${lignes.join("\n")}`);
+  }
+
   const ordre = [
     "Phase 1 — Familiarisation, vague 1 (journal)",
     "Phase 1 — Familiarisation, vague 2 (journal)",
@@ -993,6 +1022,7 @@ chercheur.`);
     "Phase 4 — Revue des thèmes après la vague 2",
     "Phase 5 — Définition et dénomination des thèmes",
     "Phase 6 — Production du rapport : plan du chapitre Résultats",
+    "Phase 6 — Rédaction du chapitre 5 : d'où vient chaque citation",
     "Double codage et stabilité intra-codeur",
     "Triangulation — ensemble des deux vagues",
     "Vérification des interprétations auprès des participants",
@@ -1060,7 +1090,7 @@ const projets = [
     cfg: {
       id: "memoire-ngoma-simulation", nom: "Mémoire Ngoma — SIMULATION de formation",
       date: "2026-09-20T09:00:00Z", modifie: new Date().toISOString(),
-      versionSimulation: "deux-vagues-21-participants-16-centres-positionnalite",
+      versionSimulation: "deux-vagues-21-participants-16-centres-chapitre5",
       participants: [...participants, ...participantsV2],
       observations: [...observations, ...observationsV2].sort((x, y) => x.cs.localeCompare(y.cs)),
       ajustements: { ...ajustements, ...ajustementsV2 },
