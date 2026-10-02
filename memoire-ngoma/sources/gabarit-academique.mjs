@@ -32,32 +32,32 @@ export function stylesAcademiques() {
   const titre = (id, nom, niveau, italique = false, avant = 240) => ({
     id, name: nom, basedOn: "Normal", next: "Normal", quickFormat: true,
     run: { font: POLICE, size: 28, bold: true, italics: italique, color: "000000" },
-    paragraph: { spacing: { before: avant, after: 120, line: 360 }, keepNext: true, keepLines: true, alignment: AlignmentType.LEFT,
+    paragraph: { spacing: { before: avant, after: 120, line: 360, lineRule: "auto" }, keepNext: true, keepLines: true, alignment: AlignmentType.LEFT,
       outlineLevel: niveau },   // niveau hiérarchique : alimente le sommaire et la table des matières
   });
   // Entrées du sommaire et de la table des matières : 12 pt, interligne simple.
   const toc = (n, retrait) => ({ id: `TOC${n}`, name: `toc ${n}`, basedOn: "Normal", next: "Normal",
-    run: { font: POLICE, size: 24 }, paragraph: { spacing: { line: 240, after: 40 }, indent: { left: retrait }, alignment: AlignmentType.LEFT } });
+    run: { font: POLICE, size: 24 }, paragraph: { spacing: { line: 240, lineRule: "auto", after: 0 }, indent: { left: retrait }, alignment: AlignmentType.LEFT } });
   return {
     default: {
       document: {
         run: { font: POLICE, size: 28 },
-        paragraph: { spacing: { line: 360, after: 120 }, alignment: AlignmentType.JUSTIFIED },
+        paragraph: { spacing: { line: 360, lineRule: "auto", after: 120 }, alignment: AlignmentType.JUSTIFIED },
       },
     },
     paragraphStyles: [
       titre("Heading1", "Heading 1", 0, false, 360),
       titre("Heading2", "Heading 2", 1),
       titre("Heading3", "Heading 3", 2, true, 180),
-      // Annexes, sigles, listes : outils reproduits et listes, en 12 pt à interligne simple.
+      // Annexes, sigles, listes : outils reproduits et listes, en 11 pt à interligne simple.
       { id: "Compact", name: "Texte compact", basedOn: "Normal", next: "Compact", quickFormat: true,
-        run: { font: POLICE, size: 24 }, paragraph: { spacing: { line: 240, after: 80 } } },
+        run: { font: POLICE, size: 22 }, paragraph: { spacing: { line: 240, lineRule: "auto", after: 80 } } },
       // Sous-titres internes aux annexes : gras, sans entrer dans la table des matières.
       { id: "CompactTitre", name: "Titre compact", basedOn: "Compact", next: "Compact", quickFormat: true,
         run: { bold: true }, paragraph: { spacing: { before: 160, after: 80 }, keepNext: true, alignment: AlignmentType.LEFT } },
       // Liste des références (Vancouver) : 12 pt, interligne simple, retrait suspendu.
       { id: "Bibliographie", name: "Bibliographie", basedOn: "Normal", next: "Bibliographie", quickFormat: true,
-        run: { font: POLICE, size: 24 }, paragraph: { spacing: { line: 240, after: 60 }, indent: { left: 567, hanging: 567 }, alignment: AlignmentType.LEFT } },
+        run: { font: POLICE, size: 24 }, paragraph: { spacing: { line: 240, lineRule: "auto", after: 20 }, indent: { left: 567, hanging: 567 }, alignment: AlignmentType.LEFT } },
       toc(1, 0), toc(2, 240), toc(3, 480),
     ],
   };

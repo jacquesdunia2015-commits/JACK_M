@@ -72,7 +72,7 @@ function noter(t) {
 // Les chapitres 5 et 6 produisent leurs légendes eux-mêmes : on les relève dans le XML.
 function noterDepuis(elements) {
   for (const el of elements) {
-    const txt = JSON.stringify(el).match(/"(Tableau [IVXL]+\.[^"]*)"/);
+    const txt = JSON.stringify(el).match(/"((?:Tableau [IVXL]+|Figure \d+)\.[^"]*)"/);
     if (txt) noter(txt[1]);
   }
 }
@@ -133,6 +133,9 @@ const CONDENSATION = [
   "La capacitation désigne le résultat attendu", "La Charte d’Ottawa est un texte de référence politique",
   "Précision de lecture :", "Stratégies mobilisées :", "Composantes écartées :",
   "Les qualificatifs « politique » et « communautaire »", "Quatre précisions délimitent la portée du cadre.",
+  "La valeur de cette plateforme ne se mesure toutefois pas", "Cet écart a ici une signification théorique précise.",
+  "Hypertension artérielle et diabète pendant la grossesse :", "Trois éléments en fondent la pertinence :",
+  "Cette approche privilégie l’expression des participants", "La clôture ne repose pas sur une règle numérique",
 ];
 const condenses = new Set();
 function protocole(de, a, { transformer = t => t, sauterTitre = false, annexe = false, sansSaut = false } = {}) {
@@ -249,24 +252,18 @@ if (refs.nonCitees().length) throw new Error(`références ajoutées jamais cit�
 // Annexes.
 corpsMemoire.push(saut(), titre1("ANNEXES"));
 const annexes = [["ANNEXE 1.", "ANNEXE 2."], ["ANNEXE 2.", "ANNEXE 3."], ["ANNEXE 3.", "ANNEXE 4."], ["ANNEXE 4.", "ANNEXE 5."]];
-// L'annexe 1 suit le titre « ANNEXES » sur la même page.
-annexes.forEach(([de, a], k) => corpsMemoire.push(...protocole(indice(de), indice(a), { annexe: true, sansSaut: k === 0 })));
-corpsMemoire.push(saut(), titre1("ANNEXE 5. VERSIONS TRADUITES DES OUTILS"), aCompleter("[Insérer les versions kinyarwanda et anglaise des outils, issues de la traduction et de la rétro-traduction indépendantes.]"));
+// Les annexes se suivent sans saut de page : l'annexe 1 suit le titre « ANNEXES », chacune suit la précédente.
+// Le tableau de cohérence (annexe 8 du protocole) n'est pas repris : le renvoi du guide d'entretien pointe vers le protocole.
+const versProtocole = t => t.replace("La correspondance entre objectifs, concepts et questions figure en annexe 8.",
+  "La correspondance entre objectifs, concepts et questions figure dans le tableau de cohérence du protocole.");
+annexes.forEach(([de, a]) => corpsMemoire.push(...protocole(indice(de), indice(a), { annexe: true, sansSaut: true, transformer: versProtocole })));
+corpsMemoire.push(titre1("ANNEXE 5. VERSIONS TRADUITES DES OUTILS"), aCompleter("[Insérer les versions kinyarwanda et anglaise des outils, issues de la traduction et de la rétro-traduction indépendantes.]"));
 corpsMemoire.push(titre1("ANNEXE 6. AUTORISATIONS ADMINISTRATIVES ET ÉTHIQUES"), aCompleter("[Insérer les copies de l'approbation du comité d'éthique et de l'autorisation du district.]"));
-corpsMemoire.push(...protocole(indice("ANNEXE 7."), indice("ANNEXE 8."), { annexe: true }));
-corpsMemoire.push(...protocole(indice("ANNEXE 8."), indice("ANNEXE 9."), { annexe: true }));
-// Annexe 9 : arbre de codes final, une ligne par famille. Les données de routine
-// sont résumées au chapitre 5 (tableau IX) et ne sont pas reproduites centre par centre.
-corpsMemoire.push(saut(), titre1("ANNEXE 9. ARBRE DE CODES FINAL"),
-  compact("Familles dérivées du tableau III et codes de l'arbre final ; (i) signale un code inductif, né du matériau au cours de l'analyse. Le nombre entre parenthèses est celui des participants dont au moins un passage porte le code.", { after: 120 }));
-corpsMemoire.push(tableau([["Famille", "Codes"], ...arbre.map(f => [f.nom.replace(/^\d+\.\s*/, ""),
-  f.enfants.map(e => `${e.id} ${e.nom.replace(/\s*\[inductif[^\]]*\]/, " (i)")} (${calc.participantsAvec([e.id]).length})`).join(" ; ")])],
-  [2300, 6726]));
-
+corpsMemoire.push(...protocole(indice("ANNEXE 7."), indice("ANNEXE 8."), { annexe: true, sansSaut: true }));
 /* ---------- Fin du document : table des matières, résumé, abstract ---------- */
 const fin = [
   saut(), titrePage("TABLE DES MATIÈRES"),
-  new TableOfContents("Table des matières", { hyperlink: true, headingStyleRange: "1-3" }),
+  new TableOfContents("Table des matières", { hyperlink: true, headingStyleRange: "1-2" }),
   saut(), titrePage(T.RESUME.titre),
   ...T.RESUME.blocs.map(([t, x]) => new Paragraph({ spacing: { after: 120 }, alignment: AlignmentType.JUSTIFIED,
     children: [new TextRun({ text: `${t}. `, bold: true, size: 22 }), ...runs(x)] })),
@@ -274,6 +271,16 @@ const fin = [
   ...T.ABSTRACT.blocs.map(([t, x]) => new Paragraph({ spacing: { after: 120 }, alignment: AlignmentType.JUSTIFIED,
     children: [new TextRun({ text: `${t}. `, bold: true, size: 22 }), ...runs(x)] })),
 ];
+
+// Sigles sur deux colonnes, sans bordure : la liste tient sur une page.
+function tableauSigles() {
+  const moitie = Math.ceil(sigles.length / 2), sans = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+  const cellule = t => new TableCell({ width: { size: LARGEUR / 2, type: WidthType.DXA }, margins: { top: 20, bottom: 20, left: 60, right: 60 },
+    children: [new Paragraph({ children: [new TextRun({ text: t || "" })] })] });
+  return new Table({ width: { size: LARGEUR, type: WidthType.DXA }, columnWidths: [LARGEUR / 2, LARGEUR / 2],
+    borders: Object.fromEntries(["top", "bottom", "left", "right", "insideHorizontal", "insideVertical"].map(k => [k, sans])),
+    rows: Array.from({ length: moitie }, (_, i) => new TableRow({ children: [cellule(sigles[i]), cellule(sigles[i + moitie])] })) });
+}
 
 /* ---------- Pages liminaires (après le corps, pour disposer des légendes) ---------- */
 const liminaires = [
@@ -285,7 +292,7 @@ const liminaires = [
   ...T.HOMMAGES.flatMap(([a, t]) => [new Paragraph({ spacing: { before: 160, after: 60 }, children: [new TextRun({ text: a, bold: true, size: 22 })] }),
     /\[/.test(t) ? aCompleter(t) : corps(t)]),
   saut(), titrePage("SIGLES ET ABRÉVIATIONS"),
-  ...sigles.map(t => compact(t)),
+  tableauSigles(),
   saut(), titrePage("LISTE DES TABLEAUX"),
   ...legendes.tableaux.map(t => compact(t)),
   titrePage("LISTE DES FIGURES"),
@@ -304,7 +311,8 @@ const piedDePage = romain => new Footer({ children: [new Paragraph({ alignment: 
   new TextRun({ children: [PageNumber.CURRENT], size: 18 }),
 ] })] });
 const document = new Document({
-  features: { updateFields: true },
+  // Pas de mise à jour des champs à l'ouverture : finaliser-docx.py remplit les index avant livraison.
+  features: { updateFields: false },
   styles: stylesAcademiques(),
   sections: [
     { properties: { page: pageAcademique }, children: pageDeGarde },
@@ -329,7 +337,7 @@ for (const p of xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || []) {
   if (/\bP\d{2}\b/.test(t) && /\bCS\d{2}\b/.test(t)) throw new Error(`participant et centre associés : « ${t.slice(0, 80)} »`);
 }
 // Les transformations du texte du protocole doivent toutes avoir porté.
-for (const attendu of ["a couvert quinze des seize centres", "quinze ont été retenus, le seizième ayant servi au pré-test", "information capacitante"]) {
+for (const attendu of ["tableau de cohérence du protocole", "a couvert quinze des seize centres", "quinze ont été retenus, le seizième ayant servi au pré-test", "information capacitante"]) {
   if (!texte.includes(attendu)) throw new Error(`transformation du protocole sans effet : « ${attendu} »`);
 }
 const libres = texte.match(/\{[A-Za-z]+:[^}]*\}|\{N\}/g);

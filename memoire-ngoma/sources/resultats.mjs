@@ -37,44 +37,36 @@ export const blocs = [
 
   { h3: "5.2.2. Thème 1 — Un dépistage coupé en deux" },
   { p: "Définition. La tension est mesurée en CPN ; la recherche du diabète se fait ailleurs, au laboratoire ou à la consultation des maladies chroniques, sur des signes d'appel, avec des bandelettes que la CPN ne gère pas et un test que la femme paie. Là où ce circuit est fermé à la femme enceinte, la glycémie cesse d'être pensée." },
-  { p: "Même la tension connaît des omissions : {n:B6} participants décrivent des mesures sautées faute d'appareil disponible. Pour la glycémie, aucun ne décrit un geste réalisé en salle de CPN ; {n:B8} décrivent le circuit du bon, du laboratoire et des bandelettes réservées d'abord aux malades chroniques." },
+  { p: "Même la tension connaît des omissions faute d'appareil disponible ({n:B6} participants), et le savoir glycémique s'érode quand il n'est pas pratiqué ({n:D5}). Pour la glycémie, aucun ne décrit un geste réalisé en salle de CPN ; {n:B8} décrivent le circuit du bon, du laboratoire et des bandelettes réservées d'abord aux malades chroniques." },
   { cite: "P20", codes: ["B8"], t: "Le sucre, il y a un appareil au laboratoire, pour les malades chroniques. Pour les femmes enceintes, on ne l'a jamais fait. Jamais." },
   { p: "Là où le circuit est ouvert, deux sélections s'ajoutent. La première porte sur les signes : le bon n'est rédigé que pour les femmes qui présentent un signe d'appel ou un facteur de risque, selon le jugement du professionnel ou une habitude transmise entre collègues. La seconde porte sur les moyens : {n:B9} participants rapportent que le test, absent du paquet de soins de la CPN, est payé au laboratoire, et que celles qui n'ont pas l'argent le jour même repartent sans l'avoir fait." },
   { cite: "P01", codes: ["B9"], t: "Le test n'est pas dans le paquet de la CPN : au laboratoire, elle doit le payer. Celle qui n'a pas l'argent ce jour-là repart avec le bon dans son carnet, et pour ça, souvent, elle ne revient pas." },
-  { p: "Le savoir lui-même s'érode lorsqu'il n'est pas pratiqué : {n:D5} participants décrivent une compétence acquise en formation puis désapprise faute d'outil." },
-  { cite: "P06", codes: ["B2", "D5"], t: "J'ai la connaissance et je n'ai pas l'outil. C'est comme apprendre à conduire et ne pas avoir de voiture. Et avec le temps j'ai peur d'oublier." },
 
   { h3: "5.2.3. Thème 2 — Expliquer moins à celles qui savent le moins" },
   { p: "Définition. L'explication qui suit la mesure varie selon l'heure, la charge de travail et l'idée que le soignant se fait de la femme, à l'inverse des besoins. Ce sont les participants eux-mêmes qui le décrivent ; le thème ne désigne pas une faute individuelle." },
   { p: "{n:C4} participants décrivent cette modulation, selon l'instruction supposée, l'heure d'arrivée et l'assurance de la femme ; plusieurs formulent eux-mêmes le paradoxe, parfois en le découvrant au cours de l'entretien." },
   { cite: "P04", codes: ["C4"], t: "Si vous venez à sept heures trente, vous aurez une infirmière qui vous explique. Si vous venez à onze heures, vous aurez la même infirmière mais elle vous dira trois mots. C'est le même service et ce n'est pas le même service." },
-  { cite: "P02", codes: ["C4"], t: "Donc je donne le plus à celle qui a déjà, et le moins à celle qui n'a rien." },
   { p: "{n:C5} participants affirment au contraire donner la même explication à toutes. Le risque au-delà de la grossesse n'est évoqué que par {n:C3} participants, certains le taisant faute de service vers lequel orienter la femme. Des contre-pratiques existent : faire reformuler la femme ({n:C8}), utiliser un support visuel commun ({n:C9}), refuser de classer les femmes par avance. Enfin, {n:C7} infirmiers ou infirmières laissent l'explication à une collègue sage-femme." },
   { cite: "P15", codes: ["C4", "C9"], t: "Avec l'affiche, j'explique pareil à toutes, c'est ça l'avantage : l'image est la même pour celle qui sait lire et pour celle qui ne sait pas." },
 
   { h2: "5.3. Conditions perçues du dépistage (objectif spécifique 2)" },
   { h3: "5.3.1. Conditions individuelles et organisationnelles" },
   { p: "{n:D1} participants sur {N} décrivent une préparation initiale absente ou insuffisante au dépistage du diabète gestationnel ; la formation continue, décisive quand elle a eu lieu, reste ponctuelle et nominative, et le savoir part avec la personne formée. La charge de travail ({n:E1} participants), la concurrence entre programmes ({n:E6}) et l'absence de maintenance des appareils ({n:E7}) limitent le dépistage ; un poste de constantes tenu par une personne dédiée est le facilitateur le plus cité." },
-  { cite: "P10", codes: ["B6"], t: "Nous sommes deux pour la CPN et la maternité en même temps. Un accouchement ne peut pas attendre. Donc c'est la CPN qui attend, toujours." },
 
   { h3: "5.3.2. Thème 4 — Ce qui est compté existe" },
   { p: "Définition. Intrants, maintenance et attention de l'encadrement suivent les indicateurs ; le dépistage n'en fait pas partie. La supervision décrite porte sur la fréquentation et la complétude des registres ; aucun participant n'a eu à déclarer une tension élevée dépistée ou une glycémie réalisée, et plusieurs relient cette absence à la rupture des intrants." },
   { cite: "P07", codes: ["F4", "F5"], t: "Le fer, on l'a toujours. La moustiquaire, on l'a toujours. Parce qu'ils sont dans les indicateurs. Les bandelettes de glycémie ne sont dans aucun indicateur, donc elles arrivent en dernier ou pas du tout." },
-  { cite: "P09", codes: ["F4", "E7"], t: "S'il y avait un chiffre à rendre sur les glycémies faites, l'appareil serait réparé depuis longtemps." },
 
   { h3: "5.3.3. Thème 5 — Ce que change la dotation, et ce qu'elle ne change pas" },
   { p: "Définition. L'équipement réduit l'inégalité du test, mais ni celle du coût ni celle de l'explication, et il est réparti au bénéfice des centres déjà les mieux placés. Là où le laboratoire accepte les bons de la CPN, le dépistage glycémique devient une routine ciblée ; mais même dans le centre le mieux pourvu, le test reste payé par la femme, et l'explication reste soumise au temps disponible. {n:H8} participants estiment que le lieu d'exercice décide de ce que reçoivent les femmes." },
   { cite: "P11", codes: ["B9", "I8"], t: "Le titulaire laisse passer celles qui ne peuvent pas payer, mais c'est un arrangement, ce n'est écrit nulle part." },
-  { cite: "P11", codes: ["C4"], t: "Le matériel règle l'inégalité du test ; il ne règle pas celle de l'explication." },
 
   { h3: "5.3.4. Thème 3 — Trouver sans pouvoir suivre" },
   { p: "Définition. La détection ne devient une prise en charge que si la référence aboutit et si l'information revient. Devant une tension élevée, la conduite décrite est la même partout : reprise après repos, recherche de protéines, référence. La suite diverge : dans les centres éloignés, la référence dépend d'un véhicule, de l'argent de la famille et de la personne qui décide ({n:G4} participants) ; {n:F3} participants rapportent l'absence de tout retour écrit de l'hôpital ; {n:F6} décrivent des femmes dépistées qui, après l'accouchement, ne relèvent plus d'aucun service." },
-  { cite: "P10", codes: ["I6"], t: "pour nous qui sommes loin, une référence n'est pas une feuille de papier, c'est un véhicule. Tant qu'il n'y a pas de véhicule, la référence est une idée." },
   { cite: "P07", codes: ["I6"], t: "Aujourd'hui je réfère dans le vide. Et tant que je réfère dans le vide, mon dépistage s'arrête à la détection : ce n'est pas un dépistage, c'est un signalement." },
 
   { h3: "5.3.5. Conditions sociales perçues" },
   { p: "Les conditions sociales des femmes, telles que les perçoivent les participants, sont dominées par la distance ({n:G2}), le coût et la mutuelle ({n:G1}) et l'instruction ({n:G3}). Le recours tardif et le non-retour ({n:G5}) sont attribués aux femmes par {n:G6} participants, tandis que {n:G8} désignent aussi le service : attente prolongée, visite sans résultat, rupture de matériel. Le recours aux guérisseurs ({n:G10}) est décrit sans mépris, comme une ressource de proximité." },
-  { cite: "P06", codes: ["G5", "G8"], t: "Nous perdons des femmes par nos propres ruptures." },
   { cite: "P18", codes: ["G4", "H9"], t: "Les différences qui comptent pour le dépistage, ce sont des situations, pas des catégories de femmes : avoir de l'argent pour le transport aujourd'hui, avoir quelqu'un pour garder les enfants, avoir le mari d'accord." },
 
   { h3: "5.3.6. Thème 6 — Le registre comme écran" },
@@ -83,7 +75,6 @@ export const blocs = [
 
   { h3: "5.3.7. Thème 7 — Le dépistage hors des murs" },
   { p: "Définition. Relais communautaires et initiatives locales prolongent le dépistage là où le système ne prévoit rien ; ils reposent sur une personne. {n:G9} participantes de centres ruraux s'appuient sur les agents de santé communautaire pour suivre les femmes référées, sans qu'aucune règle ne le prévoie ; l'écart passe alors entre les villages qui ont un agent actif et les autres." },
-  { cite: "P15", codes: ["G9"], t: "Ce n'est pas la femme qui change, c'est l'agent." },
 
   { h2: "5.4. Portée reconnue en équité et transformations proposées" },
   { p: "Le mot « équité » n'a jamais été prononcé par l'enquêteur ; il apparaît spontanément dans {v:equiteSpontane} entretiens. Le jugement dominant est celui d'une inégalité inacceptable ({n:H2} participants), attribuée au système ({n:H4}) mais aussi, pour {n:H5} participants, à une part qui leur revient : l'explication (tableau VI). L'heure d'arrivée ({n:H7}) et le lieu ({n:H8}) apparaissent comme des facteurs d'inégalité qui ne dépendent pas de la femme. Une minorité exprime une résignation ({n:H3}) ou refuse de juger ({n:H6})." },
