@@ -1,10 +1,10 @@
 # ⚠️ DONNÉES ENTIÈREMENT SIMULÉES — NE PAS CITER
 
-**Ce dossier ne contient aucune donnée de terrain.** Les dix entretiens et les
-cinq observations qu'on y trouve ont été **entièrement fabriqués**. Aucun
+**Ce dossier ne contient aucune donnée de terrain.** Les 21 entretiens et les
+16 observations qu'on y trouve ont été **entièrement fabriqués**. Aucun
 entretien n'a été conduit, aucun centre de santé n'a été visité, aucune des
-personnes décrites n'existe. Les codes de structure (CS02, CS03, CS07, CS11,
-CS14) sont fictifs et ne désignent aucun établissement réel.
+personnes décrites n'existe. Les codes de structure (CS01 à CS16) sont fictifs
+et ne désignent aucun établissement réel.
 
 Ces fichiers servent à **une seule chose** : apprendre à manipuler QualiCode
 avant une collecte réelle. Ils ne peuvent être cités, ni figurer dans un
@@ -26,6 +26,13 @@ infirmiers et sages-femmes de Ngoma (Rwanda) »* (MUKAKI DUNIA Jacques, Master e
 Santé publique — Promotion de la santé, ENATSE, Université de Parakou).
 
 Le protocole lui-même **n'est pas inclus** dans ce dépôt.
+
+## Pour la collecte réelle : `kit-donnees-reelles/`
+
+Le dossier [`kit-donnees-reelles/`](kit-donnees-reelles/LISEZ-MOI.md) contient les
+formulaires vierges et un projet QualiCode vide, « Mémoire Ngoma — Données
+réelles », sans aucune donnée ni aucun élément de cet exercice. C'est là que
+commence le travail réel ; ce dossier-ci reste l'exercice.
 
 ## Contenu
 
