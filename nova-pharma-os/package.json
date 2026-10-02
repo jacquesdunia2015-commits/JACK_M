@@ -1,0 +1,22 @@
+{
+  "name": "nova-pharma-os",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NOVA PHARMA OS — plateforme SaaS de gestion pharmaceutique, commerciale et logistique",
+  "scripts": {
+    "demarrer": "node demarrer.mjs",
+    "migrate": "npm --prefix api run migrate",
+    "seed": "npm --prefix api run seed",
+    "seed:demo": "npm --prefix api run seed:demo",
+    "pharmacie": "npm --prefix api run seed:nova-sante",
+    "documents:word": "python3 scripts/markdown-vers-word.py",
+    "dev:api": "npm --prefix api run start:dev",
+    "dev:web": "npm --prefix web run dev",
+    "build": "npm --prefix api run build && npm --prefix web run build",
+    "test": "npm --prefix api run test:e2e",
+    "typecheck": "npm --prefix api run typecheck && npm --prefix web run typecheck"
+  },
+  "dependencies": {
+    "embedded-postgres": "18.4.0-beta.17"
+  }
+}

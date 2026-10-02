@@ -1,0 +1,656 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { AuditService } from '../../../common/audit/audit.service';
+import { DatabaseService } from '../../../common/database/database.service';
+import { RequestContext } from '../../../common/database/request-context';
+import { BusinessRuleException } from '../../../common/http/exceptions';
+import { NumberingService } from '../../../common/numbering/numbering.service';
+import { niveauPeremption } from '../../../common/niveau-peremption';
+import { evaluerStock, JOURS_CONSOMMATION } from './niveau-stock';
+import { StockService } from './stock.service';
+
+/** Ligne renvoyée par la requête des niveaux de stock (quantités en texte). */
+interface PositionStock {
+  on_hand: string;
+  reorder_point: string;
+  expiring_quantity: string;
+  sales_last_30_days: string;
+  days_to_expiry: number | null;
+  expiry_alert_days: number;
+  [colonne: string]: unknown;
+}
+
+@Injectable()
+export class InventoryService {
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly stock: StockService,
+    private readonly numbering: NumberingService,
+    private readonly audit: AuditService,
+  ) {}
+
+  // -------------------------------------------------------------------
+  // Consultation
+  // -------------------------------------------------------------------
+  async stockLevels(
+    ctx: RequestContext,
+    filters: { branchId?: string; search?: string; onlyIssues?: boolean } = {},
+  ) {
+    const branchId = filters.branchId ?? ctx.branchId;
+    const lignes = await this.db.readTransaction(ctx, (tx) =>
+      tx.many<PositionStock>(
+        `SELECT p.id AS product_id, p.sku, p.name, p.unit, p.reorder_point,
+                p.sale_price, p.cost_price, p.expiry_alert_days,
+                COALESCE(sum(si.quantity), 0)           AS on_hand,
+                COALESCE(sum(si.available_quantity), 0) AS available,
+                COALESCE(sum(si.quantity * si.average_cost), 0) AS stock_value,
+                count(DISTINCT si.lot_id) FILTER (WHERE si.quantity > 0) AS lots,
+                min(pl.expiry_date) FILTER (WHERE si.quantity > 0) AS nearest_expiry,
+                min(pl.expiry_date) FILTER (WHERE si.quantity > 0) - CURRENT_DATE
+                  AS days_to_expiry,
+                COALESCE(sum(si.quantity) FILTER (
+                  WHERE pl.expiry_date IS NOT NULL AND pl.expiry_date < CURRENT_DATE), 0)
+                  AS expired_quantity,
+                COALESCE(sum(si.quantity) FILTER (
+                  WHERE pl.expiry_date IS NOT NULL
+                    AND pl.expiry_date <= CURRENT_DATE + p.expiry_alert_days), 0)
+                  AS expiring_quantity,
+                ventes.quantite AS sales_last_30_days,
+                ventes.achats AS purchases_last_30_days,
+                dernier.supplier_id AS last_supplier_id,
+                dernier.supplier_name AS last_supplier_name
+           FROM products p
+           LEFT JOIN stock_items si ON si.product_id = p.id
+                AND ($1::uuid IS NULL OR si.branch_id = $1)
+           LEFT JOIN product_lots pl ON pl.id = si.lot_id
+           -- Sur la période observée : les ventes nettes des retours, rythme
+           -- réel de sortie qui sert à estimer la couverture, et les achats
+           -- entrés en stock.
+           LEFT JOIN LATERAL (
+             SELECT COALESCE(-sum(sm.quantity) FILTER (
+                      WHERE sm.kind IN ('sale', 'sale_return')), 0) AS quantite,
+                    COALESCE(sum(sm.quantity) FILTER (WHERE sm.kind = 'reception'), 0) AS achats
+               FROM stock_movements sm
+              WHERE sm.product_id = p.id
+                AND sm.kind IN ('sale', 'sale_return', 'reception')
+                AND sm.occurred_at >= now() - make_interval(days => $3::integer)
+                AND ($1::uuid IS NULL OR sm.branch_id = $1)
+           ) ventes ON true
+           -- Le fournisseur du dernier achat entré en stock pour ce produit.
+           LEFT JOIN LATERAL (
+             SELECT s.id AS supplier_id, s.name AS supplier_name
+               FROM stock_movements sm
+               JOIN goods_receipts gr ON gr.id = sm.reference_id
+               JOIN suppliers s ON s.id = gr.supplier_id
+              WHERE sm.product_id = p.id AND sm.kind = 'reception'
+                AND sm.reference_kind = 'goods_receipt'
+                AND ($1::uuid IS NULL OR sm.branch_id = $1)
+              ORDER BY sm.occurred_at DESC LIMIT 1
+           ) dernier ON true
+          WHERE p.deleted_at IS NULL AND p.is_active
+            AND ($2::text IS NULL OR p.name ILIKE '%'||$2||'%' OR p.sku ILIKE '%'||$2||'%')
+          GROUP BY p.id, ventes.quantite, ventes.achats, dernier.supplier_id, dernier.supplier_name
+          ORDER BY p.name LIMIT 500`,
+        [branchId ?? null, filters.search ?? null, JOURS_CONSOMMATION],
+      ),
+    );
+
+    const evaluees = lignes.map((ligne) => {
+      const evaluation = evaluerStock({
+        enStock: Number(ligne.on_hand),
+        seuil: Number(ligne.reorder_point),
+        ventesPeriode: Number(ligne.sales_last_30_days),
+      });
+      return {
+        ...ligne,
+        stock_level: evaluation.niveau,
+        // Couleur de la péremption la plus proche parmi les lots en stock.
+        expiry_level: niveauPeremption(ligne.days_to_expiry, ligne.expiry_alert_days),
+        days_of_cover:
+          evaluation.couvertureJours === null ? null : Math.floor(evaluation.couvertureJours),
+      };
+    });
+
+    // « À traiter » : tout ce qui n'est pas au vert, et les lots proches
+    // de la péremption même quand la quantité suffit.
+    return filters.onlyIssues
+      ? evaluees.filter((l) => l.stock_level !== 'suffisant' || Number(l.expiring_quantity) > 0)
+      : evaluees;
+  }
+
+  /** File FEFO d'un produit : ordre exact de consommation des lots. */
+  async fefoQueue(ctx: RequestContext, productId: string, branchId?: string) {
+    const target = branchId ?? ctx.branchId;
+    return this.db.readTransaction(ctx, (tx) =>
+      tx.many(
+        `SELECT lot_id, lot_number, expiry_date, quantity, reserved_quantity,
+                available_quantity, average_cost, fefo_rank
+           FROM stock_fefo_queue
+          WHERE product_id = $1 AND ($2::uuid IS NULL OR branch_id = $2)
+          ORDER BY fefo_rank`,
+        [productId, target ?? null],
+      ),
+    );
+  }
+
+  async alerts(ctx: RequestContext, branchId?: string, kind?: string) {
+    return this.db.readTransaction(ctx, (tx) =>
+      tx.many(
+        `SELECT a.id, a.kind, a.severity, a.message, a.details, a.status, a.created_at,
+                p.sku, p.name AS product_name, pl.lot_number, pl.expiry_date,
+                b.code AS branch_code
+           FROM stock_alerts a
+           JOIN products p ON p.id = a.product_id
+           JOIN branches b ON b.id = a.branch_id
+           LEFT JOIN product_lots pl ON pl.id = a.lot_id
+          WHERE a.status = 'open'
+            AND ($1::uuid IS NULL OR a.branch_id = $1)
+            AND ($2::text IS NULL OR a.kind = $2)
+          ORDER BY CASE a.severity WHEN 'critical' THEN 0 WHEN 'warning' THEN 1 ELSE 2 END,
+                   a.created_at DESC
+          LIMIT 300`,
+        [branchId ?? ctx.branchId ?? null, kind ?? null],
+      ),
+    );
+  }
+
+  async refreshAlerts(ctx: RequestContext, branchId?: string) {
+    const target = branchId ?? ctx.branchId;
+    if (!target) throw new BadRequestException('Branche non précisée.');
+    return this.db.transaction(ctx, (tx) => this.stock.refreshAlerts(tx, target));
+  }
+
+  async acknowledgeAlert(ctx: RequestContext, alertId: string) {
+    return this.db.transaction(ctx, (tx) =>
+      tx.oneOrFail(
+        `UPDATE stock_alerts
+            SET status = 'acknowledged', acknowledged_by = $2, acknowledged_at = now()
+          WHERE id = $1 AND status = 'open' RETURNING *`,
+        [alertId, ctx.actorKind === 'user' ? ctx.actorId : null],
+        'Alerte introuvable ou déjà traitée.',
+      ),
+    );
+  }
+
+  async movements(
+    ctx: RequestContext,
+    filters: { productId?: string; branchId?: string; kind?: string; limit?: number } = {},
+  ) {
+    return this.db.readTransaction(ctx, (tx) =>
+      tx.many(
+        `SELECT m.id, m.kind::text AS kind, m.quantity, m.unit_cost, m.balance_after,
+                m.reference_kind, m.reference_id, m.reason, m.occurred_at,
+                p.sku, p.name AS product_name, pl.lot_number, pl.expiry_date,
+                b.code AS branch_code, u.full_name AS user_name,
+                gr.number AS receipt_number, s.id AS supplier_id, s.name AS supplier_name
+           FROM stock_movements m
+           JOIN products p ON p.id = m.product_id
+           JOIN branches b ON b.id = m.branch_id
+           LEFT JOIN product_lots pl ON pl.id = m.lot_id
+           LEFT JOIN users u ON u.id = m.user_id
+           -- Un achat garde son fournisseur : on retrouve de qui vient chaque entrée.
+           LEFT JOIN goods_receipts gr ON m.reference_kind = 'goods_receipt' AND gr.id = m.reference_id
+           LEFT JOIN suppliers s ON s.id = gr.supplier_id
+          WHERE ($1::uuid IS NULL OR m.product_id = $1)
+            AND ($2::uuid IS NULL OR m.branch_id = $2)
+            AND ($3::text IS NULL OR m.kind::text = $3)
+          ORDER BY m.occurred_at DESC
+          LIMIT $4`,
+        [
+          filters.productId ?? null,
+          filters.branchId ?? ctx.branchId ?? null,
+          filters.kind ?? null,
+          Math.min(filters.limit ?? 200, 1000),
+        ],
+      ),
+    );
+  }
+
+  /**
+   * Fiche de stock d'un produit : combien on en a acheté, vendu, corrigé,
+   * depuis toujours et sur les 30 derniers jours, puis chaque mouvement.
+   * Le stock actuel est la somme exacte de ces mouvements.
+   */
+  async productHistory(ctx: RequestContext, productId: string, branchId?: string) {
+    const branche = branchId ?? ctx.branchId ?? null;
+    const [resume, mouvements] = await Promise.all([
+      this.db.readTransaction(ctx, async (tx) => {
+        const produit = await tx.oneOrFail(
+          `SELECT id, sku, name, unit, sale_price, cost_price, reorder_point, has_expiry
+             FROM products WHERE id = $1 AND deleted_at IS NULL`,
+          [productId],
+          'Produit introuvable.',
+        );
+        const totaux = await tx.oneOrFail(
+          `SELECT COALESCE(sum(quantity) FILTER (WHERE kind = 'reception'), 0) AS purchased,
+                  COALESCE(-sum(quantity) FILTER (WHERE kind IN ('sale', 'sale_return')), 0) AS sold,
+                  COALESCE(sum(quantity) FILTER (
+                    WHERE kind NOT IN ('reception', 'sale', 'sale_return')), 0) AS other,
+                  COALESCE(sum(quantity) FILTER (
+                    WHERE kind = 'reception' AND occurred_at >= now() - interval '30 days'), 0)
+                    AS purchased_30_days,
+                  COALESCE(-sum(quantity) FILTER (
+                    WHERE kind IN ('sale', 'sale_return') AND occurred_at >= now() - interval '30 days'), 0)
+                    AS sold_30_days,
+                  COALESCE(sum(quantity), 0) AS on_hand
+             FROM stock_movements
+            WHERE product_id = $1 AND ($2::uuid IS NULL OR branch_id = $2)`,
+          [productId, branche],
+        );
+        return { ...produit, totals: totaux };
+      }),
+      this.movements(ctx, { productId, branchId: branche ?? undefined, limit: 200 }),
+    ]);
+    return { ...resume, movements: mouvements };
+  }
+
+  // -------------------------------------------------------------------
+  // Régularisations
+  // -------------------------------------------------------------------
+  /** Régularisation manuelle : casse, don, perte, correction ponctuelle. */
+  async adjust(
+    ctx: RequestContext,
+    dto: {
+      branchId?: string;
+      productId: string;
+      lotId?: string;
+      quantity: number;
+      reason: string;
+      kind?: 'adjustment_in' | 'adjustment_out' | 'damage' | 'expiry_write_off';
+    },
+  ) {
+    const branchId = dto.branchId ?? ctx.branchId;
+    if (!branchId) throw new BadRequestException('Branche non précisée.');
+    if (dto.quantity === 0) {
+      throw new BadRequestException('La quantité de régularisation ne peut être nulle.');
+    }
+
+    const kind =
+      dto.kind ?? (dto.quantity > 0 ? 'adjustment_in' : 'adjustment_out');
+    // Une casse, une destruction pour péremption ou une sortie retirent du
+    // stock, quel que soit le signe saisi.
+    const sortie = kind !== 'adjustment_in';
+    const quantite = sortie ? -Math.abs(dto.quantity) : dto.quantity;
+
+    return this.db.transaction(ctx, async (tx) => {
+      let result: { balance: number };
+      if (sortie && !dto.lotId) {
+        // Sans lot précisé, la sortie prend les lots qui périment le plus
+        // tôt (périmés compris : c'est eux qu'on détruit), à leur coût.
+        const lots = await tx.many<{ lot_id: string | null; quantity: string; average_cost: string }>(
+          `SELECT si.lot_id, si.quantity, si.average_cost
+             FROM stock_items si
+             LEFT JOIN product_lots pl ON pl.id = si.lot_id
+            WHERE si.branch_id = $1 AND si.product_id = $2 AND si.quantity > 0
+            ORDER BY pl.expiry_date NULLS LAST, si.id
+            FOR UPDATE OF si`,
+          [branchId, dto.productId],
+        );
+        let reste = Math.abs(quantite);
+        const disponible = lots.reduce((s, l) => s + Number(l.quantity), 0);
+        if (disponible < reste) {
+          throw new BusinessRuleException(
+            `Sortie refusée : ${disponible} en stock, ${reste} demandé(s).`,
+            { productId: dto.productId, available: disponible, requested: reste },
+          );
+        }
+        result = { balance: 0 };
+        for (const lot of lots) {
+          if (reste <= 0) break;
+          const prise = Math.min(reste, Number(lot.quantity));
+          result = await this.stock.applyMovement(tx, {
+            branchId, productId: dto.productId, lotId: lot.lot_id, kind, quantity: -prise,
+            unitCost: Number(lot.average_cost), referenceKind: 'adjustment', reason: dto.reason,
+          });
+          reste -= prise;
+        }
+      } else {
+        result = await this.stock.applyMovement(tx, {
+          branchId,
+          productId: dto.productId,
+          lotId: dto.lotId ?? null,
+          kind,
+          quantity: quantite,
+          referenceKind: 'adjustment',
+          reason: dto.reason,
+        });
+      }
+      await this.stock.refreshAlerts(tx, branchId);
+      await this.audit.record(tx, {
+        action: 'inventory.adjusted',
+        entity: 'product',
+        entityId: dto.productId,
+        after: { quantity: quantite, kind, balance: result.balance },
+        reason: dto.reason,
+      });
+      return { ...result, kind, message: 'Régularisation enregistrée.' };
+    });
+  }
+
+  /** Sortie des lots périmés, avec traçabilité de la destruction. */
+  async writeOffExpired(ctx: RequestContext, branchId?: string, reason = 'Lots périmés.') {
+    const target = branchId ?? ctx.branchId;
+    if (!target) throw new BadRequestException('Branche non précisée.');
+
+    return this.db.transaction(ctx, async (tx) => {
+      const expired = await tx.many<{
+        product_id: string; lot_id: string; quantity: string;
+        lot_number: string; product_name: string;
+      }>(
+        `SELECT si.product_id, si.lot_id, si.quantity, pl.lot_number, p.name AS product_name
+           FROM stock_items si
+           JOIN product_lots pl ON pl.id = si.lot_id
+           JOIN products p ON p.id = si.product_id
+          WHERE si.branch_id = $1 AND si.quantity > 0
+            AND pl.expiry_date IS NOT NULL AND pl.expiry_date < CURRENT_DATE`,
+        [target],
+      );
+
+      for (const item of expired) {
+        await this.stock.applyMovement(tx, {
+          branchId: target,
+          productId: item.product_id,
+          lotId: item.lot_id,
+          kind: 'expiry_write_off',
+          quantity: -Number(item.quantity),
+          referenceKind: 'expiry',
+          reason: `${reason} — lot ${item.lot_number}`,
+        });
+      }
+
+      await this.stock.refreshAlerts(tx, target);
+      await this.audit.record(tx, {
+        action: 'inventory.expired_written_off',
+        entity: 'branch',
+        entityId: target,
+        after: { lots: expired.length },
+        reason,
+      });
+
+      return {
+        writtenOff: expired.length,
+        details: expired.map((e) => ({
+          product: e.product_name,
+          lot: e.lot_number,
+          quantity: Number(e.quantity),
+        })),
+      };
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // Inventaire
+  // -------------------------------------------------------------------
+  /** Ouvre un inventaire en figeant les quantités attendues. */
+  async startCount(
+    ctx: RequestContext,
+    dto: { branchId?: string; kind?: string; productIds?: string[] },
+  ) {
+    const branchId = dto.branchId ?? ctx.branchId;
+    if (!branchId) throw new BadRequestException('Branche non précisée.');
+
+    return this.db.transaction(ctx, async (tx) => {
+      const reference = await this.numbering.next(tx, 'inventory', { branchId });
+      const count = await tx.oneOrFail<{ id: string; reference: string }>(
+        `INSERT INTO inventory_counts
+           (organization_id, branch_id, reference, kind, status)
+         VALUES ($1,$2,$3,$4,'counting') RETURNING id, reference`,
+        [ctx.organizationId, branchId, reference, dto.kind ?? 'full'],
+      );
+
+      await tx.query(
+        `INSERT INTO inventory_count_lines
+           (organization_id, count_id, product_id, lot_id, expected_quantity)
+         SELECT si.organization_id, $2, si.product_id, si.lot_id, si.quantity
+           FROM stock_items si
+          WHERE si.branch_id = $1
+            AND ($3::uuid[] IS NULL OR si.product_id = ANY($3))`,
+        [branchId, count.id, dto.productIds?.length ? dto.productIds : null],
+      );
+
+      await this.audit.record(tx, {
+        action: 'inventory.count_started',
+        entity: 'inventory_count',
+        entityId: count.id,
+        after: { reference: count.reference, kind: dto.kind ?? 'full' },
+      });
+      return count;
+    });
+  }
+
+  async recordCount(
+    ctx: RequestContext,
+    countId: string,
+    lines: { productId: string; lotId?: string; countedQuantity: number; reason?: string }[],
+  ) {
+    return this.db.transaction(ctx, async (tx) => {
+      for (const line of lines) {
+        const sentinel = '00000000-0000-0000-0000-000000000000';
+        const { rowCount } = await tx.query(
+          `UPDATE inventory_count_lines
+              SET counted_quantity = $3, reason = $4
+            WHERE count_id = $1 AND product_id = $2
+              AND COALESCE(lot_id, '${sentinel}'::uuid) = COALESCE($5::uuid, '${sentinel}'::uuid)`,
+          [countId, line.productId, line.countedQuantity, line.reason ?? null, line.lotId ?? null],
+        );
+        // Un article trouvé en rayon mais absent du stock théorique est
+        // ajouté à l'inventaire avec un attendu de zéro.
+        if (rowCount === 0) {
+          await tx.query(
+            `INSERT INTO inventory_count_lines
+               (organization_id, count_id, product_id, lot_id, expected_quantity,
+                counted_quantity, reason)
+             VALUES ($1,$2,$3,$4,0,$5,$6)`,
+            [
+              ctx.organizationId, countId, line.productId, line.lotId ?? null,
+              line.countedQuantity, line.reason ?? 'Article non répertorié au stock théorique.',
+            ],
+          );
+        }
+      }
+      return { recorded: lines.length };
+    });
+  }
+
+  /**
+   * Valide l'inventaire : chaque écart devient un mouvement de stock, ce
+   * qui rend la correction traçable au lieu d'écraser silencieusement
+   * les quantités.
+   */
+  async validateCount(ctx: RequestContext, countId: string) {
+    return this.db.transaction(ctx, async (tx) => {
+      const count = await tx.oneOrFail<{
+        id: string; branch_id: string; status: string; reference: string;
+      }>(
+        'SELECT * FROM inventory_counts WHERE id = $1',
+        [countId],
+        'Inventaire introuvable.',
+      );
+      if (count.status === 'validated') {
+        throw new BusinessRuleException('Cet inventaire est déjà validé.');
+      }
+
+      const lines = await tx.many<{
+        product_id: string; lot_id: string | null; variance: string; reason: string | null;
+      }>(
+        `SELECT product_id, lot_id, variance, reason
+           FROM inventory_count_lines
+          WHERE count_id = $1 AND counted_quantity IS NOT NULL AND variance <> 0`,
+        [countId],
+      );
+
+      for (const line of lines) {
+        await this.stock.applyMovement(tx, {
+          branchId: count.branch_id,
+          productId: line.product_id,
+          lotId: line.lot_id,
+          kind: 'inventory',
+          quantity: Number(line.variance),
+          referenceKind: 'inventory',
+          referenceId: countId,
+          reason: line.reason ?? `Écart d'inventaire ${count.reference}`,
+        });
+      }
+
+      const validated = await tx.oneOrFail(
+        `UPDATE inventory_counts
+            SET status = 'validated', validated_at = now(), validated_by = $2
+          WHERE id = $1 RETURNING *`,
+        [countId, ctx.actorKind === 'user' ? ctx.actorId : null],
+      );
+
+      await this.stock.refreshAlerts(tx, count.branch_id);
+      await this.audit.record(tx, {
+        action: 'inventory.count_validated',
+        entity: 'inventory_count',
+        entityId: countId,
+        after: { reference: count.reference, adjustments: lines.length },
+      });
+
+      return {
+        count: validated,
+        adjustments: lines.length,
+        message: `Inventaire ${count.reference} validé : ${lines.length} écart(s) régularisé(s).`,
+      };
+    });
+  }
+
+  async getCount(ctx: RequestContext, countId: string) {
+    return this.db.readTransaction(ctx, async (tx) => {
+      const count = await tx.oneOrFail(
+        `SELECT ic.*, b.name AS branch_name, u.full_name AS validated_by_name
+           FROM inventory_counts ic
+           JOIN branches b ON b.id = ic.branch_id
+           LEFT JOIN users u ON u.id = ic.validated_by
+          WHERE ic.id = $1`,
+        [countId],
+        'Inventaire introuvable.',
+      );
+      const lines = await tx.many(
+        `SELECT l.expected_quantity, l.counted_quantity, l.variance, l.reason,
+                p.sku, p.name AS product_name, p.unit, pl.lot_number, pl.expiry_date
+           FROM inventory_count_lines l
+           JOIN products p ON p.id = l.product_id
+           LEFT JOIN product_lots pl ON pl.id = l.lot_id
+          WHERE l.count_id = $1
+          ORDER BY (l.variance <> 0) DESC, p.name`,
+        [countId],
+      );
+      return { count, lines };
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // Transferts entre branches
+  // -------------------------------------------------------------------
+  async transfer(
+    ctx: RequestContext,
+    dto: {
+      fromBranchId: string;
+      toBranchId: string;
+      lines: { productId: string; quantity: number }[];
+      notes?: string;
+    },
+  ) {
+    if (dto.fromBranchId === dto.toBranchId) {
+      throw new BadRequestException('Les branches de départ et d’arrivée sont identiques.');
+    }
+
+    return this.db.transaction(ctx, async (tx) => {
+      const reference = await this.numbering.next(tx, 'transfer', {
+        branchId: dto.fromBranchId,
+      });
+      const transfer = await tx.oneOrFail<{ id: string; reference: string }>(
+        `INSERT INTO stock_transfers
+           (organization_id, reference, from_branch_id, to_branch_id, status,
+            sent_at, received_at, created_by)
+         VALUES ($1,$2,$3,$4,'received', now(), now(), $5)
+         RETURNING id, reference`,
+        [
+          ctx.organizationId, reference, dto.fromBranchId, dto.toBranchId,
+          ctx.actorKind === 'user' ? ctx.actorId : null,
+        ],
+      );
+
+      for (const line of dto.lines) {
+        // La sortie suit la règle FEFO ; l'entrée reprend les mêmes lots,
+        // ce qui préserve la traçabilité des péremptions d'un site à l'autre.
+        const allocations = await this.stock.allocateFefo(
+          tx,
+          dto.fromBranchId,
+          line.productId,
+          line.quantity,
+        );
+        for (const allocation of allocations) {
+          await tx.query(
+            `INSERT INTO stock_transfer_lines
+               (organization_id, transfer_id, product_id, lot_id, quantity, received_quantity)
+             VALUES ($1,$2,$3,$4,$5,$5)`,
+            [
+              ctx.organizationId, transfer.id, line.productId,
+              allocation.lotId, allocation.quantity,
+            ],
+          );
+          await this.stock.applyMovement(tx, {
+            branchId: dto.fromBranchId,
+            productId: line.productId,
+            lotId: allocation.lotId,
+            kind: 'transfer_out',
+            quantity: -allocation.quantity,
+            unitCost: allocation.unitCost,
+            referenceKind: 'transfer',
+            referenceId: transfer.id,
+            reason: `Transfert ${transfer.reference}`,
+          });
+          await this.stock.applyMovement(tx, {
+            branchId: dto.toBranchId,
+            productId: line.productId,
+            lotId: allocation.lotId,
+            kind: 'transfer_in',
+            quantity: allocation.quantity,
+            unitCost: allocation.unitCost,
+            referenceKind: 'transfer',
+            referenceId: transfer.id,
+            reason: `Transfert ${transfer.reference}`,
+          });
+        }
+      }
+
+      await this.stock.refreshAlerts(tx, dto.fromBranchId);
+      await this.stock.refreshAlerts(tx, dto.toBranchId);
+      await this.audit.record(tx, {
+        action: 'inventory.transferred',
+        entity: 'stock_transfer',
+        entityId: transfer.id,
+        after: { reference: transfer.reference, lines: dto.lines.length },
+      });
+
+      return transfer;
+    });
+  }
+
+  /** Met un lot en quarantaine (rappel de lot, doute qualité). */
+  async quarantineLot(ctx: RequestContext, lotId: string, quarantined: boolean, reason: string) {
+    return this.db.transaction(ctx, async (tx) => {
+      const lot = await tx.oneOrFail(
+        `UPDATE product_lots
+            SET is_quarantined = $2, quarantine_reason = $3
+          WHERE id = $1 RETURNING *`,
+        [lotId, quarantined, quarantined ? reason : null],
+        'Lot introuvable.',
+      );
+      await this.audit.record(tx, {
+        action: quarantined ? 'inventory.lot_quarantined' : 'inventory.lot_released',
+        entity: 'product_lot',
+        entityId: lotId,
+        after: { quarantined },
+        reason,
+      });
+      return {
+        lot,
+        message: quarantined
+          ? 'Lot bloqué : il ne sera plus proposé à la vente.'
+          : 'Lot débloqué : il redevient vendable.',
+      };
+    });
+  }
+}
