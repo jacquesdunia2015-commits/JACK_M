@@ -81,11 +81,23 @@ dans l'application, sans créer de doublon.
 | Projet | |
 |---|---|
 | Documents | 35 (20 entretiens, 15 comptes rendus d'observation) |
-| Codes | 92 en 11 familles, dont 34 inductifs |
-| Segments codés | 2 296 |
+| Codes | 99 en 11 familles, dont 41 inductifs |
+| Segments codés | 2 440 |
 | Double codage | 3 entretiens recodés par un pair extérieur (codeur C2), comme prévu au § 4.2.5.6 |
 | Stabilité intra-codeur | 3 entretiens recodés par le premier codeur quatre semaines après (étiquette C1b) |
-| Mémos | 20 mémos d'analyse, 20 journaux de bord, 11 définitions de familles |
+| Mémos | 26 mémos d'analyse, 20 journaux de bord, 11 définitions de familles |
+
+**Relecture « réalités rwandaises ».** Le corpus a été relu à la lumière de
+l'organisation réelle des CPN au Rwanda : séances d'éducation collectives (deux
+à trois par semaine), venue du conjoint à la première CPN, catégories ubudehe
+et farine Shisha Kibondo, signalement par téléphone des ASM, campagnes de
+dépistage des MNT, umugoroba w'ababyeyi. Vingt passages d'entretien, une
+rubrique « Séance d'éducation collective » dans les quinze grilles
+d'observation (et dans les outils vierges), sept codes inductifs (sur les 41), un
+sous-thème de T2 et six mémos (phases 1 à 4, phase 6, piste d'audit 4) en rendent compte. Les sources
+réelles sont dans l'annexe 9 (« Repères réels »). Le chapitre 5, le mémoire et
+le rapport n'ont pas été régénérés : le mémo « Phase 6 — Ce que la relecture
+ajoute au chapitre 5 » dit quoi y reporter.
 
 La variable « vague » distingue les deux vagues. Les variables
 « citation_autorisee » et « recontact_accepte » reprennent le registre des

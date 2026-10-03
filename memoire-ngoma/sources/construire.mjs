@@ -105,6 +105,9 @@ function compteRendu(o) {
     `Nombre de femmes reçues durant la période : ${o.A.femmesRecues}. Nombre de professionnels assurant la consultation : ${o.A.professionnels}. ` +
     `Poste distinct pour la prise des constantes : ${o.A.posteConstantes}. Durée moyenne observée entre entrée et sortie : ${o.A.dureeMoyenne}.`);
 
+  if (o.S) bloc("S", "Séance d'éducation collective (rubrique ajoutée)",
+    `Fréquence déclarée : ${o.S.frequence}. Séance observée ce jour : ${o.S.observee}. ${o.S.detail} Tension et sucre abordés : ${o.S.sujets}.`);
+
   bloc("B", "Équipements et consommables",
     o.B.map(x => `${x.item} — présent : ${x.present}${x.nombre !== null && x.nombre !== undefined ? `, nombre : ${x.nombre}` : ""}, état : ${x.etat}.${x.obs ? " " + x.obs : ""}`).join("\n") +
     `\nRupture de stock signalée au cours des trois derniers mois : ${o.ruptureTroisMois}.`);
@@ -832,8 +835,9 @@ Unité de codage : le tour de parole du participant. Un même passage peut porte
 plusieurs codes ; c'est ce qui rend les co-occurrences interprétables.
 
 Ouverture inductive : ${inductifs.length} codes sur ${projet.codes.length} n'étaient pas dans la grille
-(${inductifs.filter(c => !/vague 2/.test(c.name)).length} nés de la vague 1, motifs dans la piste d'audit 1 ;
-${inductifs.filter(c => /vague 2/.test(c.name)).length} nés de la vague 2, motifs dans le mémo suivant).
+(${inductifs.filter(c => !/vague 2|relecture/.test(c.name)).length} nés de la vague 1 ou de la révision sur la glycémie, motifs dans la piste d'audit 1 ;
+${inductifs.filter(c => /vague 2/.test(c.name)).length} nés de la vague 2, motifs dans le mémo suivant ;
+${inductifs.filter(c => /relecture/.test(c.name)).length} nés de la relecture du corpus à la lumière des réalités rwandaises, motifs dans la piste d'audit 4).
 
 Codes jamais utilisés à l'issue des deux vagues : ${inutilises.length ? inutilises.join(" ; ") : "aucun"}.
 « Utilité perçue pour la femme » était vide après la vague 1 et ne l'est plus
@@ -878,7 +882,8 @@ T1. UN DÉPISTAGE COUPÉ EN DEUX (OS1)
     CPN ne gère pas. Là où ce circuit n'est pas ouvert à la femme enceinte,
     elle cesse d'être pensée.
     N'est pas : un défaut de connaissance des professionnels.
-    Codes : B1, B2, B6, B7, B8, E2, F5, A5, D5.
+    Codes : B1, B2, B6, B7, B8, E2, F5, A5, D5 ; après relecture, F9
+    (campagnes de dépistage des MNT hors de la CPN, sans lien avec elle).
 
 T2. EXPLIQUER MOINS À CELLES QUI SAVENT LE MOINS (OS1)
     L'explication qui suit la mesure varie selon l'heure, la charge et l'idée
@@ -887,13 +892,21 @@ T2. EXPLIQUER MOINS À CELLES QUI SAVENT LE MOINS (OS1)
     documentées : l'image commune, la vérification de la compréhension, le
     refus de catégoriser.
     N'est pas : une faute individuelle ; les participants la décrivent eux-mêmes.
-    Codes : C4, C5, C6, C8, C9, G3, G7, H5, H9.
+    Codes : C4, C5, C6, C8, C9, G3, G7, H5, H9 ; après relecture, C10 et C11.
+    Sous-thème né de la relecture : LA SÉANCE COLLECTIVE, ÉGALE POUR LES
+    PRÉSENTES, MUETTE SUR LE RÉSULTAT. La séance d'éducation donne à toutes les
+    femmes présentes la même information générale ; elle manque celles qui
+    arrivent après elle, parle peu de la tension et presque jamais du sucre, et
+    sert parfois de substitut à la restitution individuelle du résultat.
 
 T3. TROUVER SANS POUVOIR SUIVRE (OS2)
     La détection ne devient une prise en charge que si la référence aboutit
     (transport, décision familiale) et si l'information revient ; elle
     s'interrompt à l'accouchement et quand la femme se déplace.
-    Codes : B4, F2, F3, F6, F8, G2, G4, G11, I6.
+    Codes : B4, F2, F3, F6, F8, G2, G4, G11, I6 ; après relecture, G12 (une
+    première CPN retardée dans l'attente du conjoint retarde aussi la
+    glycémie) et G13 (les ménages les plus pauvres, aidés, reviennent ; ceux
+    juste au-dessus du seuil se perdent).
 
 T4. CE QUI EST COMPTÉ EXISTE (OS2)
     Intrants, maintenance et attention suivent les indicateurs ; le dépistage
@@ -916,7 +929,9 @@ T7. LE DÉPISTAGE HORS DES MURS (OS2 et transformations)
     Relais communautaires et initiatives locales prolongent le dépistage là où
     le système ne prévoit rien. Elles reposent sur une personne : c'est leur
     force et leur fragilité.
-    Codes : G9, I8, F6.
+    Codes : G9, I8, F6 ; après relecture, G14 (l'alerte par téléphone des
+    ASM organise l'urgence, pas le contrôle) et I9 (passer par l'umugoroba
+    w'ababyeyi pour atteindre les maris et les familles).
 
 La portée reconnue en équité (famille 8) n'est pas un thème : c'est le lieu où
 T2, T4, T5 et T6 se rejoignent dans le jugement des participants (Q19).`);
@@ -996,6 +1011,150 @@ Ces retours changent des formulations, pas la structure des thèmes. Les
 désaccords éventuels se rapportent tels quels, sans être tranchés en faveur du
 chercheur.`);
 
+  /* ---------- Relecture du corpus à la lumière des réalités rwandaises ---------- */
+  const nbParCode = id => {
+    const c = projet.codes.find(x => x.name === arbre.flatMap(f => f.enfants).find(e => e.id === id).nom);
+    const ids = new Set(entretiens.map(d => d.id));
+    return new Set(projet.segments.filter(x => x.codeId === c.id && x.coder === "C1" && ids.has(x.docId)).map(x => x.docId)).size;
+  };
+  collecte("Phase 1 — Familiarisation, relecture (réalités rwandaises)",
+`Relecture intégrale des ${entretiens.length} entretiens et des ${projet.documents.length - entretiens.length} comptes rendus après une
+recherche documentaire sur l'organisation réelle des CPN au Rwanda (sources dans
+l'annexe 9, « Repères réels »). Question de relecture : qu'est-ce que le cadre
+conceptuel, construit hors du Rwanda, ne m'a pas fait voir ?
+
+Ce qui apparaît à la relecture :
+  · la SÉANCE D'ÉDUCATION COLLECTIVE, deux à trois fois par semaine, avant les
+    consultations. Plusieurs participants la décrivent dès qu'on les relance ;
+    l'observation la confirme dans ${projet.documents.filter(d => /Séance observée ce jour : oui/.test(d.text)).length} centres le jour de la visite ;
+  · la VENUE DU CONJOINT à la première CPN (test VIH du couple), vécue comme une
+    condition d'accueil, qui retarde la première visite ;
+  · les CATÉGORIES UBUDEHE : mutuelle payée par l'État et farine Shisha Kibondo
+    pour les ménages les plus pauvres, qui reviennent ; les ménages juste
+    au-dessus du seuil, qu'on perd ;
+  · le SIGNALEMENT PAR TÉLÉPHONE des ASM (enregistrement des grossesses,
+    alerte rouge et ambulance) ;
+  · les CAMPAGNES DE DÉPISTAGE DES MNT, hors de la CPN et sans lien avec elle ;
+  · l'UMUGOROBA W'ABABYEYI, forum villageois des parents, proposé comme relais.
+
+Première impression : la séance collective est l'endroit où le service parle
+le plus aux femmes, et celui où il parle le moins de la tension et du sucre.`);
+
+  collecte("Phase 2 — Codes inductifs nés de la relecture",
+`Sept codes créés à la relecture, chacun parce qu'aucun code existant ne
+contenait le passage sans le déformer. Nombre de participants concernés entre
+parenthèses (entretiens, codeur C1). C10 est codé en plus sur la rubrique
+ajoutée des comptes rendus d'observation.
+
+C10 Séance d'éducation collective en CPN (${nbParCode("C10")}) — organisation, contenu, fréquence,
+    supports (boîte à images), femmes qui la manquent.
+C11 Séance collective et restitution individuelle du résultat (${nbParCode("C11")}) — le
+    débat entre complément (« la séance prépare le terrain ») et substitut
+    (« tu as entendu à la séance »). Distinct de C7 : ici, l'explication n'est
+    pas renvoyée à un collègue mais à un moment collectif.
+F9  Campagnes de dépistage des MNT hors de la CPN (${nbParCode("F9")}) — deux dépistages
+    de la même femme qui ne communiquent pas.
+G12 Attente du conjoint pour la première CPN (${nbParCode("G12")}) — distinct de G4 (marge de
+    décision) : ce n'est pas le conjoint qui refuse, c'est la femme qui croit
+    ne pas pouvoir venir seule.
+G13 Catégorie ubudehe et aides liées à la grossesse (${nbParCode("G13")}) — l'aide ciblée
+    fidélise les plus pauvres ; la difficulté se déplace juste au-dessus du
+    seuil. Distinct de G1 (moyens) parce qu'il décrit un effet de seuil.
+G14 Signalement des grossesses et alertes par téléphone des ASM (${nbParCode("G14")}) — distinct
+    de G9 (relais humain) : c'est l'outil, qui ne prévoit que l'urgence.
+I9  Relais par les forums communautaires (${nbParCode("I9")}) — proposition, pas pratique
+    existante : à ne pas confondre avec I8.
+
+Règle maintenue : famille 7 = représentations professionnelles. G12 et G13
+disent ce que les prestataires perçoivent des femmes, pas ce qu'elles vivent.`);
+
+  collecte("Phase 3 — Thèmes candidats après la relecture",
+`Trois pistes ouvertes, enregistrées en requêtes :
+  1. « L'éducation collective : un canal universel qui ne parle pas du
+     résultat » (C10, C11, C4, H7) — candidate au statut de thème propre.
+  2. « Les dispositifs rwandais qui retardent ou rapprochent la femme du
+     dépistage » (G12, G13, G14) — conjoint, ubudehe, alerte téléphonique.
+  3. « Le dépistage en dehors de la CPN » (F9, I9, A4) — campagnes et
+     forums villageois.
+
+Matrice des codes : C10 est dense et réparti dans les deux vagues et les deux
+qualifications ; C11 est porté surtout par des centres à forte affluence.
+Co-occurrences : C10 avec C4 (modulation) et avec E1 (charge) ; G12 avec G5
+(recours tardif).`);
+
+  collecte("Phase 4 — Revue après la relecture : thème propre ou sous-thème ?",
+`Piste 1 confrontée à l'ensemble des extraits de T2 puis au corpus entier.
+Décision : PAS DE HUITIÈME THÈME. La séance collective obéit au même mécanisme
+que T2 — l'information se distribue selon l'heure d'arrivée, la charge et le
+moment — et le nourrit. Elle devient le sous-thème « la séance collective,
+égale pour les présentes, muette sur le résultat ».
+  Argument décisif : les femmes qui manquent la séance sont celles des collines
+  éloignées (P03), celles-là mêmes qui reçoivent le moins d'explication à la
+  table (T2) ; et la séance sert parfois d'explication pour toutes (P08).
+  Contre-argument retenu : la séance est aussi, pour plusieurs participants,
+  la seule forme d'information vraiment égale (P01, P20) ; le sous-thème garde
+  cette ambivalence.
+
+Piste 2 : éclatée. G12 et G13 rejoignent T3 (trouver sans pouvoir suivre) ;
+G14 rejoint T7 (hors des murs). Pas de thème « dispositifs rwandais » : ce
+serait un thème par l'objet, non par le sens.
+Piste 3 : F9 rejoint T1 (un dépistage coupé en deux — ici en trois) ; I9 va
+aux transformations proposées.
+
+Triangulation : la concordance relevée à CS10 (séance sur les signes de danger,
+planche de la boîte à images sans image du diabète) et, dans un centre rural,
+neuf femmes arrivées après la séance appuient le sous-thème.`);
+
+  collecte("Phase 6 — Ce que la relecture ajoute au chapitre 5 (à reporter)",
+`Le chapitre 5 livré n'a pas été régénéré (corrections manuelles de l'auteur).
+À y reporter :
+
+5.2, thème 2 — paragraphe à ajouter après la définition :
+  « Trois matins par semaine au plus, une séance d'éducation collective réunit
+  les femmes présentes avant les consultations. ${nbParCode("C10")} participants la
+  décrivent : elle donne à toutes la même information générale, mais la tension
+  n'y apparaît qu'à travers les signes de danger et le sucre presque jamais ;
+  elle manque les femmes arrivées après elle ; et ${nbParCode("C11")} participants
+  discutent de son usage comme substitut de la restitution individuelle. »
+  Citations possibles : P07 (« La séance prépare le terrain ; elle ne remplace
+  pas la restitution du résultat »), P03 (les femmes des collines du fond).
+
+5.3, thème 3 — ajouter : l'attente du conjoint pour la première CPN
+  (${nbParCode("G12")} participantes) et l'effet de seuil de l'ubudehe (${nbParCode("G13")} participants).
+5.3, thème 7 — ajouter : l'alerte par téléphone des ASM, qui organise
+  l'urgence et non le contrôle (${nbParCode("G14")} participants).
+5.3, thème 1 — ajouter : les campagnes de dépistage des MNT hors CPN (${nbParCode("F9")}).
+5.4, transformations — ajouter : la séance comme lieu d'un message sur la
+  tension et le sucre (P16) et l'umugoroba w'ababyeyi (${nbParCode("I9")} participants).
+5.5, triangulation — un constat de plus (concordance à CS10).
+
+Chiffres du projet après relecture : ${projet.codes.length} codes, ${projet.segments.length} segments.`);
+
+  collecte("Piste d'audit 4 — relecture du corpus (réalités rwandaises)",
+`Date : après la vague 2. Déclencheur : recherche documentaire sur
+l'organisation réelle des CPN au Rwanda et information de terrain de l'auteur
+(séances d'éducation collectives deux à trois fois par semaine).
+
+Décisions :
+  1. Relecture complète du corpus, pas seulement des entretiens où le sujet
+     apparaissait : un code créé tard doit être cherché partout.
+  2. Ajout à la grille d'observation d'une rubrique « Séance d'éducation
+     collective » (fréquence, observation du jour, thème, tension et sucre
+     abordés, femmes arrivées après). Écart à l'annexe 2 du protocole : à
+     faire valider par la direction de mémoire ; ajoutée aussi aux outils
+     vierges pour la collecte réelle.
+  3. Sept codes inductifs (piste dans le mémo de phase 2 correspondant).
+  4. Aucun thème nouveau ; sous-thème de T2 et rattachements à T1, T3, T7
+     (mémo de phase 4).
+  5. Termes kinyarwanda (ubudehe, umugoroba w'ababyeyi, Shisha Kibondo) :
+     vérifiés dans des sources publiées ; les catégories ubudehe ont été
+     réformées en 2020 : les participants parlent des « catégories les plus
+     pauvres » sans numéro.
+
+Ce que la relecture enseigne pour la collecte réelle : ajouter une relance
+sur la séance collective (« Et à la séance d'éducation, qu'en dites-vous ? »)
+après Q4 et Q6, sans modifier les questions du guide.`);
+
   /* ---------- Ordre de présentation ---------- */
   // Piste d'audit de la rédaction : chaque citation du chapitre 5 renvoie à
   // son participant et aux codes sous lesquels elle a été trouvée. Le texte
@@ -1027,16 +1186,21 @@ ${lignes.join("\n")}`);
   const ordre = [
     "Phase 1 — Familiarisation, vague 1 (journal)",
     "Phase 1 — Familiarisation, vague 2 (journal)",
+    "Phase 1 — Familiarisation, relecture (réalités rwandaises)",
     "Contrôle de fidélité des transcriptions (§ 4.2.6)",
     "Phase 2 — Codage initial : grille déductive et ouverture inductive",
     "Phase 2 — Codes inductifs nés de la vague 2",
+    "Phase 2 — Codes inductifs nés de la relecture",
     "Phase 3 — Thèmes provisoires (après la vague 1)",
     "Phase 3 — Thèmes révisés après la vague 2",
+    "Phase 3 — Thèmes candidats après la relecture",
     "Phase 4 — Revue après la vague 1 : un thème écarté",
     "Phase 4 — Revue des thèmes après la vague 2",
+    "Phase 4 — Revue après la relecture : thème propre ou sous-thème ?",
     "Phase 5 — Définition et dénomination des thèmes",
     "Phase 6 — Production du rapport : plan du chapitre Résultats",
     "Phase 6 — Rédaction du chapitre 5 : d'où vient chaque citation",
+    "Phase 6 — Ce que la relecture ajoute au chapitre 5 (à reporter)",
     "Double codage et stabilité intra-codeur",
     "Triangulation — ensemble des deux vagues",
     "Vérification des interprétations auprès des participants",
@@ -1044,6 +1208,7 @@ ${lignes.join("\n")}`);
     "Piste d'audit 1 — décisions de codage (vague 1)",
     "Piste d'audit 2 — décisions de codage (vague 2)",
     "Piste d'audit 3 — révision du cadre conceptuel",
+    "Piste d'audit 4 — relecture du corpus (réalités rwandaises)",
     TITRE_POSITIONNALITE,
   ];
   const oublies = [...recueillis.keys()].filter(k => !ordre.includes(k));
@@ -1090,6 +1255,10 @@ const requetesV2 = [
   ["Femmes mobiles et rupture du suivi", ["G11"]],
   ["Recours au traitement traditionnel (représentations)", ["G10"]],
   ["Codes inductifs nés de la vague 2", ["B7", "C9", "E8", "E9", "F7", "F8", "G9", "G10", "G11", "H9", "I8"]],
+  ["T2 (sous-thème) — La séance collective, égale pour les présentes, muette sur le résultat", ["C10", "C11"], true],
+  ["Dispositifs rwandais : conjoint, ubudehe, alerte des ASM", ["G12", "G13", "G14"]],
+  ["Dépistage hors de la CPN : campagnes et forums villageois", ["F9", "I9"]],
+  ["Codes inductifs nés de la relecture (réalités rwandaises)", ["C10", "C11", "F9", "G12", "G13", "G14", "I9"], true],
 ];
 
 /* ================================================================

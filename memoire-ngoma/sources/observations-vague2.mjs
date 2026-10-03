@@ -15,6 +15,7 @@ export const observationsV2 = [
       femmesRecues: 51, professionnels: 4, posteConstantes: "oui, salle distincte avec un agent affecté",
       dureeMoyenne: "environ 1 h 05",
     },
+    S: { frequence: "3 par semaine (lundi, mercredi, vendredi)", observee: "oui", detail: "Séance de 07h30 à 07h55 dans la salle d'attente, animée par une sage-femme, en kinyarwanda, devant environ quarante femmes. Thème du jour : signes de danger pendant la grossesse ; l'affiche sur la tension pendant la grossesse est montrée et commentée (maux de tête, vision floue, œdèmes). Le sucre n'est pas abordé. Une dizaine de femmes arrivent après la fin de la séance.", sujets: "tension : oui (signes de prééclampsie) ; sucre : non" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 3, etat: "2 électroniques et 1 manuel, tous fonctionnels", obs: "Brassard grande taille présent — seul centre observé à en disposer." },
       { item: "Glucomètre", present: "oui", nombre: 2, etat: "fonctionnels — au laboratoire du centre, un de réserve sous clé", obs: "Aucun glucomètre en salle de CPN. Glycémies de CPN réalisées au laboratoire sur bon, le matin même ; plusieurs bons de CPN au registre du laboratoire pendant la demi-journée. Glycémie de la première CPN pour toutes ; contrôle ultérieur sur facteurs de risque, sans épreuve de charge à 24-28 semaines." },
@@ -28,7 +29,7 @@ export const observationsV2 = [
     glycemieCpn: "laboratoire", glycemieT3: "sur facteurs de risque",
     C: [
       { item: "Protocole / algorithme HTA", present: "oui", accessible: "oui", obs: "Affiché au poste de constantes, en kinyarwanda, avec seuils et conduite à tenir." },
-      { item: "Protocole diabète en grossesse", present: "oui", accessible: "oui", obs: "Algorithme affiché à côté du précédent, avec les critères de dépistage ciblé." },
+      { item: "Protocole diabète en grossesse", present: "oui", accessible: "oui", obs: "Algorithme affiché à côté du précédent, avec la glycémie de la première CPN pour toutes et les critères pour la refaire entre 24 et 28 semaines." },
       { item: "Fiche ou circuit de référence formalisé", present: "oui", accessible: "oui", obs: "Fiche de référence à deux volets ; le second volet (contre-référence) revient parfois rempli de l'hôpital — huit retours classés sur le trimestre." },
       { item: "Supports d'information destinés aux femmes", present: "oui", accessible: "oui", obs: "Quatre affiches illustrées en kinyarwanda, dont une sur la tension pendant la grossesse ; un dépliant à emporter, en nombre limité." },
       { item: "Registre de consultation prénatale", present: "oui", accessible: "oui", obs: "" },
@@ -49,6 +50,7 @@ export const observationsV2 = [
       femmesRecues: 26, professionnels: 2, posteConstantes: "non",
       dureeMoyenne: "environ 1 h 50",
     },
+    S: { frequence: "2 par semaine (mardi, jeudi)", observee: "non — jour sans séance", detail: "Cahier des séances consulté : derniers thèmes inscrits « hygiène » et « nutrition », avec le nombre de femmes présentes. Aucun thème sur la tension ou le sucre depuis trois mois.", sujets: "tension : non (cahier) ; sucre : non (cahier)" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "manuel, fonctionnel", obs: "Stéthoscope usé ; l'équipe signale une difficulté d'auscultation en ambiance bruyante." },
       { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — rangé à la consultation MNT (jeudi)", obs: "Aucun glucomètre en salle de CPN ; l'appareil n'est pas utilisé pour la CPN." },
@@ -83,6 +85,7 @@ export const observationsV2 = [
       femmesRecues: 19, professionnels: 2, posteConstantes: "non",
       dureeMoyenne: "environ 1 h 30",
     },
+    S: { frequence: "2 par semaine (mardi, vendredi)", observee: "oui", detail: "Séance de 08h00 à 08h20 sous l'auvent, animée par la sage-femme, devant une vingtaine de femmes. Thème : prévention de la transmission du VIH de la mère à l'enfant. Boîte à images utilisée.", sujets: "tension : non ; sucre : non" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "électronique, fonctionnel", obs: "" },
       { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN. Inutilisable faute de bandelettes valides." },
@@ -117,6 +120,7 @@ export const observationsV2 = [
       femmesRecues: 44, professionnels: 3, posteConstantes: "oui, tenu ce jour-là par un stagiaire",
       dureeMoyenne: "environ 1 h 35",
     },
+    S: { frequence: "3 par semaine", observee: "oui", detail: "Séance de 07h50 à 08h15 dans la salle d'attente, animée par une infirmière ; thème : allaitement maternel exclusif. Deux pères présents. La séance est interrompue une fois pour un accouchement.", sujets: "tension : non ; sucre : non" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 2, etat: "1 électronique fonctionnel ; 1 électronique en panne", obs: "" },
       { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; glycémie de la première CPN demandée par bon pour toutes, avec le bilan ; ensuite sur facteurs de risque seulement. Au registre du laboratoire, aucune glycémie de contrôle systématique au troisième trimestre." },
@@ -151,6 +155,7 @@ export const observationsV2 = [
       femmesRecues: 28, professionnels: 2, posteConstantes: "non",
       dureeMoyenne: "environ 1 h 40",
     },
+    S: { frequence: "2 par semaine", observee: "non — jour sans séance", detail: "Cahier des séances présent mais non rempli depuis cinq semaines ; l'équipe explique l'absence par le départ d'une infirmière.", sujets: "non documenté" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "manuel, fonctionnel", obs: "" },
       { item: "Glucomètre", present: "oui", nombre: 1, etat: "NON fonctionnel — au laboratoire, message d'erreur persistant", obs: "Aucun glucomètre en salle de CPN. Panne signalée selon l'équipe ; les glycémies sont orientées vers l'hôpital de district." },
@@ -185,6 +190,7 @@ export const observationsV2 = [
       femmesRecues: 14, professionnels: 2, posteConstantes: "non",
       dureeMoyenne: "environ 1 h 10",
     },
+    S: { frequence: "annoncées 2 par semaine, irrégulières", observee: "non", detail: "Pas de cahier des séances. Le titulaire indique que les séances sont suspendues les semaines où il est seul au centre.", sujets: "non documenté" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "électronique NEUF, fonctionnel", obs: "Reçu à l'ouverture du centre." },
       { item: "Glucomètre", present: "non", nombre: 0, etat: "—", obs: "Prévu dans la dotation du laboratoire selon l'équipe, non livré ; le laboratoire n'est pas encore opérationnel." },
@@ -219,6 +225,7 @@ export const observationsV2 = [
       femmesRecues: 33, professionnels: 2, posteConstantes: "non",
       dureeMoyenne: "environ 2 h",
     },
+    S: { frequence: "2 par semaine (mardi, vendredi)", observee: "non — jour sans séance", detail: "Cahier des séances consulté : le mardi précédent, thème « signes de danger », boîte à images mentionnée. La boîte à images présente au centre comporte une planche sur les maux de tête et les œdèmes, aucune sur le diabète.", sujets: "tension : oui (cahier et boîte à images) ; sucre : non" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "électronique, fonctionnel", obs: "" },
       { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; le laboratoire accepte les bons de la CPN : glycémie de la première CPN pour toutes, puis sur facteurs de risque. Aucune glycémie de contrôle systématique au troisième trimestre." },
@@ -253,6 +260,7 @@ export const observationsV2 = [
       femmesRecues: 25, professionnels: 2, posteConstantes: "non",
       dureeMoyenne: "environ 1 h 45",
     },
+    S: { frequence: "2 par semaine (lundi, jeudi)", observee: "oui", detail: "Séance de 07h55 à 08h15, animée par un infirmier, devant une vingtaine de femmes. Thème : mutuelle de santé et préparation de l'accouchement ; rappel des documents à apporter.", sujets: "tension : non ; sucre : non" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "électronique, fonctionnel", obs: "" },
       { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN." },
@@ -280,13 +288,14 @@ export const observationsV2 = [
     F: "Le registre est ici un instrument de mesure inattendu : la date de rupture s'y lit sans qu'il soit besoin de la demander. Les registres pourraient servir, dans l'étude réelle, à documenter les ruptures plus sûrement que la mémoire des équipes — sous réserve de rester sur des données agrégées.",
   },
   {
-    cs: "CS13", secteur: "rural périphérique", date: "27/09/2026", heures: "07h40 – 12h30",
+    cs: "CS13", secteur: "rural périphérique", date: "25/09/2026", heures: "07h40 – 12h30",
     A: {
       sallesCpn: 2, echangeNonEntendu: "partiellement",
       detail: "Deux salles, portes souvent ouvertes en raison de l'affluence.",
       femmesRecues: 46, professionnels: 3, posteConstantes: "non — constantes prises en salle",
       dureeMoyenne: "environ 2 h 20",
     },
+    S: { frequence: "3 par semaine", observee: "oui", detail: "Séance de 07h40 à 08h00, animée par une sage-femme, devant une trentaine de femmes. Thème : signes de danger ; maux de tête et œdèmes cités. Cahier des séances tenu à jour.", sujets: "tension : oui (signes de danger) ; sucre : non" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 2, etat: "1 électronique fonctionnel ; 1 manuel fonctionnel", obs: "" },
       { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN ; glycémie de la première CPN demandée par bon pour toutes, avec le bilan ; ensuite sur facteurs de risque seulement. Au registre du laboratoire, aucune glycémie de contrôle systématique au troisième trimestre." },
@@ -321,6 +330,7 @@ export const observationsV2 = [
       femmesRecues: 22, professionnels: 2, posteConstantes: "non",
       dureeMoyenne: "environ 1 h 50",
     },
+    S: { frequence: "2 par semaine (lundi, jeudi)", observee: "oui", detail: "Séance de 08h20 à 08h40, animée par un infirmier, devant dix-sept femmes. Thème : signes de danger ; « la tête qui fait très mal » est citée. Pas de support visuel.", sujets: "tension : oui (un signe cité) ; sucre : non" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "manuel ancien, poire réparée au ruban adhésif", obs: "Fonctionne, mais la lecture demande plusieurs tentatives." },
       { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire", obs: "Aucun glucomètre en salle de CPN. Utilisé pour la consultation MNT ; jamais pour la CPN selon l'équipe." },

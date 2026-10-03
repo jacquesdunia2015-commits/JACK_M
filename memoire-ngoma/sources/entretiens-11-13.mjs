@@ -56,7 +56,7 @@ export const P12 = {
     Q17: [["P", "Une formation pour moi et ma collègue, sur les deux maladies. Pourquoi ? Parce qu'on ne peut pas réclamer un appareil qu'on ne saurait pas utiliser. D'abord savoir."]],
     Q18: [["P", "Moins de rapports, ou des rapports qui comptent ce qui compte. Je passe plus de temps à remplir des tableaux qu'à voir des femmes enceintes. Si la tension doit être importante, qu'elle soit dans le tableau ; et qu'on enlève autre chose."]],
     Q19: [["P", "Non, ce n'est pas normal. Mais comme titulaire je vois bien que je n'ai pas de levier : je ne décide ni du matériel, ni de la formation, ni du nombre de personnes. Ce que je peux décider, c'est de passer plus de temps à la CPN et moins aux rapports. Et ça, je ne le fais pas assez, parce que les rapports sont vérifiés et la CPN non."]],
-    Q20: [["P", "Peut-être ceci : les titulaires des petits centres sont devenus des secrétaires. On nous forme à remplir des rapports, pas à soigner mieux. Si votre travail pouvait dire ça poliment, ce serait utile."]],
+    Q20: [["P", "Peut-être ceci : les titulaires des petits centres sont devenus des secrétaires. On nous forme à remplir des rapports, pas à soigner mieux. Si votre travail pouvait dire ça poliment, ce serait utile."], ["E", "Autre chose ?"], ["P", "Les campagnes. L'an dernier, pendant la semaine des maladies non transmissibles, l'équipe du district a fait un dépistage gratuit au marché : tension, sucre, poids. Deux femmes enceintes de notre zone avaient une tension élevée sans le savoir. On ne l'a appris que parce que l'une d'elles est venue nous montrer son papier. Ces campagnes nous aident, mais elles ne pensent pas aux femmes enceintes, et elles ne nous envoient pas les résultats."]],
   },
 };
 

@@ -123,6 +123,16 @@ function documentAnnexes(cfg) {
       ["Durée moyenne entre entrée et sortie", o.A.dureeMoyenne],
     ], [3400, 5626], { entete: false }));
 
+    if (o.S) {
+      enfants.push(vide(), titre3("A bis. Séance d'éducation collective (rubrique ajoutée à la grille)"));
+      enfants.push(tableau([
+        ["Fréquence déclarée", o.S.frequence],
+        ["Séance observée ce jour", o.S.observee],
+        ["Déroulement et contenu", o.S.detail],
+        ["Tension et sucre abordés", o.S.sujets],
+      ], [3400, 5626], { entete: false }));
+    }
+
     enfants.push(vide(), titre3("B. Équipements et consommables"));
     enfants.push(tableau([
       ["Élément", "Présent", "Nombre", "État de fonctionnement", "Observations"],
@@ -200,9 +210,9 @@ function documentAnnexes(cfg) {
   enfants.push(p(`Source et période : ${SOURCE_ROUTINE}. Les secteurs administratifs ne sont pas nommés : ils sont désignés par le code du centre qu'ils abritent, pour qu'aucun chiffre fictif ne puisse être attribué à un lieu réel.`, { run: { size: 19, italics: true } }));
   enfants.push(vide());
   enfants.push(tableau([
-    ["Centre", "CPN1", "CPN4", "CPN4 / CPN1", "1er contact au 1er trim.", "Référées HTA / prééclampsie", "Effectif CPN"],
-    ...parCentre.map(c => [c.cs, String(c.cpn1), String(c.cpn4), `${Math.round(100 * c.cpn4 / c.cpn1)} %`, `${c.t1} %`, String(c.refHta), String(c.effectif)]),
-  ], [900, 900, 900, 1200, 1700, 1900, 1526]));
+    ["Centre", "CPN1", "CPN4", "CPN4 / CPN1", "1er contact au 1er trim.", "Référées HTA / prééclampsie", "Effectif CPN", "Séances d'éducation / semaine"],
+    ...parCentre.map(c => [c.cs, String(c.cpn1), String(c.cpn4), `${Math.round(100 * c.cpn4 / c.cpn1)} %`, `${c.t1} %`, String(c.refHta), String(c.effectif), c.seances]),
+  ], [800, 800, 800, 1000, 1400, 1600, 1100, 1526]));
   enfants.push(vide());
   enfants.push(tableau([
     ["Centre", "Dépistages glycémiques en CPN", "Ruptures de bandelettes (mois)", "Secteur : pauvreté", "Taux fictif"],
