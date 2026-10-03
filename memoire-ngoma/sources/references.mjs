@@ -11,6 +11,10 @@ import { readFileSync } from "node:fs";
 
 export const PROTOCOLE = JSON.parse(readFileSync(new URL("./references-protocole.json", import.meta.url), "utf8"));
 if (PROTOCOLE.length !== 71) throw new Error(`le protocole devrait compter 71 références, ${PROTOCOLE.length} lues`);
+// Référence 20 (profil du district de Ngoma, recensement 2022) : complétée de
+// son adresse en ligne, source de la carte administrative (figure 2).
+if (/district profile, Ngoma/.test(PROTOCOLE[19]) && !/Disponible/.test(PROTOCOLE[19]))
+  PROTOCOLE[19] = PROTOCOLE[19].replace(/\.$/, "") + ". Disponible sur : https://statistics.gov.rw/sites/default/files/2025-05/Ngoma.pdf [cité le 3 oct 2026].";
 
 export const AJOUTEES = {
   niyonsenga: "Niyonsenga SP, Park PH, Ngoga G, et al. Implementation outcomes of national decentralization of integrated outpatient services for severe non-communicable diseases to district hospitals in Rwanda. Trop Med Int Health. 2021;26(8):953-61.",

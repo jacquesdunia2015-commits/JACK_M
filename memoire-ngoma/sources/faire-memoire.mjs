@@ -13,7 +13,7 @@
 // Contrôles : toute référence citée existe dans la bibliographie ; aucune
 // référence ajoutée n'est listée sans être citée ; aucun champ {…} non
 // remplacé ; le centre protégé par un consentement n'apparaît nulle part.
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import {
   Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, WidthType,
@@ -97,6 +97,12 @@ function image(fichier, largeurMax, { alignement = AlignmentType.CENTER } = {}) 
     children: [new ImageRun({ type, data, transformation: { width: largeur, height: Math.round(h * largeur / w) } })] });
 }
 
+// Figure 2 : la carte administrative officielle du district (profil du district
+// au recensement de 2022, NISR) remplace celle du protocole dès que son image
+// est déposée dans figures/ (hors dépôt, comme les autres figures).
+const CARTE_NISR = ["carte_ngoma_nisr.png", "carte_ngoma_nisr.jpg", "carte_ngoma_nisr.jpeg"]
+  .find(f => existsSync(new URL(`./figures/${f}`, import.meta.url))) || null;
+
 /* ---------- Texte du protocole ---------- */
 const indice = (titre, depuis = 0) => {
   const i = proto.findIndex((b, k) => k >= depuis && /^h[123]$/.test(b.type) && b.texte.startsWith(titre));
@@ -150,7 +156,7 @@ function protocole(de, a, { transformer = t => t, sauterTitre = false, annexe = 
     else if (b.type === "h2") out.push(annexe ? sousTitreAnnexe(b.texte) : titre2(b.texte));
     else if (b.type === "h3") out.push(annexe ? sousTitreAnnexe(b.texte.replace(/\.$/, "")) : titre3(b.texte.replace(/\.$/, "")));
     else if (b.type === "table") out.push(tableauProtocole(b.lignes), vide());
-    else if (b.type === "image") out.push(image(b.fichier, 560));
+    else if (b.type === "image") out.push(image(b.fichier === "carte_ngoma.jpeg" && CARTE_NISR ? CARTE_NISR : b.fichier, 560));
     else {
       const t = transformer(b.texte).replace("information capacitances", "information capacitante");   // coquille du protocole
       verifierRefsLitterales(t);
@@ -158,7 +164,9 @@ function protocole(de, a, { transformer = t => t, sauterTitre = false, annexe = 
         noter(t);
         out.push(legende(t));
         if (/^Figure 2\./.test(t)) out.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 },
-          children: [new TextRun({ text: "Source : [à préciser — origine de la carte].", italics: true, size: 18, highlight: "yellow" })] }));
+          children: [CARTE_NISR
+            ? new TextRun({ text: "Source : National Institute of Statistics of Rwanda (NISR), cinquième recensement général de la population et de l'habitat 2022, profil du district de Ngoma [20].", italics: true, size: 18 })
+            : new TextRun({ text: "Source : [à préciser — origine de la carte].", italics: true, size: 18, highlight: "yellow" })] }));
       } else out.push(corps(t, annexe ? "Compact" : undefined));
     }
   }
