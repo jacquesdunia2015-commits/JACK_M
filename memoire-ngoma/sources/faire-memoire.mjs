@@ -191,7 +191,7 @@ function protocole(de, a, { transformer = t => t, sauterTitre = false, annexe = 
 // § 4.2.1 à 4.2.4 : le protocole était écrit au futur ou au présent de projet.
 const auPasse = t => t
   // Périmètre : la CPN de base est offerte dans les centres et les postes de santé (Mulungi et al., 2023, cité en introduction).
-  .replace(/^Une caractéristique organisationnelle détermine le périmètre de l’étude.*$/, "Une caractéristique organisationnelle détermine le périmètre de l’étude : la CPN de base étant offerte dans les centres et les postes de santé, l’étude porte sur les centres de santé, où exercent les infirmiers et sages-femmes de CPN. Le nombre de centres et l’organisation de la CPN dans le district sont confirmés par écrit par la Direction de la santé du district (annexe 6).")
+  .replace(/^Une caractéristique organisationnelle détermine le périmètre de l’étude.*$/, "Une caractéristique organisationnelle détermine le périmètre de l’étude : la CPN de base étant offerte dans les centres et les postes de santé, l’étude porte sur les seize centres de santé du district — Gasetsa, Gashanda, Giraneza, Jarama, Karembo, Kazo, Kibungo, Kigina, Kirwa, Mutenderi, Nkanga, Nyange, Remera, Rubona, Rukira et Zaza —, où exercent les infirmiers et sages-femmes de CPN. Aucun résultat, aucune citation ni aucun code d’étude n’est rattaché à l’un de ces noms. Le nombre de centres et l’organisation de la CPN sont confirmés par écrit par la Direction de la santé du district (annexe 6).")
   .replace(/^Cet axe distingue un dépistage promotionnel.*$/, "Cet axe distingue un dépistage promotionnel d’une simple mesure biomédicale : la Charte confie à la promotion de la santé l’information et l’éducation qui préparent aux étapes de l’existence [23], dont la grossesse, où le dépistage révèle des affections qui la dépassent [5]. Un dépistage sans restitution produit une donnée clinique, non une aptitude, et la littératie en santé est elle-même socialement distribuée [51].")
   .replace(/^La Charte indique quoi transformer.*$/, "La Charte indique quoi transformer ; le modèle socio-écologique permet de situer les niveaux — individuel, interpersonnel, organisationnel, institutionnel et politique — auxquels s’exprime le discours d’un professionnel [41], en restant subordonné à la Charte.")
   .replace(/^Au Rwanda, les travaux disponibles portent.*$/, "Au Rwanda, les travaux disponibles portent sur les prévalences [27], les facteurs de risque populationnels [17] ou la performance des dispositifs nationaux. Des infirmiers et sages-femmes de CPN ont été interrogés sur un modèle d’organisation du suivi [67], jamais sur le dépistage des maladies non transmissibles, et aucune étude n’a été conduite à Ngoma.")
@@ -297,8 +297,13 @@ const annexes = [["ANNEXE 1.", "ANNEXE 2."], ["ANNEXE 2.", "ANNEXE 3."], ["ANNEX
 // Le tableau de cohérence (annexe 8 du protocole) n'est pas repris : le renvoi du guide d'entretien pointe vers le protocole.
 const versProtocole = t => t.replace("La correspondance entre objectifs, concepts et questions figure en annexe 8.",
   "La correspondance entre objectifs, concepts et questions figure dans le tableau de cohérence du protocole.");
-// Entretiens notés, sans enregistrement audio : les outils et le formulaire de consentement sont adaptés en conséquence.
+// Entretiens notés, sans enregistrement audio, et centres nommés au § 4.1.2 sans qu'aucun résultat leur soit rattaché :
+// les outils et le formulaire de consentement sont adaptés en conséquence.
 const sansAudio = t => t
+  .replace("ni votre nom ni celui de votre centre ne figureront dans mes documents.",
+    "votre nom ne figurera dans aucun de mes documents, et aucun de vos propos ne sera rattaché au nom de votre centre.")
+  .replace("ni votre nom ni celui de votre centre ne figurent dans les documents d’analyse ni dans le mémoire, seuls des codes étant utilisés ;",
+    "votre nom ne figure dans aucun document, seuls des codes étant utilisés ; le mémoire nomme les centres de santé du district, mais aucun résultat ni aucune citation n’y est rattaché à un centre nommé ;")
   .replace("que l’autorisation d’enregistrement est signée séparément ; local préservant la confidentialité ; matériel vérifié, prise de notes de secours prévue.",
     "que l’accord pour la citation est recueilli séparément ; local préservant la confidentialité ; carnet de notes prêt (aucun enregistrement).")
   .replace(/demander l’arrêt de l’enregistrement ou interrompre/g, "demander une pause ou interrompre")
