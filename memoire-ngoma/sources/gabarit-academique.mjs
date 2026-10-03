@@ -60,10 +60,10 @@ export function stylesAcademiques() {
       // Sous-titres internes aux annexes : gras, sans entrer dans la table des matières.
       { id: "CompactTitre", name: "Titre compact", basedOn: "Compact", next: "Compact", quickFormat: true,
         run: { bold: true }, paragraph: { spacing: { before: 160, after: 80 }, keepNext: true, alignment: AlignmentType.LEFT } },
-      // Liste des références (Vancouver) : 14 pt, interligne simple dans une référence, 3 pt entre deux
+      // Liste des références (Vancouver) : 14 pt, interligne simple dans une référence, 1 pt entre deux
       // références, retrait suspendu (présentation usuelle d'une bibliographie).
       { id: "Bibliographie", name: "Bibliographie", basedOn: "Normal", next: "Bibliographie", quickFormat: true,
-        run: { font: POLICE, size: 28 }, paragraph: { spacing: { line: 240, lineRule: "auto", after: 60 }, indent: { left: 567, hanging: 567 }, alignment: AlignmentType.LEFT } },
+        run: { font: POLICE, size: 28 }, paragraph: { spacing: { line: 240, lineRule: "auto", after: 20 }, indent: { left: 567, hanging: 567 }, alignment: AlignmentType.LEFT } },
       toc(1, 0), toc(2, 240), toc(3, 480),
     ],
   };

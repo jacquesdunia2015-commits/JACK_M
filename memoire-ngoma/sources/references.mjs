@@ -42,6 +42,7 @@ export const AJOUTEES = {
   landis: "Landis JR, Koch GG. The measurement of observer agreement for categorical data. Biometrics. 1977;33(1):159-74.",
   condo: "Condo J, Mugeni C, Naughton B, Hall K, Tuazon MA, Omwega A, et al. Rwanda's evolving community health worker system: a qualitative assessment of client and provider perspectives. Hum Resour Health. 2014;12:71. doi:10.1186/1478-4491-12-71",
   klatman: "Klatman EL, Jenkins AJ, Ahmedani MY, Ogle GD. Blood glucose meters and test strips: global market and challenges to access in low-resource settings. Lancet Diabetes Endocrinol. 2019;7(2):150-60. doi:10.1016/S2213-8587(18)30074-3",
+  mulungi: "Mulungi A, Mukamurigo J, Rwunganira S, Njunwa K, Ntaganira J. Prevalence and risk factors for delayed antenatal care visits in Rwanda: an analysis of secondary data from Rwanda demographic health survey 2019-2020. Pan Afr Med J. 2023;44:74. doi:10.11604/pamj.2023.44.74.37570",
   munyungula: "Munyungula J, Shakwane S. Self-monitoring of blood pressure for preeclampsia patients: knowledge and attitudes. Curationis. 2021;44(1):e1-e8. doi:10.4102/curationis.v44i1.2195",
 };
 
