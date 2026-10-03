@@ -91,10 +91,9 @@ export async function calculs(dossier) {
     // Glucomètre propre au service de CPN, réservé aux urgences (la glycémie de routine est faite au laboratoire).
     glucoCpnUrgence: obsTous.filter(o => o.glucoCpn === "oui").length,
     glucoFonctionnel: obsTous.filter(o => gluco(o).present === "oui" && !/NON fonctionnel/.test(gluco(o).etat)).length,
-    // Glucomètre du laboratoire : en état, en panne, ou laboratoire pas encore ouvert.
+    // Glucomètre du laboratoire : en état ou en panne.
     glucoLaboEnEtat: obsTous.filter(o => /au laboratoire/.test(gluco(o).etat) && !/NON fonctionnel/.test(gluco(o).etat)).length,
     glucoLaboPanne: obsTous.filter(o => /NON fonctionnel — au laboratoire/.test(gluco(o).etat)).length,
-    laboNonOuvert: obsTous.filter(o => /laboratoire n'est pas encore opérationnel/.test(gluco(o).etat)).length,
     nbConstats: constats.length,
     nbEcarts: constats.filter(x => x.nature === "écart").length,
     nbConcordances: constats.filter(x => x.nature === "concordance").length,

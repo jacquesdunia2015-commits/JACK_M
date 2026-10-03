@@ -193,8 +193,8 @@ export const observationsV2 = [
     S: { frequence: "annoncées 2 par semaine, irrégulières", observee: "non", detail: "Pas de cahier des séances. Le titulaire indique que les séances sont suspendues les semaines où il est seul au centre.", sujets: "non documenté" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "électronique NEUF, fonctionnel", obs: "Reçu à l'ouverture du centre." },
-      { item: "Glucomètre", present: "oui", nombre: 1, etat: "NEUF, fonctionnel — en salle de CPN (le laboratoire n'est pas encore opérationnel)", obs: "Livré avec le kit de CPN à l'ouverture du centre : en attendant le laboratoire, la glycémie de la première CPN est faite à toutes par l'équipe de CPN." },
-      { item: "Bandelettes de glycémie", present: "oui", nombre: 25, etat: "péremption 06/2027", obs: "Livrées avec l'appareil." },
+      { item: "Glucomètre", present: "oui", nombre: 2, etat: "fonctionnels — 1 au laboratoire ; 1 NEUF en salle de CPN pour les urgences, livré avec le kit de CPN", obs: "Glycémie de la première CPN demandée par bon pour toutes et faite au laboratoire pendant la demi-journée ; ensuite sur facteurs de risque seulement." },
+      { item: "Bandelettes de glycémie", present: "oui", nombre: 25, etat: "péremption 06/2027", obs: "Au laboratoire." },
       { item: "Balance", present: "oui", nombre: 1, etat: "neuve", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "mètre ruban", obs: "" },
       { item: "Bandelettes urinaires", present: "non", nombre: 0, etat: "—", obs: "Non encore livrées." },
@@ -215,7 +215,7 @@ export const observationsV2 = [
       tracageReference: "non",
     },
     E: "Ancien poste de santé récemment érigé en centre de santé. Le bâtiment et l'équipement de base sont neufs ; les supports, les intrants et la dotation complète ne suivent pas encore. Faible fréquentation, que l'équipe attribue au fait que la population continue de se rendre à l'ancien centre de rattachement.",
-    F: "Ce centre montre une forme d'inégalité qui n'est ni une rupture ni une panne : une dotation incomplète (laboratoire, bandelettes urinaires, registre). Le glucomètre livré avec le kit de CPN permet en revanche à l'équipe de CPN de faire elle-même le test de la première CPN en attendant le laboratoire. Il interroge le calendrier de mise en service plus que la gestion courante — élément non anticipé par la grille.",
+    F: "Ce centre montre une forme d'inégalité qui n'est ni une rupture ni une panne : une dotation incomplète (bandelettes urinaires, registre standard). La glycémie de la première CPN y suit le circuit des autres centres : bon de la CPN, test au laboratoire. Il interroge le calendrier de mise en service plus que la gestion courante — élément non anticipé par la grille.",
   },
   {
     cs: "CS10", secteur: "rural périphérique", date: "24/09/2026", heures: "07h50 – 12h00",

@@ -65,7 +65,7 @@ export const P16 = {
     O1: [["P", "Infirmier A2, plus de vingt ans de service, surtout au curatif et en santé communautaire. J'ai été nommé titulaire ici à l'ouverture du centre, il y a un an et demi. Avant, c'était un poste de santé sans consultation prénatale."]],
     O2: [["P", "Calme : dix, quinze femmes. La population continue d'aller à l'ancien centre, où elle a ses habitudes. Nous sommes deux. Le bâtiment est neuf, mais il nous manque encore des choses."]],
     Q1: [["P", "Inscription dans le cahier, poids, tension, examen, médicaments, rendez-vous."], ["E", "Vous dites « le cahier » ?"], ["P", "Le registre officiel de CPN n'est pas encore arrivé. Nous avons tracé les colonnes dans un cahier, à la règle, en copiant le modèle d'un autre centre."]],
-    Q2: [["P", "La tension, avec l'appareil neuf, à toutes. Le sucre aussi, à toutes à la première visite : le laboratoire n'est pas encore ouvert, mais un glucomètre est arrivé avec le kit de la CPN, alors c'est nous qui faisons le test, en attendant. Ce qui manque, ce sont les bandelettes urinaires, pas encore livrées."]],
+    Q2: [["P", "La tension, avec l'appareil neuf, à toutes. Le sucre aussi, à toutes à la première visite : on fait le bon et le laboratoire le fait ; nous avons aussi un glucomètre neuf à la CPN, arrivé avec le kit, pour les urgences. Ce qui manque, ce sont les bandelettes urinaires, pas encore livrées."]],
     Q3: [["P", "Une seule fois depuis l'ouverture : une femme à 158 sur 96. Je l'ai référée en écrivant sur son carnet, puisque nous n'avons pas encore les fiches de référence. Je ne sais pas ce qu'elle est devenue."]],
     Q4: [["P", "Que sa tension était élevée et qu'elle devait aller à l'hôpital."]],
     Q5: [["P", "Je pense qu'elles comprennent l'essentiel."]],

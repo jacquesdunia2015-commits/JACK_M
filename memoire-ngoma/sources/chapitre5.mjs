@@ -48,7 +48,7 @@ export function chapitre5(calc, { refs = null } = {}) {
       ["Distance à l'hôpital", enLigne(effectifs(centres, "distance", ["proche", "éloignée"]))],
       ["Volume d'activité prénatale", enLigne(effectifs(centres, "volume", ["élevé", "modéré"]))],
       ["Profil de pauvreté du secteur", enLigne(effectifs(centres, "pauvrete", ["plus faible", "plus élevée"]))],
-      ["Glucomètre du laboratoire", enLigne([["en état", valeurs.glucoLaboEnEtat], ["en panne", valeurs.glucoLaboPanne], ["laboratoire non encore ouvert", valeurs.laboNonOuvert]])],
+      ["Glucomètre du laboratoire", enLigne([["en état", valeurs.glucoLaboEnEtat], ["en panne", valeurs.glucoLaboPanne]])],
       ["Glucomètre propre à la CPN (urgences)", enLigne([["oui", valeurs.glucoCpnUrgence], ["non", obsTous.length - valeurs.glucoCpnUrgence]])],
       ["Glycémie de la première CPN (demandée en CPN, faite au laboratoire) le jour de l'observation", enLigne([["faite à toutes", valeurs.glycFaite],
         ["non faite : rupture de bandelettes", valeurs.glycRupture], ["non faite : glucomètre en panne", valeurs.glycPanne],

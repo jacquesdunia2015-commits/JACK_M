@@ -88,7 +88,7 @@ dans l'application, sans créer de doublon.
 |---|---|
 | Documents | 35 (20 entretiens, 15 comptes rendus d'observation) |
 | Codes | 102 en 11 familles, dont 44 inductifs |
-| Segments codés | 2 516 |
+| Segments codés | 2 517 |
 | Double codage | 3 entretiens recodés par un pair extérieur (codeur C2), comme prévu au § 4.2.5.6 |
 | Stabilité intra-codeur | 3 entretiens recodés par le premier codeur quatre semaines après (étiquette C1b) |
 | Mémos | 26 mémos d'analyse, 20 journaux de bord, 11 définitions de familles |
