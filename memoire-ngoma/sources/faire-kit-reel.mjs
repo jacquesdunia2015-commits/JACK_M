@@ -204,7 +204,7 @@ enfants.push(saut(), titre1("4. Annexe 2 — Grille d'observation du service (un
     ["Rupture de stock signalée au cours des trois derniers mois", "", "", "", ""]], [1900, 1100, 800, 2300, 2926]),
   vide(), titre3("B bis. Glycémie de la première CPN (rubrique ajoutée à la grille — à valider avec la direction de mémoire)"),
   tableau([["Glycémie demandée par la CPN et faite aux femmes de première CPN reçues ce jour", case_(["toutes", "certaines", "aucune"])],
-    ["Si non faite : motif constaté", case_(["rupture de bandelettes", "glucomètre en panne", "laborantin absent", "laboratoire fermé"]) + "   ☐ autre : ……"],
+    ["Si non faite : motif constaté", case_(["rupture de bandelettes", "glucomètre en panne", "laborantin absent", "plus de prélèvement (heure dépassée)"]) + "   ☐ autre : ……"],
     ["Lieu du test de routine", case_(["laboratoire", "salle de CPN"]) + "   ☐ autre : ……"],
     ["Glucomètre propre à la CPN (urgences)", case_(["oui", "non"]) + " — sinon, en urgence : " + case_(["le laborantin vient en CPN", "la femme va au laboratoire"])],
     ["Test manqué noté pour être refait au rendez-vous suivant", case_(["oui", "non"])],

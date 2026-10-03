@@ -25,7 +25,7 @@ export const arbre = [
     { id: "B5", nom: "Bandelette urinaire comme substitut [inductif]" },
     { id: "B6", nom: "Mesure omise faute d'appareil disponible [inductif]" },
     { id: "B7", nom: "Dotation incomplète d'un centre neuf [inductif, vague 2]" },
-    { id: "B8", nom: "Test de la première CPN non réalisé : rupture, panne, laborantin absent ou laboratoire fermé [inductif, révision]" },
+    { id: "B8", nom: "Test de la première CPN non réalisé : rupture, panne, laborantin absent ou prélèvements arrêtés à midi [inductif, révision]" },
     { id: "B9", nom: "Glycémie unique à la première CPN, non refaite à 24-28 semaines [inductif, révision]" },
     { id: "B10", nom: "Rattrapage du test manqué, organisé ou absent [inductif, révision]" },
     { id: "B11", nom: "Glycémie d'urgence : glucomètre de la CPN ou appel au laboratoire [inductif, révision]" },

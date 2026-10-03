@@ -333,7 +333,7 @@ export const observationsV2 = [
     S: { frequence: "2 par semaine (lundi, jeudi)", observee: "oui", detail: "Séance de 08h20 à 08h40, animée par un infirmier, devant dix-sept femmes. Thème : signes de danger ; « la tête qui fait très mal » est citée. Pas de support visuel.", sujets: "tension : oui (un signe cité) ; sucre : non" },
     B: [
       { item: "Tensiomètre", present: "oui", nombre: 1, etat: "manuel ancien, poire réparée au ruban adhésif", obs: "Fonctionne, mais la lecture demande plusieurs tentatives." },
-      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire ; aucun glucomètre en salle de CPN", obs: "Glycémie de la première CPN demandée par bon pour toutes et faite au laboratoire le matin ; le laborantin, seul, part à 14 heures : deux femmes reçues en fin de matinée repartent avec leur bon, laboratoire fermé." },
+      { item: "Glucomètre", present: "oui", nombre: 1, etat: "fonctionnel — au laboratoire ; aucun glucomètre en salle de CPN", obs: "Glycémie de la première CPN demandée par bon pour toutes et faite au laboratoire le matin ; le laboratoire ne prélève plus après 12 heures : deux femmes reçues en fin de matinée repartent avec leur bon, sans prélèvement." },
       { item: "Bandelettes de glycémie", present: "oui", nombre: 8, etat: "péremption 12/2026", obs: "Au laboratoire ; la consultation MNT puise dans le même stock." },
       { item: "Balance", present: "oui", nombre: 1, etat: "mécanique, à étalonner", obs: "" },
       { item: "Toise / mètre ruban", present: "oui", nombre: 1, etat: "mètre ruban", obs: "" },

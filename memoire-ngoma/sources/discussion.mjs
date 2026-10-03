@@ -41,7 +41,7 @@ export const blocsDiscussion = [
 
 // Tableau VII — révisions du cadre (mémo « Piste d'audit 3 » du projet).
 export const revisionsCadre = [
-  ["Niveau organisationnel", "Distinguer la règle (un test pour toutes), le test fait le jour même au laboratoire, le relais en CPN, le rattrapage du test manqué et le moment du test au cours de la grossesse", "Bandelettes en rupture ou périmées, glucomètre en panne, laborantin absent, laboratoire fermé l'après-midi ; glucomètre d'urgence en CPN dans certains centres seulement ; femme manquée non rappelée ; glycémie non refaite à 24-28 semaines (thèmes 1 et 5)"],
+  ["Niveau organisationnel", "Distinguer la règle (un test pour toutes), le test fait le jour même au laboratoire, le relais en CPN, le rattrapage du test manqué et le moment du test au cours de la grossesse", "Bandelettes en rupture ou périmées, glucomètre en panne, laborantin absent, aucun prélèvement après midi ; glucomètre d'urgence en CPN dans certains centres seulement ; femme manquée non rappelée ; glycémie non refaite à 24-28 semaines (thèmes 1 et 5)"],
   ["Pratique informative", "Distinguer l'information collective (séance d'éducation) et la restitution individuelle du résultat", "Séance égale pour les présentes, muette sur le résultat ; manquée par les femmes arrivées tard (thème 2)"],
   ["Entre le service et le social perçu", "Ajouter une articulation communautaire", "Relais des ASM et de leur alerte téléphonique, forums villageois (umugoroba w'ababyeyi), suivi des femmes référées (thème 7)"],
   ["Niveau systémique", "Faire du dispositif de contrôle une condition à part entière", "Indicateurs et complétude des registres orientent l'attention et peuvent masquer l'inégalité (thèmes 4 et 6)"],

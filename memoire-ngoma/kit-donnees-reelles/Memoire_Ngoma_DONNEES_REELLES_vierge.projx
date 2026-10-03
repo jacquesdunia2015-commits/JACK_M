@@ -3,8 +3,8 @@
   "version": 1,
   "id": "memoire-ngoma-donnees-reelles",
   "name": "Mémoire Ngoma — Données réelles",
-  "created": "2026-10-03T07:18:28.335Z",
-  "modified": "2026-10-03T07:18:28.335Z",
+  "created": "2026-10-03T07:33:04.632Z",
+  "modified": "2026-10-03T07:33:04.632Z",
   "memo": "PROJET DE L'ÉTUDE RÉELLE — L'équité d'accès au dépistage capacitant de l'hypertension artérielle et du diabète en consultation prénatale : perceptions et pratiques déclarées des infirmiers et sages-femmes de Ngoma (Rwanda)\nMUKAKI DUNIA Jacques — ENATSE, Université de Parakou (Bénin) — Master en Santé publique, Promotion de la santé\nDirection : Professeure N. Fanny M. HOUNKPONOU AHOUINGNAN\n\nCe projet ne contient encore aucune donnée. Il reprend du protocole : la grille\nde codage déductive (Tableau III), les variables de document (annexe 3), et le\ncadre conceptuel (figure 1). Les codes inductifs et les thèmes naîtront des\ndonnées réelles.\n\nRègles (§ 4.2.7) :\n· chaque participant est désigné par un code (P01, P02…) ; la table de\n  correspondance entre codes et identités est conservée à part, hors de\n  QualiCode, sous la seule responsabilité du chercheur ;\n· chaque structure est désignée par un code (CS01…) ;\n· vérifier, avant toute citation, la variable « citation_autorisee » ;\n· enregistrer le projet (Accueil ▸ Enregistrer, .projx) après chaque séance,\n  sur un support chiffré ; ne jamais le déposer dans un service public.",
   "documentGroups": [
     {
@@ -23,406 +23,406 @@
       "name": "1. Sens attribué au dépistage",
       "parentId": null,
       "color": "#4e79a7",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00004",
       "name": "Utilité perçue pour la femme",
       "parentId": "r00003",
       "color": "#4e79a7",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00005",
       "name": "Légitimité au regard du mandat de la CPN",
       "parentId": "r00003",
       "color": "#4e79a7",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00006",
       "name": "Hiérarchisation face aux autres tâches",
       "parentId": "r00003",
       "color": "#4e79a7",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00008",
       "name": "2. Pratiques techniques déclarées",
       "parentId": null,
       "color": "#59a14f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00009",
       "name": "Tension : geste intégré aux constantes",
       "parentId": "r00008",
       "color": "#59a14f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00010",
       "name": "Glycémie : test de la première CPN et sa suite",
       "parentId": "r00008",
       "color": "#59a14f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00011",
       "name": "Déroulement décrit de la consultation",
       "parentId": "r00008",
       "color": "#59a14f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00012",
       "name": "Conduite devant un cas détecté",
       "parentId": "r00008",
       "color": "#59a14f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00014",
       "name": "3. Pratique informative et éducative",
       "parentId": null,
       "color": "#f28e2b",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00015",
       "name": "Explication de la mesure et du risque",
       "parentId": "r00014",
       "color": "#f28e2b",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00016",
       "name": "Restitution d'un résultat anormal",
       "parentId": "r00014",
       "color": "#f28e2b",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00017",
       "name": "Risque au-delà de la grossesse",
       "parentId": "r00014",
       "color": "#f28e2b",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00018",
       "name": "Modulation de l'information selon les femmes",
       "parentId": "r00014",
       "color": "#f28e2b",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00019",
       "name": "Modulation contestée ou niée",
       "parentId": "r00014",
       "color": "#f28e2b",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00020",
       "name": "Écart perçu entre information et compréhension",
       "parentId": "r00014",
       "color": "#f28e2b",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00022",
       "name": "4. Conditions individuelles et professionnelles",
       "parentId": null,
       "color": "#b07aa1",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00023",
       "name": "Absence de préparation initiale",
       "parentId": "r00022",
       "color": "#b07aa1",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00024",
       "name": "Formation continue reçue",
       "parentId": "r00022",
       "color": "#b07aa1",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00025",
       "name": "Sentiment de compétence ou doute",
       "parentId": "r00022",
       "color": "#b07aa1",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00027",
       "name": "5. Conditions organisationnelles",
       "parentId": null,
       "color": "#e15759",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00028",
       "name": "Charge de travail et flux",
       "parentId": "r00027",
       "color": "#e15759",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00029",
       "name": "Équipements et consommables",
       "parentId": "r00027",
       "color": "#e15759",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00030",
       "name": "Absence d'espace confidentiel",
       "parentId": "r00027",
       "color": "#e15759",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00031",
       "name": "Supervision et attentes de l'encadrement",
       "parentId": "r00027",
       "color": "#e15759",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00033",
       "name": "6. Conditions systémiques et politiques",
       "parentId": null,
       "color": "#76b7b2",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00034",
       "name": "Directives et protocoles disponibles",
       "parentId": "r00033",
       "color": "#76b7b2",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00035",
       "name": "Circuit de référence",
       "parentId": "r00033",
       "color": "#76b7b2",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00036",
       "name": "Approvisionnement en intrants",
       "parentId": "r00033",
       "color": "#76b7b2",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00038",
       "name": "7. Conditions sociales perçues (représentations professionnelles)",
       "parentId": null,
       "color": "#edc948",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00039",
       "name": "Moyens, coût et mutuelle",
       "parentId": "r00038",
       "color": "#edc948",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00040",
       "name": "Distance et transport",
       "parentId": "r00038",
       "color": "#edc948",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00041",
       "name": "Instruction et compréhension",
       "parentId": "r00038",
       "color": "#edc948",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00042",
       "name": "Marge de décision de la femme (conjoint, famille)",
       "parentId": "r00038",
       "color": "#edc948",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00043",
       "name": "Recours tardif et non-retour",
       "parentId": "r00038",
       "color": "#edc948",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00045",
       "name": "8. Portée reconnue en équité",
       "parentId": null,
       "color": "#9c755f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00046",
       "name": "Perception d'un accès différencié",
       "parentId": "r00045",
       "color": "#9c755f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00047",
       "name": "Jugement : inacceptable",
       "parentId": "r00045",
       "color": "#9c755f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00048",
       "name": "Jugement : normalisation ou résignation",
       "parentId": "r00045",
       "color": "#9c755f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00049",
       "name": "Responsabilité attribuée au système",
       "parentId": "r00045",
       "color": "#9c755f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00050",
       "name": "Responsabilité reconnue comme sienne",
       "parentId": "r00045",
       "color": "#9c755f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00051",
       "name": "Refus de juger",
       "parentId": "r00045",
       "color": "#9c755f",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00053",
       "name": "9. Transformations proposées",
       "parentId": null,
       "color": "#ff9da7",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00054",
       "name": "Équipements et consommables",
       "parentId": "r00053",
       "color": "#ff9da7",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00055",
       "name": "Formation",
       "parentId": "r00053",
       "color": "#ff9da7",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00056",
       "name": "Personnel et organisation",
       "parentId": "r00053",
       "color": "#ff9da7",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00057",
       "name": "Supports d'information adaptés",
       "parentId": "r00053",
       "color": "#ff9da7",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00058",
       "name": "Destinataires désignés",
       "parentId": "r00053",
       "color": "#ff9da7",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00060",
       "name": "10. Contexte observé (corpus secondaire)",
       "parentId": null,
       "color": "#499894",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00061",
       "name": "Espace et flux observés",
       "parentId": "r00060",
       "color": "#499894",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00062",
       "name": "Équipement constaté",
       "parentId": "r00060",
       "color": "#499894",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00063",
       "name": "Protocoles et supports constatés",
       "parentId": "r00060",
       "color": "#499894",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00064",
       "name": "Tenue des supports d'enregistrement",
       "parentId": "r00060",
       "color": "#499894",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00065",
       "name": "ÉCART déclaré / constaté",
       "parentId": "r00060",
       "color": "#499894",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00066",
       "name": "Réflexivité du chercheur",
       "parentId": "r00060",
       "color": "#499894",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00067",
       "name": "0. Parcours et contexte (hors analyse thématique)",
       "parentId": null,
       "color": "#bab0ac",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00068",
       "name": "Parcours professionnel",
       "parentId": "r00067",
       "color": "#bab0ac",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00069",
       "name": "Description d'une journée",
       "parentId": "r00067",
       "color": "#bab0ac",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     }
   ],
   "segments": [],
@@ -431,7 +431,7 @@
       "id": "r00007",
       "targetType": "code",
       "targetId": "r00003",
-      "created": "2026-10-03T07:18:28.335Z",
+      "created": "2026-10-03T07:33:04.632Z",
       "title": "Définition — 1. Sens attribué au dépistage",
       "text": "Concept (Tableau III) : Sens attribué\nDéfinition retenue : Signification et valeur conférées au dépistage dans le cadre de la CPN\nDimensions explorées : Utilité perçue pour la femme ; légitimité au regard du mandat ; priorité face aux autres tâches\nManifestations attendues : Justifications spontanées ; comparaisons avec d'autres actes ; adhésion ou réserve\nSource : Guide, axe 1 (Q7, Q8)\n\nCodes inductifs : à créer ici au fil du codage, en ajoutant « [inductif] » à leur nom, et à consigner dans la piste d'audit avec l'entretien qui les a fait naître."
     },
@@ -439,7 +439,7 @@
       "id": "r00013",
       "targetType": "code",
       "targetId": "r00008",
-      "created": "2026-10-03T07:18:28.335Z",
+      "created": "2026-10-03T07:33:04.632Z",
       "title": "Définition — 2. Pratiques techniques déclarées",
       "text": "Concept (Tableau III) : Pratiques techniques déclarées\nDéfinition retenue : Réalisation matérielle du dépistage telle que décrite\nDimensions explorées : Systématicité ; gestes et outils ; orientation des cas détectés\nManifestations attendues : Descriptions de séquences ; mention d'outils ; récits de cas\nSource : Guide, axe 1 (Q1-Q3) ; observation A, B, D\n\nCodes inductifs : à créer ici au fil du codage, en ajoutant « [inductif] » à leur nom, et à consigner dans la piste d'audit avec l'entretien qui les a fait naître."
     },
@@ -447,7 +447,7 @@
       "id": "r00021",
       "targetType": "code",
       "targetId": "r00014",
-      "created": "2026-10-03T07:18:28.335Z",
+      "created": "2026-10-03T07:33:04.632Z",
       "title": "Définition — 3. Pratique informative et éducative",
       "text": "Concept (Tableau III) : Pratique informative et éducative\nDéfinition retenue : Ce qui est transmis à la femme, fondement de sa capacité à agir\nDimensions explorées : Explication de la mesure ; restitution d'un résultat anormal ; risque au-delà de la grossesse ; modulation selon les femmes\nManifestations attendues : Récits d'échanges ; formulations rapportées ; réserves sur le temps disponible ; distinctions entre patientes\nSource : Guide, axe 1 (Q4-Q6) ; observation C (supports uniquement)\n\nCodes inductifs : à créer ici au fil du codage, en ajoutant « [inductif] » à leur nom, et à consigner dans la piste d'audit avec l'entretien qui les a fait naître."
     },
@@ -455,7 +455,7 @@
       "id": "r00026",
       "targetType": "code",
       "targetId": "r00022",
-      "created": "2026-10-03T07:18:28.335Z",
+      "created": "2026-10-03T07:33:04.632Z",
       "title": "Définition — 4. Conditions individuelles et professionnelles",
       "text": "Concept (Tableau III) : Conditions individuelles\nDéfinition retenue : Éléments relevant de la personne du professionnel\nDimensions explorées : Formation ; sentiment de compétence ; expérience\nManifestations attendues : Références à des formations ; assurance ou doute\nSource : Guide, axe 2 (Q15)\n\nCodes inductifs : à créer ici au fil du codage, en ajoutant « [inductif] » à leur nom, et à consigner dans la piste d'audit avec l'entretien qui les a fait naître."
     },
@@ -463,7 +463,7 @@
       "id": "r00032",
       "targetType": "code",
       "targetId": "r00027",
-      "created": "2026-10-03T07:18:28.335Z",
+      "created": "2026-10-03T07:33:04.632Z",
       "title": "Définition — 5. Conditions organisationnelles",
       "text": "Concept (Tableau III) : Conditions organisationnelles\nDéfinition retenue : Éléments relevant du fonctionnement du service\nDimensions explorées : Charge ; équipements et consommables ; flux ; supervision\nManifestations attendues : Récits de contraintes matérielles et temporelles\nSource : Guide, axe 2 (Q9, Q10, Q16) ; observation A, B, C\n\nCodes inductifs : à créer ici au fil du codage, en ajoutant « [inductif] » à leur nom, et à consigner dans la piste d'audit avec l'entretien qui les a fait naître."
     },
@@ -471,7 +471,7 @@
       "id": "r00037",
       "targetType": "code",
       "targetId": "r00033",
-      "created": "2026-10-03T07:18:28.335Z",
+      "created": "2026-10-03T07:33:04.632Z",
       "title": "Définition — 6. Conditions systémiques et politiques",
       "text": "Concept (Tableau III) : Conditions systémiques\nDéfinition retenue : Éléments relevant du système et des politiques\nDimensions explorées : Directives ; programmes ; coordination ; circuit de référence\nManifestations attendues : Références à des directives ; récits de référence\nSource : Guide, axe 2 (Q13, Q16)\n\nCodes inductifs : à créer ici au fil du codage, en ajoutant « [inductif] » à leur nom, et à consigner dans la piste d'audit avec l'entretien qui les a fait naître."
     },
@@ -479,7 +479,7 @@
       "id": "r00044",
       "targetType": "code",
       "targetId": "r00038",
-      "created": "2026-10-03T07:18:28.335Z",
+      "created": "2026-10-03T07:33:04.632Z",
       "title": "Définition — 7. Conditions sociales perçues (représentations professionnelles)",
       "text": "Concept (Tableau III) : Conditions sociales perçues\nDéfinition retenue : Représentations de la situation sociale des femmes dépistées et incidence déclarée sur la pratique\nDimensions explorées : Moyens et coût ; distance ; assurance ; instruction ; marge de décision ; croyances\nManifestations attendues : Distinctions entre catégories de patientes ; justifications d'un renoncement ; récits de non-retour ; impuissance ou adaptation\nSource : Guide, axe 2 (Q11-Q14)\n\nCodes inductifs : à créer ici au fil du codage, en ajoutant « [inductif] » à leur nom, et à consigner dans la piste d'audit avec l'entretien qui les a fait naître."
     },
@@ -487,7 +487,7 @@
       "id": "r00052",
       "targetType": "code",
       "targetId": "r00045",
-      "created": "2026-10-03T07:18:28.335Z",
+      "created": "2026-10-03T07:33:04.632Z",
       "title": "Définition — 8. Portée reconnue en équité",
       "text": "Concept (Tableau III) : Portée reconnue en équité\nDéfinition retenue : Appréciation du caractère équitable de la distribution effective du dépistage et jugement porté sur elle\nDimensions explorées : Perception d'un accès différencié ; caractère acceptable ou non ; attribution de responsabilité ; marge d'action\nManifestations attendues : Formulations évaluatives sur le normal et l'anormal ; regret, résignation ou révolte\nSource : Guide, axe 3 (Q19) ; recoupement Q11-Q14\n\nCodes inductifs : à créer ici au fil du codage, en ajoutant « [inductif] » à leur nom, et à consigner dans la piste d'audit avec l'entretien qui les a fait naître."
     },
@@ -495,7 +495,7 @@
       "id": "r00059",
       "targetType": "code",
       "targetId": "r00053",
-      "created": "2026-10-03T07:18:28.335Z",
+      "created": "2026-10-03T07:33:04.632Z",
       "title": "Définition — 9. Transformations proposées",
       "text": "Concept (Tableau III) : Transformations proposées\nDéfinition retenue : Modifications jugées nécessaires\nDimensions explorées : Priorités formulées ; destinataires désignés\nManifestations attendues : Formulations prescriptives ; hiérarchisation spontanée\nSource : Guide, axe 3 (Q17, Q18)\n\nCodes inductifs : à créer ici au fil du codage, en ajoutant « [inductif] » à leur nom, et à consigner dans la piste d'audit avec l'entretien qui les a fait naître."
     },
@@ -505,7 +505,7 @@
       "targetId": null,
       "title": "Note de positionnalité — à rédiger AVANT le codage",
       "text": "Confirmabilité (annexe 8 : « journal réflexif et note de positionnalité »).\nPremier temps, avant le codage ; second temps, à la fin de l'analyse. À dater.\n\n1. Qui je suis dans cette étude (COREQ 1-5) : formation, profession, sexe,\n   âge, expérience de la recherche qualitative.\n2. Ma relation au terrain et aux participants (COREQ 6-8) : ce qu'ils\n   savaient de moi, ce qu'ils ont pu supposer, mes liens avec le district.\n3. Ce que je pense trouver : mes présupposés, avant la collecte.\n4. Ce que je fais pour contenir ces influences.\n5. (À la fin de l'analyse) Ce que ma position a produit, d'après mon journal.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00072",
@@ -513,7 +513,7 @@
       "targetId": null,
       "title": "Phase 1 — Familiarisation (journal)",
       "text": "Lecture et relecture des transcriptions ; premières idées notées, sans coder. Une entrée par séance, datée.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00073",
@@ -521,7 +521,7 @@
       "targetId": null,
       "title": "Contrôle de fidélité des transcriptions (§ 4.2.6)",
       "text": "Sondages de la transcription en kinyarwanda contre l'enregistrement ; vérification de la traduction ; passages discutés et décisions.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00074",
@@ -529,7 +529,7 @@
       "targetId": null,
       "title": "Phase 2 — Codage initial",
       "text": "Codage avec la grille déductive ; création des codes inductifs (marqués « [inductif] ») ; chaque création consignée dans la piste d'audit.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00075",
@@ -537,7 +537,7 @@
       "targetId": null,
       "title": "Phase 3 — Recherche des thèmes",
       "text": "Regroupement des codes en thèmes candidats ; carte des thèmes.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00076",
@@ -545,7 +545,7 @@
       "targetId": null,
       "title": "Phase 4 — Revue des thèmes",
       "text": "Chaque thème confronté aux extraits codés, puis au corpus entier ; thèmes fusionnés, scindés ou écartés, avec la raison.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00077",
@@ -553,7 +553,7 @@
       "targetId": null,
       "title": "Phase 5 — Définition et dénomination des thèmes",
       "text": "Pour chaque thème : ce qu'il est, ce qu'il n'est pas, les codes qui le composent, l'objectif spécifique auquel il répond.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00078",
@@ -561,7 +561,7 @@
       "targetId": null,
       "title": "Phase 6 — Production du rapport",
       "text": "Plan du chapitre Résultats ; règles de citation (code du participant et une seule caractéristique ; consentements à respecter).",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00079",
@@ -569,7 +569,7 @@
       "targetId": null,
       "title": "Double codage et stabilité intra-codeur",
       "text": "Un tiers des entretiens recodés par un second codeur (étiquette C2) ; recodage par le premier codeur à distance (C1b) ; coefficients κ (Analyse ▸ Accord inter-codeurs) et discussion des désaccords.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00080",
@@ -577,7 +577,7 @@
       "targetId": null,
       "title": "Triangulation",
       "text": "Confrontation des propos, des observations et des données de routine ; écarts ET concordances consignés, sans imputer un écart à une intention.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00081",
@@ -585,7 +585,7 @@
       "targetId": null,
       "title": "Vérification des interprétations auprès des participants",
       "text": "Résumé des thèmes adressé aux participants qui l'ont accepté ; réponses consignées telles quelles, y compris les désaccords.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00082",
@@ -593,7 +593,7 @@
       "targetId": null,
       "title": "Suffisance informationnelle — dimension par dimension (§ 4.2.3.1)",
       "text": "Pour chacune des neuf dimensions du cadre : suffisante ou non, et pourquoi. La collecte se poursuit tant qu'une dimension reste faiblement renseignée.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     },
     {
       "id": "r00083",
@@ -601,7 +601,7 @@
       "targetId": null,
       "title": "Piste d'audit — décisions de codage",
       "text": "Chaque décision datée : code créé, fusionné, renommé ou supprimé ; extrait qui l'a motivée.",
-      "created": "2026-10-03T07:18:28.335Z"
+      "created": "2026-10-03T07:33:04.632Z"
     }
   ],
   "variables": [

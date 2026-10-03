@@ -693,7 +693,8 @@ T1. « Un test pour toutes, sauf les jours où il manque quelque chose » —
     fait elle-même qu'en urgence, avec son glucomètre quand elle en a un, ou
     en appelant le laborantin (B11). Le test saute les jours de rupture de
     bandelettes, de panne de l'appareil, d'absence du laborantin, ou quand le
-    laboratoire ferme avant le passage de la femme (code B8) ; la femme
+    laboratoire ne prélève plus quand la femme se présente, aucun prélèvement
+    n'étant fait après midi (code B8) ; la femme
     manquée n'est presque jamais rattrapée, sauf dans deux centres qui notent
     « glycémie à refaire » (B10).
     Même là où tout est en place, le test reste unique : il n'est refait que
