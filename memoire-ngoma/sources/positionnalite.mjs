@@ -38,10 +38,11 @@ Promotion de la santé, à l'ENATSE (Université de Parakou, Bénin). Ce travail
 est mon mémoire de fin de formation, dirigé par la Professeure N. Fanny M.
 HOUNKPONOU AHOUINGNAN.
 
-J'ai conduit moi-même les 20 entretiens et les 15 observations. Un collaborateur
-trilingue a transcrit en kinyarwanda les entretiens conduits dans cette
-langue ; j'en ai fait la traduction française. J'ai transcrit moi-même les
-4 entretiens conduits en français à la demande des participantes.
+J'ai conduit moi-même les 20 entretiens et les 15 observations. Les entretiens
+n'ont pas été enregistrés : j'ai noté les réponses et les ai mises au propre le
+jour même ; j'ai traduit en français ceux conduits en kinyarwanda. Les 4
+entretiens conduits en français à la demande des participantes n'ont pas été
+traduits.
 
 Je suis un homme, né en 1977 à Bukavu (République démocratique du Congo) ;
 j'avais 48 ans pendant la collecte. J'exerce depuis plus de vingt ans dans le

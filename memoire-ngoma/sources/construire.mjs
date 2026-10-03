@@ -26,7 +26,7 @@ let compteur = 0;
 const uid = () => "s" + (++compteur).toString(36).padStart(5, "0");
 
 /* ================================================================
-   1. Texte des transcriptions
+   1. Texte des entretiens (notes mises au propre)
    On mémorise la position exacte de chaque tour de parole : c'est ce qui
    permet au codage de désigner le passage au caractère près, comme le fait
    une sélection à la souris dans l'application.
@@ -37,7 +37,7 @@ function transcription(p) {
   const tours = []; // {question, debut, fin}
   const ajouter = s => { texte += s; };
 
-  ajouter(`TRANSCRIPTION D'ENTRETIEN — ${p.code} (${p.cs})\n`);
+  ajouter(`NOTES D'ENTRETIEN — ${p.code} (${p.cs})\n`);
   ajouter(`${AVERTISSEMENT}\n\n`);
   ajouter(`Date : ${p.date} · Durée : ${p.duree} · Langue de l'entretien : ${p.langue}\n`);
   ajouter(`Qualification : ${p.qualif} · Niveau : ${p.niveau} · Sexe : ${p.sexe} · Âge : ${p.age}\n`);
@@ -45,9 +45,9 @@ function transcription(p) {
   ajouter(`Formation sur les MNT : ${p.formationMnt}${p.anneeFormation ? " (" + p.anneeFormation + ")" : ""}\n`);
   ajouter(`Secteur : ${p.secteur} · Distance à l'hôpital : ${p.distanceHopital} · Volume d'activité : ${p.volume}\n\n`);
   if (p.langue === "kinyarwanda") {
-    ajouter(`Transcription verbatim en kinyarwanda par le collaborateur trilingue, puis traduction française par le chercheur (§ 4.2.6). Les termes propres au discours du participant sont conservés en kinyarwanda entre crochets.\n\n`);
+    ajouter(`Entretien non enregistré : notes prises pendant l'entretien, mises au propre le jour même en kinyarwanda par le chercheur, puis traduites par lui en français (§ 4.2.6). Les termes propres au discours du participant sont conservés en kinyarwanda entre crochets.\n\n`);
   } else {
-    ajouter(`Entretien conduit en ${p.langue} et transcrit directement par le chercheur, sans traduction (§ 4.2.6).\n\n`);
+    ajouter(`Entretien conduit en ${p.langue}, non enregistré : notes prises pendant l'entretien et mises au propre le jour même par le chercheur, sans traduction (§ 4.2.6).\n\n`);
   }
   ajouter(`${"=".repeat(64)}\n\n`);
 
@@ -160,7 +160,7 @@ doivent être vérifiés par un locuteur natif avant tout usage. Ils montrent o�
 placer ces termes, non comment les écrire.`;
 
 memoTheme("Phase 1 — Familiarisation (journal)",
-`Lecture intégrale des dix transcriptions et des cinq comptes rendus avant tout codage.
+`Lecture intégrale des dix entretiens mis au propre et des cinq comptes rendus avant tout codage.
 
 Premières impressions, notées avant d'ouvrir l'arbre de codes :
 
@@ -274,7 +274,7 @@ function construireProjet(cfg) {
     "niveau_formation", "anciennete_totale", "anciennete_cpn", "titulaire",
     "formation_mnt", "secteur", "distance_hopital", "volume_activite",
     "pauvrete_secteur", "langue_entretien",
-    "vague", "enregistrement_autorise", "citation_autorisee", "recontact_accepte",
+    "vague", "citation_autorisee", "recontact_accepte",
   ];
 
   // --- Groupes de documents
@@ -322,7 +322,6 @@ function construireProjet(cfg) {
         distance_hopital: p.distanceHopital, volume_activite: p.volume,
         pauvrete_secteur: p.pauvreteSecteur, langue_entretien: p.langue,
         vague: vague1.has(p.code) ? "1" : "2",
-        enregistrement_autorise: consentementDe(p.code).enregistrement,
         citation_autorisee: consentementDe(p.code).citation,
         recontact_accepte: consentementDe(p.code).recontact,
       },
@@ -591,7 +590,7 @@ Pour l'analyse d'ensemble — 20 participants, 15 centres — ouvrir plutôt
 Memoire_Ngoma_SIMULATION_complet.projx.`;
 
   memoTheme("Vague 2 — Familiarisation (journal)",
-`Lecture des dix transcriptions et des dix comptes rendus avant codage.
+`Lecture des dix entretiens mis au propre et des dix comptes rendus avant codage.
 
 1. Le centre CS01 change la lecture de l'ensemble. Il montre que le dépistage
    complet est réalisable dans le district — et qu'il l'est là où le secteur
@@ -862,13 +861,13 @@ attendre son matériau.`);
 
   const kinyarwanda = entretiens.filter(d => d.variables.langue_entretien === "kinyarwanda");
   const verifies = ["P01", "P04", "P06", "P10", "P13", "P17", "P20"];
-  collecte("Contrôle de fidélité des transcriptions (§ 4.2.6)",
+  collecte("Contrôle de fidélité des notes et des traductions (§ 4.2.6)",
 `Deux niveaux, comme prévu au protocole.
 
-1. Sondage par le chercheur contre l'enregistrement : un passage de cinq
-   minutes tiré au hasard dans chacun des ${entretiens.length} entretiens, réécouté et
-   comparé à la transcription. Écarts relevés dans 9 entretiens :
-   pour l'essentiel des hésitations et deux silences non notés, corrigés.
+1. Relecture par le chercheur, le jour même, de chacune des ${entretiens.length} mises au
+   propre contre ses notes prises pendant l'entretien. Compléments apportés
+   dans 9 entretiens : pour l'essentiel des hésitations et deux silences
+   notés en marge, réintégrés.
 
 2. Vérification indépendante par une personne bilingue extérieure, liée par
    l'engagement de l'annexe 7, sur des passages prélevés dans un tiers des
@@ -878,7 +877,7 @@ attendre son matériau.`);
    dans l'entretien de P10, une première traduction attribuait à la femme la
    décision d'attendre ; la vérification a rétabli que c'est le mari qui
    décide. Le codage en dépend (G4, marge de décision de la femme) : passage
-   corrigé et recodé. La transcription du projet est la version corrigée.
+   corrigé et recodé. Le texte du projet est la version corrigée.
 
 Les écarts, la manière dont ils ont été tranchés et par qui sont consignés ici,
 comme l'exige le protocole.
@@ -1233,7 +1232,7 @@ ${lignes.join("\n")}`);
     "Phase 1 — Familiarisation, vague 1 (journal)",
     "Phase 1 — Familiarisation, vague 2 (journal)",
     "Phase 1 — Familiarisation, relecture (réalités rwandaises)",
-    "Contrôle de fidélité des transcriptions (§ 4.2.6)",
+    "Contrôle de fidélité des notes et des traductions (§ 4.2.6)",
     "Phase 2 — Codage initial : grille déductive et ouverture inductive",
     "Phase 2 — Codes inductifs nés de la vague 2",
     "Phase 2 — Codes inductifs nés de la relecture",
@@ -1280,7 +1279,7 @@ ubudehe). Pour la collecte, ouvrez le projet vierge « Mémoire Ngoma — Donné
 réelles » : n'ajoutez jamais un entretien réel dans ce projet d'entraînement.
 
 Les mémos suivent les six phases de l'analyse thématique (Braun & Clarke),
-puis les étapes de rigueur du protocole : fidélité des transcriptions, double
+puis les étapes de rigueur du protocole : fidélité des notes, double
 codage et stabilité intra-codeur, triangulation, vérification des
 interprétations, suffisance informationnelle, piste d'audit. La note de
 positionnalité est un MODÈLE D'EXERCICE : les passages entre crochets sont

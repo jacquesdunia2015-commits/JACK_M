@@ -6,7 +6,7 @@ issu de l'exercice. Il ne reprend que ce qui vient du protocole.
 
 | Fichier | Contenu |
 |---|---|
-| `Outils_de_collecte_VIERGES.docx` | Les formulaires à remplir sur le terrain : suivi de l'échantillon (Tableau II), index des entretiens (annexe 1), gabarit de transcription avec les 22 questions du guide et quatre relances ajoutées (jours où la glycémie ne peut pas se faire, séance d'éducation, suivi à domicile après le diagnostic), grille d'observation (annexe 2) avec deux rubriques ajoutées (« A bis » séance d'éducation collective, « B bis » glycémie de la première CPN : faite ou non, motif, rattrapage), fiche sociodémographique (annexe 3), registre des consentements (annexe 4), données de routine (annexe 9) |
+| `Outils_de_collecte_VIERGES.docx` | Les formulaires à remplir sur le terrain : suivi de l'échantillon (Tableau II), index des entretiens (annexe 1), gabarit des notes d'entretien mises au propre (entretiens non enregistrés) avec les 22 questions du guide et les relances du protocole révisé (jours où la glycémie ne peut pas se faire, urgence, séance d'éducation, suivi à domicile après le diagnostic), grille d'observation (annexe 2) avec les rubriques du protocole révisé (« A bis » séance d'éducation collective, observée avec l'accord de l'animateur ; « B bis » glycémie de la première CPN : faite ou non, motif, rattrapage), fiche sociodémographique (annexe 3), registre des consentements (annexe 4), données de routine (annexe 9) |
 | `Memoire_Ngoma_DONNEES_REELLES_vierge.projx` | Le projet QualiCode « **Mémoire Ngoma — Données réelles** », vide : grille de codage déductive du Tableau III (58 codes, avec la définition de chaque famille), variables de l'annexe 3, cadre conceptuel (figure 1), modèles de mémos pour chaque étape du § 4.2.6 dont la note de positionnalité |
 
 ## Deux projets distincts, qui ne se mélangent pas
@@ -34,7 +34,7 @@ programme qui le produit refuse de l'écrire s'il en trouvait une.
 2. Avant le premier codage, rédigez le mémo « Note de positionnalité » et
    datez-le.
 3. Après chaque entretien : remplissez la fiche et le registre, mettez à jour
-   le suivi de l'échantillon, importez la transcription dans le groupe
+   le suivi de l'échantillon, importez les notes mises au propre dans le groupe
    « Entretiens », renseignez ses variables.
 4. Les codes nés des données s'ajoutent dans la famille concernée, avec
    « [inductif] » dans leur nom, et une ligne dans la piste d'audit.

@@ -86,9 +86,9 @@ function documentAnnexes(cfg) {
     p("Le guide d'entretien se « remplit » par l'entretien lui-même : ses vingt-deux questions ont été posées aux participants ci-dessous, et leurs réponses sont reproduites intégralement, question par question, dans la suite de ce document. Le journal de bord de chaque entretien précède ses réponses.", { run: { size: 20 } }),
     vide(),
     tableau([
-      ["Code", "Structure", "Date", "Durée", "Langue", "Traitement de la transcription (§ 4.2.6)"],
+      ["Code", "Structure", "Date", "Durée", "Langue", "Traitement des notes (§ 4.2.6)"],
       ...participants.map(x => [x.code, x.cs, x.date, x.duree, x.langue,
-        x.langue === "kinyarwanda" ? "Transcription en kinyarwanda, traduction française par le chercheur" : "Transcription directe par le chercheur"]),
+        x.langue === "kinyarwanda" ? "Notes mises au propre en kinyarwanda, traduction française par le chercheur" : "Notes mises au propre par le chercheur"]),
     ], [700, 900, 1150, 900, 1300, 4076]),
 
     /* ---------- Annexe 2 ---------- */
@@ -113,7 +113,7 @@ function documentAnnexes(cfg) {
     ], [3400, 5626], { entete: false }));
 
     if (o.S) {
-      enfants.push(vide(), titre3("A bis. Séance d'éducation collective (rubrique ajoutée à la grille)"));
+      enfants.push(vide(), titre3("A bis. Séance d'éducation collective (protocole révisé, annexe 2)"));
       enfants.push(tableau([
         ["Fréquence déclarée", o.S.frequence],
         ["Séance observée ce jour", o.S.observee],
@@ -129,7 +129,7 @@ function documentAnnexes(cfg) {
       ["Rupture de stock signalée au cours des trois derniers mois", "", "", "", o.ruptureTroisMois],
     ], [1800, 1050, 1050, 2200, 2926]));
 
-    enfants.push(vide(), titre3("B bis. Glycémie de la première CPN (rubrique ajoutée à la grille)"));
+    enfants.push(vide(), titre3("B bis. Glycémie de la première CPN (protocole révisé, annexe 2)"));
     const motif = { faite: "demandée par la CPN et faite à toutes les femmes de première CPN reçues", rupture: "NON faite — rupture de bandelettes au laboratoire",
       panne: "NON faite — glucomètre du laboratoire en panne", absence: "NON faite — laborantin absent, sans relais en CPN" };
     enfants.push(tableau([
@@ -185,17 +185,17 @@ function documentAnnexes(cfg) {
 
   /* ---------- Annexe 4 ---------- */
   enfants.push({ partie: "a4" });
-  enfants.push(p("Le formulaire d'information et de consentement (annexe 4) est remis en deux exemplaires et signé par chaque participant. Le § 4.2.7 prévoit que l'enregistrement et la citation d'extraits font l'objet d'accords DISTINCTS : ce registre les suit un par un, pour que l'analyse puisse en tenir compte.", { run: { size: 20 } }));
+  enfants.push(p("Le formulaire d'information et de consentement (annexe 4) est remis en deux exemplaires et signé par chaque participant. Le § 4.2.7 prévoit que la citation d'extraits fait l'objet d'un accord DISTINCT (les entretiens ne sont pas enregistrés) : ce registre suit les accords un par un, pour que l'analyse puisse en tenir compte.", { run: { size: 20 } }));
   enfants.push(vide());
   enfants.push(bandeauSignature());
   enfants.push(vide());
   enfants.push(tableau([
-    ["Code", "Date", "Langue du formulaire", "Consentement écrit", "Enregistrement", "Citation d'extraits", "Recontact (vérification)", "Signature"],
+    ["Code", "Date", "Langue du formulaire", "Consentement écrit", "Citation d'extraits", "Recontact (vérification)", "Signature"],
     ...participants.map(x => {
       const c = consentementDe(x.code);
-      return [x.code, x.date, x.langue, c.ecrit, c.enregistrement, c.citation, c.recontact, "sur le formulaire papier"];
+      return [x.code, x.date, x.langue, c.ecrit, c.citation, c.recontact, "sur le formulaire papier"];
     }),
-  ], [650, 1000, 1150, 1050, 1150, 1500, 1250, 1276]));
+  ], [800, 1200, 1350, 1250, 1600, 1450, 1376]));
   const notes = participants.map(x => [x.code, consentementDe(x.code).note]).filter(([, n]) => n);
   if (notes.length) {
     enfants.push(vide(), titre3("Particularités à respecter dans l'analyse"));
@@ -254,7 +254,7 @@ function documentTranscriptions(cfg) {
     p("Chaque entretien est précédé de la fiche du participant et du journal de bord (§ 4.2.6 : « consigner au journal de bord les conditions du déroulement, éléments non verbaux, interruptions et réflexions du chercheur »). « E : » désigne l'enquêteur (relances) ; le code du participant désigne ses réponses. Les entretiens conduits en kinyarwanda sont présentés dans leur rendu français, les termes propres au discours du participant étant conservés entre crochets.", { run: { size: 20 } }),
     vide(),
     titre2("Note sur les insertions en kinyarwanda"),
-    p("Les termes placés entre crochets dans les transcriptions (par exemple [umuvuduko w'amaraso], [kugagara], [ubukene]) sont ILLUSTRATIFS. Ils montrent où et comment le protocole demande de conserver les termes propres au discours du participant — ils ne constituent pas une traduction vérifiée. Avant tout usage, faites-les relire par un locuteur natif, et notamment par le collaborateur trilingue prévu au § 4.2.6 pour la transcription.", { run: { size: 20 } }),
+    p("Les termes placés entre crochets dans les notes d'entretien (par exemple [umuvuduko w'amaraso], [kugagara], [ubukene]) sont ILLUSTRATIFS. Ils montrent où et comment le protocole demande de conserver les termes propres au discours du participant — ils ne constituent pas une traduction vérifiée. Avant tout usage, faites-les relire par un locuteur natif, et notamment par la personne bilingue chargée de la vérification des traductions (§ 4.2.6).", { run: { size: 20 } }),
     vide(),
     p("Cette précaution n'est pas une formalité : dans une analyse qualitative, le terme en langue source est ce qui permet au jury et au lecteur de contrôler la traduction. Un terme approximatif fragilise la chaîne entière.", { run: { size: 20, italics: true } }),
     saut(),
@@ -349,7 +349,7 @@ const fichiers = [
     `Les ${n} entretiens semi-structurés conduits auprès des infirmiers et sages-femmes de CPN, présentés question par question selon le guide de l'annexe 1 : index des entretiens, puis, pour chacun, la fiche du participant, le journal de bord et les réponses.`,
     [...parties.a1, saut(), ...documentTranscriptions({ participants: tous })]],
   ["Annexe_2_Grilles_observation_remplies.docx", "Annexe 2 — Guides d'observation du service remplis",
-    `${obsTous.length} grilles d'observation non participante, une par centre de santé, avec la rubrique ajoutée sur la séance d'éducation collective des femmes enceintes.`, parties.a2],
+    `${obsTous.length} grilles d'observation non participante, une par centre de santé, avec les rubriques du protocole révisé sur la séance d'éducation collective et sur la glycémie de la première CPN.`, parties.a2],
   ["Annexe_3_Fiches_sociodemographiques_remplies.docx", "Annexe 3 — Fiches de données sociodémographiques et professionnelles",
     `${n} fiches, une par participant, renseignées en début d'entretien.`, parties.a3],
   ["Annexe_4_Registre_des_consentements.docx", "Annexe 4 — Registre de suivi des consentements",

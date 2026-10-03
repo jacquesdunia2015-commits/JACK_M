@@ -140,7 +140,7 @@ citent pas), **P19 l'a acceptée sans élément identifiant son centre**. La
 requête « Extraits citables » en tient compte.
 
 Les mémos suivent les six phases de l'analyse thématique, puis les étapes de
-rigueur du protocole : contrôle de fidélité des transcriptions, double codage
+rigueur du protocole : contrôle de fidélité des notes, double codage
 et stabilité intra-codeur, triangulation, vérification des interprétations,
 suffisance informationnelle, piste d'audit. La note de positionnalité est
 rédigée comme un **modèle d'exercice** : les éléments biographiques viennent du

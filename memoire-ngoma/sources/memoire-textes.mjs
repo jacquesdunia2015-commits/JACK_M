@@ -28,7 +28,7 @@ export const REMERCIEMENTS = [
   "À la Professeure N. Fanny M. HOUNKPONOU AHOUINGNAN, directrice de ce mémoire, pour la rigueur de son accompagnement, de la validation du protocole à la relecture du manuscrit.",
   "Aux infirmiers et sages-femmes des centres de santé du district de Ngoma qui ont accepté de parler de leur travail avec franchise, souvent au terme d'une matinée de consultation. Ce mémoire leur appartient autant qu'à son auteur ; conformément à l'engagement pris, ils ne sont pas nommés.",
   "À la Direction de la santé du district de Ngoma et aux responsables des centres de santé, qui ont facilité l'accès au terrain sans jamais intervenir dans le recrutement.",
-  "Au collaborateur trilingue qui a relu bénévolement les notes des entretiens en kinyarwanda, et à la personne bilingue qui en a vérifié un échantillon.",
+  "À la personne bilingue qui a vérifié un échantillon des traductions des entretiens conduits en kinyarwanda.",
   "Au pair qui a accepté le double codage indépendant de trois entretiens.",
   "Aux enseignants et au personnel administratif de l'ENATSE.",
   "[Remerciements personnels — à compléter par l'auteur.]",
@@ -60,12 +60,12 @@ export const EXECUTIVE_SUMMARY = [
 // § 4.2.5 à 4.2.7, tels que conduits (au passé).
 export const METHODES_CONDUITES = [
   { h3: "4.2.5. Collecte des données" },
-  { p: "4.2.5.1. Techniques et outils. Entretien semi-structuré (technique principale) et observation non participante du service ; guide d'entretien (annexe 1), grille d'observation (annexe 2) complétée de rubriques sur la séance d'éducation et la glycémie de la première CPN, fiche sociodémographique (annexe 3), carnet de notes et journal de bord, traduits en kinyarwanda et en anglais." },
+  { p: "4.2.5.1. Techniques et outils. Entretien semi-structuré (technique principale) et observation non participante du service ; guide d'entretien (annexe 1), grille d'observation (annexe 2), fiche sociodémographique (annexe 3), carnet de notes et journal de bord, traduits en kinyarwanda et en anglais." },
   { p: "4.2.5.2. Période et déroulement. Les entretiens se sont déroulés du {v:debutEntretiens} au {v:finEntretiens} et les observations du {v:debutObservations} au {v:finObservations}, en deux vagues. Ils ont duré de {v:dureeMin} à {v:dureeMax} minutes ; {v:nbKinyarwanda} ont été conduits en kinyarwanda et {v:nbFrancais} en français. Chaque centre a été observé une demi-journée." },
   { p: "4.2.5.3. Assurance qualité. Triangulation, variation maximale et vérification des interprétations auprès de trois participants ; piste d'audit, double codage et recodage (§ 4.2.6) ; notes originales, journal réflexif et note de positionnalité." },
 
   { h3: "4.2.6. Traitement et analyse des données" },
-  { p: "Les entretiens n'ont pas été enregistrés : les réponses ont été notées, mises au propre le jour même et, pour le kinyarwanda, traduites puis vérifiées par sondage. L'analyse thématique a suivi six phases {p:48} selon une approche hybride : {v:codesDeductifs} codes déductifs en {v:familles} familles, et {v:nbInductifs} codes inductifs. Collecte close à {N} participants sur la suffisance informationnelle {p:44,45} ; codage dans QualiCode plutôt que NVivo (export REFI-QDA)." },
+  { p: "Les entretiens n'ont pas été enregistrés : les réponses ont été notées, mises au propre le jour même et, pour le kinyarwanda, traduites puis vérifiées par sondage. L'analyse thématique a suivi six phases {p:48} selon une approche hybride : {v:codesDeductifs} codes déductifs en {v:familles} familles, et {v:nbInductifs} codes inductifs. Collecte close à {N} participants sur la suffisance informationnelle {p:44,45} ; codage dans QualiCode (export REFI-QDA)." },
   { p: "Fidélité du codage. {v:relusInter} entretiens sur {N} ({v:partInter}) ont été recodés à l'aveugle par un pair extérieur ; {v:relusIntra} autres ont été recodés par le chercheur quatre semaines plus tard. L'accord a été mesuré par le kappa de Cohen, qui retire l'accord dû au hasard, par paragraphe : κ = {v:kappaInter} entre codeurs ({v:unitesInter} paragraphes) et κ = {v:kappaIntra} en recodage, soit un accord « presque parfait » selon Landis et Koch {c:landis}. Les désaccords ont été tranchés en consensus." },
 
   { h3: "4.2.7. Considérations éthiques et déontologiques" },

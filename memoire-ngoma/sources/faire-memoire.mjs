@@ -7,7 +7,7 @@
 //
 // Usage : node faire-memoire.mjs ../livrables
 //
-// Sources : protocole.json (texte du protocole corrigé, chapitres 1 à 4.2.4,
+// Sources : protocole.json (texte du protocole révisé le 3 octobre 2026, chapitres 1 à 4.2.4,
 // annexes, bibliographie), memoire-textes.mjs (parties propres au mémoire),
 // chapitre5.mjs et chapitre6.mjs (résultats et discussion, contrôlés).
 // Contrôles : toute référence citée existe dans la bibliographie ; aucune
@@ -54,7 +54,6 @@ Object.assign(calc.valeurs, {
   nbEntretiens: calc.tous.length,
   nbKinyarwanda: calc.tous.filter(x => x.langue === "kinyarwanda").length,
   nbFrancais: calc.tous.filter(x => x.langue === "français").length,
-  nbEnregistrement: consent.filter(c => c.enregistrement === "oui").length,
   nbCitationRefus: consent.filter(c => c.citation === "non").length,
   nbCitationCondition: consent.filter(c => /sans élément/.test(c.citation)).length,
   nbRecontact: consent.filter(c => c.recontact === "oui").length,
@@ -151,8 +150,8 @@ const CONDENSATION = [
   "Le second, correspondant au second objectif spécifique",
   "Promotion de la santé : Processus conférant", "Littératie en santé :",
 ];
-// Annexes : la clause de durée de l'annexe 7 est reportée à la fin du point 4 (voir sansAudio).
-const ANNEXE_RETIRE = ["6. Durée : Le présent engagement est sans limitation de durée.", "Université de Parakou."];
+// Annexes : aucun paragraphe retiré (l'annexe 7 du protocole n'est plus reproduite).
+const ANNEXE_RETIRE = [];
 // Intertitres dont tout le contenu est condensé : retirés avec lui.
 const TITRES_CONDENSES = ["2.2.5. Les interventions de promotion de la santé au Rwanda", "3.1.2. Les prolongements des déclarations internationales", "3.1.4. Justification du cadre retenu"];
 // Numérotation recalée après le retrait de ces intertitres.
@@ -164,6 +163,7 @@ function protocole(de, a, { transformer = t => t, sauterTitre = false, annexe = 
   for (let i = de; i < a; i++) {
     const b = proto[i];
     if (sauterTitre && i === de) continue;
+    if (b.type === "p" && /^Source\s*:\s*National Institute of Statistics of Rwanda/.test(b.texte)) continue;   // rendue en légende ci-dessous
     const retire = b.type === "p" && (annexe ? ANNEXE_RETIRE : CONDENSATION).find(d => b.texte.replace(/[\u00a0\u202f]/g, " ").startsWith(d));
     if (retire) { condenses.add(retire); continue; }
     if (/^h[23]$/.test(b.type) && !annexe && TITRES_CONDENSES.some(t => b.texte.startsWith(t))) { condenses.add(b.texte); continue; }
@@ -190,22 +190,20 @@ function protocole(de, a, { transformer = t => t, sauterTitre = false, annexe = 
 }
 // § 4.2.1 à 4.2.4 : le protocole était écrit au futur ou au présent de projet.
 const auPasse = t => t
-  // Périmètre : la CPN de base est offerte dans les centres et les postes de santé (Mulungi et al., 2023, cité en introduction).
-  .replace(/^Une caractéristique organisationnelle détermine le périmètre de l’étude.*$/, "Une caractéristique organisationnelle détermine le périmètre de l’étude : la CPN de base étant offerte dans les centres et les postes de santé, l’étude porte sur les seize centres de santé du district — Gasetsa, Gashanda, Giraneza, Jarama, Karembo, Kazo, Kibungo, Kigina, Kirwa, Mutenderi, Nkanga, Nyange, Remera, Rubona, Rukira et Zaza —, où exercent les infirmiers et sages-femmes de CPN. Aucun résultat, aucune citation ni aucun code d’étude n’est rattaché à l’un de ces noms. Le nombre de centres et l’organisation de la CPN sont confirmés par écrit par la Direction de la santé du district (annexe 6).")
+  // Périmètre (protocole révisé) : présent de rédaction.
+  .replace("aucun code d’étude ne sera rattaché", "aucun code d’étude n’est rattaché")
+  // Le circuit de laboratoire est décrit dans l'introduction du mémoire.
+  .replace(" Chaque centre dispose d’un laboratoire, qui réalise la glycémie demandée par la CPN.", "")
   .replace(/^Cet axe distingue un dépistage promotionnel.*$/, "Cet axe distingue un dépistage promotionnel d’une simple mesure biomédicale : la Charte confie à la promotion de la santé l’information et l’éducation qui préparent aux étapes de l’existence [23], dont la grossesse, où le dépistage révèle des affections qui la dépassent [5]. Un dépistage sans restitution produit une donnée clinique, non une aptitude, et la littératie en santé est elle-même socialement distribuée [51].")
   .replace(/^La Charte indique quoi transformer.*$/, "La Charte indique quoi transformer ; le modèle socio-écologique permet de situer les niveaux — individuel, interpersonnel, organisationnel, institutionnel et politique — auxquels s’exprime le discours d’un professionnel [41], en restant subordonné à la Charte.")
   .replace(/^Au Rwanda, les travaux disponibles portent.*$/, "Au Rwanda, les travaux disponibles portent sur les prévalences [27], les facteurs de risque populationnels [17] ou la performance des dispositifs nationaux. Des infirmiers et sages-femmes de CPN ont été interrogés sur un modèle d’organisation du suivi [67], jamais sur le dépistage des maladies non transmissibles, et aucune étude n’a été conduite à Ngoma.")
   .replace(/^Cet arbitrage est socialement situé\..*$/, "Cet arbitrage est socialement situé. Lorsque le temps manque, l’explication est ce qui se supprime en premier, or c’est elle, et non la mesure, qui produit la capacité d’agir de la femme. Le dépistage peut ainsi se maintenir formellement tout en perdant sa portée promotionnelle, d’abord pour celles qui en auraient le plus besoin ; une intervention universelle appliquée dans un contexte inégalitaire peut creuser l’écart qu’elle prétend réduire [51].")
   .replace(/^Cette recherche ne formule pas d’hypothèse\..*$/, "Cette recherche ne formule pas d’hypothèse : sa démarche compréhensive vise à reconstituer le sens que des acteurs donnent à leur activité, non à éprouver une relation définie a priori [28]. Le cadre conceptuel (section 3.2) fournit une grille de lecture initiale, ouverte et révisable.")
-  // Figure 2 (carte du NISR) : le texte situe le district par ce que la carte montre.
-  .replace("Situé dans la Province de l’Est, chef-lieu Kibungo, il comptait",
-    "Situé dans la Province de l’Est, entre les districts de Rwamagana et de Kayonza au nord, de Bugesera à l’ouest et de Kirehe à l’est (figure 2), chef-lieu Kibungo, il comptait")
-  .replace(/^Figure 2\. Carte administrative du district de Ngoma$/, "Figure 2. Carte administrative du district de Ngoma : secteurs et districts limitrophes")
   .replace("Un échantillonnage raisonné à variation maximale est mis en œuvre. L’étude se fera dans un seul type de structure, la diversification porte sur les dimensions suivantes.",
     "Un échantillonnage raisonné à variation maximale a été mis en œuvre. L’étude s’est déroulée dans un seul type de structure ; la diversification a porté sur les dimensions suivantes.")
-  .replace("Le recrutement vise chacune des modalités et couvre les seize centres, à raison d’un à deux participants par structure.",
+  .replace(/^Le recrutement vise chacune des modalités et couvre les quinze centres retenus.*$/,
     "Le recrutement a visé chacune des modalités et a couvert quinze des seize centres, à raison d’un à deux participants par structure ; le seizième a accueilli le pré-test et n’a pas été retenu.")
-  .replace("4.2.2.2. La population source : Les seize centres de santé du district de Ngoma.",
+  .replace(/^4\.2\.2\.2\. La population source\s*: Les seize centres de santé du district de Ngoma.*$/,
     "4.2.2.2. La population source : Les centres de santé du district de Ngoma, au nombre de seize ; quinze ont été retenus, le seizième ayant servi au pré-test.")
   .replace("Un effectif de seize à vingt-quatre participants est retenu,", "Un effectif de seize à vingt-quatre participants avait été retenu,");
 
@@ -261,8 +259,6 @@ const sigles = (() => {
 const corpsMemoire = [];
 // Introduction : texte du protocole, suivi de l'annonce du plan.
 corpsMemoire.push(titre1("INTRODUCTION"), ...protocole(indice("INTRODUCTION"), indice("1. PROBLÉMATIQUE"), { sauterTitre: true }));
-// Introduction adaptée aux réalités de l'étude (organisation réelle du dépistage dans les centres de santé du district).
-corpsMemoire.push(paragraphe("Au Rwanda, la CPN de base est offerte dans les centres et les postes de santé {c:mulungi} ; cette étude porte sur les centres de santé, où exercent les infirmiers et sages-femmes de CPN. La tension y est mesurée à chaque visite ; la glycémie est demandée pour toutes à la première visite et réalisée par le laboratoire, la CPN ne la faisant qu'en urgence. Ce circuit dépend de bandelettes, d'un appareil et d'un laborantin, et un test manqué n'est pas toujours rattrapé. C'est dans ces conditions réelles que se joue l'équité du dépistage."));
 // Chapitres 1 à 3, puis 4.1 à 4.2.4 : texte du protocole.
 corpsMemoire.push(...protocole(indice("1. PROBLÉMATIQUE"), indice("4.2.5. Collecte des données"), { transformer: auPasse }));
 // 4.2.3 : échantillon obtenu (inséré après le tableau II, avant 4.2.4).
@@ -296,35 +292,12 @@ const annexes = [["ANNEXE 1.", "ANNEXE 2."], ["ANNEXE 2.", "ANNEXE 3."], ["ANNEX
 // Les annexes se suivent sans saut de page : l'annexe 1 suit le titre « ANNEXES », chacune suit la précédente.
 // Le tableau de cohérence (annexe 8 du protocole) n'est pas repris : le renvoi du guide d'entretien pointe vers le protocole.
 const versProtocole = t => t.replace("La correspondance entre objectifs, concepts et questions figure en annexe 8.",
-  "La correspondance entre objectifs, concepts et questions figure dans le tableau de cohérence du protocole.");
-// Entretiens notés, sans enregistrement audio, et centres nommés au § 4.1.2 sans qu'aucun résultat leur soit rattaché :
-// les outils et le formulaire de consentement sont adaptés en conséquence.
-const sansAudio = t => t
-  .replace("ni votre nom ni celui de votre centre ne figureront dans mes documents.",
-    "votre nom ne figurera dans aucun de mes documents, et aucun de vos propos ne sera rattaché au nom de votre centre.")
-  .replace("ni votre nom ni celui de votre centre ne figurent dans les documents d’analyse ni dans le mémoire, seuls des codes étant utilisés ;",
-    "votre nom ne figure dans aucun document, seuls des codes étant utilisés ; le mémoire nomme les centres de santé du district, mais aucun résultat ni aucune citation n’y est rattaché à un centre nommé ;")
-  .replace("que l’autorisation d’enregistrement est signée séparément ; local préservant la confidentialité ; matériel vérifié, prise de notes de secours prévue.",
-    "que l’accord pour la citation est recueilli séparément ; local préservant la confidentialité ; carnet de notes prêt (aucun enregistrement).")
-  .replace(/demander l’arrêt de l’enregistrement ou interrompre/g, "demander une pause ou interrompre")
-  .replace("Il est enregistré si vous y consentez séparément ; en cas de refus, l’entretien se déroule avec prise de notes.",
-    "Il n’est pas enregistré : vos réponses sont notées pendant l’entretien.")
-  .replace("Quatre personnes peuvent accéder à une partie des données : le collaborateur chargé de la transcription, qui accède aux enregistrements aux seules fins de les mettre par écrit en langue source et n’exerce pas dans le système de soins ; ",
-    "Trois personnes peuvent accéder à une partie des données : ")
-  .replace("qui accède à trois transcriptions anonymisées", "qui accède à trois entretiens anonymisés")
-  .replace("qui accède aux transcriptions anonymisées", "qui accède aux notes d’entretien anonymisées")
-  .replace("Les trois premiers sont liés par l’engagement écrit de l’annexe 7.", "Les deux premiers sont liés par l’engagement écrit de l’annexe 7.")
-  .replace("Les enregistrements sont détruits après validation du mémoire ; les transcriptions anonymisées sont conservées", "Les notes d’entretien anonymisées sont conservées")
-  .replace("☐ J’autorise l’enregistrement audio ☐ Je ne l’autorise pas et consens à la prise de notes ☐ J’accepte", "☐ J’accepte")
-  .replace("par le collaborateur chargé de la transcription, la personne chargée de la vérification des traductions et le pair codeur.",
-    "par la personne chargée de la vérification des traductions et le pair codeur.")
-  .replace("le contenu des enregistrements, transcriptions ou documents", "le contenu des notes d’entretien ou documents")
-  .replace(/^(4\. Sécurité : .*)$/, "$1 Le présent engagement est sans limitation de durée.")
-  .replace(/^Chercheur responsable : MUKAKI DUNIA Jacques,$/, "Chercheur responsable : MUKAKI DUNIA Jacques, Université de Parakou.");
-annexes.forEach(([de, a]) => corpsMemoire.push(...protocole(indice(de), indice(a), { annexe: true, sansSaut: true, transformer: t => sansAudio(versProtocole(t)) })));
+  "La correspondance entre objectifs, concepts et questions figure dans le tableau de cohérence du protocole.")
+  .replace("liés par l’engagement écrit de l’annexe 7.", "liés par l’engagement écrit de l’annexe 7 du protocole.");
+annexes.forEach(([de, a]) => corpsMemoire.push(...protocole(indice(de), indice(a), { annexe: true, sansSaut: true, transformer: versProtocole })));
 corpsMemoire.push(titre1("ANNEXE 5. VERSIONS TRADUITES DES OUTILS"), aCompleter("[Insérer les versions kinyarwanda et anglaise des outils, issues de la traduction et de la rétro-traduction indépendantes.]"));
 corpsMemoire.push(titre1("ANNEXE 6. AUTORISATIONS ADMINISTRATIVES ET ÉTHIQUES"), aCompleter("[Insérer les copies de l'approbation du comité d'éthique et de l'autorisation du district.]"));
-corpsMemoire.push(...protocole(indice("ANNEXE 7."), indice("ANNEXE 8."), { annexe: true, sansSaut: true, transformer: sansAudio }));
+// Annexe 7 du protocole (modèle d'engagement de confidentialité) : non reproduite, pour tenir en 72 pages ; le consentement y renvoie.
 /* ---------- Fin du document : table des matières, résumé, abstract ---------- */
 const fin = [
   titrePage("TABLE DES MATIÈRES", { nouvellePage: true }),
@@ -401,7 +374,7 @@ for (const p of xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || []) {
   if (/\bP\d{2}\b/.test(t) && /\bCS\d{2}\b/.test(t)) throw new Error(`participant et centre associés : « ${t.slice(0, 80)} »`);
 }
 // Les transformations du texte du protocole doivent toutes avoir porté.
-for (const attendu of ["tableau de cohérence du protocole", "a couvert quinze des seize centres", "quinze ont été retenus, le seizième ayant servi au pré-test", "information capacitante"]) {
+for (const attendu of ["tableau de cohérence du protocole", "engagement écrit de l’annexe 7 du protocole", "a couvert quinze des seize centres", "quinze ont été retenus, le seizième ayant servi au pré-test", "information capacitante"]) {
   if (!texte.includes(attendu)) throw new Error(`transformation du protocole sans effet : « ${attendu} »`);
 }
 const libres = texte.match(/\{[A-Za-z]+:[^}]*\}|\{N\}/g);

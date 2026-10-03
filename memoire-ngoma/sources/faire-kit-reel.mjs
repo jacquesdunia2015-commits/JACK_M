@@ -108,8 +108,8 @@ Premier temps, avant le codage ; second temps, à la fin de l'analyse. À dater.
 3. Ce que je pense trouver : mes présupposés, avant la collecte.
 4. Ce que je fais pour contenir ces influences.
 5. (À la fin de l'analyse) Ce que ma position a produit, d'après mon journal.`],
-  ["Phase 1 — Familiarisation (journal)", "Lecture et relecture des transcriptions ; premières idées notées, sans coder. Une entrée par séance, datée."],
-  ["Contrôle de fidélité des transcriptions (§ 4.2.6)", "Sondages de la transcription en kinyarwanda contre l'enregistrement ; vérification de la traduction ; passages discutés et décisions."],
+  ["Phase 1 — Familiarisation (journal)", "Lecture et relecture des entretiens mis au propre ; premières idées notées, sans coder. Une entrée par séance, datée."],
+  ["Contrôle de fidélité des notes et des traductions (§ 4.2.6)", "Relecture de chaque mise au propre contre les notes prises pendant l'entretien ; vérification indépendante d'un échantillon de traductions ; passages discutés et décisions."],
   ["Phase 2 — Codage initial", "Codage avec la grille déductive ; création des codes inductifs (marqués « [inductif] ») ; chaque création consignée dans la piste d'audit."],
   ["Phase 3 — Recherche des thèmes", "Regroupement des codes en thèmes candidats ; carte des thèmes."],
   ["Phase 4 — Revue des thèmes", "Chaque thème confronté aux extraits codés, puis au corpus entier ; thèmes fusionnés, scindés ou écartés, avec la raison."],
@@ -160,11 +160,11 @@ const enfants = [
   saut(),
 
   titre1("2. Annexe 1 — Index des entretiens"),
-  lignesVides(["Code", "Structure", "Date", "Durée", "Langue", "Transcription", "Traduction vérifiée"], [700, 900, 1200, 900, 1300, 2000, 2026]),
+  lignesVides(["Code", "Structure", "Date", "Durée", "Langue", "Mise au propre (date)", "Traduction vérifiée"], [700, 900, 1200, 900, 1300, 2000, 2026]),
   saut(),
 
-  titre1("3. Gabarit de transcription (un par entretien)"),
-  tableau([["Code du participant", "", "Code de structure", ""], ["Date", "", "Durée", ""], ["Langue de l'entretien", "", "Transcrit par", ""]], [2200, 2313, 2200, 2313], { entete: false }),
+  titre1("3. Gabarit des notes d'entretien mises au propre (un par entretien, sans enregistrement)"),
+  tableau([["Code du participant", "", "Code de structure", ""], ["Date", "", "Durée", ""], ["Langue de l'entretien", "", "Mis au propre le", ""]], [2200, 2313, 2200, 2313], { entete: false }),
   vide(),
   titre3("Journal de bord"),
   petit("Conditions du déroulement, éléments non verbaux, interruptions, réflexions du chercheur (§ 4.2.6)."),
@@ -172,7 +172,7 @@ const enfants = [
   vide(),
 ];
 const RELANCES = {
-  Q2: ["Et les jours où le laboratoire ne peut pas faire la glycémie — bandelettes, appareil, laborantin absent —, que deviennent les femmes venues pour la première visite ? Sont-elles retestées ?", "Et en urgence, comment faites-vous la glycémie ?"],
+  Q2: ["Et les jours où le laboratoire ne peut pas faire la glycémie (bandelettes, appareil, laborantin, heure des prélèvements), que deviennent les femmes de première visite ?", "Et en urgence, comment faites-vous ?"],
   Q4: ["Et à la séance d'éducation, qu'en dites-vous ?"],
   Q6: ["Et à la séance d'éducation, qu'en dites-vous ?"],
   Q13: ["Après le diagnostic, comment la femme se surveille-t-elle ? Certaines ont-elles un tensiomètre ou un glucomètre à la maison ? Lesquelles ?"],
@@ -183,7 +183,7 @@ for (const q of guide) {
   enfants.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [new TextRun({ text: `${q.id}. ${q.texte}`, bold: true, size: 20 })] }));
   enfants.push(p("E : …", { run: { size: 20, color: "7F8C8D" } }), p("P__ : …", { run: { size: 20 } }));
   // Relances ajoutées après la relecture (réalités de terrain), sans modifier les questions du guide.
-  for (const r of RELANCES[q.id] || []) enfants.push(p(`Relance ajoutée : ${r}`, { run: { size: 20, italics: true, color: "7F8C8D" } }));
+  for (const r of RELANCES[q.id] || []) enfants.push(p(`Relance (protocole révisé) : ${r}`, { run: { size: 20, italics: true, color: "7F8C8D" } }));
 }
 
 const grille = observations[0];
@@ -194,7 +194,7 @@ enfants.push(saut(), titre1("4. Annexe 2 — Grille d'observation du service (un
   vide(), titre3("A. Espace et flux"),
   tableau([["Salles affectées à la CPN", ""], ["Espace permettant un échange non entendu", case_(["oui", "partiellement", "non"])], ["Femmes reçues durant la période", ""],
     ["Professionnels assurant la consultation", ""], ["Poste distinct pour la prise des constantes", case_(["oui", "non"])], ["Durée moyenne entre entrée et sortie (estimation de flux)", ""]], [3400, 5626], { entete: false }),
-  vide(), titre3("A bis. Séance d'éducation collective (rubrique ajoutée à la grille — à valider avec la direction de mémoire)"),
+  vide(), titre3("A bis. Séance d'éducation collective (protocole révisé — observée avec l'accord de l'animateur, les femmes présentes en étant informées ; aucune donnée sur elles)"),
   tableau([["Fréquence déclarée (séances par semaine, jours)", ""], ["Séance observée ce jour", case_(["oui", "non"])],
     ["Heure, durée, lieu, animée par (fonction seulement)", ""], ["Nombre approximatif de femmes présentes ; conjoints présents", ""],
     ["Thème du jour ; support utilisé (boîte à images, affiche…)", ""], ["Tension abordée", case_(["oui", "non"])], ["Sucre (diabète) abordé", case_(["oui", "non"])],
@@ -202,7 +202,7 @@ enfants.push(saut(), titre1("4. Annexe 2 — Grille d'observation du service (un
   vide(), titre3("B. Équipements et consommables"),
   tableau([["Élément", "Présent", "Nombre", "État de fonctionnement", "Observations"], ...grille.B.map(x => [x.item, "☐ oui ☐ non", "", "", ""]),
     ["Rupture de stock signalée au cours des trois derniers mois", "", "", "", ""]], [1900, 1100, 800, 2300, 2926]),
-  vide(), titre3("B bis. Glycémie de la première CPN (rubrique ajoutée à la grille — à valider avec la direction de mémoire)"),
+  vide(), titre3("B bis. Glycémie de la première CPN (protocole révisé — données de service, sans relevé nominatif)"),
   tableau([["Glycémie demandée par la CPN et faite aux femmes de première CPN reçues ce jour", case_(["toutes", "certaines", "aucune"])],
     ["Si non faite : motif constaté", case_(["rupture de bandelettes", "glucomètre en panne", "laborantin absent", "plus de prélèvement (heure dépassée)"]) + "   ☐ autre : ……"],
     ["Lieu du test de routine", case_(["laboratoire", "salle de CPN"]) + "   ☐ autre : ……"],
@@ -235,9 +235,9 @@ enfants.push(saut(), titre1("5. Annexe 3 — Fiche de données sociodémographiq
     ["Date et durée de l'entretien", "……………… — ………… min"]], [3000, 6026]));
 
 enfants.push(saut(), titre1("6. Annexe 4 — Registre de suivi des consentements"),
-  petit("L'enregistrement et la citation d'extraits font l'objet d'accords DISTINCTS (§ 4.2.7). Les formulaires signés, en deux exemplaires, sont conservés à part ; ce registre ne fait que suivre les accords pour que l'analyse en tienne compte."),
+  petit("Les entretiens ne sont pas enregistrés ; la citation d'extraits fait l'objet d'un accord DISTINCT (§ 4.2.7). Les formulaires signés, en deux exemplaires, sont conservés à part ; ce registre ne fait que suivre les accords pour que l'analyse en tienne compte."),
   vide(),
-  lignesVides(["Code", "Date", "Langue du formulaire", "Consentement écrit", "Enregistrement", "Citation d'extraits", "Recontact", "Formulaire signé classé"], [650, 1000, 1150, 1050, 1150, 1400, 1100, 1526]),
+  lignesVides(["Code", "Date", "Langue du formulaire", "Consentement écrit", "Citation d'extraits", "Recontact", "Formulaire signé classé"], [800, 1200, 1350, 1250, 1550, 1300, 1576]),
   vide(), titre3("Particularités à respecter dans l'analyse"),
   tableau([["Code", "Accord particulier"], ...Array.from({ length: 6 }, () => ["", ""])], [1000, 8026]));
 

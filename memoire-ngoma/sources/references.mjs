@@ -1,8 +1,9 @@
 // references.mjs — bibliographie du mémoire (style Vancouver).
 //
-// · Les références 1 à 71 sont celles du protocole corrigé, dans son ordre et
-//   avec son texte (references-protocole.json, produit par extraire-protocole.py ;
-//   le texte du protocole lui-même n'est pas versé au dépôt).
+// · Les références 1 à 72 sont celles du protocole révisé le 3 octobre 2026
+//   (la 72, Mulungi et al., y a été ajoutée pour le périmètre de la CPN), dans
+//   son ordre et avec son texte (references-protocole.json, produit par
+//   extraire-protocole.py ; le texte du protocole lui-même n'est pas versé au dépôt).
 // · Les références ajoutées pendant la rédaction (discussion) sont numérotées à
 //   la suite, dans l'ordre de leur première citation. Elles sont repérées par
 //   une clé dans le texte : {c:cle}. Chacune doit être vérifiée dans sa source
@@ -10,7 +11,7 @@
 import { readFileSync } from "node:fs";
 
 export const PROTOCOLE = JSON.parse(readFileSync(new URL("./references-protocole.json", import.meta.url), "utf8"));
-if (PROTOCOLE.length !== 71) throw new Error(`le protocole devrait compter 71 références, ${PROTOCOLE.length} lues`);
+if (PROTOCOLE.length !== 72) throw new Error(`le protocole révisé devrait compter 72 références, ${PROTOCOLE.length} lues`);
 // Référence 20 (profil du district de Ngoma, recensement 2022) : complétée de
 // son adresse en ligne, source de la carte administrative (figure 2).
 if (/district profile, Ngoma/.test(PROTOCOLE[19]) && !/Disponible/.test(PROTOCOLE[19]))
@@ -42,7 +43,6 @@ export const AJOUTEES = {
   landis: "Landis JR, Koch GG. The measurement of observer agreement for categorical data. Biometrics. 1977;33(1):159-74.",
   condo: "Condo J, Mugeni C, Naughton B, Hall K, Tuazon MA, Omwega A, et al. Rwanda's evolving community health worker system: a qualitative assessment of client and provider perspectives. Hum Resour Health. 2014;12:71. doi:10.1186/1478-4491-12-71",
   klatman: "Klatman EL, Jenkins AJ, Ahmedani MY, Ogle GD. Blood glucose meters and test strips: global market and challenges to access in low-resource settings. Lancet Diabetes Endocrinol. 2019;7(2):150-60. doi:10.1016/S2213-8587(18)30074-3",
-  mulungi: "Mulungi A, Mukamurigo J, Rwunganira S, Njunwa K, Ntaganira J. Prevalence and risk factors for delayed antenatal care visits in Rwanda: an analysis of secondary data from Rwanda demographic health survey 2019-2020. Pan Afr Med J. 2023;44:74. doi:10.11604/pamj.2023.44.74.37570",
   munyungula: "Munyungula J, Shakwane S. Self-monitoring of blood pressure for preeclampsia patients: knowledge and attitudes. Curationis. 2021;44(1):e1-e8. doi:10.4102/curationis.v44i1.2195",
 };
 
