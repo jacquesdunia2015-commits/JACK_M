@@ -66,7 +66,7 @@ export function rendu({ remplir, refs = null, etiquette = null }) {
     }
     return morceaux.map(m => m.appel ? new TextRun({ text: ` [${m.appel.join(",")}]`, size: taille }) : m);
   }
-  const paragraphe = t => new Paragraph({ spacing: { after: 140 }, alignment: AlignmentType.JUSTIFIED, children: runs(t) });
+  const paragraphe = t => new Paragraph({ spacing: { after: 80 }, alignment: AlignmentType.JUSTIFIED, children: runs(t) });
   const citation = b => [
     new Paragraph({ spacing: { before: 60, after: 40 }, indent: { left: 567, right: 567 }, alignment: AlignmentType.JUSTIFIED,
       children: [new TextRun({ text: `« ${b.t} »`, italics: true, size: 21 })] }),

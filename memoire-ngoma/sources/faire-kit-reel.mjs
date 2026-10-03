@@ -172,7 +172,7 @@ const enfants = [
   vide(),
 ];
 const RELANCES = {
-  Q2: ["Et les jours où il manque quelque chose — bandelettes, appareil, personne formée au glucomètre —, que deviennent les femmes venues pour la première visite ? Sont-elles retestées ?"],
+  Q2: ["Et les jours où le laboratoire ne peut pas faire la glycémie — bandelettes, appareil, laborantin absent —, que deviennent les femmes venues pour la première visite ? Sont-elles retestées ?", "Et en urgence, comment faites-vous la glycémie ?"],
   Q4: ["Et à la séance d'éducation, qu'en dites-vous ?"],
   Q6: ["Et à la séance d'éducation, qu'en dites-vous ?"],
   Q13: ["Après le diagnostic, comment la femme se surveille-t-elle ? Certaines ont-elles un tensiomètre ou un glucomètre à la maison ? Lesquelles ?"],
@@ -203,9 +203,10 @@ enfants.push(saut(), titre1("4. Annexe 2 — Grille d'observation du service (un
   tableau([["Élément", "Présent", "Nombre", "État de fonctionnement", "Observations"], ...grille.B.map(x => [x.item, "☐ oui ☐ non", "", "", ""]),
     ["Rupture de stock signalée au cours des trois derniers mois", "", "", "", ""]], [1900, 1100, 800, 2300, 2926]),
   vide(), titre3("B bis. Glycémie de la première CPN (rubrique ajoutée à la grille — à valider avec la direction de mémoire)"),
-  tableau([["Glycémie faite aux femmes de première CPN reçues ce jour", case_(["toutes", "certaines", "aucune"])],
-    ["Si non faite : motif constaté", case_(["rupture de bandelettes", "glucomètre en panne", "aucun prestataire formé présent"]) + "   ☐ autre : ……"],
-    ["Lieu du test", case_(["salle de CPN / constantes", "laboratoire"]) + "   ☐ autre : ……"],
+  tableau([["Glycémie demandée par la CPN et faite aux femmes de première CPN reçues ce jour", case_(["toutes", "certaines", "aucune"])],
+    ["Si non faite : motif constaté", case_(["rupture de bandelettes", "glucomètre en panne", "laborantin absent", "laboratoire fermé"]) + "   ☐ autre : ……"],
+    ["Lieu du test de routine", case_(["laboratoire", "salle de CPN"]) + "   ☐ autre : ……"],
+    ["Glucomètre propre à la CPN (urgences)", case_(["oui", "non"]) + " — sinon, en urgence : " + case_(["le laborantin vient en CPN", "la femme va au laboratoire"])],
     ["Test manqué noté pour être refait au rendez-vous suivant", case_(["oui", "non"])],
     ["Glycémie refaite à 24-28 semaines", case_(["à toutes", "sur facteurs de risque", "jamais"])]], [3400, 5626], { entete: false }),
   vide(), titre3("C. Protocoles et supports"),

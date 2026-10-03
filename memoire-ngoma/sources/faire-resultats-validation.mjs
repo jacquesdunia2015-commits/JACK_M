@@ -6,7 +6,7 @@
 // Même texte et mêmes contrôles que le chapitre 5 du mémoire complet (citations
 // vérifiées mot pour mot, effectifs calculés, centres protégés absents), même
 // mise en forme (Times New Roman 14, interligne 1,5) et même numérotation des
-// tableaux (IV à VII). Une page de garde simple précède le chapitre.
+// tableaux (IV à VI). Une page de garde simple précède le chapitre.
 import { writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import {
@@ -48,7 +48,7 @@ const pageDeGarde = [
 
 // Repères pour la lecture hors du mémoire complet.
 const note = new Paragraph({ spacing: { after: 240 }, children: [new TextRun({ italics: true,
-  text: "Ce chapitre est repris tel quel du mémoire complet. Les tableaux gardent leur numéro (IV à VII) : les tableaux I à III " +
+  text: "Ce chapitre est repris tel quel du mémoire complet. Les tableaux gardent leur numéro (IV à VI) : les tableaux I à III " +
     "figurent au chapitre 4 (Cadre et méthodes). Les annexes citées sont celles du mémoire." })] });
 
 const piedDePage = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [

@@ -21,7 +21,7 @@ function figure(fichier) {
 export function chapitre6(calc, { refs }) {
   const { paragraphe, encadre } = rendu({ remplir: calc.remplir, refs });
   const tableaux = {
-    cadre: () => [legende("Tableau VIII. Révisions du cadre conceptuel suggérées par les codes inductifs"),
+    cadre: () => [legende("Tableau VII. Révisions du cadre conceptuel suggérées par les codes inductifs"),
       tableau([["Niveau du cadre", "Révision suggérée", "Résultats qui l'appellent"], ...revisionsCadre], [2300, 2900, 3826]),
       source("mémo « Piste d'audit 3 — révision du cadre conceptuel » du projet QualiCode")],
     recommandations: () => [legende("Tableau IX. Recommandations par destinataire"),

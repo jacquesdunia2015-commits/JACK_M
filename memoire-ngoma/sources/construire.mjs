@@ -112,7 +112,8 @@ function compteRendu(o) {
     o.B.map(x => `${x.item} — présent : ${x.present}${x.nombre !== null && x.nombre !== undefined ? `, nombre : ${x.nombre}` : ""}, état : ${x.etat}.${x.obs ? " " + x.obs : ""}`).join("\n") +
     `\nRupture de stock signalée au cours des trois derniers mois : ${o.ruptureTroisMois}.` +
     `\nGlycémie de la première CPN ce jour (rubrique ajoutée) : ${({ faite: "faite à toutes les femmes de première CPN reçues", rupture: "non faite — rupture de bandelettes",
-      panne: "non faite — glucomètre en panne", "non formé": "non faite — aucun prestataire formé au glucomètre présent" })[o.glycemieCpn]}. ` +
+      panne: "non faite — glucomètre du laboratoire en panne", absence: "non faite — laborantin absent, sans relais en CPN" })[o.glycemieCpn]}. ` +
+    `Glucomètre propre à la CPN, pour les urgences : ${o.glucoCpn}. ` +
     `Test manqué noté pour être refait au rendez-vous suivant : ${o.rattrapage}. Glycémie refaite à 24-28 semaines : ${o.glycemieT3}.`);
 
   bloc("C", "Protocoles et supports",
@@ -687,11 +688,14 @@ doivent être vérifiés par un locuteur natif.`;
 et trois s'ajoutent.
 
 T1. « Un test pour toutes, sauf les jours où il manque quelque chose » —
-    PRÉCISÉ. Tous les centres font la glycémie à toutes les femmes à la
-    première CPN, au glucomètre, en salle de CPN. Le test saute les jours de
-    rupture de bandelettes, de panne de l'appareil, ou quand aucun prestataire
-    formé n'est présent (code B8) ; la femme manquée n'est presque jamais
-    rattrapée, sauf dans deux centres qui notent « glycémie à refaire » (B10).
+    PRÉCISÉ. Dans tous les centres, la CPN demande la glycémie pour toutes les
+    femmes à la première visite et le laboratoire la réalise ; la CPN ne la
+    fait elle-même qu'en urgence, avec son glucomètre quand elle en a un, ou
+    en appelant le laborantin (B11). Le test saute les jours de rupture de
+    bandelettes, de panne de l'appareil, d'absence du laborantin, ou quand le
+    laboratoire ferme avant le passage de la femme (code B8) ; la femme
+    manquée n'est presque jamais rattrapée, sauf dans deux centres qui notent
+    « glycémie à refaire » (B10).
     Même là où tout est en place, le test reste unique : il n'est refait que
     sur signes d'appel, sans épreuve de charge à 24-28 semaines, quand apparaît
     le diabète gestationnel (B9).
@@ -772,7 +776,7 @@ quatre révisions possibles, à discuter en supervision :
 1. Ajouter au niveau organisationnel une cascade de la glycémie : une règle
    POUR TOUTES à la première CPN ; un test FAIT LE JOUR MÊME, qui suppose des
    bandelettes valides (CS05 : bandelettes périmées, glucomètre en état), un
-   appareil en état et un prestataire formé présent (code B8) ; un test
+   appareil en état et un laborantin présent, ou un relais en CPN (B8, B11) ; un test
    manqué RATTRAPÉ au rendez-vous suivant (B10) ; un test FAIT AU BON MOMENT
    (glycémie unique à la première CPN, non refaite à 24-28 semaines : B9).
 2. Distinguer, dans la pratique informative, l'information collective (séance
@@ -887,13 +891,15 @@ qui le composent. OS1 et OS2 renvoient aux objectifs spécifiques du protocole.
 
 T1. UN TEST POUR TOUTES, SAUF LES JOURS OÙ IL MANQUE QUELQUE CHOSE (OS1)
     La mesure de la tension est un geste intégré à la CPN presque partout ; la
-    glycémie est faite à toutes au premier contact, mais elle saute les jours
-    de rupture de bandelettes, de panne du glucomètre ou d'absence d'un
-    prestataire formé, et la femme manquée n'est presque jamais rattrapée. Le
-    test reste unique : il n'est pas refait à 24-28 semaines.
+    glycémie est demandée pour toutes au premier contact et faite au
+    laboratoire, mais elle saute les jours de rupture de bandelettes, de panne
+    du glucomètre ou d'absence du laborantin, et la femme manquée n'est presque
+    jamais rattrapée ; en urgence, le relais dépend d'un glucomètre en CPN et
+    d'une personne formée. Le test reste unique : il n'est pas refait à
+    24-28 semaines.
     N'est pas : un refus du test ni un défaut de volonté ; le manque de
     formation, quand il joue, est une condition, pas une faute.
-    Codes : B1, B2, B6, B7, B8, B9, B10, E2, F5, A5, D1, D5 ; après relecture,
+    Codes : B1, B2, B6, B7, B8, B9, B10, B11, E2, F5, A5, D1, D5 ; après relecture,
     F9 (campagnes de dépistage des MNT hors de la CPN, sans lien avec elle).
 
 T2. EXPLIQUER MOINS À CELLES QUI SAVENT LE MOINS (OS1)
@@ -1170,16 +1176,19 @@ Décisions :
      vérifiés dans des sources publiées ; les catégories ubudehe ont été
      réformées en 2020 : les participants parlent des « catégories les plus
      pauvres » sans numéro.
-  6. Deux informations de terrain de l'auteur, reçues après la relecture,
-     corrigent le corpus. (a) Tous les centres font la glycémie à toutes les
-     femmes à la première CPN, au glucomètre de la CPN ; elle ne manque que les
-     jours de rupture de bandelettes, de panne ou d'absence d'un prestataire
-     formé. Le code B8, qui décrivait une glycémie renvoyée au laboratoire, est
-     redéfini (« test de la première CPN interrompu ») et B10 (« rattrapage du
-     test manqué ») est créé ; la grille d'observation reçoit une rubrique
-     « glycémie de la première CPN » (B bis). (b) Après le diagnostic, des
+  6. Trois informations de terrain de l'auteur, reçues après la relecture,
+     corrigent le corpus. (a) La CPN demande la glycémie pour toutes les
+     femmes à la première visite et le laboratoire la réalise ; elle ne manque
+     que les jours de rupture de bandelettes, de panne ou d'absence du
+     laborantin. Le code B8, qui décrivait une glycémie réservée au laboratoire
+     et souvent refusée à la CPN, est redéfini (« test de la première CPN non
+     réalisé ») et B10 (« rattrapage du test manqué ») est créé ; la grille
+     d'observation reçoit une rubrique « glycémie de la première CPN » (B bis).
+     (b) En urgence, la CPN fait le test avec son propre glucomètre quand elle
+     en a un, sinon elle appelle le laborantin ou envoie la femme au
+     laboratoire : code B11. (c) Après le diagnostic, des
      femmes des ménages aisés s'achètent un tensiomètre ou un glucomètre : code
-     G15. Aucune source publiée consultée ne décrit ces deux pratiques : elles
+     G15. Aucune source publiée consultée ne décrit ces pratiques : elles
      reposent sur l'expérience de terrain de l'auteur, à confirmer pendant la
      collecte réelle.
 
@@ -1295,7 +1304,7 @@ const requetesV2 = [
   ["Codes inductifs nés de la vague 2", ["B7", "C9", "E8", "E9", "F7", "F8", "G9", "G10", "G11", "H9", "I8"]],
   ["T2 (sous-thème) — La séance collective, égale pour les présentes, muette sur le résultat", ["C10", "C11"], true],
   ["Dispositifs rwandais : conjoint, ubudehe, alerte des ASM", ["G12", "G13", "G14"]],
-  ["Test de la première CPN interrompu, et son rattrapage", ["B8", "B10"]],
+  ["Test de la première CPN non réalisé, rattrapage et relais d'urgence", ["B8", "B10", "B11"]],
   ["Autosurveillance à domicile et moyens du ménage", ["G15", "G1", "H1"]],
   ["Dépistage hors de la CPN : campagnes et forums villageois", ["F9", "I9"]],
   ["Codes inductifs nés de la relecture (réalités rwandaises)", ["C10", "C11", "F9", "G12", "G13", "G14", "G15", "I9"], true],

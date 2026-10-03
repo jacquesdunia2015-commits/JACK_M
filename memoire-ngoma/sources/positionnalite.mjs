@@ -163,11 +163,10 @@ fait apparaître des moments précis où j'ai pu orienter le matériau :
   l'observation de la veille m'avait montrée et dont je n'avais rien dit.
 
 Ce qui m'a surpris. Mon premier présupposé ne s'est vérifié qu'en partie :
-tous les centres ont un glucomètre en salle de CPN et font la glycémie à
-toutes les femmes à la première visite ; ce qui manque, ce n'est pas
-l'appareil mais la continuité — des bandelettes sans rupture, un appareil
-réparé, un prestataire formé présent ce jour-là, une liste des femmes à
-retester —, un espace où dire un résultat sans qu'il soit entendu, et du
+tous les centres demandent la glycémie pour toutes les femmes à la première
+visite, et le laboratoire la réalise ; ce qui manque, ce n'est pas l'appareil
+mais la continuité — des bandelettes sans rupture, un appareil réparé, un
+laborantin présent ou remplacé, une liste des femmes à retester —, un espace où dire un résultat sans qu'il soit entendu, et du
 temps pour l'expliquer. Mon expérience de la biologie médicale a sans doute
 joué ici : c'est en demandant d'où venaient les bandelettes, et ce que
 devenaient les femmes reçues un jour de rupture, que l'interruption du test

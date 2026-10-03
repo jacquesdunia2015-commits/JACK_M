@@ -56,11 +56,11 @@ const extrait = (code, debut) => {
 
 /* ---------- Messages clés ---------- */
 const MESSAGES = [
-  "Un test pour toutes, sauf les jours où il manque quelque chose. La glycémie est faite à toutes à la première CPN, mais saute les jours de rupture de bandelettes, de panne ou d'absence d'un prestataire formé : le jour de l'observation, elle n'était faite que dans {v:glycFaite} centres sur {v:nbCentres}. La femme manquée n'est rattrapée que dans {v:glycRattrapage} centres, et aucun ne refait le test entre 24 et 28 semaines.",
+  "Un test pour toutes, sauf les jours où il manque quelque chose. La glycémie, demandée par la CPN pour toutes à la première visite, est faite au laboratoire ; elle saute les jours de rupture de bandelettes, de panne ou d'absence du laborantin : le jour de l'observation, elle n'était faite que dans {v:glycFaite} centres sur {v:nbCentres}. La femme manquée n'est rattrapée que dans {v:glycRattrapage} centres, et aucun ne refait le test entre 24 et 28 semaines.",
   "L'explication — la part du dépistage qui permet à la femme d'agir — se raccourcit pour celles qui arrivent tard, posent peu de questions ou n'ont pas d'autre source d'information : elle est distribuée à l'inverse des besoins. La séance d'éducation collective, tenue deux à trois matins par semaine, donne à toutes les présentes la même information, mais parle peu de la tension, presque jamais du sucre, et manque les femmes arrivées après elle.",
   "Le dépistage ne figure dans aucun indicateur de la CPN : ses intrants ne sont pas suivis, ses appareils pas réparés, ses actes pas supervisés. Le contrôle porte sur la complétude du registre, qui peut masquer l'inégalité.",
   "La référence dépend d'un véhicule et revient rarement ; le suivi s'interrompt à l'accouchement. Après le diagnostic, seules les femmes des ménages aisés s'achètent un tensiomètre ou un glucomètre pour se surveiller chez elles. L'attente du conjoint pour la première CPN retarde la glycémie ; l'alerte téléphonique des ASM organise l'urgence, pas le contrôle d'une tension élevée.",
-  "Les participants jugent ces différences inacceptables, reconnaissent une part qui leur revient et proposent des changements concrets : bandelettes sans rupture, formation de tous au glucomètre, liste des femmes à retester, ligne dans le rapport mensuel.",
+  "Les participants jugent ces différences inacceptables, reconnaissent une part qui leur revient et proposent des changements concrets : bandelettes sans rupture, laborantin remplacé, glucomètre d'urgence en CPN, liste des femmes à retester, ligne dans le rapport mensuel.",
 ];
 
 /* ---------- Corps du rapport ---------- */
@@ -97,20 +97,20 @@ enfants.push(titre1("3. MÉTHODES"),
   source("chapitre 4 du mémoire"));
 
 enfants.push(titre1("4. PRINCIPAUX RÉSULTATS"),
-  titre2("4.1. Un test pour toutes, interrompu par les ruptures, les pannes et le manque de formation"),
-  paragraphe("Le tensiomètre et le glucomètre étaient présents en salle de CPN dans les {v:nbCentres} centres, et la glycémie de la première CPN y est la règle pour toutes. Le jour de l'observation, elle n'était pas faite partout (tableau 2)."),
+  titre2("4.1. Un test pour toutes, interrompu par les ruptures, les pannes et l'absence du laborantin"),
+  paragraphe("Dans les {v:nbCentres} centres, la CPN demande la glycémie pour toutes à la première visite et le laboratoire la réalise ; {v:glucoCpnUrgence} services de CPN ont un glucomètre pour les urgences. Le jour de l'observation, le test n'était pas fait partout (tableau 2)."),
   legende("Tableau 2. Glycémie de la première CPN, le jour de l'observation"),
   tableau([
     ["Situation observée", "Centres"],
     ["Glycémie faite à toutes les femmes de première CPN", String(v.glycFaite)],
     ["Non faite : rupture de bandelettes", String(v.glycRupture)],
-    ["Non faite : glucomètre en panne", String(v.glycPanne)],
-    ["Non faite : aucun prestataire formé au glucomètre présent", String(v.glycNonForme)],
+    ["Non faite : glucomètre du laboratoire en panne", String(v.glycPanne)],
+    ["Non faite : laborantin absent", String(v.glycAbsence)],
     ["Total", String(v.nbCentres)],
     ["Rupture de bandelettes au cours des trois derniers mois", String(v.glycRupture3Mois)],
     ["Test manqué noté pour être refait au rendez-vous suivant", String(v.glycRattrapage)],
   ], [7026, 2000]),
-  source("observation non participante des services de CPN"),
+  source("observation non participante des services de CPN et des laboratoires"),
   ...extrait("P01", "Toutes les femmes venues pour leur première visite"),
   titre2("4.2. Sept thèmes"),
   paragraphe("L'analyse a dégagé sept thèmes, dont deux répondent au premier objectif et cinq au second (tableau 3)."),
@@ -123,7 +123,7 @@ enfants.push(titre1("4. PRINCIPAUX RÉSULTATS"),
   paragraphe("La confrontation des entretiens avec l'observation et les données de routine a produit {v:nbConstats} constats : {v:nbConcordances} concordances et {v:nbEcarts} écarts ; elle seule a montré les interruptions du test et l'absence de rattrapage."));
 
 enfants.push(titre1("5. POINTS DE DISCUSSION"),
-  puce("Une règle pour toutes, une exécution intermittente. Le test dépend de bandelettes partagées avec la consultation des maladies chroniques, d'appareils sans maintenance et de prestataires inégalement formés ; sans liste des femmes manquées, chaque interruption devient une absence définitive."),
+  puce("Une règle pour toutes, une exécution intermittente. Le test dépend des bandelettes du laboratoire, partagées avec la consultation des maladies chroniques, d'appareils sans maintenance et d'un laborantin souvent seul ; sans liste des femmes manquées, chaque interruption devient une absence définitive."),
   puce("Un test unique, trop précoce. La glycémie de la première CPN repère un diabète préexistant ; le diabète gestationnel apparaît entre 24 et 28 semaines, période où le protocole national prévoit une épreuve de charge {p:27} que les centres ne pratiquent pas, alors que le contact de 26 semaines s'y prêterait {c:rbcAnc}."),
   puce("L'explication, distribuée à l'inverse des besoins. L'inégalité ne tient pas seulement à l'accès au test, mais au temps d'explication, qui se raréfie là où il serait le plus utile ; c'est la dimension capacitante du dépistage qui se distribue mal {p:23}."),
   puce("Ce qui est compté existe. Un dépistage absent du rapport mensuel n'est ni approvisionné ni contrôlé, et le contrôle de complétude du registre peut produire une égalité apparente. Le financement basé sur la performance rémunère la première CPN précoce et les quatre visites {c:schmidt} ; son effet est plus net sur les services les mieux payés et les moins exigeants {c:basinga}."),

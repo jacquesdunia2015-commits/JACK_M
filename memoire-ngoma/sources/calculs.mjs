@@ -73,12 +73,12 @@ export async function calculs(dossier) {
     nbSf: tous.filter(x => x.qualif === "sage-femme").length,
     nbTitulaires: tous.filter(x => x.titulaire).length,
     dureeMin: Math.min(...minutes), dureeMax: Math.max(...minutes),
-    // Glycémie de la première CPN, règle pour toutes : relevé du jour de l'observation (champ glycemieCpn).
+    // Glycémie de la première CPN, demandée par la CPN pour toutes et faite au laboratoire : relevé du jour de l'observation (champ glycemieCpn).
     glycFaite: obsTous.filter(o => etatGluco(o) === "faite").length,
     glycInterrompue: obsTous.filter(o => etatGluco(o) !== "faite").length,
     glycRupture: obsTous.filter(o => etatGluco(o) === "rupture").length,
     glycPanne: obsTous.filter(o => etatGluco(o) === "panne").length,
-    glycNonForme: obsTous.filter(o => etatGluco(o) === "non formé").length,
+    glycAbsence: obsTous.filter(o => etatGluco(o) === "absence").length,
     // Ruptures de bandelettes de glycémie au cours des trois derniers mois.
     glycRupture3Mois: obsTous.filter(o => /^oui — bandelettes de glycémie/.test(o.ruptureTroisMois)).length,
     // Test manqué noté et refait au rendez-vous suivant.
@@ -88,8 +88,13 @@ export async function calculs(dossier) {
     nbSeancesObservees: obsTous.filter(o => o.S && o.S.observee.startsWith("oui")).length,
     nbSeancesTension: obsTous.filter(o => o.S && /tension : oui/.test(o.S.sujets)).length,
     glucoPresent: obsTous.filter(o => gluco(o).present === "oui").length,
-    glucoEnCpn: obsTous.filter(o => gluco(o).present === "oui" && /CPN|constantes/.test(gluco(o).etat)).length,
+    // Glucomètre propre au service de CPN, réservé aux urgences (la glycémie de routine est faite au laboratoire).
+    glucoCpnUrgence: obsTous.filter(o => o.glucoCpn === "oui").length,
     glucoFonctionnel: obsTous.filter(o => gluco(o).present === "oui" && !/NON fonctionnel/.test(gluco(o).etat)).length,
+    // Glucomètre du laboratoire : en état, en panne, ou laboratoire pas encore ouvert.
+    glucoLaboEnEtat: obsTous.filter(o => /au laboratoire/.test(gluco(o).etat) && !/NON fonctionnel/.test(gluco(o).etat)).length,
+    glucoLaboPanne: obsTous.filter(o => /NON fonctionnel — au laboratoire/.test(gluco(o).etat)).length,
+    laboNonOuvert: obsTous.filter(o => /laboratoire n'est pas encore opérationnel/.test(gluco(o).etat)).length,
     nbConstats: constats.length,
     nbEcarts: constats.filter(x => x.nature === "écart").length,
     nbConcordances: constats.filter(x => x.nature === "concordance").length,

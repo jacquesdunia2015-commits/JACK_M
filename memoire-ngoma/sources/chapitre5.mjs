@@ -48,10 +48,11 @@ export function chapitre5(calc, { refs = null } = {}) {
       ["Distance à l'hôpital", enLigne(effectifs(centres, "distance", ["proche", "éloignée"]))],
       ["Volume d'activité prénatale", enLigne(effectifs(centres, "volume", ["élevé", "modéré"]))],
       ["Profil de pauvreté du secteur", enLigne(effectifs(centres, "pauvrete", ["plus faible", "plus élevée"]))],
-      ["Glucomètre en salle de CPN", enLigne([["en état", valeurs.glucoFonctionnel], ["en panne", obsTous.length - valeurs.glucoFonctionnel]])],
-      ["Glycémie de la première CPN le jour de l'observation", enLigne([["faite à toutes", valeurs.glycFaite],
+      ["Glucomètre du laboratoire", enLigne([["en état", valeurs.glucoLaboEnEtat], ["en panne", valeurs.glucoLaboPanne], ["laboratoire non encore ouvert", valeurs.laboNonOuvert]])],
+      ["Glucomètre propre à la CPN (urgences)", enLigne([["oui", valeurs.glucoCpnUrgence], ["non", obsTous.length - valeurs.glucoCpnUrgence]])],
+      ["Glycémie de la première CPN (demandée en CPN, faite au laboratoire) le jour de l'observation", enLigne([["faite à toutes", valeurs.glycFaite],
         ["non faite : rupture de bandelettes", valeurs.glycRupture], ["non faite : glucomètre en panne", valeurs.glycPanne],
-        ["non faite : aucun prestataire formé présent", valeurs.glycNonForme]])],
+        ["non faite : laborantin absent", valeurs.glycAbsence]])],
       ["Rupture de bandelettes de glycémie (trois derniers mois)", enLigne([["oui", valeurs.glycRupture3Mois], ["non", obsTous.length - valeurs.glycRupture3Mois]])],
       ["Test manqué noté pour être refait", enLigne([["oui", valeurs.glycRattrapage], ["non", obsTous.length - valeurs.glycRattrapage]])],
       ["Glycémie refaite systématiquement à 24-28 semaines", enLigne([["oui", valeurs.glycT3Systematique], ["non (sur facteurs de risque au mieux)", obsTous.length - valeurs.glycT3Systematique]])],
@@ -81,7 +82,7 @@ export function chapitre5(calc, { refs = null } = {}) {
   }
 
   function tableauThemes() {
-    return [legende("Tableau VII. Synthèse des thèmes"), tableau([["Thème", "Objectif", "Énoncé"], ...THEMES], [3200, 1500, 4326]),
+    return [legende("Tableau VI. Synthèse des thèmes"), tableau([["Thème", "Objectif", "Énoncé"], ...THEMES], [3200, 1500, 4326]),
       source("mémo « Phase 5 — Définition et dénomination des thèmes » du projet QualiCode")];
   }
 

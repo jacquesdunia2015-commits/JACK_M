@@ -70,7 +70,7 @@ commence le travail réel ; ce dossier-ci reste l'exercice.
 | `Chapitre_6_Discussion.docx` | **Le chapitre 6 (Discussion)** : confrontation à la littérature et au cadre conceptuel ; références ajoutées vérifiées dans PubMed pour les articles |
 | `Rapport_de_memoire.docx` | **Le rapport de mémoire** (10 pages au plus) |
 | `Liste_de_controle_avant_depot.docx` | Ce qui reste à compléter ou à vérifier avant le dépôt |
-| `Memoire_complet.docx` | **Le mémoire complet** selon le plan type de l'ENATSE : 48 pages de l'introduction à la conclusion, 89 pages en tout avec les pages liminaires, les références et les annexes. **Non versé au dépôt** : produit sur le poste par `faire-memoire.mjs`, qui a besoin du protocole extrait. Mise en forme : Times New Roman 14, interligne 1,5 pour tout le document (pages liminaires, listes, références et annexes comprises ; seuls le contenu des tableaux, les sources et les citations longues sont plus petits), listes des tableaux et des figures chacune sur sa page, marges de 2,5 cm (3 cm à gauche), références en Vancouver ; sommaire et table des matières remplis par `finaliser-docx.py` |
+| `Memoire_complet.docx` | **Le mémoire complet** selon le plan type de l'ENATSE : 72 pages en tout, de la page de garde à l'abstract, annexes comprises (37 pages de l'introduction à la conclusion). **Non versé au dépôt** : produit sur le poste par `faire-memoire.mjs`, qui a besoin du protocole extrait. Mise en forme : Times New Roman 14, interligne 1,5 pour tout le document (pages liminaires, listes et annexes comprises ; seuls le contenu des tableaux, les sources et les citations longues sont plus petits, et les références sont à interligne simple), listes des tableaux et des figures chacune sur sa page, marges de 2,5 cm (3 cm à gauche), références en Vancouver ; sommaire et table des matières remplis par `finaliser-docx.py` |
 | `MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx` | **Le projet QualiCode « MÉMOIRE NGOMA — MUKAKI DUNIA Jacques »**, version d'entraînement, les deux vagues réunies |
 
 À ouvrir par **Accueil ▸ Ouvrir (.projx)**. Le projet porte le même nom et le
@@ -87,8 +87,8 @@ dans l'application, sans créer de doublon.
 | Projet | |
 |---|---|
 | Documents | 35 (20 entretiens, 15 comptes rendus d'observation) |
-| Codes | 101 en 11 familles, dont 43 inductifs |
-| Segments codés | 2 500 |
+| Codes | 102 en 11 familles, dont 44 inductifs |
+| Segments codés | 2 516 |
 | Double codage | 3 entretiens recodés par un pair extérieur (codeur C2), comme prévu au § 4.2.5.6 |
 | Stabilité intra-codeur | 3 entretiens recodés par le premier codeur quatre semaines après (étiquette C1b) |
 | Mémos | 26 mémos d'analyse, 20 journaux de bord, 11 définitions de familles |
@@ -112,11 +112,11 @@ discussion, cadre conceptuel, mémoire, rapport et liste à vérifier. Ce qu'auc
 source publiée ne confirme est signalé comme information de terrain.
 
 **Glycémie de la première CPN et autosurveillance.** Deux informations de
-terrain de l'auteur ont ensuite corrigé le corpus. (1) Tous les centres font
-la glycémie à toutes les femmes à la première CPN, au glucomètre de la salle de
-CPN ; le test ne manque que les jours de rupture de bandelettes, de panne de
-l'appareil ou d'absence d'un prestataire formé, et la femme manquée est rarement
-rattrapée. Les quinze grilles d'observation, l'annexe 9 et 52 passages
+terrain de l'auteur ont ensuite corrigé le corpus. (1) La CPN demande la
+glycémie pour toutes les femmes à la première visite et le laboratoire la
+réalise (en urgence : glucomètre de la CPN quand il existe, code B11) ; le test
+ne manque que les jours de rupture de bandelettes, de panne de l'appareil ou
+d'absence du laborantin, et la femme manquée est rarement rattrapée. Les quinze grilles d'observation, l'annexe 9 et 52 passages
 d'entretien ont été réécrits ; la grille reçoit une rubrique « Glycémie de la
 première CPN » (B bis), aussi dans les outils vierges ; le code B8 est redéfini
 et B10 (rattrapage) créé ; le thème 1 devient « Un test pour toutes, sauf les
@@ -184,10 +184,12 @@ python3 finaliser-docx.py ../livrables/Rapport_de_memoire.docx
 ```
 
 **La glycémie de la première CPN.** Selon l'information de terrain de l'auteur,
-les centres de santé du district font la glycémie capillaire à toutes les femmes
-à la première CPN, au glucomètre de la salle de CPN ; elle ne manque que les
-jours de rupture de bandelettes, de panne ou d'absence d'un prestataire formé.
-La simulation le reflète : le jour de l'observation, la glycémie est faite dans 8 centres, non faite pour rupture de bandelettes dans 3, pour panne dans 2 et faute de prestataire formé présent dans 2 ;
+la CPN demande la glycémie pour toutes les femmes à la première visite et le
+laboratoire la réalise ; la CPN ne la fait elle-même qu'en urgence, avec son
+propre glucomètre quand elle en a un (6 services sur 15 dans la simulation),
+sinon en appelant le laborantin ou en envoyant la femme au laboratoire. Le test
+ne manque que les jours de rupture de bandelettes, de panne ou d'absence du
+laborantin. La simulation le reflète : le jour de l'observation, la glycémie est faite dans 8 centres, non faite pour rupture de bandelettes dans 3, pour panne dans 2 et faute de laborantin présent dans 2 ;
 seuls 2 centres notent le test manqué pour le refaire au rendez-vous suivant,
 et aucun ne la refait de façon systématique entre 24 et 28 semaines, quand
 apparaît le diabète gestationnel (code inductif B9). Ces

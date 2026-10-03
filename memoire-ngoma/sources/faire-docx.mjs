@@ -130,10 +130,11 @@ function documentAnnexes(cfg) {
     ], [1800, 1050, 1050, 2200, 2926]));
 
     enfants.push(vide(), titre3("B bis. Glycémie de la première CPN (rubrique ajoutée à la grille)"));
-    const motif = { faite: "faite à toutes les femmes de première CPN reçues", rupture: "NON faite — rupture de bandelettes",
-      panne: "NON faite — glucomètre en panne", "non formé": "NON faite — aucun prestataire formé au glucomètre présent" };
+    const motif = { faite: "demandée par la CPN et faite à toutes les femmes de première CPN reçues", rupture: "NON faite — rupture de bandelettes au laboratoire",
+      panne: "NON faite — glucomètre du laboratoire en panne", absence: "NON faite — laborantin absent, sans relais en CPN" };
     enfants.push(tableau([
       ["Glycémie de la première CPN ce jour", motif[o.glycemieCpn]],
+      ["Glucomètre propre à la CPN (urgences)", o.glucoCpn],
       ["Test manqué noté pour être refait au rendez-vous suivant", o.rattrapage],
       ["Glycémie refaite à 24-28 semaines", o.glycemieT3],
     ], [3400, 5626], { entete: false }));

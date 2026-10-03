@@ -1,7 +1,7 @@
 // faire-figure-cadre.mjs — Figure 3 : cadre conceptuel révisé à la lumière des
 // résultats (exercice). Reprend la structure de la figure 1 du protocole et y
 // marque, en orange pointillé, les révisions que les résultats appellent
-// (tableau VIII) : la cascade de la glycémie de la première CPN (règle, test du
+// (tableau VII) : la cascade de la glycémie de la première CPN (règle, test du
 // jour, rattrapage, contrôle à 24-28 semaines) au niveau organisationnel,
 // la séance collective distinguée de la restitution du résultat dans la
 // pratique informative, l'articulation communautaire, le dispositif de
@@ -131,12 +131,12 @@ function cascadeCadre(col) {
 }
 const gauche = [
   sousCadre(G, "Sens attribué au dépistage", `Mandat reconnu par tous (${n("A2")}) ; ce qui est impossible cesse d'être pensé.`),
-  sousCadre(G, "Un test pour toutes, sauf les jours de manque", `Glycémie faite à toutes à la 1re CPN, en salle de CPN ; sautée les jours de rupture, de panne ou sans prestataire formé (${n("B8")}) ; rattrapée dans ${v.glycRattrapage} centres seulement.`, { revision: "révision" }),
+  sousCadre(G, "Un test pour toutes, sauf les jours de manque", `Glycémie demandée en CPN, faite au laboratoire ; sautée les jours de rupture, de panne ou sans laborantin (${n("B8")}) ; rattrapée dans ${v.glycRattrapage} centres seulement.`, { revision: "révision" }),
   sousCadre(G, "Un test unique, trop précoce", `Non refaite à 24-28 semaines, sauf signes d'appel (${n("B9")}).`, { revision: "révision" }),
   sousCadre(G, "Pratique informative et capacitante", `Modulée à l'inverse des besoins (${n("C4")}) ; séance collective égale pour les présentes, muette sur le résultat individuel (${n("C11")}) ; contre-pratiques : faire reformuler, image commune.`, { revision: "révision" }),
 ];
 const droite = [
-  sousCadre(D, "Individuel et professionnel", `Formation ponctuelle et nominative : parfois un seul prestataire formé au glucomètre ; compétence désapprise (${n("D5")}).`),
+  sousCadre(D, "Individuel et professionnel", `Formation ponctuelle et nominative : glucomètre d'urgence de la CPN maîtrisé par une seule personne ; compétence désapprise (${n("D5")}).`),
   cascadeCadre(D),
   sousCadre(D, "Systémique — le dispositif de contrôle", "Ce qui est compté existe ; le registre comme écran ; référence sans retour, rupture à l'accouchement.", { revision: "révision" }),
   sousCadre(D, "Articulation communautaire", "ASM et leur alerte téléphonique ; forums villageois (umugoroba w'ababyeyi) ; suivi des femmes référées.", { revision: "ajout" }),
@@ -183,7 +183,7 @@ const ly = E.y + E.h + 44;
 parts.push(rect(30, ly - 19, 38, 24, { trait: C.bleu, fond: C.bleuFond, rayon: 5, epaisseur: 2 }),
   texte(78, ly, "Composante du cadre initial (§ 3.2)", { taille: 19, ancre: "start" }),
   rect(470, ly - 19, 38, 24, { trait: C.orange, fond: C.orangeFond, pointille: true, rayon: 5, epaisseur: 2 }),
-  texte(518, ly, "Révision ou ajout issu des résultats (tableau VIII)", { taille: 19, ancre: "start" }),
+  texte(518, ly, "Révision ou ajout issu des résultats (tableau VII)", { taille: 19, ancre: "start" }),
   texte(L - 30, ly + 34, "Version d'entraînement", { taille: 15, italique: true, ancre: "end", couleur: "#888888" }));
 const H = Math.ceil(ly + 50);
 

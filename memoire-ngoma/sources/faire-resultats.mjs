@@ -42,7 +42,7 @@ for (const [etape, geste] of [
   ["Extraits par thème", "Requêtes ▸ ouvrir la requête du thème (T1 à T7), puis Rapports ▸ Rapport Word (.docx) : tous les passages, avec leur participant."],
   ["Extraits citables", "Requêtes ▸ « Extraits citables » : elle exclut l'entretien dont l'auteur a refusé la citation."],
   ["Effectifs", "Analyse ▸ Matrice codes × documents : le nombre de participants par code, à reporter dans le texte."],
-  ["Comparaisons", "Analyse ▸ Comparaison de groupes, variable « qualification » ou « vague » : les tableaux VI et VII."],
+  ["Comparaisons", "Analyse ▸ Comparaison de groupes, variable « qualification » ou « vague » : le tableau VI."],
   ["Triangulation", "Mémos ▸ « Triangulation — ensemble des deux vagues », et les comptes rendus d'observation (code « ÉCART déclaré / constaté »)."],
 ]) enfants.push(new Paragraph({ spacing: { after: 100 }, children: [
   new TextRun({ text: `${etape} — `, bold: true, size: 21 }), new TextRun({ text: geste, size: 21 })] }));

@@ -12,8 +12,9 @@
 //     annexes et table des matières ;
 //   · exceptions d'usage : le contenu des tableaux (interligne simple, 11 pt,
 //     10 pt au-delà de cinq colonnes), la mention de source sous un tableau ou
-//     une figure (11 pt) et les citations longues en retrait (12 pt,
-//     interligne simple) ;
+//     une figure (11 pt), les citations longues en retrait (12 pt,
+//     interligne simple) et les références (14 pt, interligne simple dans une
+//     référence, 6 pt entre deux) ;
 //   · marges : 2,5 cm en haut, en bas et à droite, 3 cm à gauche (reliure) ;
 //     pagination en bas, au centre (chiffres romains pour les pages
 //     liminaires, arabes pour le corps).
@@ -59,9 +60,10 @@ export function stylesAcademiques() {
       // Sous-titres internes aux annexes : gras, sans entrer dans la table des matières.
       { id: "CompactTitre", name: "Titre compact", basedOn: "Compact", next: "Compact", quickFormat: true,
         run: { bold: true }, paragraph: { spacing: { before: 160, after: 80 }, keepNext: true, alignment: AlignmentType.LEFT } },
-      // Liste des références (Vancouver) : 14 pt, interligne 1,5, retrait suspendu.
+      // Liste des références (Vancouver) : 14 pt, interligne simple dans une référence, 3 pt entre deux
+      // références, retrait suspendu (présentation usuelle d'une bibliographie).
       { id: "Bibliographie", name: "Bibliographie", basedOn: "Normal", next: "Bibliographie", quickFormat: true,
-        run: { font: POLICE, size: 28 }, paragraph: { spacing: { line: 360, lineRule: "auto", after: 60 }, indent: { left: 567, hanging: 567 }, alignment: AlignmentType.LEFT } },
+        run: { font: POLICE, size: 28 }, paragraph: { spacing: { line: 240, lineRule: "auto", after: 60 }, indent: { left: 567, hanging: 567 }, alignment: AlignmentType.LEFT } },
       toc(1, 0), toc(2, 240), toc(3, 480),
     ],
   };
