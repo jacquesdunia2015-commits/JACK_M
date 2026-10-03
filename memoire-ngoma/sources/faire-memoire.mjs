@@ -116,7 +116,7 @@ function verifierRefsLitterales(t) {
   }
 }
 const corps = (t, style) => new Paragraph({ style, spacing: { after: style ? 80 : 140 }, alignment: AlignmentType.JUSTIFIED, children: [new TextRun({ text: t, size: 22 })] });
-// Paragraphes compacts (12 pt, interligne simple) : annexes, sigles, listes.
+// Paragraphes « compacts » (style Compact : 14 pt, interligne 1,5, alignés à gauche) : annexes et listes.
 const compact = (t, o = {}) => new Paragraph({ style: "Compact", spacing: { after: o.after ?? 40 }, children: [new TextRun({ text: t, bold: o.gras })] });
 const sousTitreAnnexe = t => new Paragraph({ style: "CompactTitre", children: [new TextRun({ text: t })] });
 const tableauProtocole = lignes => {
@@ -289,14 +289,13 @@ const fin = [
     children: [new TextRun({ text: `${t}. `, bold: true, size: 22 }), ...runs(x)] })),
 ];
 
-// Sigles sur deux colonnes, sans bordure : la liste tient sur une page.
-function tableauSigles() {
-  const moitie = Math.ceil(sigles.length / 2), sans = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
-  const cellule = t => new TableCell({ width: { size: LARGEUR / 2, type: WidthType.DXA }, margins: { top: 20, bottom: 20, left: 60, right: 60 },
-    children: [new Paragraph({ children: [new TextRun({ text: t || "" })] })] });
-  return new Table({ width: { size: LARGEUR, type: WidthType.DXA }, columnWidths: [LARGEUR / 2, LARGEUR / 2],
-    borders: Object.fromEntries(["top", "bottom", "left", "right", "insideHorizontal", "insideVertical"].map(k => [k, sans])),
-    rows: Array.from({ length: moitie }, (_, i) => new TableRow({ children: [cellule(sigles[i]), cellule(sigles[i + moitie])] })) });
+// Sigles : un par ligne, en 14 pt à interligne 1,5 comme le texte (sigle en gras, retrait suspendu).
+function listeSigles() {
+  return sigles.map(t => {
+    const m = t.match(/^(.+?)\s+:\s+(.+)$/);   // le protocole sépare parfois par une espace insécable
+    return new Paragraph({ alignment: AlignmentType.LEFT, spacing: { after: 0 }, indent: { left: 1701, hanging: 1701 },
+      children: m ? [new TextRun({ text: m[1], bold: true }), new TextRun({ text: `\t: ${m[2]}` })] : [new TextRun({ text: t })] });
+  });
 }
 
 /* ---------- Pages liminaires (après le corps, pour disposer des légendes) ---------- */
@@ -309,10 +308,10 @@ const liminaires = [
   ...T.HOMMAGES.flatMap(([a, t]) => [new Paragraph({ spacing: { before: 160, after: 60 }, children: [new TextRun({ text: a, bold: true, size: 22 })] }),
     /\[/.test(t) ? aCompleter(t) : corps(t)]),
   saut(), titrePage("SIGLES ET ABRÉVIATIONS"),
-  tableauSigles(),
+  ...listeSigles(),
   saut(), titrePage("LISTE DES TABLEAUX"),
   ...legendes.tableaux.map(t => compact(t)),
-  titrePage("LISTE DES FIGURES"),
+  saut(), titrePage("LISTE DES FIGURES"),
   ...legendes.figures.map(t => compact(t)),
   saut(), titrePage("SOMMAIRE"),
   new TableOfContents("Sommaire", { hyperlink: true, headingStyleRange: "1-1" }),

@@ -69,7 +69,7 @@ commence le travail réel ; ce dossier-ci reste l'exercice.
 | `Chapitre_6_Discussion.docx` | **Le chapitre 6 (Discussion)** : confrontation à la littérature et au cadre conceptuel ; références ajoutées vérifiées dans PubMed pour les articles |
 | `Rapport_de_memoire.docx` | **Le rapport de mémoire** (10 pages au plus) |
 | `Liste_de_controle_avant_depot.docx` | Ce qui reste à compléter ou à vérifier avant le dépôt |
-| `Memoire_complet.docx` | **Le mémoire complet** selon le plan type de l'ENATSE, 70 pages au plus. **Non versé au dépôt** : produit sur le poste par `faire-memoire.mjs`, qui a besoin du protocole extrait. Mise en forme : Times New Roman 14, interligne 1,5, marges de 2,5 cm (3 cm à gauche), références en Vancouver ; sommaire et table des matières remplis par `finaliser-docx.py` |
+| `Memoire_complet.docx` | **Le mémoire complet** selon le plan type de l'ENATSE : 45 pages de l'introduction à la conclusion, 85 pages en tout avec les pages liminaires, les références et les annexes. **Non versé au dépôt** : produit sur le poste par `faire-memoire.mjs`, qui a besoin du protocole extrait. Mise en forme : Times New Roman 14, interligne 1,5 pour tout le document (pages liminaires, listes, références et annexes comprises ; seuls le contenu des tableaux, les sources et les citations longues sont plus petits), listes des tableaux et des figures chacune sur sa page, marges de 2,5 cm (3 cm à gauche), références en Vancouver ; sommaire et table des matières remplis par `finaliser-docx.py` |
 | `MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx` | **Le projet QualiCode « MÉMOIRE NGOMA — MUKAKI DUNIA Jacques »**, version d'entraînement, les deux vagues réunies |
 
 À ouvrir par **Accueil ▸ Ouvrir (.projx)**. Le projet porte le même nom et le

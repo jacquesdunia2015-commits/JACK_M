@@ -7,9 +7,13 @@
 //   · titres : styles Titre 1 à 3 (Times New Roman 14, gras, noir ; le
 //     niveau 3 en gras italique), qui alimentent le sommaire et la table des
 //     matières automatiques ;
-//   · tableaux : texte à interligne simple, 11 pt (10 pt au-delà de cinq
-//     colonnes), titre au-dessus (« Tableau N. ») et source en dessous ;
-//   · citations longues en retrait et références : 12 pt, interligne simple ;
+//   · la règle vaut pour tout le document : pages liminaires (sigles, listes
+//     des tableaux et des figures, sommaire), titres et légendes, références,
+//     annexes et table des matières ;
+//   · exceptions d'usage : le contenu des tableaux (interligne simple, 11 pt,
+//     10 pt au-delà de cinq colonnes), la mention de source sous un tableau ou
+//     une figure (11 pt) et les citations longues en retrait (12 pt,
+//     interligne simple) ;
 //   · marges : 2,5 cm en haut, en bas et à droite, 3 cm à gauche (reliure) ;
 //     pagination en bas, au centre (chiffres romains pour les pages
 //     liminaires, arabes pour le corps).
@@ -35,9 +39,9 @@ export function stylesAcademiques() {
     paragraph: { spacing: { before: avant, after: 120, line: 360, lineRule: "auto" }, keepNext: true, keepLines: true, alignment: AlignmentType.LEFT,
       outlineLevel: niveau },   // niveau hiérarchique : alimente le sommaire et la table des matières
   });
-  // Entrées du sommaire et de la table des matières : 12 pt, interligne simple.
+  // Entrées du sommaire et de la table des matières : 14 pt, interligne 1,5, comme le texte.
   const toc = (n, retrait) => ({ id: `TOC${n}`, name: `toc ${n}`, basedOn: "Normal", next: "Normal",
-    run: { font: POLICE, size: 24 }, paragraph: { spacing: { line: 240, lineRule: "auto", after: 0 }, indent: { left: retrait }, alignment: AlignmentType.LEFT } });
+    run: { font: POLICE, size: 28 }, paragraph: { spacing: { line: 360, lineRule: "auto", after: 0 }, indent: { left: retrait }, alignment: AlignmentType.LEFT } });
   return {
     default: {
       document: {
@@ -49,15 +53,15 @@ export function stylesAcademiques() {
       titre("Heading1", "Heading 1", 0, false, 360),
       titre("Heading2", "Heading 2", 1),
       titre("Heading3", "Heading 3", 2, true, 180),
-      // Annexes, sigles, listes : outils reproduits et listes, en 11 pt à interligne simple.
+      // Annexes et listes des tableaux et des figures : 14 pt, interligne 1,5, alignés à gauche.
       { id: "Compact", name: "Texte compact", basedOn: "Normal", next: "Compact", quickFormat: true,
-        run: { font: POLICE, size: 22 }, paragraph: { spacing: { line: 240, lineRule: "auto", after: 80 } } },
+        run: { font: POLICE, size: 28 }, paragraph: { spacing: { line: 360, lineRule: "auto", after: 80 }, alignment: AlignmentType.LEFT } },
       // Sous-titres internes aux annexes : gras, sans entrer dans la table des matières.
       { id: "CompactTitre", name: "Titre compact", basedOn: "Compact", next: "Compact", quickFormat: true,
         run: { bold: true }, paragraph: { spacing: { before: 160, after: 80 }, keepNext: true, alignment: AlignmentType.LEFT } },
-      // Liste des références (Vancouver) : 12 pt, interligne simple, retrait suspendu.
+      // Liste des références (Vancouver) : 14 pt, interligne 1,5, retrait suspendu.
       { id: "Bibliographie", name: "Bibliographie", basedOn: "Normal", next: "Bibliographie", quickFormat: true,
-        run: { font: POLICE, size: 24 }, paragraph: { spacing: { line: 240, lineRule: "auto", after: 20 }, indent: { left: 567, hanging: 567 }, alignment: AlignmentType.LEFT } },
+        run: { font: POLICE, size: 28 }, paragraph: { spacing: { line: 360, lineRule: "auto", after: 60 }, indent: { left: 567, hanging: 567 }, alignment: AlignmentType.LEFT } },
       toc(1, 0), toc(2, 240), toc(3, 480),
     ],
   };
@@ -116,11 +120,11 @@ function traiterParagraphe(p, { dansTableau, colonnes }) {
   if (dansTableau) return aGauche(interligneSimple(fixerTaille(p.replace(COULEUR, ""), colonnes > 5 ? 20 : 22), { serre: true }));
   const t = texteDe(p);
   p = p.replace(COULEUR, "");
-  if (/^(Tableau [IVXL\d]+|Figure \d+)\./.test(t)) return fixerTaille(p, 24);
+  if (/^(Tableau [IVXL\d]+|Figure \d+)\./.test(t)) return p.replace(TAILLE, "");   // légende : 14 pt comme le texte
   if (/^Source :/.test(t)) return fixerTaille(p, 22);
   const pPr = (p.match(/<w:pPr>[\s\S]*?<\/w:pPr>/) || [""])[0];
   if (/w:left="567"/.test(pPr) && /w:right="567"/.test(pPr)) return interligneSimple(fixerTaille(p, 24));   // citation longue
-  if (/w:hanging="567"/.test(pPr)) return aGauche(interligneSimple(fixerTaille(p, 24)));                              // référence
+  if (/w:hanging="567"/.test(pPr)) return aGauche(p.replace(TAILLE, ""));                                              // référence : style Bibliographie
   if (/<w:sectPr/.test(p) || /<w:fldChar/.test(p) && !t.trim()) return p;
   return p.replace(TAILLE, "");   // texte courant : la taille vient du style Normal
 }

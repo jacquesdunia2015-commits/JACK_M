@@ -74,7 +74,7 @@ enfants.push(saut(), titre1("MESSAGES CLÉS"), ...MESSAGES.map(puce));
 
 enfants.push(titre1("1. CONTEXTE ET JUSTIFICATION"),
   paragraphe("L'hypertension artérielle et le diabète de la grossesse exposent la mère et l'enfant à des complications évitables, à condition d'être détectés et pris en charge à temps. La consultation prénatale est le contact le plus régulier entre une femme jeune et un professionnel qualifié ; l'Organisation mondiale de la Santé y recommande la mesure systématique de la pression artérielle et un dépistage du diabète orienté par les facteurs de risque {p:11}. Le Rwanda a adopté le paquet d'interventions essentielles de l'OMS contre les maladies non transmissibles {p:14}."),
-  paragraphe("Les données nationales montrent l'écart entre ces recommandations et la pratique. Selon l'enquête STEPS de 2022, 87,0 % des femmes n'avaient jamais eu de mesure de la glycémie, contre 38 % qui n'avaient jamais eu de mesure de la tension {p:16} ; en CPN, la tension a été mesurée chez 93,5 % des femmes suivies dans la province de l'Est selon l'EDS 2025 {c:eds2025}. Le modèle national de CPN compte huit contacts, le premier avant 12 semaines et l'un à 26 semaines {c:rbcAnc} ; le diabète figure parmi les affections recherchées chez toutes les femmes à la première CPN et cochées au registre de maternité {c:schmidt}. Le dépistage du diabète gestationnel n'est pas systématique ; le protocole national de 2012 prévoit une glycémie capillaire à jeun et une épreuve de charge entre 24 et 28 semaines, et la seule estimation de prévalence en centre de santé public, 3,2 %, provient d'une étude de recherche {p:27}."),
+  paragraphe("Les données nationales montrent l'écart entre ces recommandations et la pratique. Selon l'enquête STEPS de 2022, 87,0 % des femmes n'avaient jamais eu de mesure de la glycémie, contre 38 % qui n'avaient jamais eu de mesure de la tension {p:16} ; en CPN, la tension a été mesurée chez 93,5 % des femmes suivies dans la province de l'Est selon l'EDS 2025 {c:eds2025}. Le dépistage du diabète gestationnel n'est pas systématique ; le protocole national de 2012 prévoit une glycémie capillaire à jeun et une épreuve de charge entre 24 et 28 semaines, et la seule estimation de prévalence en centre de santé public, 3,2 %, provient d'une étude de recherche {p:27}."),
   paragraphe("Au regard de la Charte d'Ottawa {p:23}, intégrer ce dépistage à la CPN est une réorientation des services, dont la portée dépend de ceux qui la réalisent : un dépistage n'est capacitant que si son résultat est expliqué et compris. L'étude s'intéresse donc aux infirmiers et sages-femmes de CPN, et à la manière dont ce dépistage se distribue entre les femmes."));
 
 enfants.push(titre1("2. OBJECTIFS"),
@@ -112,26 +112,23 @@ enfants.push(titre1("4. PRINCIPAUX RÉSULTATS"),
   ], [7026, 2000]),
   source("observation non participante des services de CPN et des laboratoires"),
   ...extrait("P20", "Le sucre, normalement c'est pour toutes"),
-  paragraphe("Là où le circuit fonctionne, le test de la première CPN est fait à toutes, mais il reste unique : la glycémie n'est refaite qu'en présence d'un signe d'appel ou d'un facteur de risque, et l'épreuve de charge prévue entre 24 et 28 semaines n'est pratiquée nulle part. Une femme normale au premier trimestre n'est plus suivie sur ce point."),
-  ...extrait("P01", "À la première visite, toutes font le sucre"),
   titre2("4.2. Sept thèmes"),
   paragraphe("L'analyse a dégagé sept thèmes, dont deux répondent au premier objectif et cinq au second (tableau 3)."),
   legende("Tableau 3. Synthèse des thèmes"),
   tableau([["Thème", "Objectif", "Énoncé"], ...THEMES], [3000, 1400, 4626]),
   source("chapitre 5 du mémoire"),
-  titre2("4.3. Deux propos qui résument"),
+  titre2("4.3. Un propos qui résume"),
   ...extrait("P04", "Si vous venez à sept heures trente"),
-  ...extrait("P03", "Les femmes des collines du fond"),
   titre2("4.4. Ce que l'observation confirme ou nuance"),
-  paragraphe("La confrontation des entretiens avec l'observation et les données de routine a produit {v:nbConstats} constats : {v:nbConcordances} concordances et {v:nbEcarts} écarts entre pratiques déclarées et pratiques observées. L'observation a notamment permis de situer le glucomètre, ce que les entretiens seuls n'établissaient pas."));
+  paragraphe("La confrontation des entretiens avec l'observation et les données de routine a produit {v:nbConstats} constats : {v:nbConcordances} concordances et {v:nbEcarts} écarts ; elle seule a permis de situer le glucomètre."));
 
 enfants.push(titre1("5. POINTS DE DISCUSSION"),
-  puce("Deux programmes dans le même centre. La glycémie appartient au programme des maladies non transmissibles, la CPN au programme de santé maternelle. Tant que ce partage n'est pas organisé, la femme enceinte reste en dehors du circuit du glucomètre, ce qui rejoint le caractère non systématique du dépistage rapporté au niveau national {p:27}."),
-  puce("Un test unique, trop précoce. La règle prévoit la glycémie pour toutes à la première CPN, mais le diabète gestationnel apparaît surtout entre 24 et 28 semaines, période pour laquelle le protocole national prévoit une épreuve de charge {p:27} que les centres ne pratiquent pas, alors que le contact de 26 semaines s'y prêterait {c:rbcAnc}. Le dépistage repère ainsi un diabète préexistant plutôt que le diabète de la grossesse."),
+  puce("Deux programmes dans le même centre. La glycémie relève du programme des maladies non transmissibles, la CPN de la santé maternelle : sans organisation de ce partage, la femme enceinte reste hors du circuit du glucomètre, comme le suggère le caractère non systématique du dépistage au niveau national {p:27}."),
+  puce("Un test unique, trop précoce. La glycémie de la première CPN repère un diabète préexistant ; le diabète gestationnel apparaît entre 24 et 28 semaines, période où le protocole national prévoit une épreuve de charge {p:27} que les centres ne pratiquent pas, alors que le contact de 26 semaines s'y prêterait {c:rbcAnc}."),
   puce("L'explication, distribuée à l'inverse des besoins. L'inégalité ne tient pas seulement à l'accès au test, mais au temps d'explication, qui se raréfie là où il serait le plus utile ; c'est la dimension capacitante du dépistage qui se distribue mal {p:23}."),
-  puce("Ce qui est compté existe. Les indicateurs orientent intrants, maintenance et supervision. Un dépistage absent du rapport mensuel n'est ni approvisionné ni contrôlé, et un contrôle de complétude du registre peut produire une égalité apparente. Le financement basé sur la performance rémunère les centres pour la première CPN précoce et les quatre visites {c:schmidt}, et son effet est plus net sur les services les mieux payés et les moins exigeants {c:basinga}."),
-  puce("La séance collective, levier à orienter. Égale pour les présentes, elle ne restitue aucun résultat et manque celles qui arrivent tard ; y inscrire la tension et le sucre, et la doubler d'un relais vers les familles (ASM, umugoroba w'ababyeyi {c:nsanzabera}), en ferait un instrument d'équité {p:66}."),
-  puce("La dotation ne suffit pas. Là où l'équipement est présent, l'inégalité du test diminue, mais celles de la référence vers l'hôpital et de l'explication demeurent : la réponse ne peut être seulement matérielle."));
+  puce("Ce qui est compté existe. Un dépistage absent du rapport mensuel n'est ni approvisionné ni contrôlé, et le contrôle de complétude du registre peut produire une égalité apparente. Le financement basé sur la performance rémunère la première CPN précoce et les quatre visites {c:schmidt} ; son effet est plus net sur les services les mieux payés et les moins exigeants {c:basinga}."),
+  puce("La séance collective, levier à orienter. Égale pour les présentes, elle ne restitue aucun résultat et manque celles qui arrivent tard ; y inscrire la tension et le sucre et la relayer vers les familles (ASM, umugoroba w'ababyeyi {c:nsanzabera}) en ferait un instrument d'équité {p:66}."),
+  puce("La dotation ne suffit pas. L'équipement réduit l'inégalité du test, pas celles de la référence et de l'explication."));
 
 enfants.push(titre1("6. RECOMMANDATIONS"),
   legende("Tableau 4. Recommandations par destinataire"),
@@ -139,10 +136,10 @@ enfants.push(titre1("6. RECOMMANDATIONS"),
   source("chapitre 6 du mémoire"));
 
 enfants.push(titre1("7. LIMITES"),
-  paragraphe("Pratiques déclarées et représentations professionnelles ; point de vue des femmes non recueilli ; propos notés sans enregistrement ; effet possible de la présence de l'observateur ; données de routine de qualité limitée {p:69} ; un seul district, dont la description permet d'apprécier la transférabilité."));
+  paragraphe("Pratiques déclarées et représentations professionnelles ; point de vue des femmes non recueilli ; propos notés sans enregistrement ; effet possible de la présence de l'observateur ; données de routine de qualité limitée ; un seul district, dont la description permet d'apprécier la transférabilité."));
 
 enfants.push(titre1("8. CONCLUSION"),
-  paragraphe("Le dépistage de l'hypertension et du diabète en CPN est accepté par les professionnels comme relevant de leur mandat, mais il n'est réalisé qu'à moitié : la tension est mesurée, la glycémie, prévue pour toutes à la première CPN, n'est effectivement faite que dans {v:glycPossible} centres sur {v:nbCentres} et n'est pas refaite entre 24 et 28 semaines. Garantir les bandelettes du test initial et rendre praticable le dépistage à 24-28 semaines, compter les actes de dépistage et leur suite, et soutenir la pratique informative sont les trois leviers qui ressortent de l'étude."));
+  paragraphe("Le dépistage de l'hypertension et du diabète en CPN est accepté par les professionnels comme relevant de leur mandat, mais réalisé à moitié : la tension est mesurée ; la glycémie, prévue pour toutes à la première CPN, n'est faite que dans {v:glycPossible} centres sur {v:nbCentres} et n'est pas refaite entre 24 et 28 semaines. Trois leviers ressortent : garantir le test initial et rendre praticable celui de 24-28 semaines, compter les actes de dépistage et leur suite, soutenir la pratique informative."));
 
 // Références citées dans le rapport.
 // Les numéros du protocole sont renumérotés dans l'ordre de citation (vancouver.mjs).
