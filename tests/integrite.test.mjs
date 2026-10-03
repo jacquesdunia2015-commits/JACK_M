@@ -168,12 +168,12 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
 
   // UN SEUL projet : il porte le nom et l'identifiant de celui qui est déjà
   // dans l'application, pour le remplacer au lieu de créer un doublon.
-  const chemin = "memoire-ngoma/livrables/Memoire_Ngoma_SIMULATION.projx";
+  const chemin = "memoire-ngoma/livrables/MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx";
   if (verifier("le projet d'exercice est présent", existsSync(join(racine, chemin)))) {
     const projx = JSON.parse(lire(chemin));
     egal("format QualiCode", projx.format, "qualicode-projx");
     egal("même identifiant que le projet déjà présent dans l'application", projx.id, "memoire-ngoma-simulation");
-    egal("même nom que le projet déjà présent dans l'application", projx.name, "Mémoire Ngoma — SIMULATION de formation");
+    egal("nom du projet", projx.name, "MÉMOIRE NGOMA — MUKAKI DUNIA Jacques");
 
     const codes = new Set(projx.codes.map(c => c.id));
     const docs = new Map(projx.documents.map(d => [d.id, d]));
@@ -184,9 +184,11 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
       return !d || s.start < 0 || s.end > d.text.length || s.end <= s.start || s.text !== d.text.slice(s.start, s.end);
     });
     verifier("chaque extrait correspond exactement à son passage", decales.length === 0, String(decales.length));
-    verifier("tous les documents portent l'avertissement de simulation",
-      projx.documents.every(d => d.text.includes("DONNÉES SIMULÉES")));
-    verifier("le mémo de projet avertit que rien ne peut être cité", /ne peut être cité/i.test(projx.memo));
+    // Une mention discrète, mais toujours présente : un entretien fictif ne
+    // doit jamais pouvoir passer pour un entretien réel.
+    verifier("tous les documents portent la mention « version d'entraînement »",
+      projx.documents.every(d => d.text.includes("Version d'entraînement — entretiens et observations fictifs")));
+    verifier("le mémo de projet porte la même mention", projx.memo.includes("Version d'entraînement"));
 
     // Composition visée par le protocole
     const ent = projx.documents.filter(d => d.variables?.type_document === "entretien");
@@ -260,7 +262,7 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
   if (existsSync(kit)) {
     titre("Dossier vierge pour les données réelles");
     const reel = JSON.parse(readFileSync(join(kit, "Memoire_Ngoma_DONNEES_REELLES_vierge.projx"), "utf8"));
-    const exo = JSON.parse(readFileSync(join(racine, "memoire-ngoma", "livrables", "Memoire_Ngoma_SIMULATION.projx"), "utf8"));
+    const exo = JSON.parse(readFileSync(join(racine, "memoire-ngoma", "livrables", "MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx"), "utf8"));
     verifier("le projet réel ne remplace pas le projet d'exercice (identifiant distinct)", reel.id !== exo.id && reel.name !== exo.name);
     verifier("il ne contient aucun document, segment ni requête", !reel.documents.length && !reel.segments.length && !reel.savedQueries.length);
     verifier("aucun code inductif de l'exercice n'y est repris", !reel.codes.some(c => /inductif/i.test(c.name)));
@@ -289,22 +291,24 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
   verifier("le LISEZ-MOI annonce les effectifs de glycémie observés",
     lisezMoi.includes(`la CPN dans ${n("laboratoire")} centres, réservée aux malades chroniques dans ${n("réservée MNT")}, impossible`) &&
     lisezMoi.includes(`bandelettes absentes ou périmées) dans ${n("impossible")}`) && n("absent") === 1);
-  verifier("le rapport de mémoire est produit", existsSync(join(racine, "memoire-ngoma/livrables/7_Rapport_de_memoire_SIMULATION.docx")));
+  verifier("le rapport de mémoire est produit", existsSync(join(racine, "memoire-ngoma/livrables/Rapport_de_memoire.docx")));
   // Le dépôt est public : ni le texte du protocole, ni ses figures, ni le
   // mémoire complet qui le reprend ne doivent y entrer.
   const ignoreSources = readFileSync(join(sources, ".gitignore"), "utf8").split("\n").map(l => l.trim());
   const ignoreLivrables = readFileSync(join(racine, "memoire-ngoma/livrables/.gitignore"), "utf8").split("\n").map(l => l.trim());
   verifier("le texte du protocole et ses figures restent hors du dépôt",
     ignoreSources.includes("protocole.json") && ignoreSources.includes("figures/"));
-  verifier("le mémoire complet reste hors du dépôt", ignoreLivrables.includes("8_Memoire_complet_SIMULATION.docx"));
+  verifier("le mémoire complet reste hors du dépôt", ignoreLivrables.includes("Memoire_complet.docx"));
   const suivis = execFileSync("git", ["ls-files", "memoire-ngoma"], { cwd: racine, encoding: "utf8" }).split("\n");
   verifier("aucun de ces fichiers n'est suivi par git",
-    !suivis.some(f => /\/protocole\.json$|\/figures\/|8_Memoire_complet/.test(f)), suivis.filter(f => /\/protocole\.json$|\/figures\/|8_Memoire/.test(f)).join(", "));
+    !suivis.some(f => /\/protocole\.json$|\/figures\/|Memoire_complet/.test(f)), suivis.filter(f => /\/protocole\.json$|\/figures\/|Memoire_complet/.test(f)).join(", "));
 
   // Les anciens fichiers par vague ne doivent pas revenir : ils ont causé la
   // confusion que le projet unique corrige.
   for (const f of ["Memoire_Ngoma_SIMULATION_vague2.projx", "Memoire_Ngoma_SIMULATION_complet.projx",
-                   "4_Annexes_remplies_SIMULATION_vague2.docx", "5_Transcriptions_verbatim_SIMULATION_vague2.docx"]) {
+                   "4_Annexes_remplies_SIMULATION_vague2.docx", "5_Transcriptions_verbatim_SIMULATION_vague2.docx",
+                   "Memoire_Ngoma_SIMULATION.projx", "1_Annexes_remplies_SIMULATION.docx", "2_Transcriptions_verbatim_SIMULATION.docx",
+                   "7_Rapport_de_memoire_SIMULATION.docx"]) {
     verifier(`l'ancien fichier ${f} n'existe plus`, !existsSync(join(racine, "memoire-ngoma/livrables", f)));
   }
 }
