@@ -78,6 +78,9 @@ const texteDe = p => p.replace(/<[^>]+>/g, "");
 // fait donc avant le premier élément qui doit suivre l'élément inséré.
 const APRES_SPACING = ["ind", "contextualSpacing", "mirrorIndents", "suppressOverlap", "jc", "textDirection",
   "textAlignment", "textboxTightWrap", "outlineLvl", "divId", "cnfStyle", "rPr", "sectPr", "pPrChange"];
+const APRES_KEEPNEXT = ["keepLines", "pageBreakBefore", "framePr", "widowControl", "numPr", "suppressLineNumbers", "pBdr",
+  "shd", "tabs", "suppressAutoHyphens", "kinsoku", "wordWrap", "overflowPunct", "topLinePunct", "autoSpaceDE", "autoSpaceDN",
+  "bidi", "adjustRightInd", "snapToGrid", "spacing", ...APRES_SPACING];
 const APRES_RPR_DE_PARAGRAPHE = ["sectPr", "pPrChange"];
 const APRES_SZ = ["highlight", "u", "effect", "bdr", "shd", "fitText", "vertAlign", "rtl", "cs", "em", "lang",
   "eastAsianLayout", "specVanish", "oMath"];
@@ -153,10 +156,18 @@ export async function appliquerGabarit(tampon, { preserverPremiereSection = fals
   const corps = xml.slice(debut);
   // Découpe en tableaux (non imbriqués) et paragraphes hors tableaux.
   const morceaux = corps.split(/(<w:tbl>[\s\S]*?<\/w:tbl>)/);
-  const traite = morceaux.map(m => {
+  const traite = morceaux.map((m, k) => {
     if (m.startsWith("<w:tbl>")) {
       const colonnes = (m.match(/<w:gridCol /g) || []).length;
-      return m.replace(/<w:p[ >][\s\S]*?<\/w:p>/g, p => traiterParagraphe(p, { dansTableau: true, colonnes }));
+      m = m.replace(/<w:p[ >][\s\S]*?<\/w:p>/g, p => traiterParagraphe(p, { dansTableau: true, colonnes }));
+      // La mention de source ne reste jamais seule en haut d'une page : la dernière
+      // ligne du tableau est liée au paragraphe qui la suit.
+      const suivant = (morceaux[k + 1] || "").match(/^<w:p[ >][\s\S]*?<\/w:p>/);
+      if (suivant && /^Source :/.test(texteDe(suivant[0]))) {
+        const i = m.lastIndexOf("<w:tr>") >= 0 ? m.lastIndexOf("<w:tr>") : m.lastIndexOf("<w:tr ");
+        m = m.slice(0, i) + m.slice(i).replace(/<w:p[ >][\s\S]*?<\/w:p>/g, p => avecPPr(p, c => /<w:keepNext\/>/.test(c) ? c : inserer(c, "<w:keepNext/>", APRES_KEEPNEXT)));
+      }
+      return m;
     }
     return m.replace(/<w:p[ >][\s\S]*?<\/w:p>/g, p => traiterParagraphe(p, { dansTableau: false }));
   }).join("");

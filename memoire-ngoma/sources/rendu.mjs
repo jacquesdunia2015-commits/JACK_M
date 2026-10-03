@@ -27,11 +27,12 @@ export function tableauSections(lignes, largeurs) {
         children: section
           ? [new TableCell({ columnSpan: ligne.length, width: { size: LARGEUR, type: WidthType.DXA },
               shading: { type: ShadingType.CLEAR, fill: "F4F6F8", color: "auto" }, margins: { top: 60, bottom: 60, left: 100, right: 100 },
-              children: [new Paragraph({ children: [new TextRun({ text: ligne[0], italics: true, bold: true, size: 19 })] })] })]
+              // Intertitre lié à la ligne suivante : il ne reste jamais seul en bas de page.
+              children: [new Paragraph({ keepNext: true, children: [new TextRun({ text: ligne[0], italics: true, bold: true, size: 19 })] })] })]
           : ligne.map((c, j) => new TableCell({ width: { size: largeurs[j], type: WidthType.DXA },
               shading: i === 0 ? { type: ShadingType.CLEAR, fill: "E8EDF2", color: "auto" } : undefined,
               margins: { top: 60, bottom: 60, left: 100, right: 100 },
-              children: [new Paragraph({ alignment: j > 0 && i > 0 ? AlignmentType.CENTER : AlignmentType.LEFT,
+              children: [new Paragraph({ keepNext: i === 0, alignment: j > 0 && i > 0 ? AlignmentType.CENTER : AlignmentType.LEFT,
                 children: [new TextRun({ text: c, bold: i === 0, size: 19 })] })] })),
       });
     }),

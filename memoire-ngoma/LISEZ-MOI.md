@@ -66,6 +66,7 @@ commence le travail réel ; ce dossier-ci reste l'exercice.
 | `Note_de_positionnalite_modele.docx` | La note de positionnalité (confirmabilité), modèle modifiable — la même que dans le projet |
 | `Guide_QualiCode_pour_ce_memoire.docx` | Les six phases de l'analyse thématique (§ 4.2.6) traduites en gestes dans l'application |
 | `Chapitre_5_Resultats.docx` | **Le chapitre 5 (Résultats)** : chaque citation et chaque effectif sont vérifiés contre le codage à la production du document |
+| `Chapitre_5_Resultats_pour_validation.docx` | **Le chapitre 5 seul, à soumettre à la directrice de mémoire** : texte, tableaux (IV à VII) et mise en forme identiques au mémoire complet (Times New Roman 14, interligne 1,5), précédés d'une page de garde |
 | `Chapitre_6_Discussion.docx` | **Le chapitre 6 (Discussion)** : confrontation à la littérature et au cadre conceptuel ; références ajoutées vérifiées dans PubMed pour les articles |
 | `Rapport_de_memoire.docx` | **Le rapport de mémoire** (10 pages au plus) |
 | `Liste_de_controle_avant_depot.docx` | Ce qui reste à compléter ou à vérifier avant le dépôt |
@@ -146,6 +147,7 @@ npm install docx                     # nécessaire uniquement pour les documents
 node faire-docx.mjs ../livrables     # → annexes remplies, une par fichier
 node faire-guide.mjs ../livrables    # → guide d'utilisation (lit les projets pour ses chiffres)
 node faire-resultats.mjs ../livrables     # → chapitre 5
+node faire-resultats-validation.mjs ../livrables   # → chapitre 5 seul, pour la directrice
 node faire-discussion.mjs ../livrables    # → chapitre 6
 node faire-rapport.mjs ../livrables       # → rapport de mémoire
 # Mémoire complet : extraire d'abord le protocole (python-docx), sur le poste seulement
