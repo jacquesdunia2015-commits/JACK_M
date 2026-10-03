@@ -23,7 +23,7 @@ export function chapitre6(calc, { refs }) {
   const tableaux = {
     cadre: () => [legende("Tableau VII. Révisions du cadre conceptuel suggérées par les codes inductifs"),
       tableau([["Niveau du cadre", "Révision suggérée", "Résultats qui l'appellent"], ...revisionsCadre], [2300, 2900, 3826]),
-      source("mémo « Piste d'audit 3 — révision du cadre conceptuel » du projet QualiCode")],
+      source("mémo « Piste d'audit 3 — révision du cadre conceptuel » du projet NVivo")],
     recommandations: () => [legende("Tableau IX. Recommandations par destinataire"),
       tableau([["Destinataire", "Recommandations", "Résultats d'appui"], ...recommandations], [2200, 5126, 1700]),
       source("chapitre 5 (thèmes 1 à 7 et transformations proposées par les participants)")],

@@ -78,7 +78,7 @@ function documentAnnexes(cfg) {
     titre2("Couverture des sept dimensions de variation (Tableau II)"),
     tableau(couverture(participants), [2200, 2400, 4426]),
     vide(),
-    p("Le protocole ne clôt pas la collecte sur un nombre : la suffisance informationnelle s'argumente dimension par dimension. Le projet QualiCode contient un mémo qui s'y exerce.", { run: { size: 20, italics: true } }),
+    p("Le protocole ne clôt pas la collecte sur un nombre : la suffisance informationnelle s'argumente dimension par dimension. Le projet d'analyse contient un mémo qui s'y exerce.", { run: { size: 20, italics: true } }),
 
     /* ---------- Annexe 1 ---------- */
     { partie: "a1" },
@@ -299,7 +299,7 @@ function documentPositionnalite(cfg) {
   const enfants = [...pageDeGarde("Note de positionnalité — modèle d'exercice",
     "Modèle rédigé pour s'entraîner. Il suit le protocole (annexe 8 : « journal réflexif et note de positionnalité », au titre de la confirmabilité) et les items 1 à 8 de la grille COREQ.\n\n" +
     "Les éléments biographiques viennent du protocole corrigé (page de garde, § 4.2.5.6). Les passages SURLIGNÉS entre crochets sont des hypothèses : ce que le protocole ne dit pas, à préciser. Remplacez-les par votre situation réelle. Les exemples de la partie 5 viennent des journaux de bord de l'entraînement.\n\n" +
-    "Ce même texte figure dans le projet QualiCode, parmi les mémos de projet.", cfg.echantillon), saut()];
+    "Ce même texte figure dans le projet d'analyse, parmi les mémos de projet.", cfg.echantillon), saut()];
   const segments = texte => texte.split(/(\[[^\]]*\])/).filter(Boolean).map(t => t.startsWith("[")
     ? new TextRun({ text: t, size: 21, highlight: "yellow" }) : new TextRun({ text: t, size: 21 }));
   const blocs = TEXTE_POSITIONNALITE.split(/\n\s*\n/);

@@ -83,7 +83,7 @@ export function chapitre5(calc, { refs = null } = {}) {
 
   function tableauThemes() {
     return [legende("Tableau VI. Synthèse des thèmes"), tableau([["Thème", "Objectif", "Énoncé"], ...THEMES], [3200, 1500, 4326]),
-      source("mémo « Phase 5 — Définition et dénomination des thèmes » du projet QualiCode")];
+      source("mémo « Phase 5 — Définition et dénomination des thèmes » du projet NVivo")];
   }
 
   const tableaux = {

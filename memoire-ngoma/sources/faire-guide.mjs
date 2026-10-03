@@ -210,10 +210,10 @@ const enfants = [
   saut(),
 
   h1("7. Le logiciel dans le protocole"),
-  encadre("§ 4.2.6 du protocole révisé : QualiCode", [
-    "Le protocole révisé du 3 octobre 2026 indique : « Les notes mises au propre et traduites sont importées dans QualiCode, logiciel d'analyse qualitative en accès libre, outil de gestion, de codage et de traçabilité, avec export au format d'échange REFI-QDA ; la méthode d'analyse demeure l'analyse thématique. »",
-    "Le chapitre Méthodes doit décrire ce que vous avez réellement fait : un jury vérifie cette correspondance.",
-    "Faites valider ce changement (NVivo remplacé par QualiCode) par votre directrice de mémoire avant dépôt.",
+  encadre("§ 4.2.6 : le protocole et le mémoire nomment NVivo", [
+    "Décision de l'auteur (3 octobre 2026) : NVivo reste le logiciel nommé dans tous les documents du travail. QualiCode fonctionne comme NVivo, mais n'a pas d'homologation scientifique ; il sert ici à l'entraînement.",
+    "Le protocole indique : « Les notes mises au propre et traduites sont importées dans NVivo, outil de gestion, de codage et de traçabilité ; la méthode d'analyse demeure l'analyse thématique. »",
+    "Le chapitre Méthodes doit décrire ce qui a réellement été fait : conduisez donc l'analyse réelle dans NVivo, ou transférez-y le projet par l'export REFI-QDA (ci-dessous) avant l'analyse et l'archivage.",
   ], "B7950B", "FEF9E7"),
   vide(),
   h2("Passer à NVivo ou MAXQDA si nécessaire"),
