@@ -35,6 +35,18 @@ def remettre_en_ordre(chemin):
             data = zin.read(item.filename)
             if item.filename == "word/document.xml":
                 data = re.sub(r"<w:pPr>(.*?)</w:pPr>", corriger, data.decode("utf-8"), flags=re.S).encode("utf-8")
+            if item.filename == "word/settings.xml":
+                # LibreOffice réenregistre en mode de compatibilité Word 2007 (12), qui
+                # justifie et espace autrement : on revient au mode du fichier généré (15).
+                data = data.decode("utf-8").replace('w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="12"',
+                                                    'w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"').encode("utf-8")
+            if item.filename in ("word/document.xml", "word/styles.xml"):
+                # LibreOffice écrit un contrôle des veuves et orphelines que le document
+                # généré n'avait pas : rouvert (dans Word comme dans LibreOffice), le fichier
+                # gagnerait des pages par rapport au PDF produit. On le désactive
+                # explicitement, et l'on retire le crénage nul qu'il ajoute (texte élargi).
+                t = data.decode("utf-8").replace("<w:widowControl/>", '<w:widowControl w:val="false"/>').replace('<w:kern w:val="0"/>', "")
+                data = t.encode("utf-8")
             zout.writestr(item, data)
     shutil.move(tmp, chemin)
 
