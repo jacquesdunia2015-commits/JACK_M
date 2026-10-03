@@ -276,11 +276,11 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
   // Mémoire complet et rapport : bibliographie du protocole et liste de contrôle.
   const sources = join(racine, "memoire-ngoma/sources");
   const { PROTOCOLE, AJOUTEES } = await import(join(sources, "references.mjs"));
-  verifier("la bibliographie reprend les 71 références du protocole", PROTOCOLE.length === 71);
+  verifier("la bibliographie reprend les 72 références du protocole révisé", PROTOCOLE.length === 72);
   const { A_COMPLETER, A_VERIFIER } = await import(join(sources, "a-verifier.mjs"));
   const nAjoutees = Object.keys(AJOUTEES).length;
   verifier("la liste de contrôle désigne exactement les références ajoutées",
-    A_VERIFIER.some(t => t.includes(`Références 72 à ${71 + nAjoutees},`)));
+    A_VERIFIER.some(t => t.includes(`Références 73 à ${72 + nAjoutees},`)));
   verifier("la liste de contrôle rappelle l'approbation éthique à recopier, jamais à inventer",
     A_COMPLETER.some(t => /éthique/.test(t) && /jamais inventés/.test(t)));
   // Les effectifs de glycémie annoncés par le LISEZ-MOI sont ceux des observations.
