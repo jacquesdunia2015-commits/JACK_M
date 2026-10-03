@@ -2,8 +2,9 @@
 // résultats (exercice). Reprend la structure de la figure 1 du protocole et y
 // marque, en orange pointillé, les révisions que les résultats appellent
 // (tableau VIII) : la cascade d'accès à la glycémie au niveau organisationnel,
-// le dispositif de contrôle au niveau systémique, l'articulation
-// communautaire, et l'équité d'accès décomposée en trois dimensions.
+// la séance collective distinguée de la restitution du résultat dans la
+// pratique informative, l'articulation communautaire, le dispositif de
+// contrôle au niveau systémique ; et l'équité d'accès en trois dimensions.
 //
 // Usage : node faire-figure-cadre.mjs ../livrables
 // Produit figures/cadre_conceptuel_revise.svg et .png (hors dépôt, comme les
@@ -123,7 +124,7 @@ function cascadeCadre(col) {
           texte(bx + lw / 2, by + 60, lib, { taille: 19 }) + (sous ? texte(bx + lw / 2, by + 81, sous, { taille: 16, italique: true }) : "");
         if (i < 3) out += fleche(bx + lw + 3, by + 46, bx + lw + gap - 3, by + 46);
       });
-      out += texte(col.x + col.w / 2, y + decal + 168, `centres où le glucomètre est… ; la glycémie est prévue pour toutes à la 1re CPN`, { taille: 17, italique: true });
+      out += texte(col.x + col.w / 2, y + decal + 168, `nombre de centres où le glucomètre est…`, { taille: 17, italique: true });
       return out;
     },
   };
@@ -132,13 +133,13 @@ const gauche = [
   sousCadre(G, "Sens attribué au dépistage", `Mandat reconnu par tous (${n("A2")}) ; ce qui est impossible cesse d'être pensé.`),
   sousCadre(G, "Un dépistage coupé en deux", "Tension intégrée aux constantes ; glycémie au laboratoire ou à la consultation des maladies chroniques."),
   sousCadre(G, "Un test unique, trop précoce", `Glycémie prévue pour toutes à la 1re CPN, souvent non faite faute de bandelettes ; non refaite à 24-28 semaines, sauf signes d'appel (${n("B9")}).`, { revision: "révision" }),
-  sousCadre(G, "Pratique informative et capacitante", `Modulée à l'inverse des besoins (${n("C4")}) ; contre-pratiques : faire reformuler, image commune.`),
+  sousCadre(G, "Pratique informative et capacitante", `Modulée à l'inverse des besoins (${n("C4")}) ; séance collective égale pour les présentes, muette sur le résultat individuel (${n("C11")}) ; contre-pratiques : faire reformuler, image commune.`, { revision: "révision" }),
 ];
 const droite = [
   sousCadre(D, "Individuel et professionnel", `Formation ponctuelle et nominative ; compétence désapprise (${n("D5")}).`),
   cascadeCadre(D),
   sousCadre(D, "Systémique — le dispositif de contrôle", "Ce qui est compté existe ; le registre comme écran ; référence sans retour, rupture à l'accouchement.", { revision: "révision" }),
-  sousCadre(D, "Articulation communautaire", "Agents de santé communautaire : suivi des femmes référées.", { revision: "ajout" }),
+  sousCadre(D, "Articulation communautaire", "ASM et leur alerte téléphonique ; forums villageois (umugoroba w'ababyeyi) ; suivi des femmes référées.", { revision: "ajout" }),
   sousCadre(D, "Social perçu", "Distance, coût, décision du ménage ; le service comme cause du non-retour."),
   sousCadre(D, "Portée en équité et transformations", `Inégalités jugées inacceptables (${n("H2")}) ; part reconnue : l'explication (${n("H5")}).`),
 ];

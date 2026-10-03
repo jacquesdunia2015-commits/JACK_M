@@ -761,7 +761,7 @@ ecarts.map(x => `${x.cs} — ${x.constat}`).join("\n\n") +
 `${arbre.flatMap(f => f.enfants).filter(e => /inductif/.test(e.nom)).length} codes inductifs sur ${arbre.length + arbre.flatMap(f => f.enfants).length} : ${arbre.flatMap(f => f.enfants).filter(e => /\[inductif\]/.test(e.nom)).length} nés de la vague 1, ${arbre.flatMap(f => f.enfants).filter(e => /vague 2/.test(e.nom)).length} de la vague 2, ${arbre.flatMap(f => f.enfants).filter(e => /révision/.test(e.nom)).length} de la révision
 faite à la lecture des grilles d'observation (glycémie hors de la CPN). Le § 3.2
 prévoit que le cadre est « heuristique et révisable » ; ces codes appellent
-trois révisions possibles, à discuter en supervision :
+quatre révisions possibles, à discuter en supervision :
 
 1. Ajouter au niveau organisationnel la distinction entre un intrant PRÉSENT,
    un intrant UTILISABLE (CS05 : bandelettes périmées, glucomètre en état) et
@@ -769,10 +769,15 @@ trois révisions possibles, à discuter en supervision :
    réservées à la consultation des maladies chroniques : code B8) et un test
    FAIT AU BON MOMENT (glycémie unique à la première CPN, non refaite à
    24-28 semaines : code B9).
-2. Ajouter un niveau ou une articulation « communautaire » entre le service et
-   le social perçu : les relais communautaires (G9) prolongent le dépistage
-   hors du centre, ce que le cadre actuel ne prévoit pas.
-3. Faire apparaître le dispositif de contrôle lui-même (indicateurs,
+2. Distinguer, dans la pratique informative, l'information collective (séance
+   d'éducation : C10) de la restitution individuelle du résultat (C11) : la
+   séance est égale pour les présentes, mais ne restitue aucun résultat et
+   manque les femmes arrivées après elle.
+3. Ajouter un niveau ou une articulation « communautaire » entre le service et
+   le social perçu : les relais communautaires (G9) et l'alerte téléphonique
+   des ASM (G14), avec les forums villageois, prolongent le dépistage hors du
+   centre, ce que le cadre actuel ne prévoit pas.
+4. Faire apparaître le dispositif de contrôle lui-même (indicateurs,
    complétude des registres) comme une condition systémique à part entière,
    puisqu'il oriente l'attention (T4) et peut masquer l'inégalité (T6).
 
