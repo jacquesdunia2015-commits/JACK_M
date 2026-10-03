@@ -174,6 +174,10 @@ function protocole(de, a, { transformer = t => t, sauterTitre = false, annexe = 
 }
 // § 4.2.1 à 4.2.4 : le protocole était écrit au futur ou au présent de projet.
 const auPasse = t => t
+  // Figure 2 (carte du NISR) : le texte situe le district par ce que la carte montre.
+  .replace("Situé dans la Province de l’Est, chef-lieu Kibungo, il comptait",
+    "Situé dans la Province de l’Est, entre les districts de Rwamagana et de Kayonza au nord, de Bugesera à l’ouest et de Kirehe à l’est (figure 2), chef-lieu Kibungo, il comptait")
+  .replace(/^Figure 2\. Carte administrative du district de Ngoma$/, "Figure 2. Carte administrative du district de Ngoma : secteurs et districts limitrophes")
   .replace("Un échantillonnage raisonné à variation maximale est mis en œuvre. L’étude se fera dans un seul type de structure, la diversification porte sur les dimensions suivantes.",
     "Un échantillonnage raisonné à variation maximale a été mis en œuvre. L’étude s’est déroulée dans un seul type de structure ; la diversification a porté sur les dimensions suivantes.")
   .replace("Le recrutement vise chacune des modalités et couvre les seize centres, à raison d’un à deux participants par structure.",
