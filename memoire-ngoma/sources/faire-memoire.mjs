@@ -156,7 +156,7 @@ function protocole(de, a, { transformer = t => t, sauterTitre = false, annexe = 
     else if (b.type === "h2") out.push(annexe ? sousTitreAnnexe(b.texte) : titre2(b.texte));
     else if (b.type === "h3") out.push(annexe ? sousTitreAnnexe(b.texte.replace(/\.$/, "")) : titre3(b.texte.replace(/\.$/, "")));
     else if (b.type === "table") out.push(tableauProtocole(b.lignes), vide());
-    else if (b.type === "image") out.push(image(b.fichier === "carte_ngoma.jpeg" && CARTE_NISR ? CARTE_NISR : b.fichier, 560));
+    else if (b.type === "image") out.push(b.fichier === "carte_ngoma.jpeg" && CARTE_NISR ? image(CARTE_NISR, 400) : image(b.fichier, 560));
     else {
       const t = transformer(b.texte).replace("information capacitances", "information capacitante");   // coquille du protocole
       verifierRefsLitterales(t);

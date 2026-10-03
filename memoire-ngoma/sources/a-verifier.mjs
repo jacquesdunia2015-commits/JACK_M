@@ -17,7 +17,7 @@ export const A_COMPLETER = [
 ];
 
 export const A_VERIFIER = [
-  "Figure 2 : remplacer la carte du protocole par la carte administrative officielle du profil du district de Ngoma (NISR, recensement 2022, référence 20) — déposer son image sous figures/carte_ngoma_nisr.png ; la ligne « Source » et la bibliographie se mettent alors à jour d'elles-mêmes. Vérifier aussi l'année de publication du profil (2023 dans le protocole).",
+  "Figure 2 : carte administrative officielle du profil du district de Ngoma (NISR, recensement 2022, page xi, figure 1.1), citée en source et en bibliographie ; l'image (figures/carte_ngoma_nisr.jpg) reste hors du dépôt, comme les autres figures.",
   "Annexe 1 (guide d'entretien) : la numérotation passe de la section 5 à la section 7 dans le protocole ; corriger ou expliquer.",
   "Protocole : passer de seize à quinze centres (§ 4.2.2.2 et § 4.2.3.2) et préciser que le pré-test a lieu dans le seizième centre, exclu de l'échantillon — déjà fait dans le mémoire, à reporter dans le protocole.",
   "Glycémie à la première CPN pour toutes : appuyée sur Schmidt et al. (2021, texte intégral : le diabète fait partie des affections recherchées chez toutes à la première CPN et cochées au registre de maternité) ; absence de dépistage à 24-28 semaines : appuyée sur le protocole de 2012 cité par Meharry (2019). Confirmer dans les directives nationales de CPN (RBC, 2021) le contenu exact du bilan de la première CPN avant de l'écrire comme un fait dans le mémoire réel.",
