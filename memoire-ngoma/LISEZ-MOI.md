@@ -110,6 +110,10 @@ intégrée partout : annexes remplies et outils vierges, données et analyse
 QualiCode (codes, codage, mémos des six phases, requêtes), résultats,
 discussion, cadre conceptuel, mémoire, rapport et liste à vérifier. Ce qu'aucune
 source publiée ne confirme est signalé comme information de terrain.
+**Aucune réalité non fournie par l'auteur et non trouvée en ligne n'est ajoutée
+à un document de ce travail sans son autorisation préalable** (règle posée après
+le retrait d'une heure de fermeture du laboratoire, « 14 heures », inventée
+pour l'exercice).
 
 **Glycémie de la première CPN et autosurveillance.** Deux informations de
 terrain de l'auteur ont ensuite corrigé le corpus. (1) La CPN demande la
