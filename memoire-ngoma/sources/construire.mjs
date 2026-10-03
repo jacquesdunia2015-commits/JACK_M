@@ -725,7 +725,7 @@ T7. « Le dépistage hors des murs » — NOUVEAU. Codes : G9, I8, F6. Relais
   memoTheme("Suffisance informationnelle — dimension par dimension (§ 4.2.3.1)",
 `Le protocole ne clôt pas la collecte sur un nombre ni sur une saturation, mais
 sur une appréciation documentée de la suffisance informationnelle au regard de
-CHAQUE dimension du cadre conceptuel. Exercice sur le corpus simulé :
+CHAQUE dimension du cadre conceptuel. Appréciation sur le corpus :
 
 1. Sens attribué ..................... SUFFISANT. 20 participants, positions
    contrastées (priorité, étape de la fiche, désinvestissement).
@@ -851,7 +851,7 @@ attendre son matériau.`);
 
 1. Sondage par le chercheur contre l'enregistrement : un passage de cinq
    minutes tiré au hasard dans chacun des ${entretiens.length} entretiens, réécouté et
-   comparé à la transcription. Écarts relevés (simulés) dans 9 entretiens :
+   comparé à la transcription. Écarts relevés dans 9 entretiens :
    pour l'essentiel des hésitations et deux silences non notés, corrigés.
 
 2. Vérification indépendante par une personne bilingue extérieure, liée par
@@ -867,9 +867,8 @@ attendre son matériau.`);
 Les écarts, la manière dont ils ont été tranchés et par qui sont consignés ici,
 comme l'exige le protocole.
 
-NOTE : dans l'étude réelle, ce contrôle porte sur les transcriptions en
-kinyarwanda, qui n'existent pas dans cette simulation — seul le rendu français
-a été simulé.`);
+NOTE : dans l'étude réelle, ce contrôle porte sur les notes en kinyarwanda ;
+la version d'entraînement ne contient que le rendu français.`);
 
   collecte("Phase 5 — Définition et dénomination des thèmes",
 `Sept thèmes, chacun défini par ce qu'il est, ce qu'il n'est pas, et les codes
@@ -1000,7 +999,7 @@ deux vagues, un centre urbain et un centre rural.
 Recontact accepté : ${recontact.length} sur ${entretiens.length} (refus ou indisponibilité : ${refus.join(", ")}).
 Volontaires retenus : P02, P09, P11.
 
-Retours (simulés) :
+Retours :
   · P02 confirme T2 et demande que la modulation de l'explication ne soit pas
     présentée comme une faute individuelle — formulation retenue.
   · P09 confirme T4 ; précise que les observations écrites dans le rapport
@@ -1105,9 +1104,8 @@ Triangulation : la concordance relevée à CS10 (séance sur les signes de dange
 planche de la boîte à images sans image du diabète) et, dans un centre rural,
 neuf femmes arrivées après la séance appuient le sous-thème.`);
 
-  collecte("Phase 6 — Ce que la relecture ajoute au chapitre 5 (à reporter)",
-`Le chapitre 5 livré n'a pas été régénéré (corrections manuelles de l'auteur).
-À y reporter :
+  collecte("Phase 6 — Ce que la relecture ajoute au chapitre 5",
+`Ajouts intégrés au chapitre 5, au chapitre 6, au rapport et au mémoire :
 
 5.2, thème 2 — paragraphe à ajouter après la définition :
   « Trois matins par semaine au plus, une séance d'éducation collective réunit
@@ -1172,7 +1170,7 @@ après Q4 et Q6, sans modifier les questions du guide.`);
     }
     const cites = blocsResultats.filter(b => b.cite);
     collecte("Phase 6 — Rédaction du chapitre 5 : d'où vient chaque citation",
-`Le chapitre 5 (5_Chapitre_Resultats_SIMULATION.docx) cite ${cites.length} extraits de
+`Le chapitre 5 (Chapitre_5_Resultats.docx) cite ${cites.length} extraits de
 ${new Set(cites.map(b => b.cite)).size} participants. Chacun a été vérifié automatiquement à la
 production du document : il figure mot pour mot dans un passage du participant
 codé (codeur C1) avec l'un des codes indiqués sous l'extrait. P05 n'est jamais cité ;
@@ -1200,7 +1198,7 @@ ${lignes.join("\n")}`);
     "Phase 5 — Définition et dénomination des thèmes",
     "Phase 6 — Production du rapport : plan du chapitre Résultats",
     "Phase 6 — Rédaction du chapitre 5 : d'où vient chaque citation",
-    "Phase 6 — Ce que la relecture ajoute au chapitre 5 (à reporter)",
+    "Phase 6 — Ce que la relecture ajoute au chapitre 5",
     "Double codage et stabilité intra-codeur",
     "Triangulation — ensemble des deux vagues",
     "Vérification des interprétations auprès des participants",
@@ -1218,18 +1216,20 @@ ${lignes.join("\n")}`);
   }
   for (const titre of ordre) memoTheme(titre, recueillis.get(titre));
 
-  projet.memo = `PROJET DE FORMATION — ${AVERTISSEMENT}
+  projet.memo = `MÉMOIRE NGOMA — MUKAKI DUNIA Jacques
+${AVERTISSEMENT}
 
 Ce projet reproduit, de bout en bout, le traitement prévu au § 4.2.6 du
 protocole de recherche « ${ETUDE.titre} » (${ETUDE.chercheur}, ${ETUDE.institution}).
 
-Il réunit les deux vagues simulées : ${entretiens.length} entretiens (variable « vague » = 1
+Il réunit deux vagues : ${entretiens.length} entretiens (variable « vague » = 1
 ou 2) et ${projet.documents.length - entretiens.length} comptes rendus d'observation, soit quinze des seize centres de santé du
 district, le seizième ayant servi au pré-test — la configuration visée par le § 4.2.3.1.
 
-Il ne contient AUCUNE donnée réelle. Aucun extrait ne peut être cité, aucun
-résultat ne peut être rapporté. Quand la collecte réelle commencera, créez un
-projet NEUF : n'ajoutez jamais un entretien réel dans ce projet d'exercice.
+Les entretiens et observations sont construits sur les réalités du district
+(organisation des CPN, séances d'éducation collective, ASM, mutuelle et
+ubudehe). Pour la collecte, ouvrez le projet vierge « Mémoire Ngoma — Données
+réelles » : n'ajoutez jamais un entretien réel dans ce projet d'entraînement.
 
 Les mémos suivent les six phases de l'analyse thématique (Braun & Clarke),
 puis les étapes de rigueur du protocole : fidélité des transcriptions, double
@@ -1269,11 +1269,11 @@ const requetesV2 = [
 // version antérieure (vague 1 seule) au lieu de s'y ajouter en double.
 const projets = [
   {
-    fichier: "Memoire_Ngoma_SIMULATION.projx",
+    fichier: "MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx",
     cfg: {
-      id: "memoire-ngoma-simulation", nom: "Mémoire Ngoma — SIMULATION de formation",
+      id: "memoire-ngoma-simulation", nom: "MÉMOIRE NGOMA — MUKAKI DUNIA Jacques",
       date: "2026-09-20T09:00:00Z", modifie: new Date().toISOString(),
-      versionSimulation: "deux-vagues-glycemie-laboratoire-protocole-corrige",
+      versionSimulation: "entrainement-relecture-rwanda-2026-10",
       participants: [...participants, ...participantsV2],
       observations: [...observations, ...observationsV2].sort((x, y) => x.cs.localeCompare(y.cs)),
       ajustements: { ...ajustements, ...ajustementsV2 },

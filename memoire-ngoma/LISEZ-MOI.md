@@ -57,15 +57,20 @@ commence le travail réel ; ce dossier-ci reste l'exercice.
 
 | Fichier | Contenu |
 |---|---|
-| `1_Annexes_remplies_SIMULATION.docx` | **Tous les outils de collecte remplis** : index des 20 entretiens (annexe 1), 15 grilles d'observation (annexe 2), 20 fiches sociodémographiques (annexe 3), registre des consentements (annexe 4), données de routine du district (annexe 9, valeurs simulées calées sur des repères réels et sourcés — recensement 2022, EICV7, EDS 2025, directives du RBC — reproduits en fin d'annexe et réunis dans `sources/donnees-rwanda.mjs`), et la couverture du Tableau II |
-| `2_Transcriptions_verbatim_SIMULATION.docx` | Les 20 transcriptions, question par question selon l'annexe 1, avec relances et journal de bord |
-| `3_Guide_QualiCode_pour_ce_memoire.docx` | Les six phases de l'analyse thématique (§ 4.2.6) traduites en gestes dans l'application |
-| `4_Note_de_positionnalite_MODELE.docx` | La note de positionnalité (confirmabilité, annexe 8), en modèle d'exercice modifiable : avant le codage, puis à la fin de l'analyse — la même que dans le projet |
-| `5_Chapitre_Resultats_SIMULATION.docx` | **Le chapitre 5 (Résultats)**, version resserrée du mémoire : participants et centres, objectifs spécifiques 1 et 2, sept thèmes, équité et transformations, triangulation. Chaque citation et chaque effectif sont vérifiés contre le codage à la production du document |
-| `6_Chapitre_Discussion_SIMULATION.docx` | **Le chapitre 6 (Discussion)**, version resserrée : confrontation des résultats à la littérature et au cadre conceptuel, révisions du cadre, forces, limites et perspectives. Les références ajoutées pendant la rédaction (72 à 86) ont été vérifiées dans PubMed pour les articles ; les rapports et directives restent à vérifier sur pièce |
-| `7_Rapport_de_memoire_SIMULATION.docx` | **Le rapport de mémoire** : une synthèse d'une dizaine de pages (messages clés, contexte, objectifs, méthodes, résultats avec l'accès à la glycémie centre par centre, thèmes, discussion, recommandations, limites), suivie de la liste de ce qui reste à compléter ou à vérifier |
-| `8_Memoire_complet_SIMULATION.docx` | **Le mémoire complet** selon le plan type de l'ENATSE (pages liminaires, executive summary, introduction, chapitres 1 à 6, conclusion et suggestions, 86 références en Vancouver, annexes, table des matières, résumé et abstract). **Non versé au dépôt** : produit sur le poste par `faire-memoire.mjs`, qui a besoin du protocole extrait. **69 pages**, de la page de garde à l'abstract, annexes comprises (limite : 70), mesurées avec l'interligne 1,5 réel. Le chapitre 6 propose un **cadre conceptuel révisé** (figure 3), généré à partir des résultats. Le sommaire et la table des matières sont **déjà remplis** : le fichier passe en dernière étape par LibreOffice (`finaliser-docx.py`), qui le réenregistre au format Word standard. Mise en forme : Times New Roman 14, interligne 1,5, texte justifié, marges de 2,5 cm (3 cm à gauche) ; annexes, listes et références en 12 pt à interligne simple (style « Texte compact ») ; références numérotées selon Vancouver dans l'ordre de première citation ; styles Word modifiables. Pour tenir la limite, 28 paragraphes des chapitres 1 à 4 du protocole ne sont pas repris et le tableau de cohérence (annexe 8 du protocole) n'est pas reproduit (liste dans `faire-memoire.mjs`). Dans Word, mettre à jour le sommaire et la table des matières (Ctrl+A puis F9) |
-| `Memoire_Ngoma_SIMULATION.projx` | **Le projet QualiCode « Mémoire Ngoma — SIMULATION de formation »**, les deux vagues réunies |
+| `Annexe_1_Entretiens_remplis.docx` | **Annexe 1** — index des 20 entretiens, puis, pour chacun, la fiche, le journal de bord et les réponses question par question |
+| `Annexe_2_Grilles_observation_remplies.docx` | **Annexe 2** — les 15 grilles d'observation, avec la rubrique ajoutée « Séance d'éducation collective » |
+| `Annexe_3_Fiches_sociodemographiques_remplies.docx` | **Annexe 3** — les 20 fiches sociodémographiques et professionnelles |
+| `Annexe_4_Registre_des_consentements.docx` | **Annexe 4** — le registre de suivi des consentements (aucune signature reproduite) |
+| `Annexe_9_Donnees_de_routine_du_district.docx` | **Annexe 9** — données de routine des 15 centres (valeurs d'entraînement calées sur des repères réels) et tableau des repères réels sourcés (recensement 2022, EICV7, EDS 2025, RBC, PubMed), réunis dans `sources/donnees-rwanda.mjs` |
+| `Suivi_de_l_echantillon_Tableau_II.docx` | La couverture des sept dimensions de variation, calculée à partir des fiches |
+| `Note_de_positionnalite_modele.docx` | La note de positionnalité (confirmabilité), modèle modifiable — la même que dans le projet |
+| `Guide_QualiCode_pour_ce_memoire.docx` | Les six phases de l'analyse thématique (§ 4.2.6) traduites en gestes dans l'application |
+| `Chapitre_5_Resultats.docx` | **Le chapitre 5 (Résultats)** : chaque citation et chaque effectif sont vérifiés contre le codage à la production du document |
+| `Chapitre_6_Discussion.docx` | **Le chapitre 6 (Discussion)** : confrontation à la littérature et au cadre conceptuel ; références ajoutées vérifiées dans PubMed pour les articles |
+| `Rapport_de_memoire.docx` | **Le rapport de mémoire** (10 pages au plus) |
+| `Liste_de_controle_avant_depot.docx` | Ce qui reste à compléter ou à vérifier avant le dépôt |
+| `Memoire_complet.docx` | **Le mémoire complet** selon le plan type de l'ENATSE, 70 pages au plus. **Non versé au dépôt** : produit sur le poste par `faire-memoire.mjs`, qui a besoin du protocole extrait. Mise en forme : Times New Roman 14, interligne 1,5, marges de 2,5 cm (3 cm à gauche), références en Vancouver ; sommaire et table des matières remplis par `finaliser-docx.py` |
+| `MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx` | **Le projet QualiCode « MÉMOIRE NGOMA — MUKAKI DUNIA Jacques »**, version d'entraînement, les deux vagues réunies |
 
 À ouvrir par **Accueil ▸ Ouvrir (.projx)**. Le projet porte le même nom et le
 même identifiant que la version antérieure (vague 1 seule) : il la **remplace**
@@ -95,9 +100,8 @@ dépistage des MNT, umugoroba w'ababyeyi. Vingt passages d'entretien, une
 rubrique « Séance d'éducation collective » dans les quinze grilles
 d'observation (et dans les outils vierges), sept codes inductifs (sur les 41), un
 sous-thème de T2 et six mémos (phases 1 à 4, phase 6, piste d'audit 4) en rendent compte. Les sources
-réelles sont dans l'annexe 9 (« Repères réels »). Le chapitre 5, le mémoire et
-le rapport n'ont pas été régénérés : le mémo « Phase 6 — Ce que la relecture
-ajoute au chapitre 5 » dit quoi y reporter.
+réelles sont dans l'annexe 9 (« Repères réels »). Les chapitres 5 et 6, le
+rapport et le mémoire intègrent ces ajouts.
 
 La variable « vague » distingue les deux vagues. Les variables
 « citation_autorisee » et « recontact_accepte » reprennent le registre des
@@ -139,7 +143,7 @@ diverger.
 cd memoire-ngoma/sources
 node construire.mjs ../livrables     # → le projet .projx
 npm install docx                     # nécessaire uniquement pour les documents Word
-node faire-docx.mjs ../livrables     # → annexes remplies + transcriptions
+node faire-docx.mjs ../livrables     # → annexes remplies, une par fichier
 node faire-guide.mjs ../livrables    # → guide d'utilisation (lit les projets pour ses chiffres)
 node faire-resultats.mjs ../livrables     # → chapitre 5
 node faire-discussion.mjs ../livrables    # → chapitre 6
@@ -148,8 +152,8 @@ node faire-rapport.mjs ../livrables       # → rapport de mémoire
 python3 extraire-protocole.py chemin/Protocole_corrige.docx
 node faire-figure-cadre.mjs ../livrables  # → figure 3, cadre conceptuel révisé (Playwright)
 node faire-memoire.mjs ../livrables       # → mémoire complet (non versé)
-python3 finaliser-docx.py ../livrables/8_Memoire_complet_SIMULATION.docx   # index remplis, format Word standard
-python3 finaliser-docx.py ../livrables/7_Rapport_de_memoire_SIMULATION.docx
+python3 finaliser-docx.py ../livrables/Memoire_complet.docx   # index remplis, format Word standard
+python3 finaliser-docx.py ../livrables/Rapport_de_memoire.docx
 ```
 
 **Le glucomètre au laboratoire.** Dans les centres de santé rwandais, le

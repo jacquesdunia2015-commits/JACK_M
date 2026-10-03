@@ -57,18 +57,17 @@ const extrait = (code, debut) => {
 /* ---------- Messages clés ---------- */
 const MESSAGES = [
   "Le dépistage est coupé en deux. La tension est mesurée à chaque visite ; la glycémie, prévue pour toutes à la première CPN, se fait au laboratoire ou à la consultation des maladies chroniques. Aucun des {v:nbCentres} centres n'avait de glucomètre en salle de CPN ; le test de la première CPN n'était effectivement réalisé que dans {v:glycPossible} d'entre eux, et aucun ne le refaisait de façon systématique entre 24 et 28 semaines, quand apparaît le diabète gestationnel.",
-  "L'explication — la part du dépistage qui permet à la femme d'agir — se raccourcit pour celles qui arrivent tard, posent peu de questions ou n'ont pas d'autre source d'information : elle est distribuée à l'inverse des besoins.",
+  "L'explication — la part du dépistage qui permet à la femme d'agir — se raccourcit pour celles qui arrivent tard, posent peu de questions ou n'ont pas d'autre source d'information : elle est distribuée à l'inverse des besoins. La séance d'éducation collective, tenue deux à trois matins par semaine, donne à toutes les présentes la même information, mais parle peu de la tension, presque jamais du sucre, et manque les femmes arrivées après elle.",
   "Le dépistage ne figure dans aucun indicateur de la CPN : ses intrants ne sont pas suivis, ses appareils pas réparés, ses actes pas supervisés. Le contrôle porte sur la complétude du registre, qui peut masquer l'inégalité.",
-  "La référence dépend d'un véhicule et revient rarement ; le suivi s'interrompt à l'accouchement.",
+  "La référence dépend d'un véhicule et revient rarement ; le suivi s'interrompt à l'accouchement. L'attente du conjoint pour la première CPN retarde la glycémie ; l'alerte téléphonique des ASM organise l'urgence, pas le contrôle d'une tension élevée.",
   "Les participants jugent ces différences inacceptables, reconnaissent une part qui leur revient et proposent des changements concrets : un circuit de la CPN vers le laboratoire, une ligne dans le rapport mensuel, un support visuel commun.",
 ];
 
 /* ---------- Corps du rapport ---------- */
 const enfants = [];
-enfants.push(...pageDeGarde("Rapport de mémoire (rédaction d'exercice)",
+enfants.push(...pageDeGarde("Rapport de mémoire",
   "Synthèse du mémoire à l'intention des lecteurs qui ne liront pas le document entier : direction de mémoire, direction de la santé du district, responsables des centres participants.\n\n" +
-  "Les chiffres sont calculés à partir du projet d'analyse ; les thèmes, les citations et les recommandations sont ceux des chapitres 5 et 6. Les références sont numérotées dans l'ordre de leur première citation (Vancouver).\n\n" +
-  "Ce texte est un MODÈLE de forme, rédigé sur des données simulées. Le rapport réel portera sur les résultats réels et ne reprendra rien de celui-ci.",
+  "Les chiffres sont calculés à partir du projet d'analyse ; les thèmes, les citations et les recommandations sont ceux des chapitres 5 et 6. Les références sont numérotées dans l'ordre de leur première citation (Vancouver).",
   `${v.nbInf} infirmiers ou infirmières et ${v.nbSf} sages-femmes, ${v.nbCentres} centres de santé, en deux vagues`));
 
 enfants.push(saut(), titre1("MESSAGES CLÉS"), ...MESSAGES.map(puce));
@@ -93,7 +92,7 @@ enfants.push(titre1("3. MÉTHODES"),
     ["Collecte", calc.remplir("Entretiens semi-structurés ({v:dureeMin} à {v:dureeMax} minutes) ; observation non participante d'une demi-journée par centre, service de CPN et laboratoire ; données de routine du district")],
     ["Analyse", "Analyse thématique en six phases, codage hybride (déductif à partir du cadre conceptuel, inductif)"],
     ["Rigueur", calc.remplir("Double codage indépendant (κ = {v:kappaInter}) et recodage intra-codeur (κ = {v:kappaIntra}) ; triangulation des sources ; retour des interprétations à des participants volontaires ; grille COREQ")],
-    ["Éthique", "Consentement écrit ; accords distincts pour l'enregistrement et la citation ; codes de participant et de centre jamais associés ; approbation éthique et autorisation du district [références à compléter]"],
+    ["Éthique", "Consentement écrit ; accord distinct pour la citation ; entretiens notés, sans enregistrement ; codes de participant et de centre jamais associés ; approbation éthique et autorisation du district [références à compléter]"],
   ], [2200, 6826]),
   source("chapitre 4 du mémoire"));
 
@@ -120,10 +119,9 @@ enfants.push(titre1("4. PRINCIPAUX RÉSULTATS"),
   legende("Tableau 3. Synthèse des thèmes"),
   tableau([["Thème", "Objectif", "Énoncé"], ...THEMES], [3000, 1400, 4626]),
   source("chapitre 5 du mémoire"),
-  titre2("4.3. Trois propos qui résument"),
+  titre2("4.3. Deux propos qui résument"),
   ...extrait("P04", "Si vous venez à sept heures trente"),
-  ...extrait("P07", "Le fer, on l'a toujours"),
-  ...extrait("P07", "Aujourd'hui je réfère dans le vide"),
+  ...extrait("P03", "Les femmes des collines du fond"),
   titre2("4.4. Ce que l'observation confirme ou nuance"),
   paragraphe("La confrontation des entretiens avec l'observation et les données de routine a produit {v:nbConstats} constats : {v:nbConcordances} concordances et {v:nbEcarts} écarts entre pratiques déclarées et pratiques observées. L'observation a notamment permis de situer le glucomètre, ce que les entretiens seuls n'établissaient pas."));
 
@@ -132,6 +130,7 @@ enfants.push(titre1("5. POINTS DE DISCUSSION"),
   puce("Un test unique, trop précoce. La règle prévoit la glycémie pour toutes à la première CPN, mais le diabète gestationnel apparaît surtout entre 24 et 28 semaines, période pour laquelle le protocole national prévoit une épreuve de charge {p:27} que les centres ne pratiquent pas, alors que le contact de 26 semaines s'y prêterait {c:rbcAnc}. Le dépistage repère ainsi un diabète préexistant plutôt que le diabète de la grossesse."),
   puce("L'explication, distribuée à l'inverse des besoins. L'inégalité ne tient pas seulement à l'accès au test, mais au temps d'explication, qui se raréfie là où il serait le plus utile ; c'est la dimension capacitante du dépistage qui se distribue mal {p:23}."),
   puce("Ce qui est compté existe. Les indicateurs orientent intrants, maintenance et supervision. Un dépistage absent du rapport mensuel n'est ni approvisionné ni contrôlé, et un contrôle de complétude du registre peut produire une égalité apparente. Le financement basé sur la performance rémunère les centres pour la première CPN précoce et les quatre visites {c:schmidt}, et son effet est plus net sur les services les mieux payés et les moins exigeants {c:basinga}."),
+  puce("La séance collective, levier à orienter. Égale pour les présentes, elle ne restitue aucun résultat et manque celles qui arrivent tard ; y inscrire la tension et le sucre, et la doubler d'un relais vers les familles (ASM, umugoroba w'ababyeyi {c:nsanzabera}), en ferait un instrument d'équité {p:66}."),
   puce("La dotation ne suffit pas. Là où l'équipement est présent, l'inégalité du test diminue, mais celles de la référence vers l'hôpital et de l'explication demeurent : la réponse ne peut être seulement matérielle."));
 
 enfants.push(titre1("6. RECOMMANDATIONS"),
@@ -140,7 +139,7 @@ enfants.push(titre1("6. RECOMMANDATIONS"),
   source("chapitre 6 du mémoire"));
 
 enfants.push(titre1("7. LIMITES"),
-  paragraphe("Les résultats portent sur des perceptions et des pratiques déclarées ; le point de vue des femmes n'a pas été recueilli. L'observation, d'une demi-journée par centre, est exposée à un effet de la présence de l'observateur. Les données de routine, de qualité limitée {p:69}, ne servent qu'à décrire le contexte. L'étude porte sur un seul district : ses résultats ne se généralisent pas, mais la description du contexte permet d'apprécier leur transférabilité."));
+  paragraphe("Pratiques déclarées et représentations professionnelles ; point de vue des femmes non recueilli ; propos notés sans enregistrement ; effet possible de la présence de l'observateur ; données de routine de qualité limitée {p:69} ; un seul district, dont la description permet d'apprécier la transférabilité."));
 
 enfants.push(titre1("8. CONCLUSION"),
   paragraphe("Le dépistage de l'hypertension et du diabète en CPN est accepté par les professionnels comme relevant de leur mandat, mais il n'est réalisé qu'à moitié : la tension est mesurée, la glycémie, prévue pour toutes à la première CPN, n'est effectivement faite que dans {v:glycPossible} centres sur {v:nbCentres} et n'est pas refaite entre 24 et 28 semaines. Garantir les bandelettes du test initial et rendre praticable le dépistage à 24-28 semaines, compter les actes de dépistage et leur suite, et soutenir la pratique informative sont les trois leviers qui ressortent de l'étude."));
@@ -151,14 +150,10 @@ enfants.push(titre1("RÉFÉRENCES"),
   ...[...citees].sort((a, b) => a - b).map(n => new Paragraph({ style: "Bibliographie",
     children: [new TextRun({ text: `${n}.\t${n <= PROTOCOLE.length ? PROTOCOLE[n - 1] : ajoutees.get(n)}` })] })));
 
-// Page d'exercice.
-enfants.push(saut(), encadreRouge("PAGE D'EXERCICE — À RETIRER", AVERTISSEMENT), vide(),
-  titre2("Ce qui reste à compléter"), ...A_COMPLETER.map(t => new Paragraph({ bullet: { level: 0 }, spacing: { after: 80 }, children: [new TextRun({ text: t, size: 21 })] })),
-  titre2("Ce qui reste à vérifier"), ...A_VERIFIER.map(t => new Paragraph({ bullet: { level: 0 }, spacing: { after: 80 }, children: [new TextRun({ text: t, size: 21 })] })));
 
 /* ---------- Assemblage et contrôles ---------- */
 const pied = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
-  new TextRun({ text: "Rapport de mémoire Ngoma — exercice de formation, données simulées · ", size: 16, color: "888888" }),
+  new TextRun({ text: "Rapport de mémoire — MUKAKI DUNIA Jacques · version d'entraînement · ", size: 16, color: "888888" }),
   new TextRun({ children: [PageNumber.CURRENT], size: 18 }),
 ] })] });
 const zipRapport = await JSZip.loadAsync(await appliquerGabarit(await Packer.toBuffer(new Document({ styles: stylesAcademiques(),
@@ -172,7 +167,18 @@ if (centres) throw new Error(`le rapport désigne des centres : ${[...new Set(ce
 const libres = texte.match(/\{[A-Za-z]+:[^}]*\}|\{N\}/g);
 if (libres) throw new Error(`champs non remplacés : ${[...new Set(libres)].join(", ")}`);
 
-const fichier = `${dossier}/7_Rapport_de_memoire_SIMULATION.docx`;
+const fichier = `${dossier}/Rapport_de_memoire.docx`;
 writeFileSync(fichier, tampon);
 console.log("écrit :", fichier);
+
+// Liste de contrôle avant dépôt : document séparé, hors du rapport.
+const puceSimple = t => new Paragraph({ bullet: { level: 0 }, spacing: { after: 80 }, children: [new TextRun({ text: t, size: 22 })] });
+const controle = new Document({ styles: stylesAcademiques(), sections: [{ properties: { page: pageAcademique }, children: [
+  titre1("LISTE DE CONTRÔLE AVANT DÉPÔT"),
+  paragraphe(AVERTISSEMENT),
+  titre2("Ce qui reste à compléter"), ...A_COMPLETER.map(puceSimple),
+  titre2("Ce qui reste à vérifier"), ...A_VERIFIER.map(puceSimple),
+] }] });
+writeFileSync(`${dossier}/Liste_de_controle_avant_depot.docx`, await Packer.toBuffer(controle));
+console.log("écrit :", `${dossier}/Liste_de_controle_avant_depot.docx`);
 console.log(`  ${citees.size} références citées (${[...citees].sort((a, b) => a - b).join(", ")}) · ${Math.round(texte.length / 1000)} k caractères`);

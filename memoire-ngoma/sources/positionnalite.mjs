@@ -15,7 +15,7 @@
 export const TITRE_POSITIONNALITE =
   "Note de positionnalité — MODÈLE D'EXERCICE (à réécrire avec vos éléments réels)";
 
-export const TEXTE_POSITIONNALITE = `MODÈLE D'EXERCICE — DONNÉES SIMULÉES. Cette note montre la forme attendue
+export const TEXTE_POSITIONNALITE = `MODÈLE D'EXERCICE. Cette note montre la forme attendue
 d'une note de positionnalité ; elle ne décrit pas une collecte réelle.
 Les éléments biographiques viennent du protocole (page de garde, § 4.2.5.6).
 Les passages [entre crochets] restent des HYPOTHÈSES D'EXERCICE : remplacez-les
@@ -52,7 +52,7 @@ je suis plus âgé que la plupart d'entre eux ; et mon métier m'a appris à
 regarder un laboratoire avant de regarder une salle de consultation.
 
 Formation à la recherche qualitative : [les enseignements de méthodologie du
-master ; cette simulation est mon premier exercice complet de codage]. Je
+master ; cet entraînement est mon premier exercice complet de codage]. Je
 n'avais encore jamais conduit d'entretien de recherche.
 
 2. MA RELATION AU TERRAIN ET AUX PARTICIPANTS (COREQ, items 6 à 8)
@@ -202,6 +202,6 @@ POUR LA NOTE RÉELLE
 · Rédigez les parties 1 à 4 AVANT de coder le premier entretien réel ;
   datez-les, et ne les corrigez plus ensuite : complétez-les.
 · Rédigez la partie 5 à partir de VOTRE journal réel. Les exemples
-  ci-dessus viennent des journaux simulés et ne doivent pas être repris.
+  ci-dessus viennent des journaux de l'entraînement et ne doivent pas être repris.
 · Dans le mémoire, un paragraphe de méthode suffit (« Position du
   chercheur ») ; la note complète reste dans la piste d'audit.`;

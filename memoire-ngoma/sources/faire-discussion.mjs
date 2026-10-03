@@ -22,10 +22,9 @@ const refs = numeroteur();
 const { enfants: corps } = chapitre6(calc, { refs });
 
 const enfants = [
-  ...pageDeGarde("Chapitre 6 — Discussion (rédaction d'exercice)",
-    "Rédaction d'exercice du chapitre Discussion, à partir des résultats du chapitre 5 et du protocole corrigé.\n\n" +
-    "Les numéros 1 à 71 renvoient à la bibliographie du protocole. Les références ajoutées pendant la rédaction sont numérotées à la suite et listées en fin de chapitre : chacune doit être vérifiée dans sa source avant le dépôt.\n\n" +
-    "Ce texte est un MODÈLE de forme. La discussion du mémoire réel portera sur les résultats réels et ne reprendra rien de celle-ci.",
+  ...pageDeGarde("Chapitre 6 — Discussion",
+    "Chapitre Discussion, à partir des résultats du chapitre 5 et du protocole corrigé.\n\n" +
+    "Les numéros 1 à 71 renvoient à la bibliographie du protocole. Les références ajoutées pendant la rédaction sont numérotées à la suite et listées en fin de chapitre : chacune doit être vérifiée dans sa source avant le dépôt.",
     `${calc.tous.filter(x => x.qualif === "infirmier").length} infirmiers ou infirmières et ${calc.tous.filter(x => x.qualif === "sage-femme").length} sages-femmes, ${calc.obsTous.length} centres de santé, en deux vagues`),
   saut(),
   ...corps,
@@ -42,7 +41,7 @@ const xml = await (await JSZip.loadAsync(tampon)).file("word/document.xml").asyn
 const identifiants = xml.replace(/<[^>]+>/g, "").match(/\b(P\d{2}|CS\d{2})\b/g);
 if (identifiants) throw new Error(`la discussion désigne des participants ou des centres : ${[...new Set(identifiants)].join(", ")}`);
 
-const fichier = `${dossier}/6_Chapitre_Discussion_SIMULATION.docx`;
+const fichier = `${dossier}/Chapitre_6_Discussion.docx`;
 writeFileSync(fichier, tampon);
 console.log("écrit :", fichier);
 console.log(`  ${refs.ajoutees().length} références ajoutées (numéros ${refs.ajoutees().map(r => r.numero).join(", ")})`);

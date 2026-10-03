@@ -27,7 +27,7 @@ import { RESERVE } from "./donnees-routine.mjs";
 
 const dossier = process.argv[2] || "../kit-donnees-reelles";
 mkdirSync(dossier, { recursive: true });
-const exercice = JSON.parse(readFileSync(new URL("../livrables/Memoire_Ngoma_SIMULATION.projx", import.meta.url), "utf8"));
+const exercice = JSON.parse(readFileSync(new URL("../livrables/MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx", import.meta.url), "utf8"));
 const maintenant = new Date().toISOString();
 const INTERDIT = /simul|fictiv|fictif/i;
 

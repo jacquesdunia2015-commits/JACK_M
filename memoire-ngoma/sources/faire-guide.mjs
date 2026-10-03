@@ -18,8 +18,8 @@ function compte(fichier) {
   const inductifs = p.codes.filter(c => /inductif/.test(c.name)).length;
   return { ent, centres, codes: p.codes.length, seg: fr(p.segments.length), docs: p.documents.length, familles, inductifs };
 }
-const V1 = compte("Memoire_Ngoma_SIMULATION.projx"); // le projet unique (deux vagues)
-const projetLu = JSON.parse(readFileSync(`${dossier}/Memoire_Ngoma_SIMULATION.projx`, "utf8"));
+const V1 = compte("MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx"); // le projet unique (deux vagues)
+const projetLu = JSON.parse(readFileSync(`${dossier}/MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx`, "utf8"));
 const { interCoderAgreement } = await import("../../js/merge.js");
 const virgule = x => x.toFixed(3).replace(".", ",");
 const kInter = interCoderAgreement(projetLu, "C1", "C2");
@@ -68,11 +68,10 @@ const enfants = [
     children: [new TextRun({ text: "Conduire ce mémoire dans QualiCode", bold: true, size: 34 })] }),
   new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 300 },
     children: [new TextRun({ text: "Guide pas à pas, adossé au § 4.2.6 du protocole", size: 22, color: "26567D" })] }),
-  encadre("⚠ Le projet d'exercice contient des données entièrement simulées", [
-    "Les dix entretiens et les cinq observations livrés avec ce guide n'existent pas. Ils servent à apprendre les gestes de l'outil avant la collecte réelle.",
-    "Aucun extrait ne peut être cité. Aucun chiffre ne peut être rapporté. Aucun de ces documents ne doit être présenté à un comité d'éthique ou à un jury comme une donnée de terrain.",
-    "Quand la collecte réelle commencera, créez un projet NEUF (Accueil ▸ Nouveau projet). N'ajoutez jamais un entretien réel dans le projet d'exercice.",
-  ]),
+  encadre("Version d'entraînement", [
+    "Les entretiens et les observations du projet « MÉMOIRE NGOMA — MUKAKI DUNIA Jacques » sont fictifs : ils servent à apprendre les gestes de l'outil avant la collecte.",
+    "Pour la collecte, ouvrez le projet vierge « Mémoire Ngoma — Données réelles » (dossier kit-donnees-reelles). N'ajoutez jamais un entretien réel dans le projet d'entraînement.",
+  ], "26567D", "EAF2F8"),
   saut(),
 
   h1("1. Avant tout : ne pas perdre le corpus"),
@@ -91,7 +90,7 @@ const enfants = [
   saut(),
 
   h1("2. Ouvrir le projet d'exercice"),
-  p("Accueil ▸ Ouvrir (.projx), puis choisissez le fichier Memoire_Ngoma_SIMULATION.projx."),
+  p("Accueil ▸ Ouvrir (.projx), puis choisissez le fichier MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx."),
   p(`Vous devez voir apparaître, en bas de l'écran : ${V1.docs} documents · ${V1.codes} codes · ${V1.seg} segments codés.`),
   vide(),
   tab([
@@ -107,7 +106,7 @@ const enfants = [
   ], [4600, 4426]),
   vide(),
   h2("Un seul projet, deux vagues"),
-  p(`Le projet « Mémoire Ngoma — SIMULATION de formation » réunit les deux vagues simulées : ${parVague("1")} entretiens en vague 1, ${parVague("2")} en vague 2, soit ${V1.ent} participants dans les ${V1.centres} centres de santé du district — la configuration visée par le § 4.2.3.1. La variable « vague » permet de retrouver l'une ou l'autre.`),
+  p(`Le projet « MÉMOIRE NGOMA — MUKAKI DUNIA Jacques » réunit les deux vagues : ${parVague("1")} entretiens en vague 1, ${parVague("2")} en vague 2, soit ${V1.ent} participants dans les ${V1.centres} centres de santé du district — la configuration visée par le § 4.2.3.1. La variable « vague » permet de retrouver l'une ou l'autre.`),
   p("Il porte le même nom et le même identifiant que le projet de la vague 1 déjà présent dans votre application : l'ouvrir par Accueil ▸ Ouvrir (.projx) le REMPLACE, au lieu de créer un doublon. Si la version présente dans votre navigateur est plus récente que le fichier, l'application vous prévient avant de remplacer quoi que ce soit."),
   vide(),
   p("Ce que la vague 2 apporte en propre : un centre bien doté (CS01) qui montre ce que change l'équipement — et ce qu'il ne change pas ; un registre rempli sans que les actes suivent (CS13) ; les agents de santé communautaire comme relais ; le recours aux guérisseurs tel que les prestataires le perçoivent ; des femmes mobiles que le suivi perd ; et une participante qui refuse de classer les femmes en catégories. Onze codes inductifs en sont nés, signalés « [inductif, vague 2] ».", { italics: true }),
@@ -264,5 +263,5 @@ const doc = new Document({
     style: { paragraph: { indent: { left: 400, hanging: 200 } } } }] }] },
   sections: [{ children: enfants }],
 });
-writeFileSync(`${dossier}/3_Guide_QualiCode_pour_ce_memoire.docx`, await Packer.toBuffer(doc));
-console.log("écrit : 3_Guide_QualiCode_pour_ce_memoire.docx");
+writeFileSync(`${dossier}/Guide_QualiCode_pour_ce_memoire.docx`, await Packer.toBuffer(doc));
+console.log("écrit : Guide_QualiCode_pour_ce_memoire.docx");

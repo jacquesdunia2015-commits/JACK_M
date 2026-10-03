@@ -15,7 +15,7 @@
 // Période de référence simulée : année civile 2025 (« dernière année civile
 // complète », annexe 9).
 
-export const SOURCE = "Direction de la santé du district (SIMULÉ) — année civile 2025";
+export const SOURCE = "Direction de la santé du district (valeurs d'entraînement) — année civile 2025";
 
 // cpn1 : nouvelles inscrites ; cpn4 : femmes ayant atteint la 4e CPN ;
 // t1 : % de premiers contacts au 1er trimestre ; refHta : femmes référées pour

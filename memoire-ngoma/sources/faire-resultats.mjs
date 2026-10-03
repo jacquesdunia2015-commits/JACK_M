@@ -26,10 +26,9 @@ const { enfants: corps, nbCitations } = chapitre5(calc);
 
 /* ---------- Document ---------- */
 const enfants = [
-  ...pageDeGarde("Chapitre 5 — Résultats (rédaction d'exercice)",
-    "Rédaction d'exercice du chapitre Résultats, à partir du projet QualiCode « Mémoire Ngoma — SIMULATION de formation ».\n\n" +
-    "Le plan suit le mémo « Phase 6 » du projet. Chaque citation a été vérifiée automatiquement : elle figure mot pour mot dans un passage codé du participant, et aucun participant ayant refusé la citation n'est cité. Chaque effectif est calculé à partir du codage.\n\n" +
-    "Ce texte est un MODÈLE de forme. Les résultats du mémoire réel devront être rédigés à partir des données réelles, et ne rien reprendre de celui-ci.",
+  ...pageDeGarde("Chapitre 5 — Résultats",
+    "Chapitre Résultats, rédigé à partir du projet QualiCode « MÉMOIRE NGOMA — MUKAKI DUNIA Jacques ».\n\n" +
+    "Le plan suit le mémo « Phase 6 » du projet. Chaque citation a été vérifiée automatiquement : elle figure mot pour mot dans un passage codé du participant, et aucun participant ayant refusé la citation n'est cité. Chaque effectif est calculé à partir du codage.",
     `${tous.filter(x => x.qualif === "infirmier").length} infirmiers ou infirmières et ${tous.filter(x => x.qualif === "sage-femme").length} sages-femmes, ${obsTous.length} centres de santé, en deux vagues`),
   saut(),
   ...corps,
@@ -50,7 +49,7 @@ for (const [etape, geste] of [
 enfants.push(vide(), encadreRouge("Règle à ne jamais oublier",
   "Un extrait n'est cité que si son auteur l'a accepté ; il n'est jamais associé au code de son centre ni à plus d'une caractéristique (§ 4.2.7). Les propos sur les femmes sont des représentations professionnelles : on les rapporte, on ne les présente pas comme des faits."));
 
-const fichier = `${dossier}/5_Chapitre_Resultats_SIMULATION.docx`;
+const fichier = `${dossier}/Chapitre_5_Resultats.docx`;
 const tampon = await Packer.toBuffer(new Document({ styles: stylesCommuns(), sections: [{ children: enfants }] }));
 
 // Dernier contrôle, sur le document réellement produit : aucun code de centre

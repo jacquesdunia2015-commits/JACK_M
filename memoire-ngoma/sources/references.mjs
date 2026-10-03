@@ -30,6 +30,11 @@ export const AJOUTEES = {
   rbcAnc: "Rwanda Biomedical Centre, Ministry of Health. National antenatal care guidelines. Kigali: RBC; 2021. Disponible sur: https://rbc.gov.rw/MCCH/wp-content/uploads/2025/02/ANC-guideline_-final-Edited-4-February-2021-1-1.pdf",
   basinga: "Basinga P, Gertler PJ, Binagwaho A, Soucat AL, Sturdy J, Vermeersch CM. Effect on maternal and child health services in Rwanda of payment to primary health-care providers for performance: an impact evaluation. Lancet. 2011;377(9775):1421-8. doi:10.1016/S0140-6736(11)60177-3",
   rulisa: "Rulisa S, Ntihinyurwa P, Ntirushwa D, Wong A, Olufolabi A. Causes of maternal mortality in Rwanda, 2017-2019. Obstet Gynecol. 2021;138(4):552-6. doi:10.1097/AOG.0000000000004534",
+  uwiringiyimana: "Uwiringiyimana E, Manirambona E, Byiringiro S, Nsanzimana A, Uhawenayo N, Ufitinema P, et al. Pregnant women's knowledge of obstetrical danger signs: a cross-sectional survey in Kigali, Rwanda. PLOS Glob Public Health. 2022;2(11):e0001084. doi:10.1371/journal.pgph.0001084",
+  ngabo: "Ngabo F, Nguimfack J, Nwaigwe F, Mugeni C, Muhoza D, Wilson DR, et al. Designing and implementing an innovative SMS-based alert system (RapidSMS-MCH) to monitor pregnancy and reduce maternal and child deaths in Rwanda. Pan Afr Med J. 2012;13:31.",
+  nsanzabera: "Nsanzabera F, Irakoze E, Manishimwe A, Nsengiyumva JB, Mwiseneza A, Ntakirutimana E, et al. Improving early childhood nutrition practices through parents' evening forums in rural Rwanda. Public Health Nutr. 2025;28(1):e136. doi:10.1017/S1368980025100803",
+  campagneMnt: "Enabel, Be-cause health. Rwanda NCD mass campaign: results and lessons [Internet]. Bruxelles: Be-cause health; 2019 [cité le 3 oct 2026]. Disponible sur: https://www.be-causehealth.be/wp-content/uploads/2019/11/20191016-Rwanda-NCD-Mass-Campaign-results-lessons.pdf",
+  shisha: "Rwanda Biomedical Centre. Shisha Kibondo : farine enrichie pour les femmes enceintes et allaitantes des ménages vulnérables [Internet]. Kigali: RBC; [cité le 3 oct 2026]. Disponible sur: https://rbc.gov.rw/wp/?p=7362",
   condo: "Condo J, Mugeni C, Naughton B, Hall K, Tuazon MA, Omwega A, et al. Rwanda's evolving community health worker system: a qualitative assessment of client and provider perspectives. Hum Resour Health. 2014;12:71. doi:10.1186/1478-4491-12-71",
 };
 

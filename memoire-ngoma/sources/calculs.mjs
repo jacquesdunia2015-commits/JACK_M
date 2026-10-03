@@ -30,7 +30,7 @@ import * as e20 from "./entretiens-20.mjs";
 const entretiens = { ...e12, ...e34, ...e56, ...e78, ...e910, ...e1113, ...e1416, ...e1719, ...e20 };
 
 export async function calculs(dossier) {
-  const projet = JSON.parse(readFileSync(`${dossier}/Memoire_Ngoma_SIMULATION.projx`, "utf8"));
+  const projet = JSON.parse(readFileSync(`${dossier}/MEMOIRE_NGOMA_MUKAKI_DUNIA_Jacques.projx`, "utf8"));
   const tous = [...participants, ...participantsV2];
   const obsTous = [...observations, ...observationsV2].sort((x, y) => x.cs.localeCompare(y.cs));
   const constats = [...ecarts, ...ecartsV2];
@@ -77,6 +77,8 @@ export async function calculs(dossier) {
     glycMnt: obsTous.filter(o => etatGluco(o) === "réservée MNT").length,
     // Glycémie refaite systématiquement à 24-28 semaines (épreuve du protocole national de 2012).
     glycT3Systematique: obsTous.filter(o => o.glycemieT3 === "systématique").length,
+    nbSeancesObservees: obsTous.filter(o => o.S && o.S.observee.startsWith("oui")).length,
+    nbSeancesTension: obsTous.filter(o => o.S && /tension : oui/.test(o.S.sujets)).length,
     glucoInutilisable: obsTous.filter(o => etatGluco(o) === "impossible").length,
     glucoAbsent: obsTous.filter(o => etatGluco(o) === "absent").length,
     glucoPresent: obsTous.filter(o => gluco(o).present === "oui").length,

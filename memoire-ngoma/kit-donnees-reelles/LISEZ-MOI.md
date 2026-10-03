@@ -13,17 +13,18 @@ issu de l'exercice. Il ne reprend que ce qui vient du protocole.
 
 | | Projet d'exercice | Projet réel |
 |---|---|---|
-| Nom dans QualiCode | Mémoire Ngoma — SIMULATION de formation | **Mémoire Ngoma — Données réelles** |
+| Nom dans QualiCode | MÉMOIRE NGOMA — MUKAKI DUNIA Jacques (version d'entraînement) | **Mémoire Ngoma — Données réelles** |
 | Dossier | `memoire-ngoma/livrables/` | `memoire-ngoma/kit-donnees-reelles/` |
-| Contenu | 21 entretiens inventés, pour s'entraîner | vos entretiens, et eux seuls |
+| Contenu | 20 entretiens fictifs, pour s'entraîner | vos entretiens, et eux seuls |
 
 Les deux projets ont des identifiants différents : ouvrir le projet réel dans
 QualiCode **crée un second projet**, il ne remplace pas l'exercice. Pour passer
 de l'un à l'autre : Accueil ▸ Projets.
 
-La mention « SIMULATION » reste sur tous les fichiers d'exercice, et elle doit y
-rester : c'est elle qui empêche qu'un entretien inventé soit pris un jour pour
-un entretien réel. Le dossier réel, lui, n'en contient aucune trace, et le
+La mention discrète « Version d'entraînement — entretiens et observations
+fictifs » reste sur tous les fichiers d'entraînement, et elle doit y rester :
+c'est elle qui empêche qu'un entretien fictif soit pris un jour pour un
+entretien réel. Le dossier réel, lui, n'en contient aucune trace, et le
 programme qui le produit refuse de l'écrire s'il en trouvait une.
 
 ## Pour commencer

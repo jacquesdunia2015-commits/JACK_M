@@ -2,7 +2,7 @@
 // (annexes, transcriptions, note de positionnalité, chapitre Résultats).
 import { writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { ETUDE } from "./echantillon.mjs";
+import { ETUDE, MENTION } from "./echantillon.mjs";
 const require = createRequire(import.meta.url);
 const docx = require("docx");
 export const {
@@ -37,26 +37,9 @@ export const tableau = (lignes, largeurs, { entete = true } = {}) => new Table({
   })),
 });
 
-export const bandeau = () => new Table({
-  width: { size: LARGEUR, type: WidthType.DXA },
-  columnWidths: [LARGEUR],
-  borders: {
-    top: { style: BorderStyle.SINGLE, size: 12, color: "C0392B" },
-    bottom: { style: BorderStyle.SINGLE, size: 12, color: "C0392B" },
-    left: { style: BorderStyle.SINGLE, size: 12, color: "C0392B" },
-    right: { style: BorderStyle.SINGLE, size: 12, color: "C0392B" },
-  },
-  rows: [new TableRow({ children: [new TableCell({
-    width: { size: LARGEUR, type: WidthType.DXA },
-    shading: { type: ShadingType.CLEAR, fill: "FDEDEC", color: "auto" },
-    margins: { top: 140, bottom: 140, left: 160, right: 160 },
-    children: [
-      new Paragraph({ children: [new TextRun({ text: "⚠ DONNÉES ENTIÈREMENT SIMULÉES — EXERCICE DE FORMATION", bold: true, color: "C0392B", size: 22 })] }),
-      new Paragraph({ children: [new TextRun({ text: "Aucun entretien n'a été conduit. Aucun centre de santé n'a été visité. Aucune des personnes décrites n'existe. Ce document sert exclusivement à apprendre à manipuler l'outil d'analyse avant la collecte réelle.", size: 19 })] }),
-      new Paragraph({ children: [new TextRun({ text: "Il ne peut être cité, ni figurer dans le mémoire, ni servir de résultat, ni être présenté à un comité d'éthique ou à un jury comme une donnée de terrain.", bold: true, size: 19 })] }),
-    ],
-  })] })],
-});
+// Mention discrète, une seule fois par document (page de garde).
+export const bandeau = () => new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 60, after: 60 },
+  children: [new TextRun({ text: MENTION, italics: true, size: 18, color: "7F8C8D" })] });
 
 export const pageDeGarde = (sousTitre, description, echantillon) => [
   new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 400, after: 100 },
@@ -77,8 +60,8 @@ export const tableauInfos = (echantillon) => [tableau([
   ["Chercheur", ETUDE.chercheur],
   ["Institution", ETUDE.institution],
   ["Direction", ETUDE.directrice],
-  ["Période simulée", ETUDE.periodeSimulee],
-  ["Échantillon simulé", echantillon],
+  ["Période de collecte", ETUDE.periodeSimulee],
+  ["Échantillon", echantillon],
 ], [2400, 6626], { entete: false })];
 
 export const encadreRouge = (titre, texte) => new Table({

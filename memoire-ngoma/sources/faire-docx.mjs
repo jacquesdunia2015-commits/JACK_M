@@ -38,7 +38,7 @@ function couverture(liste) {
   const centres = (crit) => [...new Set(liste.filter(crit).map(x => x.cs))].sort().join(", ");
   const urb = x => x.secteur === "urbain";
   return [
-    ["Dimension (Tableau II)", "Modalités recherchées", "Couverture dans l'échantillon simulé"],
+    ["Dimension (Tableau II)", "Modalités recherchées", "Couverture dans l'échantillon"],
     ["Qualification", "Infirmiers ; sages-femmes",
       resume(liste, x => x.qualif === "infirmier", "infirmiers ou infirmières") + " · " +
       resume(liste, x => x.qualif === "sage-femme", "sages-femmes")],
@@ -64,19 +64,9 @@ function documentAnnexes(cfg) {
   const { participants, observations } = cfg;
   const nbV1 = participants.filter(x => cfg.vague1.has(x.code)).length;
   const enfants = [
-    ...pageDeGarde(cfg.titre,
-      "Ce document réunit TOUS les outils de collecte du protocole, renseignés par les données simulées des deux vagues :\n" +
-      `· Annexe 1 — guide d'entretien : ${participants.length} entretiens conduits (index ci-dessous ; transcriptions intégrales dans le document 2)\n` +
-      `· Annexe 2 — guide d'observation du service : ${observations.length} grilles, une par centre de santé\n` +
-      `· Annexe 3 — fiche de données sociodémographiques et professionnelles : ${participants.length} fiches\n` +
-      `· Annexe 4 — registre de suivi des consentements : ${participants.length} participants\n` +
-      `· Annexe 9 — données de routine du district : ${parCentre.length} centres\n` +
-      "· Synthèse de l'échantillon au regard du Tableau II (matrice de variation)\n\n" +
-      "Tous les champs sont éditables : le document sert aussi de gabarit pour la collecte réelle.", cfg.echantillon),
-    saut(),
-
-    titre1("1. Synthèse de l'échantillon simulé"),
-    p(`Deux vagues simulées : la vague 1 (${nbV1} participants, 5 centres) puis la vague 2 (${participants.length - nbV1} participants, les ${observations.length - 5} autres centres). Ensemble, elles couvrent ${observations.length} des seize centres de santé du district (le seizième a servi au pré-test), dans la fourchette de seize à vingt-quatre participants du § 4.2.3.1.`, { run: { size: 20 } }),
+    { partie: "suivi" },
+    titre1("Suivi de l'échantillon au regard du Tableau II"),
+    p(`Deux vagues : la vague 1 (${nbV1} participants, 5 centres) puis la vague 2 (${participants.length - nbV1} participants, les ${observations.length - 5} autres centres). Ensemble, elles couvrent ${observations.length} des seize centres de santé du district (le seizième a servi au pré-test), dans la fourchette de seize à vingt-quatre participants du § 4.2.3.1.`, { run: { size: 20 } }),
     p("Le protocole (§ 4.2.3.2, Tableau II) prescrit un échantillonnage raisonné à variation maximale portant sur sept dimensions. Le tableau de couverture ci-dessous est CALCULÉ à partir des fiches : c'est le contrôle à refaire pendant la collecte réelle, après chaque entretien.", { run: { size: 20 } }),
     vide(),
     tableau([
@@ -89,21 +79,20 @@ function documentAnnexes(cfg) {
     tableau(couverture(participants), [2200, 2400, 4426]),
     vide(),
     p("Le protocole ne clôt pas la collecte sur un nombre : la suffisance informationnelle s'argumente dimension par dimension. Le projet QualiCode contient un mémo qui s'y exerce.", { run: { size: 20, italics: true } }),
-    saut(),
 
     /* ---------- Annexe 1 ---------- */
-    titre1("2. Annexe 1 — Guide d'entretien : entretiens conduits"),
-    p("Le guide d'entretien se « remplit » par l'entretien lui-même : ses vingt-deux questions ont été posées aux participants ci-dessous, et leurs réponses sont transcrites intégralement, question par question, dans le document 2 (Transcriptions verbatim). Le journal de bord de chaque entretien y précède la transcription.", { run: { size: 20 } }),
+    { partie: "a1" },
+    titre1("Index des entretiens conduits"),
+    p("Le guide d'entretien se « remplit » par l'entretien lui-même : ses vingt-deux questions ont été posées aux participants ci-dessous, et leurs réponses sont reproduites intégralement, question par question, dans la suite de ce document. Le journal de bord de chaque entretien précède ses réponses.", { run: { size: 20 } }),
     vide(),
     tableau([
       ["Code", "Structure", "Date", "Durée", "Langue", "Traitement de la transcription (§ 4.2.6)"],
       ...participants.map(x => [x.code, x.cs, x.date, x.duree, x.langue,
         x.langue === "kinyarwanda" ? "Transcription en kinyarwanda, traduction française par le chercheur" : "Transcription directe par le chercheur"]),
     ], [700, 900, 1150, 900, 1300, 4076]),
-    saut(),
 
     /* ---------- Annexe 2 ---------- */
-    titre1("3. Annexe 2 — Guides d'observation du service remplis"),
+    { partie: "a2" },
     p("Observation non participante, portant sur le service et non sur les personnes. Jamais observé ni consigné : identité ou performance individuelle d'un professionnel, contenu des échanges entre un prestataire et une femme enceinte, toute donnée permettant d'identifier une patiente, tout jugement de conformité d'un geste à une norme. Aucune présence dans la salle pendant l'examen clinique. Une demi-journée par centre.", { run: { size: 19, italics: true } }),
   ];
 
@@ -158,11 +147,11 @@ function documentAnnexes(cfg) {
     enfants.push(p(o.E, { run: { size: 20 } }));
     enfants.push(vide(), titre3("F. Réflexivité"));
     enfants.push(p(o.F, { run: { size: 20 } }));
-    enfants.push(saut());
+    if (o !== observations[observations.length - 1]) enfants.push(saut());
   }
 
   /* ---------- Annexe 3 ---------- */
-  enfants.push(titre1("4. Annexe 3 — Fiches de données sociodémographiques et professionnelles"));
+  enfants.push({ partie: "a3" });
   enfants.push(p("Renseignée en début d'entretien. Aucun nom, aucune fonction nominative, aucun nom de structure. Le code de structure est conservé sur un document séparé sous la seule responsabilité du chercheur. Les tranches sont préférées aux valeurs exactes : dans des équipes réduites, une combinaison âge-qualification-ancienneté exacte permettrait d'identifier une personne.", { run: { size: 19, italics: true } }));
   const coche = (valeur, attendu) => (valeur === attendu ? "☒" : "☐");
   for (const x of participants) {
@@ -185,7 +174,7 @@ function documentAnnexes(cfg) {
   }
 
   /* ---------- Annexe 4 ---------- */
-  enfants.push(saut(), titre1("5. Annexe 4 — Registre de suivi des consentements"));
+  enfants.push({ partie: "a4" });
   enfants.push(p("Le formulaire d'information et de consentement (annexe 4) est remis en deux exemplaires et signé par chaque participant. Le § 4.2.7 prévoit que l'enregistrement et la citation d'extraits font l'objet d'accords DISTINCTS : ce registre les suit un par un, pour que l'analyse puisse en tenir compte.", { run: { size: 20 } }));
   enfants.push(vide());
   enfants.push(bandeauSignature());
@@ -194,7 +183,7 @@ function documentAnnexes(cfg) {
     ["Code", "Date", "Langue du formulaire", "Consentement écrit", "Enregistrement", "Citation d'extraits", "Recontact (vérification)", "Signature"],
     ...participants.map(x => {
       const c = consentementDe(x.code);
-      return [x.code, x.date, x.langue, c.ecrit, c.enregistrement, c.citation, c.recontact, "non simulée"];
+      return [x.code, x.date, x.langue, c.ecrit, c.enregistrement, c.citation, c.recontact, "sur le formulaire papier"];
     }),
   ], [650, 1000, 1150, 1050, 1150, 1500, 1250, 1276]));
   const notes = participants.map(x => [x.code, consentementDe(x.code).note]).filter(([, n]) => n);
@@ -204,9 +193,8 @@ function documentAnnexes(cfg) {
   }
 
   /* ---------- Annexe 9 ---------- */
-  enfants.push(saut(), titre1("6. Annexe 9 — Données de routine du district"));
-  enfants.push(bandeauValeurs());
-  enfants.push(vide());
+  enfants.push({ partie: "a9" });
+  enfants.push(p("Valeurs d'entraînement, construites pour rester cohérentes avec les grilles d'observation et les entretiens, et calées sur les repères réels présentés en fin d'annexe. Elles ne décrivent aucun centre réel.", { run: { size: 19, italics: true } }));
   enfants.push(p(`Source et période : ${SOURCE_ROUTINE}. Les secteurs administratifs ne sont pas nommés : ils sont désignés par le code du centre qu'ils abritent, pour qu'aucun chiffre fictif ne puisse être attribué à un lieu réel.`, { run: { size: 19, italics: true } }));
   enfants.push(vide());
   enfants.push(tableau([
@@ -228,20 +216,24 @@ function documentAnnexes(cfg) {
   enfants.push(vide());
   enfants.push(p(RESERVE, { run: { size: 19, italics: true } }));
 
-  // Repères RÉELS : ils situent les valeurs simulées sans s'y mêler.
+  // Repères RÉELS : ils situent les valeurs d'entraînement sans s'y mêler.
   const totalCpn1 = parCentre.reduce((t, c) => t + c.cpn1, 0);
   const totalCpn4 = parCentre.reduce((t, c) => t + c.cpn4, 0);
-  enfants.push(vide(), titre3("Repères réels pour situer les valeurs simulées"));
-  enfants.push(p(`Les valeurs simulées ci-dessus ont été calées sur ces données publiées : ${totalCpn1.toLocaleString("fr-FR")} premières CPN pour les ${parCentre.length} centres (environ 11 800 naissances attendues par an dans le district, CPN assurée par les seuls centres de santé), ${Math.round(100 * totalCpn4 / totalCpn1)} % de quatrièmes visites, premier contact au premier trimestre et pauvreté sectorielle répartis autour des valeurs de la province de l'Est et du district. Contrairement au reste de l'annexe, chaque ligne de ce tableau est réelle et vérifiable dans sa source.`, { run: { size: 19, italics: true } }));
+  enfants.push(vide(), titre3("Repères réels (sources vérifiables)"));
+  enfants.push(p(`Les valeurs ci-dessus ont été calées sur ces données publiées : ${totalCpn1.toLocaleString("fr-FR")} premières CPN pour les ${parCentre.length} centres (environ 11 800 naissances attendues par an dans le district, CPN assurée par les seuls centres de santé), ${Math.round(100 * totalCpn4 / totalCpn1)} % de quatrièmes visites, premier contact au premier trimestre et pauvreté sectorielle répartis autour des valeurs de la province de l'Est et du district. Contrairement au reste de l'annexe, chaque ligne de ce tableau est réelle et vérifiable dans sa source.`, { run: { size: 19, italics: true } }));
   enfants.push(tableau([["Repère", "Valeur publiée", "Source"], ...REPERES], [2600, 3000, 3426]));
 
-  return new Document({ styles: stylesCommuns(), sections: [{ children: enfants }] });
+  // Découpage : une sentinelle { partie } ouvre chaque document séparé.
+  const parties = {};
+  let courant = null;
+  for (const e of enfants) {
+    if (e && e.partie) { courant = parties[e.partie] = []; continue; }
+    courant.push(e);
+  }
+  return parties;
 }
 
-const bandeauSignature = () => encadreRouge("Aucune signature n'est simulée — et aucune ne doit l'être",
-  "Un formulaire de consentement signé est une pièce du dossier éthique. En fabriquer un, même pour s'exercer, produirait exactement le document qui ne doit jamais exister. Ce registre ne fait que suivre les accords ; les formulaires signés seront recueillis sur le terrain, en deux exemplaires.");
-const bandeauValeurs = () => encadreRouge("Valeurs entièrement fictives",
-  "Aucune donnée du système d'information sanitaire n'a été consultée. Les valeurs ont été construites pour rester cohérentes avec les observations et les entretiens simulés, afin que l'exercice de triangulation ait un sens. Elles ne décrivent aucun centre réel.");
+const bandeauSignature = () => p("Les formulaires signés sont des pièces du dossier éthique : ils sont recueillis sur le terrain, en deux exemplaires, et conservés sur papier. Ce registre ne fait que suivre les accords ; il ne reproduit aucune signature.", { run: { size: 19, italics: true } });
 
 /* ================================================================
    Document 2 — Transcriptions verbatim
@@ -249,13 +241,9 @@ const bandeauValeurs = () => encadreRouge("Valeurs entièrement fictives",
 function documentTranscriptions(cfg) {
   const { participants } = cfg;
   const enfants = [
-    ...pageDeGarde(cfg.titre,
-      `${cfg.nbTranscriptions} transcriptions d'entretiens simulés, présentées question par question selon l'annexe 1 du protocole (guide d'entretien semi-structuré).\n\n` +
-      "Chaque transcription est précédée de la fiche du participant et du journal de bord de l'entretien (§ 4.2.6 : « consigner au journal de bord les conditions du déroulement, éléments non verbaux, interruptions et réflexions du chercheur »).\n\n" +
-      "Les entretiens simulés en kinyarwanda sont présentés dans leur rendu français, les termes propres au discours du participant étant conservés entre crochets.\n\n" +
-      "« E : » désigne l'enquêteur (relances) ; le code du participant désigne ses tours de parole.", cfg.echantillon),
-    saut(),
-    titre1("Note sur les insertions en kinyarwanda"),
+    p("Chaque entretien est précédé de la fiche du participant et du journal de bord (§ 4.2.6 : « consigner au journal de bord les conditions du déroulement, éléments non verbaux, interruptions et réflexions du chercheur »). « E : » désigne l'enquêteur (relances) ; le code du participant désigne ses réponses. Les entretiens conduits en kinyarwanda sont présentés dans leur rendu français, les termes propres au discours du participant étant conservés entre crochets.", { run: { size: 20 } }),
+    vide(),
+    titre2("Note sur les insertions en kinyarwanda"),
     p("Les termes placés entre crochets dans les transcriptions (par exemple [umuvuduko w'amaraso], [kugagara], [ubukene]) sont ILLUSTRATIFS. Ils montrent où et comment le protocole demande de conserver les termes propres au discours du participant — ils ne constituent pas une traduction vérifiée. Avant tout usage, faites-les relire par un locuteur natif, et notamment par le collaborateur trilingue prévu au § 4.2.6 pour la transcription.", { run: { size: 20 } }),
     vide(),
     p("Cette précaution n'est pas une formalité : dans une analyse qualitative, le terme en langue source est ce qui permet au jury et au lecteur de contrôler la traduction. Un terme approximatif fragilise la chaîne entière.", { run: { size: 20, italics: true } }),
@@ -291,7 +279,7 @@ function documentTranscriptions(cfg) {
     enfants.push(saut());
   }
   enfants.pop();
-  return new Document({ styles: stylesCommuns(), sections: [{ children: enfants }] });
+  return enfants;
 }
 
 /* Note de positionnalité : même texte que le mémo du projet, mis en page.
@@ -300,7 +288,7 @@ function documentTranscriptions(cfg) {
 function documentPositionnalite(cfg) {
   const enfants = [...pageDeGarde("Note de positionnalité — modèle d'exercice",
     "Modèle rédigé pour s'entraîner. Il suit le protocole (annexe 8 : « journal réflexif et note de positionnalité », au titre de la confirmabilité) et les items 1 à 8 de la grille COREQ.\n\n" +
-    "Les éléments biographiques viennent du protocole corrigé (page de garde, § 4.2.5.6). Les passages SURLIGNÉS entre crochets sont des hypothèses d'exercice : ce que le protocole ne dit pas, à préciser. Remplacez-les par votre situation réelle. Les exemples de la partie 5 viennent des journaux de bord simulés.\n\n" +
+    "Les éléments biographiques viennent du protocole corrigé (page de garde, § 4.2.5.6). Les passages SURLIGNÉS entre crochets sont des hypothèses : ce que le protocole ne dit pas, à préciser. Remplacez-les par votre situation réelle. Les exemples de la partie 5 viennent des journaux de bord de l'entraînement.\n\n" +
     "Ce même texte figure dans le projet QualiCode, parmi les mémos de projet.", cfg.echantillon), saut()];
   const segments = texte => texte.split(/(\[[^\]]*\])/).filter(Boolean).map(t => t.startsWith("[")
     ? new TextRun({ text: t, size: 21, highlight: "yellow" }) : new TextRun({ text: t, size: 21 }));
@@ -342,12 +330,26 @@ const vague1 = new Set(participants.map(x => x.code));
 const echantillon = `${tous.filter(x => x.qualif === "infirmier").length} infirmiers ou infirmières et ` +
   `${tous.filter(x => x.qualif === "sage-femme").length} sages-femmes, ${obsTous.length} centres de santé codés (CS01 à CS${String(obsTous.length).padStart(2, "0")}), en deux vagues`;
 
-await ecrire(documentAnnexes({
-  participants: tous, observations: obsTous, vague1, echantillon,
-  titre: "Annexes de collecte remplies",
-}), `${dossier}/1_Annexes_remplies_SIMULATION.docx`);
-await ecrire(documentTranscriptions({
-  participants: tous, echantillon, nbTranscriptions: String(tous.length),
-  titre: "Transcriptions verbatim",
-}), `${dossier}/2_Transcriptions_verbatim_SIMULATION.docx`);
-await ecrire(documentPositionnalite({ echantillon }), `${dossier}/4_Note_de_positionnalite_MODELE.docx`);
+const parties = documentAnnexes({ participants: tous, observations: obsTous, vague1, echantillon });
+const docSepare = (titre, description, contenu) =>
+  new Document({ styles: stylesCommuns(), sections: [{ children: [...pageDeGarde(titre, description, echantillon), saut(), ...contenu] }] });
+const n = tous.length;
+const fichiers = [
+  ["Annexe_1_Entretiens_remplis.docx", "Annexe 1 — Guide d'entretien rempli",
+    `Les ${n} entretiens semi-structurés conduits auprès des infirmiers et sages-femmes de CPN, présentés question par question selon le guide de l'annexe 1 : index des entretiens, puis, pour chacun, la fiche du participant, le journal de bord et les réponses.`,
+    [...parties.a1, saut(), ...documentTranscriptions({ participants: tous })]],
+  ["Annexe_2_Grilles_observation_remplies.docx", "Annexe 2 — Guides d'observation du service remplis",
+    `${obsTous.length} grilles d'observation non participante, une par centre de santé, avec la rubrique ajoutée sur la séance d'éducation collective des femmes enceintes.`, parties.a2],
+  ["Annexe_3_Fiches_sociodemographiques_remplies.docx", "Annexe 3 — Fiches de données sociodémographiques et professionnelles",
+    `${n} fiches, une par participant, renseignées en début d'entretien.`, parties.a3],
+  ["Annexe_4_Registre_des_consentements.docx", "Annexe 4 — Registre de suivi des consentements",
+    `Suivi, participant par participant, des accords distincts prévus au § 4.2.7.`, parties.a4],
+  ["Annexe_9_Donnees_de_routine_du_district.docx", "Annexe 9 — Données de routine du district",
+    `Indicateurs de CPN des ${parCentre.length} centres, ruptures d'intrants, séances d'éducation collective, et repères réels sourcés sur le district de Ngoma et le Rwanda.`, parties.a9],
+  ["Suivi_de_l_echantillon_Tableau_II.docx", "Suivi de l'échantillon — matrice de variation (Tableau II)",
+    "Couverture des sept dimensions de variation, calculée à partir des fiches.", parties.suivi],
+];
+for (const [nom, titre, description, contenu] of fichiers) {
+  await ecrire(docSepare(titre, description, contenu), `${dossier}/${nom}`);
+}
+await ecrire(documentPositionnalite({ echantillon }), `${dossier}/Note_de_positionnalite_modele.docx`);

@@ -19,7 +19,7 @@ import {
   Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, WidthType,
   ShadingType, BorderStyle, LARGEUR, titre1, titre2, titre3, vide, saut, tableau, stylesCommuns, encadreRouge,
 } from "./mise-en-page.mjs";
-import { ETUDE } from "./echantillon.mjs";
+import { ETUDE, MENTION } from "./echantillon.mjs";
 import { arbre } from "./codes.mjs";
 import { consentementDe } from "./consentements.mjs";
 import { calculs } from "./calculs.mjs";
@@ -209,8 +209,7 @@ const pageDeGarde = [
   vide(),
   centre(T.PAGE_DE_GARDE.jury, { italique: true, taille: 20 }),
   vide(),
-  encadreRouge("EXERCICE DE FORMATION — DONNÉES SIMULÉES",
-    "Ce mémoire a été rédigé pour s'entraîner, à partir d'entretiens et d'observations SIMULÉS. Aucun entretien n'a été conduit, aucun centre n'a été visité. Il ne peut être ni cité, ni déposé, ni présenté comme un travail de recherche. Le mémoire réel sera rédigé à partir des données réelles."),
+  centre(MENTION, { italique: true, taille: 18 }),
 ];
 
 const sigles = (() => {
@@ -313,7 +312,7 @@ const liminaires = [
 
 /* ---------- Assemblage ---------- */
 const piedDePage = romain => new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
-  new TextRun({ text: "Mémoire Ngoma — exercice de formation, données simulées · ", size: 16, color: "888888" }),
+  new TextRun({ text: "MÉMOIRE NGOMA — MUKAKI DUNIA Jacques · version d'entraînement · ", size: 16, color: "888888" }),
   new TextRun({ children: [PageNumber.CURRENT], size: 18 }),
 ] })] });
 const document = new Document({
@@ -349,7 +348,7 @@ for (const attendu of ["tableau de cohérence du protocole", "a couvert quinze d
 const libres = texte.match(/\{[A-Za-z]+:[^}]*\}|\{N\}/g);
 if (libres) throw new Error(`champs non remplacés : ${[...new Set(libres)].join(", ")}`);
 
-const fichier = `${dossier}/8_Memoire_complet_SIMULATION.docx`;
+const fichier = `${dossier}/Memoire_complet.docx`;
 writeFileSync(fichier, tampon);
 console.log("écrit :", fichier);
 console.log(`  ${legendes.tableaux.length} tableaux, ${legendes.figures.length} figures · ${nbCitees} références citées · ${Math.round(texte.length / 1000)} k caractères`);

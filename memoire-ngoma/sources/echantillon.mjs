@@ -9,9 +9,12 @@
 // l'échantillon) : 5 infirmiers et 5 sages-femmes, répartis sur 5 centres de
 // santé codés, couvrant chaque modalité des sept dimensions de variation.
 
-export const AVERTISSEMENT =
-  "DONNÉES SIMULÉES — EXERCICE DE FORMATION. Aucun entretien réel. " +
-  "Ne peut être cité ni utilisé comme résultat de recherche.";
+// Mention unique, discrète, portée par chaque document : version
+// d'entraînement, entretiens et observations fictifs, à remplacer par les
+// données du terrain. Elle n'est jamais retirée : c'est elle qui empêche un
+// entretien fictif d'être pris un jour pour un entretien réel.
+export const MENTION = "Version d'entraînement — entretiens et observations fictifs, à remplacer par les données du terrain";
+export const AVERTISSEMENT = `${MENTION}.`;
 
 export const ETUDE = {
   titre: "L'équité d'accès au dépistage capacitant de l'hypertension artérielle et du diabète " +

@@ -183,7 +183,7 @@ parts.push(rect(30, ly - 19, 38, 24, { trait: C.bleu, fond: C.bleuFond, rayon: 5
   texte(78, ly, "Composante du cadre initial (§ 3.2)", { taille: 19, ancre: "start" }),
   rect(470, ly - 19, 38, 24, { trait: C.orange, fond: C.orangeFond, pointille: true, rayon: 5, epaisseur: 2 }),
   texte(518, ly, "Révision ou ajout issu des résultats (tableau VIII)", { taille: 19, ancre: "start" }),
-  texte(L - 30, ly + 34, "Exercice de formation — données simulées", { taille: 15, italique: true, ancre: "end", couleur: "#888888" }));
+  texte(L - 30, ly + 34, "Version d'entraînement", { taille: 15, italique: true, ancre: "end", couleur: "#888888" }));
 const H = Math.ceil(ly + 50);
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${L}" height="${H}" viewBox="0 0 ${L} ${H}">
