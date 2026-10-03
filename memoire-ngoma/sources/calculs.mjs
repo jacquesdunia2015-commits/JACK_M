@@ -144,6 +144,9 @@ export async function calculs(dossier) {
   Object.assign(valeurs, {
     kappaInter: virgule(inter.overall.kappa), relusInter: inter.sharedDocs,
     kappaIntra: virgule(intra.overall.kappa), relusIntra: intra.sharedDocs,
+    poInter: `${(inter.overall.po * 100).toFixed(1).replace(".", ",")} %`, unitesInter: inter.units,
+    poIntra: `${(intra.overall.po * 100).toFixed(1).replace(".", ",")} %`, unitesIntra: intra.units,
+    partInter: `${Math.round(100 * inter.sharedDocs / tous.length)} %`,
     nbCodes: projet.codes.filter(c => c.parentId).length,
     nbInductifs: projet.codes.filter(c => /inductif/.test(c.name)).length,
     nbRecontact: tous.filter(x => consentementDe(x.code).recontact === "oui").length,

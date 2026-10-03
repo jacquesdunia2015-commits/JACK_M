@@ -35,6 +35,7 @@ export const AJOUTEES = {
   nsanzabera: "Nsanzabera F, Irakoze E, Manishimwe A, Nsengiyumva JB, Mwiseneza A, Ntakirutimana E, et al. Improving early childhood nutrition practices through parents' evening forums in rural Rwanda. Public Health Nutr. 2025;28(1):e136. doi:10.1017/S1368980025100803",
   campagneMnt: "Enabel, Be-cause health. Rwanda NCD mass campaign: results and lessons [Internet]. Bruxelles: Be-cause health; 2019 [cité le 3 oct 2026]. Disponible sur: https://www.be-causehealth.be/wp-content/uploads/2019/11/20191016-Rwanda-NCD-Mass-Campaign-results-lessons.pdf",
   shisha: "Rwanda Biomedical Centre. Shisha Kibondo : farine enrichie pour les femmes enceintes et allaitantes des ménages vulnérables [Internet]. Kigali: RBC; [cité le 3 oct 2026]. Disponible sur: https://rbc.gov.rw/wp/?p=7362",
+  landis: "Landis JR, Koch GG. The measurement of observer agreement for categorical data. Biometrics. 1977;33(1):159-74.",
   condo: "Condo J, Mugeni C, Naughton B, Hall K, Tuazon MA, Omwega A, et al. Rwanda's evolving community health worker system: a qualitative assessment of client and provider perspectives. Hum Resour Health. 2014;12:71. doi:10.1186/1478-4491-12-71",
 };
 

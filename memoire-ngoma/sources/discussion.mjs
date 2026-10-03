@@ -35,8 +35,8 @@ export const blocsDiscussion = [
   { tableau: "cadre" },
 
   { h2: "6.4. Forces et limites de l'étude" },
-  { p: "Forces. L'échantillon couvre quinze des seize centres et chaque modalité du tableau II ; la puissance informationnelle {p:44} a été appréciée par dimension plutôt que par saturation {p:45} ; la fidélité du codage a été contrôlée (κ = {v:kappaInter} ; intra-codeur κ = {v:kappaIntra}) ; la rigueur répond aux critères retenus {p:46} et à la grille COREQ {p:47}." },
-  { p: "Limites. Les résultats portent sur des pratiques déclarées et des représentations professionnelles ; le point de vue des femmes reste hors champ. Les entretiens n'ayant pas été enregistrés, les extraits sont des propos notés : leur formulation exacte n'est pas garantie, ce que la vérification des interprétations auprès des participants atténue. L'observation est exposée à un effet de présence {c:mccambridge}, les données de routine sont de qualité limitée {p:69}, et l'étude, limitée à un district, ne se généralise pas. Les perspectives et suggestions sont présentées en conclusion." },
+  { p: "Forces. L'échantillon couvre quinze des seize centres et chaque modalité du tableau II ; la puissance informationnelle {p:44} a été appréciée par dimension plutôt que par saturation {p:45} ; la fidélité du codage a été contrôlée (§ 4.2.6) ; la rigueur répond aux critères retenus {p:46} et à la grille COREQ {p:47}." },
+  { p: "Limites. Les résultats portent sur des pratiques déclarées et des représentations professionnelles ; le point de vue des femmes reste hors champ. Les entretiens n'ayant pas été enregistrés, les extraits sont des propos notés, dont la formulation exacte n'est pas garantie. L'observation est exposée à un effet de présence {c:mccambridge}, les données de routine sont de qualité limitée {p:69}, l'étude, limitée à un district, ne se généralise pas, et le kappa {c:landis}, calculé par paragraphe, est favorisé par les paragraphes qu'aucun codeur ne code : il atteste la cohérence de la grille, non la justesse de l'interprétation." },
 ];
 
 // Tableau VIII — révisions du cadre (mémo « Piste d'audit 3 » du projet).

@@ -91,7 +91,7 @@ enfants.push(titre1("3. MÉTHODES"),
     ["Participants", calc.remplir("{N} prestataires de CPN ({v:nbInf} infirmiers ou infirmières, {v:nbSf} sages-femmes, dont {v:nbTitulaires} titulaires), échantillonnage à variation maximale")],
     ["Collecte", calc.remplir("Entretiens semi-structurés ({v:dureeMin} à {v:dureeMax} minutes) ; observation non participante d'une demi-journée par centre, service de CPN et laboratoire ; données de routine du district")],
     ["Analyse", "Analyse thématique en six phases, codage hybride (déductif à partir du cadre conceptuel, inductif)"],
-    ["Rigueur", calc.remplir("Double codage indépendant (κ = {v:kappaInter}) et recodage intra-codeur (κ = {v:kappaIntra}) ; triangulation des sources ; retour des interprétations à des participants volontaires ; grille COREQ")],
+    ["Rigueur", calc.remplir("Double codage à l'aveugle de {v:relusInter} entretiens sur {N} (κ de Cohen par paragraphe = {v:kappaInter}) et recodage intra-codeur à quatre semaines (κ = {v:kappaIntra}), désaccords tranchés en consensus ; triangulation des sources ; retour des interprétations à des participants volontaires ; grille COREQ")],
     ["Éthique", "Consentement écrit ; accord distinct pour la citation ; entretiens notés, sans enregistrement ; codes de participant et de centre jamais associés ; approbation éthique et autorisation du district [références à compléter]"],
   ], [2200, 6826]),
   source("chapitre 4 du mémoire"));

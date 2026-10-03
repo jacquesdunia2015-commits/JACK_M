@@ -124,7 +124,7 @@ const tableauProtocole = lignes => {
 // littérature, cadre conceptuel, chapitre 4) ; aucune phrase gardée n'est
 // réécrite. Liste à relire avec la direction de mémoire.
 const CONDENSATION = [
-  "Consultation prénatale : Ensemble des contacts planifiés", "Positionnement : Quatre constats fondent cette recherche.", "Le gradient social du recours :", "Ces déterminants ne sont pas abstraits pour Ngoma.", "Les obstacles normatifs :",
+  "Consultation prénatale : Ensemble des contacts planifiés", "La dernière dimension s’appuie sur les indicateurs de pauvreté sectoriels", "Positionnement : Quatre constats fondent cette recherche.", "Le gradient social du recours :", "Ces déterminants ne sont pas abstraits pour Ngoma.", "Les obstacles normatifs :",
   "Une campagne communautaire conduite dans le district de Kirehe", "Le contenu du suivi prénatal a lui-même été mesuré.",
   "Les données de routine ne suffisent pas à documenter ce contenu", "Une particularité organisationnelle :",
   "Or cette dimension demeure peu documentée.",
