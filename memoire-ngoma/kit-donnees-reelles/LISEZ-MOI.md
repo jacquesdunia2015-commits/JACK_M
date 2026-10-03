@@ -6,7 +6,7 @@ issu de l'exercice. Il ne reprend que ce qui vient du protocole.
 
 | Fichier | Contenu |
 |---|---|
-| `Outils_de_collecte_VIERGES.docx` | Les formulaires à remplir sur le terrain : suivi de l'échantillon (Tableau II), index des entretiens (annexe 1), gabarit de transcription avec les 22 questions du guide, grille d'observation (annexe 2), fiche sociodémographique (annexe 3), registre des consentements (annexe 4), données de routine (annexe 9) |
+| `Outils_de_collecte_VIERGES.docx` | Les formulaires à remplir sur le terrain : suivi de l'échantillon (Tableau II), index des entretiens (annexe 1), gabarit de transcription avec les 22 questions du guide et quatre relances ajoutées (jours où la glycémie ne peut pas se faire, séance d'éducation, suivi à domicile après le diagnostic), grille d'observation (annexe 2) avec deux rubriques ajoutées (« A bis » séance d'éducation collective, « B bis » glycémie de la première CPN : faite ou non, motif, rattrapage), fiche sociodémographique (annexe 3), registre des consentements (annexe 4), données de routine (annexe 9) |
 | `Memoire_Ngoma_DONNEES_REELLES_vierge.projx` | Le projet QualiCode « **Mémoire Ngoma — Données réelles** », vide : grille de codage déductive du Tableau III (58 codes, avec la définition de chaque famille), variables de l'annexe 3, cadre conceptuel (figure 1), modèles de mémos pour chaque étape du § 4.2.6 dont la note de positionnalité |
 
 ## Deux projets distincts, qui ne se mélangent pas

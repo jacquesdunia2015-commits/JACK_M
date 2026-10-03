@@ -110,7 +110,10 @@ function compteRendu(o) {
 
   bloc("B", "Équipements et consommables",
     o.B.map(x => `${x.item} — présent : ${x.present}${x.nombre !== null && x.nombre !== undefined ? `, nombre : ${x.nombre}` : ""}, état : ${x.etat}.${x.obs ? " " + x.obs : ""}`).join("\n") +
-    `\nRupture de stock signalée au cours des trois derniers mois : ${o.ruptureTroisMois}.`);
+    `\nRupture de stock signalée au cours des trois derniers mois : ${o.ruptureTroisMois}.` +
+    `\nGlycémie de la première CPN ce jour (rubrique ajoutée) : ${({ faite: "faite à toutes les femmes de première CPN reçues", rupture: "non faite — rupture de bandelettes",
+      panne: "non faite — glucomètre en panne", "non formé": "non faite — aucun prestataire formé au glucomètre présent" })[o.glycemieCpn]}. ` +
+    `Test manqué noté pour être refait au rendez-vous suivant : ${o.rattrapage}. Glycémie refaite à 24-28 semaines : ${o.glycemieT3}.`);
 
   bloc("C", "Protocoles et supports",
     o.C.map(x => `${x.item} — présent : ${x.present}, accessible au poste de travail : ${x.accessible}.${x.obs ? " " + x.obs : ""}`).join("\n"));
@@ -161,8 +164,10 @@ memoTheme("Phase 1 — Familiarisation (journal)",
 Premières impressions, notées avant d'ouvrir l'arbre de codes :
 
 1. La tension artérielle et la glycémie ne sont pas un seul objet. La première est
-   un geste intégré, presque irréfléchi ; la seconde a quitté le champ du possible
-   et, avec lui, le champ de la pensée. Plusieurs participants le disent presque
+   un geste intégré, presque irréfléchi ; la seconde, faite à toutes à la
+   première visite, dépend de ce que le jour réserve : des bandelettes, un
+   appareil qui marche, une personne qui sait s'en servir. Là où elle manque,
+   elle quitte le champ de la pensée. Plusieurs participants le disent presque
    mot pour mot : ce qu'on ne peut pas faire, on cesse d'y penser.
 2. Le mot « équité » n'est jamais prononcé par l'enquêteur, conformément au guide.
    Deux participantes l'introduisent d'elles-mêmes (P09, P10) — à signaler dans
@@ -178,7 +183,8 @@ Premières impressions, notées avant d'ouvrir l'arbre de codes :
 memoTheme("Phase 3 — Thèmes provisoires",
 `Quatre thèmes candidats, issus du regroupement des codes :
 
-T1. « Un dépistage coupé en deux » — la tension mesurée, le sucre absent.
+T1. « Un test pour toutes, sauf les jours où il manque quelque chose » — la
+    tension mesurée à chaque visite, le sucre une seule fois, et pas toujours.
     Codes : B1, B2, B6, E2, F5, A5, D5.
 T2. « Expliquer moins à celles qui savent le moins » — la modulation de
     l'information comme mécanisme d'inégalité produit par le service.
@@ -488,7 +494,7 @@ function construireProjet(cfg) {
     retrievalMode: mode, created: maintenant,
   });
   q("T2 — Modulation de l'information (mécanisme d'inégalité)", entretiensDocs, ["C4", "C5", "C6", "C8", "G3"]);
-  q("T1 — Le dépistage coupé en deux", entretiensDocs, ["B1", "B2", "B6", "E2", "F5"]);
+  q("T1 — Un test pour toutes, sauf les jours où il manque quelque chose", entretiensDocs, ["B1", "B2", "B6", "E2", "F5"]);
   q("T3 — Trouver sans pouvoir suivre", entretiensDocs, ["B4", "F2", "F3", "F6", "I6"]);
   q("T4 — Ce qui est compté existe", entretiensDocs, ["E4", "E7", "F4", "I5"]);
   q("Q19 — Jugements d'équité", entretiensDocs, ["H1", "H2", "H3", "H4", "H5", "H6", "H7", "H8"]);
@@ -680,15 +686,15 @@ doivent être vérifiés par un locuteur natif.`;
 `Les quatre thèmes provisoires de la vague 1 tiennent, mais deux sont précisés
 et trois s'ajoutent.
 
-T1. « Un dépistage coupé en deux » — PRÉCISÉ. Aucun centre n'a de glucomètre en
-    salle de CPN : la glycémie passe par le laboratoire du centre ou par la
-    consultation des maladies chroniques, qui gèrent les bandelettes. Le thème
-    est faux à CS01, où le circuit « bon de CPN → laboratoire » fonctionne : il
-    ne tient donc pas à la nature du dépistage glycémique, mais à l'organisation
-    de ce circuit et aux moyens du laboratoire. Nouveau code B8. Même là où le
-    circuit fonctionne, la glycémie prévue pour toutes à la première CPN reste
-    unique : elle n'est refaite que sur signes d'appel, sans épreuve de charge
-    à 24-28 semaines, quand apparaît le diabète gestationnel. Nouveau code B9.
+T1. « Un test pour toutes, sauf les jours où il manque quelque chose » —
+    PRÉCISÉ. Tous les centres font la glycémie à toutes les femmes à la
+    première CPN, au glucomètre, en salle de CPN. Le test saute les jours de
+    rupture de bandelettes, de panne de l'appareil, ou quand aucun prestataire
+    formé n'est présent (code B8) ; la femme manquée n'est presque jamais
+    rattrapée, sauf dans deux centres qui notent « glycémie à refaire » (B10).
+    Même là où tout est en place, le test reste unique : il n'est refait que
+    sur signes d'appel, sans épreuve de charge à 24-28 semaines, quand apparaît
+    le diabète gestationnel (B9).
 T2. « Expliquer moins à celles qui savent le moins » — PRÉCISÉ. Persiste là où
     tous les intrants sont disponibles (P11) : la modulation de l'explication
     est indépendante de l'équipement. Deux contre-pratiques documentées :
@@ -759,16 +765,16 @@ ecarts.map(x => `${x.cs} — ${x.constat}`).join("\n\n") +
 
   memoTheme("Piste d'audit — révision du cadre conceptuel",
 `${arbre.flatMap(f => f.enfants).filter(e => /inductif/.test(e.nom)).length} codes inductifs sur ${arbre.length + arbre.flatMap(f => f.enfants).length} : ${arbre.flatMap(f => f.enfants).filter(e => /\[inductif\]/.test(e.nom)).length} nés de la vague 1, ${arbre.flatMap(f => f.enfants).filter(e => /vague 2/.test(e.nom)).length} de la vague 2, ${arbre.flatMap(f => f.enfants).filter(e => /révision/.test(e.nom)).length} de la révision
-faite à la lecture des grilles d'observation (glycémie hors de la CPN). Le § 3.2
+faite à la lecture des grilles d'observation (glycémie de la première CPN). Le § 3.2
 prévoit que le cadre est « heuristique et révisable » ; ces codes appellent
 quatre révisions possibles, à discuter en supervision :
 
-1. Ajouter au niveau organisationnel la distinction entre un intrant PRÉSENT,
-   un intrant UTILISABLE (CS05 : bandelettes périmées, glucomètre en état) et
-   un intrant ACCESSIBLE À LA CPN (glucomètre au laboratoire, bandelettes
-   réservées à la consultation des maladies chroniques : code B8) et un test
-   FAIT AU BON MOMENT (glycémie unique à la première CPN, non refaite à
-   24-28 semaines : code B9).
+1. Ajouter au niveau organisationnel une cascade de la glycémie : une règle
+   POUR TOUTES à la première CPN ; un test FAIT LE JOUR MÊME, qui suppose des
+   bandelettes valides (CS05 : bandelettes périmées, glucomètre en état), un
+   appareil en état et un prestataire formé présent (code B8) ; un test
+   manqué RATTRAPÉ au rendez-vous suivant (B10) ; un test FAIT AU BON MOMENT
+   (glycémie unique à la première CPN, non refaite à 24-28 semaines : B9).
 2. Distinguer, dans la pratique informative, l'information collective (séance
    d'éducation : C10) de la restitution individuelle du résultat (C11) : la
    séance est égale pour les présentes, mais ne restitue aucun résultat et
@@ -879,15 +885,16 @@ la version d'entraînement ne contient que le rendu français.`);
 `Sept thèmes, chacun défini par ce qu'il est, ce qu'il n'est pas, et les codes
 qui le composent. OS1 et OS2 renvoient aux objectifs spécifiques du protocole.
 
-T1. UN DÉPISTAGE COUPÉ EN DEUX (OS1)
+T1. UN TEST POUR TOUTES, SAUF LES JOURS OÙ IL MANQUE QUELQUE CHOSE (OS1)
     La mesure de la tension est un geste intégré à la CPN presque partout ; la
-    recherche du diabète se fait hors de la CPN — au laboratoire du centre ou à
-    la consultation des maladies chroniques — et dépend de bandelettes que la
-    CPN ne gère pas. Là où ce circuit n'est pas ouvert à la femme enceinte,
-    elle cesse d'être pensée.
-    N'est pas : un défaut de connaissance des professionnels.
-    Codes : B1, B2, B6, B7, B8, E2, F5, A5, D5 ; après relecture, F9
-    (campagnes de dépistage des MNT hors de la CPN, sans lien avec elle).
+    glycémie est faite à toutes au premier contact, mais elle saute les jours
+    de rupture de bandelettes, de panne du glucomètre ou d'absence d'un
+    prestataire formé, et la femme manquée n'est presque jamais rattrapée. Le
+    test reste unique : il n'est pas refait à 24-28 semaines.
+    N'est pas : un refus du test ni un défaut de volonté ; le manque de
+    formation, quand il joue, est une condition, pas une faute.
+    Codes : B1, B2, B6, B7, B8, B9, B10, E2, F5, A5, D1, D5 ; après relecture,
+    F9 (campagnes de dépistage des MNT hors de la CPN, sans lien avec elle).
 
 T2. EXPLIQUER MOINS À CELLES QUI SAVENT LE MOINS (OS1)
     L'explication qui suit la mesure varie selon l'heure, la charge et l'idée
@@ -909,8 +916,10 @@ T3. TROUVER SANS POUVOIR SUIVRE (OS2)
     s'interrompt à l'accouchement et quand la femme se déplace.
     Codes : B4, F2, F3, F6, F8, G2, G4, G11, I6 ; après relecture, G12 (une
     première CPN retardée dans l'attente du conjoint retarde aussi la
-    glycémie) et G13 (les ménages les plus pauvres, aidés, reviennent ; ceux
-    juste au-dessus du seuil se perdent).
+    glycémie), G13 (les ménages les plus pauvres, aidés, reviennent ; ceux
+    juste au-dessus du seuil se perdent) et G15 (après le diagnostic, les
+    femmes des ménages aisés s'achètent un tensiomètre ou un glucomètre et se
+    surveillent chez elles ; les autres n'ont que le rendez-vous au centre).
 
 T4. CE QUI EST COMPTÉ EXISTE (OS2)
     Intrants, maintenance et attention suivent les indicateurs ; le dépistage
@@ -918,8 +927,10 @@ T4. CE QUI EST COMPTÉ EXISTE (OS2)
     Codes : E4, E7, F4, I5.
 
 T5. CE QUE CHANGE LA DOTATION, ET CE QU'ELLE NE CHANGE PAS (OS2)
-    L'équipement supprime l'inégalité du test, pas celle de l'explication ; et
-    il est réparti au bénéfice des centres déjà les mieux placés.
+    Des bandelettes en continu, un appareil entretenu et des prestataires
+    formés rendent le test de la première CPN régulier ; ils ne règlent ni le
+    contrôle à 24-28 semaines ni l'explication, et ils sont répartis au
+    bénéfice des centres déjà les mieux placés.
     Codes : B2, E2, F5, F8, C9, H8.
 
 T6. LE REGISTRE COMME ÉCRAN (OS2 et portée en équité)
@@ -1045,7 +1056,7 @@ Première impression : la séance collective est l'endroit où le service parle
 le plus aux femmes, et celui où il parle le moins de la tension et du sucre.`);
 
   collecte("Phase 2 — Codes inductifs nés de la relecture",
-`Sept codes créés à la relecture, chacun parce qu'aucun code existant ne
+`Huit codes créés à la relecture, chacun parce qu'aucun code existant ne
 contenait le passage sans le déformer. Nombre de participants concernés entre
 parenthèses (entretiens, codeur C1). C10 est codé en plus sur la rubrique
 ajoutée des comptes rendus d'observation.
@@ -1066,10 +1077,14 @@ G13 Catégorie ubudehe et aides liées à la grossesse (${nbParCode("G13")}) —
     seuil. Distinct de G1 (moyens) parce qu'il décrit un effet de seuil.
 G14 Signalement des grossesses et alertes par téléphone des ASM (${nbParCode("G14")}) — distinct
     de G9 (relais humain) : c'est l'outil, qui ne prévoit que l'urgence.
+G15 Autosurveillance à domicile réservée aux ménages aisés (${nbParCode("G15")}) — après le
+    diagnostic, certaines femmes s'achètent un tensiomètre ou un glucomètre ;
+    les femmes des ménages modestes n'ont que le rendez-vous au centre.
+    Distinct de G1 (moyens) : il décrit un gradient du suivi, pas du recours.
 I9  Relais par les forums communautaires (${nbParCode("I9")}) — proposition, pas pratique
     existante : à ne pas confondre avec I8.
 
-Règle maintenue : famille 7 = représentations professionnelles. G12 et G13
+Règle maintenue : famille 7 = représentations professionnelles. G12, G13 et G15
 disent ce que les prestataires perçoivent des femmes, pas ce qu'elles vivent.`);
 
   collecte("Phase 3 — Thèmes candidats après la relecture",
@@ -1099,10 +1114,10 @@ moment — et le nourrit. Elle devient le sous-thème « la séance collective,
   la seule forme d'information vraiment égale (P01, P20) ; le sous-thème garde
   cette ambivalence.
 
-Piste 2 : éclatée. G12 et G13 rejoignent T3 (trouver sans pouvoir suivre) ;
+Piste 2 : éclatée. G12, G13 et G15 rejoignent T3 (trouver sans pouvoir suivre) ;
 G14 rejoint T7 (hors des murs). Pas de thème « dispositifs rwandais » : ce
 serait un thème par l'objet, non par le sens.
-Piste 3 : F9 rejoint T1 (un dépistage coupé en deux — ici en trois) ; I9 va
+Piste 3 : F9 rejoint T1 (un test qui, hors de la CPN, se fait sans elle) ; I9 va
 aux transformations proposées.
 
 Triangulation : la concordance relevée à CS10 (séance sur les signes de danger,
@@ -1127,6 +1142,8 @@ neuf femmes arrivées après la séance appuient le sous-thème.`);
 5.3, thème 7 — ajouter : l'alerte par téléphone des ASM, qui organise
   l'urgence et non le contrôle (${nbParCode("G14")} participants).
 5.3, thème 1 — ajouter : les campagnes de dépistage des MNT hors CPN (${nbParCode("F9")}).
+5.3, thème 3 — ajouter : l'autosurveillance à domicile, à la portée des seuls
+  ménages aisés (${nbParCode("G15")} participants).
 5.4, transformations — ajouter : la séance comme lieu d'un message sur la
   tension et le sucre (P16) et l'umugoroba w'ababyeyi (${nbParCode("I9")} participants).
 5.5, triangulation — un constat de plus (concordance à CS10).
@@ -1153,10 +1170,26 @@ Décisions :
      vérifiés dans des sources publiées ; les catégories ubudehe ont été
      réformées en 2020 : les participants parlent des « catégories les plus
      pauvres » sans numéro.
+  6. Deux informations de terrain de l'auteur, reçues après la relecture,
+     corrigent le corpus. (a) Tous les centres font la glycémie à toutes les
+     femmes à la première CPN, au glucomètre de la CPN ; elle ne manque que les
+     jours de rupture de bandelettes, de panne ou d'absence d'un prestataire
+     formé. Le code B8, qui décrivait une glycémie renvoyée au laboratoire, est
+     redéfini (« test de la première CPN interrompu ») et B10 (« rattrapage du
+     test manqué ») est créé ; la grille d'observation reçoit une rubrique
+     « glycémie de la première CPN » (B bis). (b) Après le diagnostic, des
+     femmes des ménages aisés s'achètent un tensiomètre ou un glucomètre : code
+     G15. Aucune source publiée consultée ne décrit ces deux pratiques : elles
+     reposent sur l'expérience de terrain de l'auteur, à confirmer pendant la
+     collecte réelle.
 
 Ce que la relecture enseigne pour la collecte réelle : ajouter une relance
 sur la séance collective (« Et à la séance d'éducation, qu'en dites-vous ? »)
-après Q4 et Q6, sans modifier les questions du guide.`);
+après Q4 et Q6, une relance sur les jours où la glycémie ne peut pas se faire
+après Q2 (« Et les jours où il manque quelque chose ? Que deviennent ces
+femmes ? »), et une relance sur le suivi à domicile après Q13 (« Après le
+diagnostic, comment la femme se surveille-t-elle ? »), sans modifier les
+questions du guide.`);
 
   /* ---------- Ordre de présentation ---------- */
   // Piste d'audit de la rédaction : chaque citation du chapitre 5 renvoie à
@@ -1262,8 +1295,10 @@ const requetesV2 = [
   ["Codes inductifs nés de la vague 2", ["B7", "C9", "E8", "E9", "F7", "F8", "G9", "G10", "G11", "H9", "I8"]],
   ["T2 (sous-thème) — La séance collective, égale pour les présentes, muette sur le résultat", ["C10", "C11"], true],
   ["Dispositifs rwandais : conjoint, ubudehe, alerte des ASM", ["G12", "G13", "G14"]],
+  ["Test de la première CPN interrompu, et son rattrapage", ["B8", "B10"]],
+  ["Autosurveillance à domicile et moyens du ménage", ["G15", "G1", "H1"]],
   ["Dépistage hors de la CPN : campagnes et forums villageois", ["F9", "I9"]],
-  ["Codes inductifs nés de la relecture (réalités rwandaises)", ["C10", "C11", "F9", "G12", "G13", "G14", "I9"], true],
+  ["Codes inductifs nés de la relecture (réalités rwandaises)", ["C10", "C11", "F9", "G12", "G13", "G14", "G15", "I9"], true],
 ];
 
 /* ================================================================

@@ -171,11 +171,19 @@ const enfants = [
   tableau([["…"]], [9026], { entete: false }),
   vide(),
 ];
+const RELANCES = {
+  Q2: ["Et les jours où il manque quelque chose — bandelettes, appareil, personne formée au glucomètre —, que deviennent les femmes venues pour la première visite ? Sont-elles retestées ?"],
+  Q4: ["Et à la séance d'éducation, qu'en dites-vous ?"],
+  Q6: ["Et à la séance d'éducation, qu'en dites-vous ?"],
+  Q13: ["Après le diagnostic, comment la femme se surveille-t-elle ? Certaines ont-elles un tensiomètre ou un glucomètre à la maison ? Lesquelles ?"],
+};
 let axe = "";
 for (const q of guide) {
   if (q.axe !== axe) { axe = q.axe; enfants.push(titre3(axe)); }
   enfants.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [new TextRun({ text: `${q.id}. ${q.texte}`, bold: true, size: 20 })] }));
   enfants.push(p("E : …", { run: { size: 20, color: "7F8C8D" } }), p("P__ : …", { run: { size: 20 } }));
+  // Relances ajoutées après la relecture (réalités de terrain), sans modifier les questions du guide.
+  for (const r of RELANCES[q.id] || []) enfants.push(p(`Relance ajoutée : ${r}`, { run: { size: 20, italics: true, color: "7F8C8D" } }));
 }
 
 const grille = observations[0];
@@ -194,6 +202,12 @@ enfants.push(saut(), titre1("4. Annexe 2 — Grille d'observation du service (un
   vide(), titre3("B. Équipements et consommables"),
   tableau([["Élément", "Présent", "Nombre", "État de fonctionnement", "Observations"], ...grille.B.map(x => [x.item, "☐ oui ☐ non", "", "", ""]),
     ["Rupture de stock signalée au cours des trois derniers mois", "", "", "", ""]], [1900, 1100, 800, 2300, 2926]),
+  vide(), titre3("B bis. Glycémie de la première CPN (rubrique ajoutée à la grille — à valider avec la direction de mémoire)"),
+  tableau([["Glycémie faite aux femmes de première CPN reçues ce jour", case_(["toutes", "certaines", "aucune"])],
+    ["Si non faite : motif constaté", case_(["rupture de bandelettes", "glucomètre en panne", "aucun prestataire formé présent"]) + "   ☐ autre : ……"],
+    ["Lieu du test", case_(["salle de CPN / constantes", "laboratoire"]) + "   ☐ autre : ……"],
+    ["Test manqué noté pour être refait au rendez-vous suivant", case_(["oui", "non"])],
+    ["Glycémie refaite à 24-28 semaines", case_(["à toutes", "sur facteurs de risque", "jamais"])]], [3400, 5626], { entete: false }),
   vide(), titre3("C. Protocoles et supports"),
   tableau([["Élément", "Présent", "Accessible au poste", "Observations"], ...grille.C.map(x => [x.item, "☐ oui ☐ non", "☐ oui ☐ non", ""])], [2600, 1200, 1500, 3726]),
   vide(), titre3("D. Enregistrement des données (supports agrégés uniquement)"),
@@ -232,7 +246,7 @@ enfants.push(saut(), titre1("7. Annexe 9 — Données de routine du district"),
   vide(),
   tableau([["Centre", "CPN1", "CPN4", "CPN4 / CPN1", "1er contact au 1er trim.", "Référées HTA / prééclampsie", "Effectif CPN"], ...Array.from({ length: 15 }, (_, i) => [`CS${String(i + 1).padStart(2, "0")}`, ...blanc(6)])], [900, 900, 900, 1200, 1700, 1900, 1526]),
   vide(),
-  tableau([["Centre", "Dépistages glycémiques en CPN", "Ruptures de bandelettes (mois)", "Profil de pauvreté du secteur"], ...Array.from({ length: 15 }, (_, i) => [`CS${String(i + 1).padStart(2, "0")}`, ...blanc(3)])], [900, 3300, 2300, 2526]),
+  tableau([["Centre", "Glycémies de première CPN (part des CPN1)", "Ruptures de bandelettes (mois)", "Profil de pauvreté du secteur"], ...Array.from({ length: 15 }, (_, i) => [`CS${String(i + 1).padStart(2, "0")}`, ...blanc(3)])], [900, 3300, 2300, 2526]),
   vide(),
   tableau([["File active des consultations dédiées aux MNT (district)", ""]], [3400, 5626], { entete: false }),
   vide(), petit(RESERVE.replace(/^Réserve de qualité \(annexe 9 du protocole\) : /, "Réserve de qualité (annexe 9) : ")));

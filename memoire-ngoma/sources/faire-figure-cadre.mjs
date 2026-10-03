@@ -1,7 +1,8 @@
 // faire-figure-cadre.mjs — Figure 3 : cadre conceptuel révisé à la lumière des
 // résultats (exercice). Reprend la structure de la figure 1 du protocole et y
 // marque, en orange pointillé, les révisions que les résultats appellent
-// (tableau VIII) : la cascade d'accès à la glycémie au niveau organisationnel,
+// (tableau VIII) : la cascade de la glycémie de la première CPN (règle, test du
+// jour, rattrapage, contrôle à 24-28 semaines) au niveau organisationnel,
 // la séance collective distinguée de la restitution du résultat dans la
 // pratique informative, l'articulation communautaire, le dispositif de
 // contrôle au niveau systémique ; et l'équité d'accès en trois dimensions.
@@ -20,15 +21,14 @@ const calc = await calculs(dossier);
 const v = calc.valeurs;
 const n = id => calc.participantsAvec([id]).length;
 
-// Cascade d'accès à la glycémie, centre par centre (observations).
-const glucometre = o => o.B.find(i => i.item === "Glucomètre");
+// Cascade de la glycémie de la première CPN, centre par centre (observations).
 const cascade = {
-  present: calc.obsTous.filter(o => glucometre(o).present === "oui").length,
-  utilisable: calc.obsTous.filter(o => ["laboratoire", "réservée MNT"].includes(o.glycemieCpn)).length,
-  accessible: v.glycPossible,
-  refaite: v.glycT3Systematique,   // glycémie refaite systématiquement à 24-28 semaines
+  prevue: v.nbCentres,               // règle : glycémie pour toutes à la première CPN, dans tous les centres
+  faite: v.glycFaite,                // faite le jour de l'observation
+  rattrapage: v.glycRattrapage,      // test manqué noté et refait au rendez-vous suivant
+  refaite: v.glycT3Systematique,     // glycémie refaite systématiquement à 24-28 semaines
 };
-if (!(cascade.present >= cascade.utilisable && cascade.utilisable >= cascade.accessible && cascade.accessible >= cascade.refaite)) {
+if (!(cascade.prevue >= cascade.faite && cascade.faite >= cascade.refaite && cascade.prevue >= cascade.rattrapage)) {
   throw new Error(`cascade incohérente : ${JSON.stringify(cascade)}`);
 }
 
@@ -112,10 +112,10 @@ function cascadeCadre(col) {
     dessiner(y, haut) {
       const decal = (haut - 186) / 2;
       let out = rect(x, y, w, haut, { trait: C.orange, fond: C.orangeFond, pointille: true, rayon: 10, epaisseur: 2 }) +
-        texte(col.x + col.w / 2, y + decal + 32, "Organisationnel — accès à la glycémie", { taille: 21, gras: true }) +
+        texte(col.x + col.w / 2, y + decal + 32, "Organisationnel — continuité de la glycémie", { taille: 21, gras: true }) +
         etiquette(col.x + col.w - 14, y, "révision");
-      const etapes = [["présent", "", cascade.present], ["utilisable", "", cascade.utilisable],
-        ["faite à la", "1re CPN", cascade.accessible], ["refaite à", "24-28 sem.", cascade.refaite]];
+      const etapes = [["prévue", "pour toutes", cascade.prevue], ["faite", "le jour même", cascade.faite],
+        ["rattrapée", "si manquée", cascade.rattrapage], ["refaite à", "24-28 sem.", cascade.refaite]];
       const lw = 110, gap = (w - 24 - 4 * lw) / 3;
       etapes.forEach(([lib, sous, val], i) => {
         const bx = x + 12 + i * (lw + gap), by = y + decal + 48;
@@ -124,23 +124,23 @@ function cascadeCadre(col) {
           texte(bx + lw / 2, by + 60, lib, { taille: 19 }) + (sous ? texte(bx + lw / 2, by + 81, sous, { taille: 16, italique: true }) : "");
         if (i < 3) out += fleche(bx + lw + 3, by + 46, bx + lw + gap - 3, by + 46);
       });
-      out += texte(col.x + col.w / 2, y + decal + 168, `nombre de centres où le glucomètre est…`, { taille: 17, italique: true });
+      out += texte(col.x + col.w / 2, y + decal + 168, `centres où la glycémie de la 1re CPN est…`, { taille: 17, italique: true });
       return out;
     },
   };
 }
 const gauche = [
   sousCadre(G, "Sens attribué au dépistage", `Mandat reconnu par tous (${n("A2")}) ; ce qui est impossible cesse d'être pensé.`),
-  sousCadre(G, "Un dépistage coupé en deux", "Tension intégrée aux constantes ; glycémie au laboratoire ou à la consultation des maladies chroniques."),
-  sousCadre(G, "Un test unique, trop précoce", `Glycémie prévue pour toutes à la 1re CPN, souvent non faite faute de bandelettes ; non refaite à 24-28 semaines, sauf signes d'appel (${n("B9")}).`, { revision: "révision" }),
+  sousCadre(G, "Un test pour toutes, sauf les jours de manque", `Glycémie faite à toutes à la 1re CPN, en salle de CPN ; sautée les jours de rupture, de panne ou sans prestataire formé (${n("B8")}) ; rattrapée dans ${v.glycRattrapage} centres seulement.`, { revision: "révision" }),
+  sousCadre(G, "Un test unique, trop précoce", `Non refaite à 24-28 semaines, sauf signes d'appel (${n("B9")}).`, { revision: "révision" }),
   sousCadre(G, "Pratique informative et capacitante", `Modulée à l'inverse des besoins (${n("C4")}) ; séance collective égale pour les présentes, muette sur le résultat individuel (${n("C11")}) ; contre-pratiques : faire reformuler, image commune.`, { revision: "révision" }),
 ];
 const droite = [
-  sousCadre(D, "Individuel et professionnel", `Formation ponctuelle et nominative ; compétence désapprise (${n("D5")}).`),
+  sousCadre(D, "Individuel et professionnel", `Formation ponctuelle et nominative : parfois un seul prestataire formé au glucomètre ; compétence désapprise (${n("D5")}).`),
   cascadeCadre(D),
   sousCadre(D, "Systémique — le dispositif de contrôle", "Ce qui est compté existe ; le registre comme écran ; référence sans retour, rupture à l'accouchement.", { revision: "révision" }),
   sousCadre(D, "Articulation communautaire", "ASM et leur alerte téléphonique ; forums villageois (umugoroba w'ababyeyi) ; suivi des femmes référées.", { revision: "ajout" }),
-  sousCadre(D, "Social perçu", "Distance, coût, décision du ménage ; le service comme cause du non-retour."),
+  sousCadre(D, "Social perçu", `Distance, coût, décision du ménage ; autosurveillance à domicile réservée aux ménages aisés (${n("G15")}) ; le service comme cause du non-retour.`),
   sousCadre(D, "Portée en équité et transformations", `Inégalités jugées inacceptables (${n("H2")}) ; part reconnue : l'explication (${n("H5")}).`),
 ];
 // Les deux colonnes ont la même hauteur : l'espace en trop de la plus courte est réparti entre ses cadres.
@@ -167,9 +167,9 @@ parts.push(fleche(305, basCol + 4, 470, E.y - 6), fleche(895, basCol + 4, 730, E
   texte(L / 2, E.y + 40, "ÉQUITÉ D'ACCÈS AU DÉPISTAGE CAPACITANT", { taille: 26, gras: true }),
   etiquette(E.x + E.w, E.y, "révision : trois dimensions"));
 const dims = [
-  ["Accès au test", `Tension intégrée ; glycémie de la 1re CPN faite dans ${v.glycPossible} centres sur ${v.nbCentres}, jamais refaite à 24-28 semaines.`],
+  ["Accès au test", `Glycémie pour toutes à la 1re CPN, faite dans ${v.glycFaite} centres sur ${v.nbCentres} le jour observé, rattrapée dans ${v.glycRattrapage}, jamais refaite à 24-28 sem.`],
   ["Accès à l'explication", "La capacité d'agir de la femme, distribuée à l'inverse des besoins."],
-  ["Continuité", "Référence aboutie, retour d'information, suivi après l'accouchement."],
+  ["Continuité", "Référence aboutie, retour d'information, autosurveillance selon les moyens, suivi après l'accouchement."],
 ];
 const dw = (E.w - 80) / 3;
 dims.forEach(([t, c], i) => {
@@ -211,4 +211,4 @@ await page.setContent(`<!doctype html><html><body style="margin:0">${svg}</body>
 await page.screenshot({ path: cheminPng, clip: { x: 0, y: 0, width: L, height: H } });
 await navigateur.close();
 console.log("écrit :", cheminSvg, "et", cheminPng);
-console.log(`  cascade : présent ${cascade.present} → utilisable ${cascade.utilisable} → faite à la 1re CPN ${cascade.accessible} → refaite à 24-28 sem. ${cascade.refaite} (sur ${v.nbCentres})`);
+console.log(`  cascade : prévue ${cascade.prevue} → faite le jour même ${cascade.faite} → rattrapée ${cascade.rattrapage} → refaite à 24-28 sem. ${cascade.refaite} (sur ${v.nbCentres})`);

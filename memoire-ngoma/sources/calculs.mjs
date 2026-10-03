@@ -17,7 +17,7 @@ import { observations } from "./observations.mjs";
 import { observationsV2 } from "./observations-vague2.mjs";
 import { arbre, ecarts, ecartsV2 } from "./codes.mjs";
 import { consentementDe } from "./consentements.mjs";
-import { SOURCE as SOURCE_ROUTINE, RESERVE } from "./donnees-routine.mjs";
+import { SOURCE as SOURCE_ROUTINE, RESERVE, parCentre as routine } from "./donnees-routine.mjs";
 import * as e12 from "./entretiens-01-02.mjs";
 import * as e34 from "./entretiens-03-04.mjs";
 import * as e56 from "./entretiens-05-06.mjs";
@@ -73,19 +73,29 @@ export async function calculs(dossier) {
     nbSf: tous.filter(x => x.qualif === "sage-femme").length,
     nbTitulaires: tous.filter(x => x.titulaire).length,
     dureeMin: Math.min(...minutes), dureeMax: Math.max(...minutes),
-    glycPossible: obsTous.filter(o => etatGluco(o) === "laboratoire").length,
-    glycMnt: obsTous.filter(o => etatGluco(o) === "réservée MNT").length,
+    // Glycémie de la première CPN, règle pour toutes : relevé du jour de l'observation (champ glycemieCpn).
+    glycFaite: obsTous.filter(o => etatGluco(o) === "faite").length,
+    glycInterrompue: obsTous.filter(o => etatGluco(o) !== "faite").length,
+    glycRupture: obsTous.filter(o => etatGluco(o) === "rupture").length,
+    glycPanne: obsTous.filter(o => etatGluco(o) === "panne").length,
+    glycNonForme: obsTous.filter(o => etatGluco(o) === "non formé").length,
+    // Ruptures de bandelettes de glycémie au cours des trois derniers mois.
+    glycRupture3Mois: obsTous.filter(o => /^oui — bandelettes de glycémie/.test(o.ruptureTroisMois)).length,
+    // Test manqué noté et refait au rendez-vous suivant.
+    glycRattrapage: obsTous.filter(o => o.rattrapage === "oui").length,
     // Glycémie refaite systématiquement à 24-28 semaines (épreuve du protocole national de 2012).
     glycT3Systematique: obsTous.filter(o => o.glycemieT3 === "systématique").length,
     nbSeancesObservees: obsTous.filter(o => o.S && o.S.observee.startsWith("oui")).length,
     nbSeancesTension: obsTous.filter(o => o.S && /tension : oui/.test(o.S.sujets)).length,
-    glucoInutilisable: obsTous.filter(o => etatGluco(o) === "impossible").length,
-    glucoAbsent: obsTous.filter(o => etatGluco(o) === "absent").length,
     glucoPresent: obsTous.filter(o => gluco(o).present === "oui").length,
-    glucoEnCpn: obsTous.filter(o => gluco(o).present === "oui" && !/laboratoire|consultation MNT/.test(gluco(o).etat)).length,
+    glucoEnCpn: obsTous.filter(o => gluco(o).present === "oui" && /CPN|constantes/.test(gluco(o).etat)).length,
+    glucoFonctionnel: obsTous.filter(o => gluco(o).present === "oui" && !/NON fonctionnel/.test(gluco(o).etat)).length,
     nbConstats: constats.length,
     nbEcarts: constats.filter(x => x.nature === "écart").length,
     nbConcordances: constats.filter(x => x.nature === "concordance").length,
+    // Part des premières CPN ayant reçu une glycémie (données de routine, annexe 9).
+    couvGlycMin: `${Math.min(...routine.map(r => parseInt(r.glyc.match(/\((\d+) %/)[1], 10)))} %`,
+    couvGlycMax: `${Math.max(...routine.map(r => parseInt(r.glyc.match(/\((\d+) %/)[1], 10)))} %`,
     sourceRoutine: SOURCE_ROUTINE,
     reserveRoutine: RESERVE,
     equiteSpontane,

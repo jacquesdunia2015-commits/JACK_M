@@ -52,9 +52,9 @@ export const EXECUTIVE_SUMMARY = [
   { h: "Background and methods" },
   { p: "Antenatal care (ANC) is the most regular contact between young women and a qualified provider in Rwanda. This descriptive qualitative study analysed how ANC nurses and midwives perceive and report screening for hypertension and diabetes in pregnancy, and the equity of access they recognise. Semi-structured interviews were held with {N} providers in {v:nbCentres} of the 16 health centres of Ngoma District, with non-participant observation of each service; data were analysed thematically, with double coding (κ = {v:kappaInter})." },
   { h: "Key findings" },
-  { p: "Screening is split in two: blood pressure is measured at ANC, but glucose testing belongs to the laboratory or the chronic disease clinic, and although it is planned for every woman at the first visit, it was actually performed in only {v:glycPossible} centres; it is not repeated at 24-28 weeks, when gestational diabetes appears, except on warning signs. Explanation of results is inversely related to need; the collective health education session held two or three mornings a week gives all women present the same general message, but rarely mentions blood pressure or glucose and is missed by late arrivals. Screening is absent from ANC indicators, so it is neither supplied nor supervised; referral often fails and follow-up stops at delivery." },
+  { p: "Blood pressure is measured at every visit and every woman has a capillary glucose test at her first ANC visit; but the test is skipped on days of test-strip stock-outs, meter breakdowns or when no trained provider is present — on the observation day it was done in {v:glycFaite} of {v:nbCentres} centres — and missed women are rarely retested; it is not repeated at 24-28 weeks, when gestational diabetes appears, except on warning signs. After diagnosis, home self-monitoring with a purchased meter is limited to better-off households. Explanation of results is inversely related to need; the collective health education session held two or three mornings a week gives all women present the same general message, but rarely mentions blood pressure or glucose and is missed by late arrivals. Screening is absent from ANC indicators, so it is neither supplied nor supervised; referral often fails and follow-up stops at delivery." },
   { h: "Recommendations" },
-  { p: "Secure test strips for the first-visit glucose test and make gestational diabetes screening at 24-28 weeks feasible, with written criteria; add a screening line to the monthly ANC report; make hospital feedback systematic; support providers' explanation of results and community follow-up of referred women." },
+  { p: "Secure test strips without stock-outs and train every ANC provider to use the glucose meter; keep a list of women whose test was missed and retest them; make gestational diabetes screening at 24-28 weeks feasible, with written criteria; add a screening line to the monthly ANC report; make hospital feedback systematic; support providers' explanation of results and community follow-up of referred women." },
 ];
 
 // § 4.2.5 à 4.2.7, tels que conduits (au passé).
@@ -73,17 +73,17 @@ export const METHODES_CONDUITES = [
 ];
 
 export const CONCLUSION = [
-  { p: "Cette étude visait à comprendre comment les infirmiers et sages-femmes de CPN du district de Ngoma perçoivent le dépistage de l'hypertension et du diabète chez la femme enceinte, quelles pratiques ils déclarent et quelle portée ils lui reconnaissent en matière d'équité. Les professionnels reconnaissent ce dépistage comme relevant de la CPN, mais n'en accomplissent que la moitié : la tension est mesurée, tandis que la glycémie, rattachée au laboratoire et prévue pour toutes à la première CPN, n'était effectivement réalisée que dans {v:glycPossible} centres sur {v:nbCentres}, et n'est refaite nulle part de façon systématique entre 24 et 28 semaines, quand apparaît le diabète gestationnel. L'explication, qui fonde la capacité d'agir, est distribuée à l'inverse des besoins ; la séance d'éducation collective, seul moment d'information égale, parle peu de la tension et presque jamais du sucre, et manque les femmes arrivées tard." },
+  { p: "Cette étude visait à comprendre comment les infirmiers et sages-femmes de CPN du district de Ngoma perçoivent le dépistage de l'hypertension et du diabète chez la femme enceinte, quelles pratiques ils déclarent et quelle portée ils lui reconnaissent en matière d'équité. Les professionnels reconnaissent ce dépistage comme relevant de la CPN, et le pratiquent pour toutes : la tension est mesurée à chaque visite, la glycémie à la première CPN. Mais ce test saute les jours de rupture de bandelettes, de panne ou d'absence d'un prestataire formé — il n'était fait le jour de l'observation que dans {v:glycFaite} centres sur {v:nbCentres} —, la femme manquée n'est presque jamais rattrapée, et la glycémie n'est refaite nulle part de façon systématique entre 24 et 28 semaines, quand apparaît le diabète gestationnel. Après le diagnostic, l'autosurveillance à domicile reste réservée aux ménages aisés. L'explication, qui fonde la capacité d'agir, est distribuée à l'inverse des besoins ; la séance d'éducation collective, seul moment d'information égale, parle peu de la tension et presque jamais du sucre, et manque les femmes arrivées tard." },
   { p: "Les limites relèvent surtout du système — indicateurs, intrants, référence, rupture à l'accouchement —, et les participants jugent le plus souvent ces différences inacceptables, en reconnaissant la part qui leur revient. Au regard de la promotion de la santé, le dépistage en CPN apparaît comme une réorientation des services restée incomplète, dont le manque se distribue inégalement entre les femmes. Les suggestions suivantes en découlent." },
 ];
 
 export const SUGGESTIONS = [
   ["Au Ministère de la Santé et au Rwanda Biomedical Centre", [
-    "garantir les bandelettes nécessaires à la glycémie de la première CPN, et rendre praticable le dépistage du diabète gestationnel entre 24 et 28 semaines, au contact de 26 semaines du modèle national à huit contacts ;",
+    "garantir sans rupture les bandelettes de la glycémie de la première CPN, et rendre praticable le dépistage du diabète gestationnel entre 24 et 28 semaines, au contact de 26 semaines du modèle national à huit contacts ;",
     "introduire dans le rapport mensuel de la CPN un indicateur portant sur les actes de dépistage et leur suite.",
   ]],
   ["À la Direction de la santé du district de Ngoma", [
-    "organiser le circuit « bon de CPN → laboratoire » le matin même et réserver aux bons de CPN une part des bandelettes, pour la première CPN comme pour le contrôle à 24-28 semaines ;",
+    "inclure les bandelettes de glycémie de la CPN dans les intrants essentiels, avec un seuil d'alerte, et former au glucomètre tous les prestataires de CPN, nouveaux arrivants compris ;",
     "inscrire la tension et le sucre au programme des séances d'éducation collective, reprendre le message pour les femmes arrivées après la séance, et ne pas substituer la séance à la restitution individuelle du résultat ;",
     "faire savoir, par les ASM et l'umugoroba w'ababyeyi, que la femme est reçue à la première CPN même sans son conjoint, et relier les campagnes de dépistage des MNT à la CPN ;",
     "organiser la maintenance des appareils et superviser les actes par l'observation, non par la seule complétude des registres.",
@@ -92,13 +92,14 @@ export const SUGGESTIONS = [
     "rendre systématique le retour d'information pour chaque femme référée et organiser le suivi après l'accouchement.",
   ]],
   ["Aux équipes des centres de santé", [
+    "tenir la liste des femmes dont la glycémie n'a pas pu être faite et la refaire au rendez-vous suivant ; rapprocher le suivi des femmes dépistées qui ne peuvent pas se surveiller à domicile ;",
     "vérifier la compréhension en faisant reformuler la femme, et consacrer davantage de temps à celles qui en ont le plus besoin ; tracer les références et leur suite.",
   ]],
   ["Aux institutions de formation, dont l'ENATSE", [
     "former des équipes plutôt que des personnes, et intégrer la pratique informative et sa distribution entre les femmes à la formation.",
   ]],
   ["Aux chercheurs", [
-    "recueillir le point de vue des femmes, mesurer la couverture effective de la glycémie à partir des registres des laboratoires et suivre les femmes dépistées après l'accouchement.",
+    "recueillir le point de vue des femmes, mesurer la couverture effective de la glycémie de la première CPN à partir des registres, et suivre les femmes dépistées après l'accouchement.",
   ]],
 ];
 
@@ -107,7 +108,7 @@ export const RESUME = {
   blocs: [
     ["Introduction", "Dépister l'hypertension et le diabète en consultation prénatale (CPN) relève d'une réorientation des services au sens de la Charte d'Ottawa, dont la portée capacitante dépend des infirmiers et sages-femmes. L'étude analysait leurs perceptions et pratiques déclarées, et l'équité d'accès qu'ils reconnaissent, dans le district de Ngoma (Rwanda)."],
     ["Méthodes", "Étude qualitative descriptive : {N} entretiens semi-structurés dans {v:nbCentres} centres de santé, observation de chaque service, analyse thématique hybride, double codage (κ = {v:kappaInter})."],
-    ["Résultats", "Sept thèmes ont été dégagés. La tension est mesurée en CPN ; la glycémie relève du laboratoire et prévue pour toutes à la première CPN, n'était réalisée que dans {v:glycPossible} centres sur {v:nbCentres} et n'est pas refaite à 24-28 semaines. L'explication est modulée à l'inverse des besoins ; la séance d'éducation collective, égale pour les présentes, parle peu de la tension et du sucre et manque les femmes arrivées tard. Absent des indicateurs, le dépistage n'est ni approvisionné ni supervisé ; la référence aboutit mal."],
+    ["Résultats", "Sept thèmes ont été dégagés. La tension est mesurée à chaque visite et la glycémie faite à toutes à la première CPN, mais ce test saute les jours de rupture, de panne ou d'absence d'un prestataire formé (fait dans {v:glycFaite} centres sur {v:nbCentres} le jour de l'observation), sans rattrapage, et n'est pas refait à 24-28 semaines. L'autosurveillance à domicile reste réservée aux ménages aisés. L'explication est modulée à l'inverse des besoins ; la séance d'éducation collective, égale pour les présentes, parle peu de la tension et du sucre et manque les femmes arrivées tard. Absent des indicateurs, le dépistage n'est ni approvisionné ni supervisé ; la référence aboutit mal."],
     ["Conclusion", "Le dépistage en CPN reste une réorientation incomplète, inégalement distribuée entre les femmes."],
     ["Mots-clés", "dépistage ; hypertension ; diabète gestationnel ; consultation prénatale ; équité ; Rwanda."],
   ],
@@ -118,7 +119,7 @@ export const ABSTRACT = {
   blocs: [
     ["Introduction", "Screening for hypertension and diabetes at antenatal care (ANC) is a reorientation of health services in the sense of the Ottawa Charter, whose empowering value depends on nurses and midwives. This study analysed their perceptions and reported practices, and the equity of access they recognise, in Ngoma District, Rwanda."],
     ["Methods", "Descriptive qualitative study: {N} semi-structured interviews in {v:nbCentres} health centres, observation of each service, hybrid thematic analysis, double coding (κ = {v:kappaInter})."],
-    ["Results", "Seven themes emerged. Blood pressure is measured at ANC; glucose testing belongs to the laboratory and planned for all women at the first visit, was performed in only {v:glycPossible} of {v:nbCentres} centres and is not repeated at 24-28 weeks. Explanation is inversely related to need; the collective education session rarely covers blood pressure or glucose and misses late arrivals. Absent from indicators, screening is neither supplied nor supervised; referral often fails."],
+    ["Results", "Seven themes emerged. Blood pressure is measured at every visit and all women have a glucose test at the first visit, but it is skipped during strip stock-outs, meter breakdowns or without a trained provider (done in {v:glycFaite} of {v:nbCentres} centres on the observation day), missed women are not retested, and it is not repeated at 24-28 weeks. Home self-monitoring is limited to better-off households. Explanation is inversely related to need; the collective education session rarely covers blood pressure or glucose and misses late arrivals. Absent from indicators, screening is neither supplied nor supervised; referral often fails."],
     ["Conclusion", "ANC screening remains an incomplete reorientation, unequally distributed among women."],
     ["Keywords", "screening; hypertension; gestational diabetes; antenatal care; equity; Rwanda."],
   ],

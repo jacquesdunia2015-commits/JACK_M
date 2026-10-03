@@ -129,6 +129,15 @@ function documentAnnexes(cfg) {
       ["Rupture de stock signalée au cours des trois derniers mois", "", "", "", o.ruptureTroisMois],
     ], [1800, 1050, 1050, 2200, 2926]));
 
+    enfants.push(vide(), titre3("B bis. Glycémie de la première CPN (rubrique ajoutée à la grille)"));
+    const motif = { faite: "faite à toutes les femmes de première CPN reçues", rupture: "NON faite — rupture de bandelettes",
+      panne: "NON faite — glucomètre en panne", "non formé": "NON faite — aucun prestataire formé au glucomètre présent" };
+    enfants.push(tableau([
+      ["Glycémie de la première CPN ce jour", motif[o.glycemieCpn]],
+      ["Test manqué noté pour être refait au rendez-vous suivant", o.rattrapage],
+      ["Glycémie refaite à 24-28 semaines", o.glycemieT3],
+    ], [3400, 5626], { entete: false }));
+
     enfants.push(vide(), titre3("C. Protocoles et supports"));
     enfants.push(tableau([
       ["Élément", "Présent", "Accessible au poste", "Observations"],
@@ -203,7 +212,7 @@ function documentAnnexes(cfg) {
   ], [800, 800, 800, 1000, 1400, 1600, 1100, 1526]));
   enfants.push(vide());
   enfants.push(tableau([
-    ["Centre", "Dépistages glycémiques en CPN", "Ruptures de bandelettes (mois)", "Secteur : pauvreté", "Taux fictif"],
+    ["Centre", "Glycémies de première CPN (part des CPN1)", "Ruptures de bandelettes (mois)", "Secteur : pauvreté", "Taux fictif"],
     ...parCentre.map(c => [c.cs, c.glyc, c.rupt, c.pauvrete, `${c.tauxPauvrete} %`]),
   ], [900, 3300, 1900, 1700, 1226]));
   enfants.push(vide());

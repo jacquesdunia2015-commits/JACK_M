@@ -289,8 +289,8 @@ if (existsSync(join(racine, "memoire-ngoma"))) {
   const etats = [...observations, ...observationsV2].map(o => o.glycemieCpn);
   const n = e => etats.filter(x => x === e).length;
   verifier("le LISEZ-MOI annonce les effectifs de glycémie observés",
-    lisezMoi.includes(`la CPN dans ${n("laboratoire")} centres, réservée aux malades chroniques dans ${n("réservée MNT")}, impossible`) &&
-    lisezMoi.includes(`bandelettes absentes ou périmées) dans ${n("impossible")}`) && n("absent") === 1);
+    lisezMoi.includes(`la glycémie est faite dans ${n("faite")} centres, non faite pour rupture de bandelettes dans ${n("rupture")}, pour panne dans ${n("panne")} et faute de prestataire formé présent dans ${n("non formé")} ;`) &&
+    n("faite") + n("rupture") + n("panne") + n("non formé") === etats.length);
   verifier("le rapport de mémoire est produit", existsSync(join(racine, "memoire-ngoma/livrables/Rapport_de_memoire.docx")));
   // Le dépôt est public : ni le texte du protocole, ni ses figures, ni le
   // mémoire complet qui le reprend ne doivent y entrer.

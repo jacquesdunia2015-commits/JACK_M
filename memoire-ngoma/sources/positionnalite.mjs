@@ -154,24 +154,25 @@ fait apparaître des moments précis où j'ai pu orienter le matériau :
 · P10 : relance manquée sur le rôle du conjoint, par gêne. Ce thème est
   donc probablement sous-représenté dans mon corpus du fait de ma conduite,
   pas seulement du fait des participants.
-· P11 : surprise devant un dépistage glycémique décrit comme une routine.
-  Il a fallu ne pas la laisser paraître.
+· P11 : surprise devant un rattrapage du test manqué décrit comme une
+  routine. Il a fallu ne pas la laisser paraître.
 · P18 : tentation de reformuler les questions pour obtenir des catégories
   que la participante refusait. Je ne l'ai pas fait, et ce refus est devenu
   une donnée.
 · P19 : la participante a abordé d'elle-même la tenue du registre, que
   l'observation de la veille m'avait montrée et dont je n'avais rien dit.
 
-Ce qui m'a surpris. Mon premier présupposé ne s'est pas vérifié : dans
-presque tous les centres, le glucomètre existe — mais au laboratoire ou à la
-consultation des maladies chroniques, jamais en salle de CPN ; ce qui manque
-à la femme enceinte, c'est l'accès à cet appareil, un espace où dire un
-résultat sans qu'il soit entendu, et du temps pour l'expliquer. Mon
-expérience de la biologie médicale a sans doute joué ici : c'est en
-demandant où se trouvait le glucomètre, et pour qui servaient ses
-bandelettes, que ce circuit hors de la CPN est apparu (code B8). Le risque
-inverse existe aussi : surinterpréter ce qui relève du laboratoire, parce que
-c'est le monde que je connais.
+Ce qui m'a surpris. Mon premier présupposé ne s'est vérifié qu'en partie :
+tous les centres ont un glucomètre en salle de CPN et font la glycémie à
+toutes les femmes à la première visite ; ce qui manque, ce n'est pas
+l'appareil mais la continuité — des bandelettes sans rupture, un appareil
+réparé, un prestataire formé présent ce jour-là, une liste des femmes à
+retester —, un espace où dire un résultat sans qu'il soit entendu, et du
+temps pour l'expliquer. Mon expérience de la biologie médicale a sans doute
+joué ici : c'est en demandant d'où venaient les bandelettes, et ce que
+devenaient les femmes reçues un jour de rupture, que l'interruption du test
+est apparue (codes B8 et B10). Le risque inverse existe aussi : surinterpréter
+ce qui relève des intrants, parce que c'est le monde que je connais.
 L'analyse a ensuite fait apparaître des thèmes que je n'attendais pas : le
 dispositif de contrôle oriente l'attention (T4 — Ce qui est compté existe),
 le registre peut masquer l'inégalité (T6 — Le registre comme écran), et le
