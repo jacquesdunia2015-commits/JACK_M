@@ -25,7 +25,8 @@ export const LISTE_PERSONNEL = "[Liste officielle du personnel administratif et 
 
 export const DEDICACE = [
   "À Dieu, source de toute force, pour la santé et la persévérance accordées tout au long de cette formation.",
-  "À mes parents, pour leur amour et pour les sacrifices consentis pour mon éducation.",
+  "À la mémoire de mon père, dont l’exemple et les enseignements m’accompagnent encore.",
+  "À ma mère, pour son amour, ses prières et les sacrifices consentis pour mon éducation.",
   "À mon épouse, pour son amour, sa patience et son soutien constant pendant ces années d’études.",
   "À mes enfants, pour le temps que ce travail leur a pris et pour la force que leur présence m’a donnée.",
   "À mes proches et à mes compagnons de lutte en promotion de la santé, avec qui je partage la conviction que la santé se construit avec les plus vulnérables, et pour eux.",
