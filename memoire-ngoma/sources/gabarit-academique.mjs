@@ -108,8 +108,8 @@ function fixerTaille(p, demi) {
   return p.replace(/<w:r>(?:<w:rPr>([\s\S]*?)<\/w:rPr>)?/g, (x, r) => `<w:r><w:rPr>${inserer(r || "", sz, APRES_SZ)}</w:rPr>`);
 }
 // Interligne simple ; `serre` ramène aussi les espacements avant/après à 2 pt (cellules de tableau).
-function interligneSimple(p, { serre = false } = {}) {
-  const attributs = serre ? `w:before="40" w:after="40" w:line="240" w:lineRule="auto"` : `w:line="240" w:lineRule="auto"`;
+function interligneSimple(p, { serre = false, sansEspace = false } = {}) {
+  const attributs = serre ? `w:before="${sansEspace ? 0 : 40}" w:after="${sansEspace ? 0 : 40}" w:line="240" w:lineRule="auto"` : `w:line="240" w:lineRule="auto"`;
   const retirer = serre ? /\s*w:(?:line|lineRule|before|after)="\w+"/g : /\s*w:(?:line|lineRule)="\w+"/g;
   return avecPPr(p, c => /<w:spacing [^>]*\/>/.test(c.replace(/<w:rPr>[\s\S]*?<\/w:rPr>/g, ""))
     ? c.replace(/<w:spacing ([^>]*?)\/>/, (x, a) => `<w:spacing ${a.replace(retirer, "").trim()} ${attributs}/>`.replace(/\s+/g, " "))
@@ -121,8 +121,8 @@ function interligneSimple(p, { serre = false } = {}) {
 const APRES_JC = ["textDirection", "textAlignment", "textboxTightWrap", "outlineLvl", "divId", "cnfStyle", "rPr", "sectPr", "pPrChange"];
 const aGauche = p => avecPPr(p, c => /<w:jc /.test(c) ? c : inserer(c, `<w:jc w:val="left"/>`, APRES_JC));
 
-function traiterParagraphe(p, { dansTableau, colonnes }) {
-  if (dansTableau) return aGauche(interligneSimple(fixerTaille(p.replace(COULEUR, ""), colonnes > 5 ? 20 : 22), { serre: true }));
+function traiterParagraphe(p, { dansTableau, colonnes, sansEspace = false }) {
+  if (dansTableau) return aGauche(interligneSimple(fixerTaille(p.replace(COULEUR, ""), colonnes > 5 ? 20 : 22), { serre: true, sansEspace }));
   const t = texteDe(p);
   p = p.replace(COULEUR, "");
   if (/^(Tableau [IVXL\d]+|Figure \d+)\./.test(t)) return p.replace(TAILLE, "");   // légende : 14 pt comme le texte
@@ -161,7 +161,9 @@ export async function appliquerGabarit(tampon, { preserverPremiereSection = fals
   const traite = morceaux.map((m, k) => {
     if (m.startsWith("<w:tbl>")) {
       const colonnes = (m.match(/<w:gridCol /g) || []).length;
-      m = m.replace(/<w:p[ >][\s\S]*?<\/w:p>/g, p => traiterParagraphe(p, { dansTableau: true, colonnes }));
+      // Tableau marqué « TableauSerre » (liste du personnel) : 11 pt, interligne simple, sans espace avant ni après.
+      const sansEspace = /<w:tblStyle w:val="TableauSerre"\/>/.test(m);
+      m = m.replace(/<w:p[ >][\s\S]*?<\/w:p>/g, p => traiterParagraphe(p, { dansTableau: true, colonnes, sansEspace }));
       // La mention de source ne reste jamais seule en haut d'une page : la dernière
       // ligne du tableau est liée au paragraphe qui la suit.
       const suivant = (morceaux[k + 1] || "").match(/^<w:p[ >][\s\S]*?<\/w:p>/);

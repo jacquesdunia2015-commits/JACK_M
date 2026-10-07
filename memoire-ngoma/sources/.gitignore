@@ -2,3 +2,5 @@
 # restent sur le poste. Les produire avec extraire-protocole.py.
 protocole.json
 figures/
+# Liste nominative du personnel de l’ENATSE (transmise par l’auteur) : hors dépôt public.
+personnel.json

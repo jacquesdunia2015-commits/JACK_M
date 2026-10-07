@@ -319,9 +319,40 @@ function listeSigles() {
   });
 }
 
+/* ---------- Liste du personnel de l'École ----------
+   Liste officielle transmise par l'auteur (personnel.json, hors dépôt public). Présentée en
+   tableaux (11 pt, interligne simple) pour tenir sur une page. Sans le fichier, l'emplacement
+   reste signalé « à compléter ». */
+function listePersonnel() {
+  const f = new URL("./personnel.json", import.meta.url);
+  if (!existsSync(f)) return [titrePage("LISTE DU PERSONNEL DE L’ÉCOLE"), aCompleter(T.LISTE_PERSONNEL)];
+  const L = JSON.parse(readFileSync(f, "utf8"));
+  // Tableaux serrés (11 pt, interligne simple, marges réduites) pour tenir la page.
+  const cel = (t, w, o = {}) => new TableCell({ width: { size: w, type: WidthType.DXA }, columnSpan: o.span,
+    shading: o.fond ? { type: ShadingType.CLEAR, fill: o.fond, color: "auto" } : undefined,
+    margins: { top: 10, bottom: 10, left: 60, right: 60 },
+    children: String(t).split("\n").map(l => new Paragraph({ spacing: { before: 0, after: 0, line: 240 },
+      children: [new TextRun({ text: l, bold: o.gras, size: 19 })] })) });
+  const tab = (lignes, w, { entete = false } = {}) => new Table({ style: "TableauSerre", width: { size: LARGEUR, type: WidthType.DXA }, columnWidths: w,
+    rows: lignes.map((l, i) => new TableRow({ tableHeader: entete && i === 0, cantSplit: true,
+      children: l.length === 1 ? [cel(l[0], LARGEUR, { span: w.length, gras: true, fond: "E8EDF2" })]
+        : l.map((c, j) => cel(c, w[j], { gras: entete && i === 0, fond: entete && i === 0 ? "E8EDF2" : null })) })) });
+  const pc = x => Math.round(LARGEUR * x);
+  const quatre = [pc(0.2), pc(0.3), pc(0.2)]; quatre.push(LARGEUR - quatre.reduce((a, c) => a + c, 0));
+  const parDeux = l => { const out = []; for (let i = 0; i < l.length; i += 2) out.push([...l[i], ...(l[i + 1] || ["", ""])]); return out; };
+  const deux = [pc(0.3), LARGEUR - pc(0.3)];
+  const trois = [pc(0.3), pc(0.3)]; trois.push(LARGEUR - trois[0] - trois[1]);
+  return [
+    titrePage("LISTE DU PERSONNEL DE L’ÉCOLE"),
+    tab([...L.honoraires.map(([a, b]) => [a, b.replace(/\n/g, " ; ")]), [L.annee], ...L.administration,
+      ["Personnel enseignant permanent de l’École"], ...L.permanents,
+      ["Enseignants vacataires (responsable ; statut — grade et spécialité)"], ...L.vacataires.map(([n, st, g]) => [n, `${st} — ${g}`])], deux),
+  ];
+}
+
 /* ---------- Pages liminaires (après le corps, pour disposer des légendes) ---------- */
 const liminaires = [
-  titrePage("LISTE DU PERSONNEL DE L’ÉCOLE"), aCompleter(T.LISTE_PERSONNEL),
+  ...listePersonnel(),
   saut(), titrePage("DÉDICACE"),
   ...T.DEDICACE.map(t => new Paragraph({ alignment: AlignmentType.JUSTIFIED, indent: { left: 1134 }, spacing: { before: 120, after: 160 },
     children: [new TextRun({ text: t, italics: true })] })),
