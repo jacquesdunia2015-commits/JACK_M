@@ -322,7 +322,9 @@ function listeSigles() {
 /* ---------- Pages liminaires (après le corps, pour disposer des légendes) ---------- */
 const liminaires = [
   titrePage("LISTE DU PERSONNEL DE L’ÉCOLE"), aCompleter(T.LISTE_PERSONNEL),
-  saut(), titrePage("DÉDICACE"), aCompleter(T.DEDICACE),
+  saut(), titrePage("DÉDICACE"),
+  ...T.DEDICACE.map(t => new Paragraph({ alignment: AlignmentType.JUSTIFIED, indent: { left: 1134 }, spacing: { before: 120, after: 160 },
+    children: [new TextRun({ text: t, italics: true })] })),
   saut(), titrePage("REMERCIEMENTS"),
   ...T.REMERCIEMENTS.map(t => /^\[/.test(t) ? aCompleter(t) : corps(t)),
   saut(), titrePage("HOMMAGES"),

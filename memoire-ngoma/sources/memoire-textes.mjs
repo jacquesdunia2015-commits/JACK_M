@@ -5,8 +5,9 @@
 //
 // ⚠️ EXERCICE DE FORMATION : les faits de terrain décrits ici (dates, effectifs,
 // déroulement) sont ceux du projet simulé. Les champs entre crochets ne peuvent
-// pas être simulés (numéros d'approbation, noms du jury, dédicace) : ils sont à
-// compléter par l'auteur.
+// pas être simulés (numéros d'approbation, noms du jury) : ils sont à compléter
+// par l'auteur. La dédicace et les remerciements personnels suivent les choix de
+// l'auteur (7 octobre 2026), sans aucun nom propre qu'il n'aurait pas donné.
 //
 // Marqueurs : {N}, {n:CODE}, {v:clé} (calculs.mjs), {v:clé} (valeurs propres au
 // mémoire, ajoutées par faire-memoire.mjs), {p:n} et {c:cle} (références).
@@ -22,7 +23,14 @@ export const PAGE_DE_GARDE = {
 
 export const LISTE_PERSONNEL = "[Liste officielle du personnel administratif et enseignant de l'ENATSE et de l'Université de Parakou, à reprendre du modèle fourni par l'école.]";
 
-export const DEDICACE = "[Dédicace — à rédiger par l'auteur.]";
+export const DEDICACE = [
+  "À Dieu, source de toute force, pour la santé et la persévérance accordées tout au long de cette formation.",
+  "À mes parents, pour leur amour et pour les sacrifices consentis pour mon éducation.",
+  "À mon épouse, pour son amour, sa patience et son soutien constant pendant ces années d’études.",
+  "À mes enfants, pour le temps que ce travail leur a pris et pour la force que leur présence m’a donnée.",
+  "À mes proches et à mes compagnons de lutte en promotion de la santé, avec qui je partage la conviction que la santé se construit avec les plus vulnérables, et pour eux.",
+  "Aux femmes enceintes du district de Ngoma, pour qui ce dépistage existe : puisse ce travail contribuer à ce que chacune en bénéficie pleinement, quelle que soit sa condition.",
+];
 
 export const REMERCIEMENTS = [
   "À la Professeure N. Fanny M. HOUNKPONOU AHOUINGNAN, directrice de ce mémoire, pour la rigueur de son accompagnement, de la validation du protocole à la relecture du manuscrit.",
@@ -31,7 +39,11 @@ export const REMERCIEMENTS = [
   "À la personne bilingue qui a vérifié un échantillon des traductions des entretiens conduits en kinyarwanda.",
   "Au pair qui a accepté le double codage indépendant de trois entretiens.",
   "Aux enseignants et au personnel administratif de l'ENATSE.",
-  "[Remerciements personnels — à compléter par l'auteur.]",
+  "À mon épouse et à mes enfants, pour leur patience, leur compréhension et leurs encouragements pendant les longues périodes de cours, de collecte et de rédaction.",
+  "À ma famille et à mes proches, pour leur soutien constant tout au long de cette formation.",
+  "À mes collègues de travail, pour leur soutien et leur compréhension pendant mes absences liées à la formation.",
+  "À mes camarades de la promotion 2024-2025 du Master de santé publique, spécialité Promotion de la santé, de l’ENATSE, pour l’entraide et les échanges qui ont enrichi ce parcours.",
+  "À mes amis, pour leurs encouragements.",
 ];
 
 export const HOMMAGES = [

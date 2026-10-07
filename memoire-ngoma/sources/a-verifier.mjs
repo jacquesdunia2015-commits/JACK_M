@@ -9,7 +9,7 @@ const derniereAjoutee = PROTOCOLE.length + Object.keys(AJOUTEES).length;
 
 export const A_COMPLETER = [
   "Liste du personnel de l'École : à recopier depuis la liste officielle de l'ENATSE de l'année du dépôt.",
-  "Dédicace, et hommages aux membres du jury : à écrire soi-même ; les noms du jury ne sont connus qu'après sa désignation.",
+  "Dédicace et remerciements personnels : rédigés selon vos choix du 7 octobre 2026, sans aucun nom propre ; à relire, et à compléter si vous souhaitez nommer votre épouse, vos enfants, vos parents ou d'autres proches. Hommages aux membres du jury : à écrire après sa désignation, les noms n'étant connus qu'à ce moment.",
   "Annexe 6 et § 4.2.7 : numéros et dates de l'approbation du comité d'éthique et de l'autorisation du district — jamais inventés, recopiés des documents reçus.",
   "Annexe 5 : versions kinyarwanda et anglaise des outils issues de la traduction et de la rétro-traduction.",
   "Note de positionnalité : la question laissée entre crochets (exercice antérieur dans le district de Ngoma).",
