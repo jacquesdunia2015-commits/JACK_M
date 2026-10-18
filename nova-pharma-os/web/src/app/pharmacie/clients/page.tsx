@@ -1,0 +1,197 @@
+import Link from 'next/link';
+import NouveauClient from '@/components/NouveauClient';
+import Vide from '@/components/Vide';
+import { apiSafe } from '@/lib/api';
+import { date, money } from '@/lib/format';
+import AccesReserve from '@/components/AccesReserve';
+import { droits } from '@/lib/droits';
+import { traduire } from '@/lib/i18n';
+import { deviseSession } from '@/lib/devise';
+import Depliable from '@/components/Depliable';
+
+interface Client {
+  id: string; code: string; kind: string; name: string; phone: string | null;
+  city: string | null; credit_limit: string; outstanding_balance: string;
+  is_credit_blocked: boolean; purchases: string; lifetime_value: string;
+  last_purchase_at: string | null; loyalty_points: number; group_name: string | null;
+}
+
+interface BalanceAgee {
+  id: string; code: string; name: string; kind: string;
+  outstanding_balance: string; not_due: string; days_1_30: string;
+  days_31_60: string; days_61_90: string; days_over_90: string;
+}
+
+export default async function PageClients({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; kind?: string }>;
+}) {
+  const devise = await deviseSession();
+  if (!(await droits()).peut('customers.read')) return <AccesReserve titre={(await traduire()).t('nav.clients')} />;
+  const { q, kind } = await searchParams;
+  const params = new URLSearchParams();
+  if (q) params.set('search', q);
+  if (kind) params.set('kind', kind);
+
+  const [clients, balance] = await Promise.all([
+    apiSafe<Client[]>(`/customers?${params}`, []),
+    apiSafe<BalanceAgee[]>('/customers/aged-receivables', []),
+  ]);
+
+  return (
+    <>
+      <div className="page-head">
+        <h1>Clients</h1>
+        <p>Particuliers et clients professionnels (B2B), encours et historique.</p>
+      </div>
+
+      {balance.length > 0 && (
+        <section className="card">
+          <div className="card-head">
+            <h2>Balance âgée des créances</h2>
+            <span className="hint">Ancienneté des sommes dues</span>
+          </div>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th className="num">Non échu</th>
+                  <th className="num">1–30 j</th>
+                  <th className="num">31–60 j</th>
+                  <th className="num">61–90 j</th>
+                  <th className="num">+ 90 j</th>
+                  <th className="num">Total dû</th>
+                </tr>
+              </thead>
+              <tbody>
+                {balance.map((b) => (
+                  <tr key={b.id}>
+                    <td>
+                      {b.name}
+                      <br />
+                      <span className="small muted mono">{b.code}</span>
+                    </td>
+                    <td className="num">{money(b.not_due, devise)}</td>
+                    <td className="num">{money(b.days_1_30, devise)}</td>
+                    <td className="num">{money(b.days_31_60, devise)}</td>
+                    <td className="num">{money(b.days_61_90, devise)}</td>
+                    <td className="num">
+                      {Number(b.days_over_90) > 0 ? (
+                        <span className="tag danger">{money(b.days_over_90, devise)}</span>
+                      ) : (
+                        money(b.days_over_90, devise)
+                      )}
+                    </td>
+                    <td className="num">
+                      <strong>{money(b.outstanding_balance, devise)}</strong>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {(await droits()).peut('customers.write') && (
+        <section className="card">
+          <Depliable ouvert={clients.length === 0} resume={<>Ajouter un client</>}>
+            <NouveauClient />
+          </Depliable>
+        </section>
+      )}
+
+      <section className="card">
+        <div className="card-head">
+          <h2>Fichier clients</h2>
+          <span className="hint">{clients.length} client(s)</span>
+        </div>
+
+        <form className="row" style={{ marginBottom: '1rem' }}>
+          <input
+            name="q"
+            defaultValue={q ?? ''}
+            placeholder="Nom, code ou téléphone…"
+            style={{ maxWidth: 320 }}
+          />
+          <select name="kind" defaultValue={kind ?? ''} style={{ maxWidth: 220 }}>
+            <option value="">Tous les clients</option>
+            <option value="individual">Particuliers</option>
+            <option value="professional">Professionnels (B2B)</option>
+          </select>
+          <button type="submit" className="secondaire">
+            Filtrer
+          </button>
+        </form>
+
+        {clients.length === 0 ? (
+          <Vide message="Aucun client enregistré." />
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Type</th>
+                  <th>Téléphone</th>
+                  <th className="num">Points</th>
+                  <th className="num">Achats</th>
+                  <th className="num">Cumul</th>
+                  <th className="num">Encours</th>
+                  <th className="num">Plafond</th>
+                  <th className="num">Dernier achat</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clients.map((c) => {
+                  const encours = Number(c.outstanding_balance);
+                  const plafond = Number(c.credit_limit);
+                  const tendu = plafond > 0 && encours / plafond > 0.8;
+                  return (
+                    <tr key={c.id}>
+                      <td>
+                        {c.name}
+                        <br />
+                        <span className="small muted mono">{c.code}</span>
+                        {' · '}
+                        <Link href={`/pharmacie/factures?client=${c.id}`} className="small">Factures</Link>
+                      </td>
+                      <td>
+                        <span className="tag">
+                          {c.kind === 'professional' ? 'Professionnel' : 'Particulier'}
+                        </span>
+                        {c.is_credit_blocked && (
+                          <span className="tag danger" style={{ marginLeft: '0.3rem' }}>
+                            Crédit bloqué
+                          </span>
+                        )}
+                        {c.group_name && <span className="tag ok" style={{ marginLeft: '0.3rem' }}>{c.group_name}</span>}
+                      </td>
+                      <td className="small">{c.phone ?? '—'}</td>
+                      <td className="num">{c.loyalty_points > 0 ? c.loyalty_points.toLocaleString('fr-FR') : '—'}</td>
+                      <td className="num">{c.purchases}</td>
+                      <td className="num">{money(c.lifetime_value, devise)}</td>
+                      <td className="num">
+                        {encours > 0 ? (
+                          <span className={tendu ? 'tag danger' : 'tag warn'}>
+                            {money(encours, devise)}
+                          </span>
+                        ) : (
+                          money(0, devise)
+                        )}
+                      </td>
+                      <td className="num muted">{money(c.credit_limit, devise)}</td>
+                      <td className="num small">{date(c.last_purchase_at)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </>
+  );
+}
