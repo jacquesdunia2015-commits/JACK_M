@@ -60,6 +60,7 @@ main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; pa
 
 .vide { padding: 30px; text-align: center; color: var(--doux); background: var(--carte); border: 1px dashed var(--bord); border-radius: 8px; }
 .segment { background: var(--carte); border: 1px solid var(--bord); border-left: 4px solid var(--autre); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; }
+.segment { content-visibility: auto; contain-intrinsic-size: auto 170px; }
 .segment.E { border-left-color: var(--enq); } .segment.P { border-left-color: var(--par); }
 .segment.actif { background: var(--actif); }
 .segment.incertain { box-shadow: inset 0 0 0 1px var(--alerte); }
@@ -162,6 +163,22 @@ dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top
     <button class="principal" id="btnNouveau" title="Nouveau segment à la position de lecture — F2">+ Segment (F2)</button>
     <span id="nomAudio">Aucun audio ouvert</span>
   </div>
+  <div class="ligne" style="margin-top:6px">
+    <label title="Se placer à une heure précise de l’enregistrement">Aller à
+      <input type="text" id="allerA" placeholder="35:10" style="width:90px"></label>
+    <button id="btnAllerA">OK</button>
+    <button id="btnSuivant" title="Segment suivant marqué « à revoir » ou encore vide — F8">Suivant à revoir (F8)</button>
+    <label>Afficher
+      <select id="filtre">
+        <option value="tous">tous les segments</option>
+        <option value="revoir">à revoir</option>
+        <option value="vides">vides</option>
+        <option value="sanstrad">sans traduction</option>
+        <option value="sansloc">sans locuteur</option>
+      </select>
+    </label>
+    <span id="compteFiltre" style="color:var(--doux); font-size:13px"></span>
+  </div>
   <div id="piste" title="Cliquer pour se placer dans l’enregistrement"><div id="tete"></div></div>
   <audio id="audio" preload="metadata"></audio>
 </div>
@@ -194,6 +211,7 @@ dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top
       <div><kbd>Ctrl</kbd>+<kbd>←</kbd> / <kbd>→</kbd> reculer / avancer de 3 s</div>
       <div><kbd>F2</kbd> nouveau segment à la position de lecture</div>
       <div><kbd>F4</kbd> réécouter le segment en cours</div>
+      <div><kbd>F8</kbd> aller au segment suivant à revoir</div>
       <div><kbd>Alt</kbd>+<kbd>1</kbd> Enquêteur · <kbd>Alt</kbd>+<kbd>2</kbd> Participant · <kbd>Alt</kbd>+<kbd>3</kbd> Autre</div>
       <div><kbd>Ctrl</kbd>+<kbd>I</kbd> marquer « à revoir »</div>
       <div><kbd>Ctrl</kbd>+<kbd>K</kbd> insérer l’heure de l’audio [00:01:23]</div>
@@ -239,8 +257,16 @@ dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top
     <h3>4. Exporter</h3>
     <p>« Word (.rtf) » s’ouvre dans Word et s’importe dans NVivo. « Texte (.txt) — français » s’importe dans NVivo et dans QualiCode. Le tableau .csv s’ouvre dans Excel (séparateur point-virgule).</p>
     <h3>5. Formats audio</h3>
-    <p>Chrome lit le MP3, le WAV, le M4A/AAC, l’OGG et l’OPUS. Les fichiers AMR, 3GP ou WMA de certains enregistreurs doivent d’abord être convertis en MP3 (voir le guide).</p>
-    <h3>6. Confidentialité</h3>
+    <p>Chrome lit le MP3, le WAV, le M4A/AAC, l’OGG et l’OPUS. Les fichiers AMR, 3GP ou WMA de certains enregistreurs doivent d’abord être convertis en MP3 (voir le guide). Le moteur produit une <b>copie d’écoute</b> (<i>…_ecoute.mp3</i>) : ouvrez-la plutôt que l’original, le déplacement dans l’audio y est exact même pour un entretien d’une heure.</p>
+    <h3>6. Entretiens longs (50 minutes et plus)</h3>
+    <ul>
+      <li><b>Aller à</b> : taper une heure (35:10) puis Entrée pour s’y placer.</li>
+      <li><b>Suivant à revoir (F8)</b> : saute au prochain segment marqué « à revoir » ou encore vide.</li>
+      <li><b>Afficher</b> : ne montrer que les segments à revoir, vides, sans traduction ou sans locuteur.</li>
+      <li>La position d’écoute est mémorisée : à la reprise, l’audio repart là où vous vous étiez arrêté.</li>
+      <li>Travailler par tranches de 10 à 15 minutes et enregistrer le projet (Ctrl+S) à la fin de chaque tranche.</li>
+    </ul>
+    <h3>7. Confidentialité</h3>
     <p>Ne pas copier les enregistrements sur un ordinateur partagé ; fermer l’onglet après le travail. Le menu « Effacer la copie du navigateur » (bas de cette aide) supprime la sauvegarde automatique de cet ordinateur une fois le projet enregistré en fichier.</p>
     <p><button id="btnEffacer">Effacer la copie du navigateur pour ce projet</button></p>
   </div>
@@ -402,7 +428,9 @@ $("fichierAudio").onchange = function () {
   $("nomAudio").textContent = f.name;
   var cle = "tk:" + f.name + ":" + f.size;
   var dejaTranscrit = projet.segments.some(function (s) { return (s.texte || "").trim(); });
-  if (!dejaTranscrit) {
+  // Un découpage venu du moteur (même sans texte) est gardé ; seul le segment unique par défaut est remplacé
+  var decoupage = projet.moteur || projet.segments.length > 1;
+  if (!dejaTranscrit && !decoupage) {
     // Rien d’écrit à l’écran : reprendre la copie automatique de cet audio s’il y en a une
     projet.segments = [];
     var copie = stockage("lire", cle);
@@ -433,6 +461,10 @@ audio.addEventListener("loadedmetadata", function () {
     var dernier = projet.segments[projet.segments.length - 1];
     if (!(dernier.fin > 0)) dernier.fin = audio.duration;
   }
+  if (projet.position > 2 && projet.position < audio.duration) {
+    audio.currentTime = projet.position;
+    statut("Reprise à " + formatTemps(projet.position) + ", là où vous vous étiez arrêté.");
+  }
   majPiste(); majTemps(); majStats();
 });
 audio.addEventListener("error", function () {
@@ -449,7 +481,11 @@ audio.addEventListener("timeupdate", function () {
   suivreSegment(t);
 });
 audio.addEventListener("play", function () { $("btnLecture").textContent = "⏸ Pause"; });
-audio.addEventListener("pause", function () { $("btnLecture").textContent = "▶ Lecture"; });
+audio.addEventListener("pause", function () {
+  $("btnLecture").textContent = "▶ Lecture";
+  projet.position = Math.round(audio.currentTime * 10) / 10;   // pour reprendre au même endroit
+  modifie();
+});
 
 function lectureOuPause() {
   if (!audio.getAttribute("src")) { statut("Ouvrez d’abord l’enregistrement audio."); return; }
@@ -508,37 +544,40 @@ function trier() { projet.segments.sort(function (a, b) { return a.debut - b.deb
 
 function nouveauSegment() {
   if (!audio.getAttribute("src") && !projet.segments.length) { statut("Ouvrez d’abord l’enregistrement audio."); return; }
-  var t = Math.round((audio.currentTime || 0) * 10) / 10, i = indexA(t), nouveau;
+  var t = Math.round((audio.currentTime || 0) * 10) / 10, i = indexA(t), nouveau, coupe = null;
   if (i >= 0) {
-    var s = projet.segments[i];
-    if (t - s.debut < 0.3) { focaliser(i, "texte"); return; }  // déjà au début d’un segment
-    nouveau = segmentVide(t, s.fin);
-    s.fin = t;
+    coupe = projet.segments[i];
+    if (t - coupe.debut < 0.3) { focaliser(i, "texte"); return; }  // déjà au début d’un segment
+    nouveau = segmentVide(t, coupe.fin);
+    coupe.fin = t;
     projet.segments.splice(i + 1, 0, nouveau);
-    i = i + 1;
   } else {
     var fin = duree() || t + 10;
     projet.segments.forEach(function (s) { if (s.debut > t && s.debut < fin) fin = s.debut; });
     nouveau = segmentVide(t, fin);
     projet.segments.push(nouveau);
     trier();
-    i = projet.segments.indexOf(nouveau);
   }
+  i = idx(nouveau);
   // Le nouveau tour de parole revient en général à l’autre locuteur
   var prec = projet.segments[i - 1];
   if (prec && (prec.locuteur === "E" || prec.locuteur === "P")) nouveau.locuteur = prec.locuteur === "E" ? "P" : "E";
-  afficherSegments();
+  if (coupe) majCarte(coupe);
+  insererCarte(nouveau);
   focaliser(i, "texte");
-  modifie();
+  majPiste(); modifie();
 }
-function supprimerSegment(i) {
-  var s = projet.segments[i];
+function supprimerSegment(s) {
+  var i = idx(s);
+  if (i < 0) return;
   derniereSuppression = { index: i, segment: s };
   projet.segments.splice(i, 1);
   var prec = projet.segments[i - 1];
   if (prec && projet.segments[i]) prec.fin = projet.segments[i].debut;
   else if (prec) prec.fin = Math.max(prec.fin, s.fin);
-  afficherSegments(); modifie();
+  retirerCarte(s);
+  if (prec) majCarte(prec);
+  numeroter(); majPiste(); modifie();
   statut("Segment " + (i + 1) + " supprimé.", function () {
     var d = derniereSuppression;
     if (!d) return;
@@ -547,8 +586,8 @@ function supprimerSegment(i) {
     derniereSuppression = null;
   }, "Annuler");
 }
-function fusionnerAvecSuivant(i) {
-  var a = projet.segments[i], b = projet.segments[i + 1];
+function fusionnerAvecSuivant(a) {
+  var i = idx(a), b = projet.segments[i + 1];
   if (!b) return;
   a.fin = b.fin;
   a.texte = joindre(a.texte, b.texte);
@@ -557,27 +596,89 @@ function fusionnerAvecSuivant(i) {
   a.incertain = a.incertain || b.incertain;
   if (a.confiance != null || b.confiance != null) a.confiance = Math.min(a.confiance == null ? 1 : a.confiance, b.confiance == null ? 1 : b.confiance);
   projet.segments.splice(i + 1, 1);
-  afficherSegments(); focaliser(i, "texte"); modifie();
+  retirerCarte(b); majCarte(a); numeroter();
+  focaliser(i, "texte"); majPiste(); modifie();
 }
 function joindre(x, y) { x = (x || "").trim(); y = (y || "").trim(); return x && y ? x + " " + y : x || y; }
 
 function ajusterHauteur(t) { t.style.height = "auto"; t.style.height = (t.scrollHeight + 2) + "px"; }
+// Pour des centaines de zones : toutes les écritures, puis toutes les lectures, puis les écritures
+// (une seule mise en page au lieu d’une par zone).
+function ajusterHauteurs(zones) {
+  zones = Array.prototype.slice.call(zones);
+  zones.forEach(function (t) { t.style.height = "auto"; });
+  var h = zones.map(function (t) { return t.scrollHeight; });
+  zones.forEach(function (t, k) { t.style.height = (h[k] + 2) + "px"; });
+}
+
+// ---------- Affichage des segments (adapté aux entretiens longs) ----------
+var cartes = new Map();          // segment → carte affichée
+var filtre = "tous";
+var FILTRES = {
+  tous: function () { return true; },
+  revoir: function (s) { return s.incertain; },
+  vides: function (s) { return !(s.texte || "").trim(); },
+  sanstrad: function (s) { return (s.texte || "").trim() && !(s.traduction || "").trim(); },
+  sansloc: function (s) { return !s.locuteur; }
+};
+function idx(s) { return projet.segments.indexOf(s); }
+function carte(i) { return cartes.get(projet.segments[i]) || null; }
 
 function afficherSegments() {
   var conteneur = $("segments");
   conteneur.innerHTML = "";
+  cartes = new Map();
   if (!projet.segments.length) {
     conteneur.innerHTML = '<div class="vide">Ouvrez l’enregistrement audio pour commencer, puis appuyez sur <b>F2</b> à chaque changement de locuteur.<br>Ou ouvrez le fichier <i>.json</i> produit par le moteur automatique.</div>';
-    majPiste(); majStats();
+    majPiste(); majStats(); majCompteFiltre();
     return;
   }
-  var frag = document.createDocumentFragment();
-  projet.segments.forEach(function (s, i) { frag.appendChild(carteSegment(s, i)); });
+  var frag = document.createDocumentFragment(), garder = FILTRES[filtre];
+  projet.segments.forEach(function (s, i) {
+    if (!garder(s)) return;
+    var c = carteSegment(s, i);
+    cartes.set(s, c);
+    frag.appendChild(c);
+  });
+  if (!cartes.size) frag.appendChild(element("div", { classe: "vide", texte: "Aucun segment ne correspond à ce filtre." }));
   conteneur.appendChild(frag);
-  Array.prototype.forEach.call(conteneur.querySelectorAll("textarea"), ajusterHauteur);
+  ajusterHauteurs(conteneur.querySelectorAll("textarea"));
   segCourant = -1;
   suivreSegment(audio.currentTime || 0);
-  majPiste(); majStats();
+  majPiste(); majStats(); majCompteFiltre();
+}
+function insererCarte(s) {
+  if (filtre !== "tous") { afficherSegments(); return; }
+  var i = idx(s), c = carteSegment(s, i), suivant = carte(i + 1);
+  cartes.set(s, c);
+  if (suivant) $("segments").insertBefore(c, suivant); else $("segments").appendChild(c);
+  ajusterHauteurs(c.querySelectorAll("textarea"));
+  numeroter(); majCompteFiltre();
+}
+function majCarte(s) {
+  var ancienne = cartes.get(s);
+  if (!ancienne) return;
+  var c = carteSegment(s, idx(s));
+  if (ancienne.classList.contains("actif")) c.classList.add("actif");
+  ancienne.parentNode.replaceChild(c, ancienne);
+  cartes.set(s, c);
+  ajusterHauteurs(c.querySelectorAll("textarea"));
+}
+function retirerCarte(s) {
+  var c = cartes.get(s);
+  if (c) { c.remove(); cartes.delete(s); }
+  segCourant = -1;
+  majCompteFiltre();
+}
+function numeroter() {
+  projet.segments.forEach(function (s, i) {
+    var c = cartes.get(s);
+    if (c) c.firstChild.firstChild.textContent = "#" + (i + 1);
+  });
+}
+function majCompteFiltre() {
+  $("compteFiltre").textContent = filtre === "tous" ? projet.segments.length + " segments"
+    : cartes.size + " segment(s) affiché(s) sur " + projet.segments.length;
 }
 
 function element(tag, attributs, enfants) {
@@ -593,16 +694,17 @@ function element(tag, attributs, enfants) {
 }
 
 function carteSegment(s, i) {
-  var carte = element("div", { classe: "segment " + (s.locuteur || "X") + (s.incertain ? " incertain" : ""), "data-i": i });
+  var carte = element("div", { classe: "segment " + (s.locuteur || "X") + (s.incertain ? " incertain" : "") });
+  carte.segment = s;
 
   var champTemps = function (cle) {
     var inp = element("input", { classe: "t", type: "text", value: formatTemps(s[cle], true), title: cle === "debut" ? "Début" : "Fin" });
     inp.addEventListener("change", function () {
-      var v = lireTemps(inp.value);
+      var v = lireTemps(inp.value), j = idx(s);
       if (isNaN(v)) { inp.value = formatTemps(s[cle], true); statut("Heure non comprise : écrire par exemple 00:01:23.5"); return; }
       s[cle] = v;
-      if (cle === "debut") { var p = projet.segments[i - 1]; if (p && p.fin > v) p.fin = v; trier(); }
-      if (cle === "fin") { var n = projet.segments[i + 1]; if (n && n.debut < v) n.debut = v; }
+      if (cle === "debut") { var p = projet.segments[j - 1]; if (p && p.fin > v) p.fin = v; trier(); }
+      if (cle === "fin") { var n = projet.segments[j + 1]; if (n && n.debut < v) n.debut = v; }
       afficherSegments(); modifie();
     });
     return inp;
@@ -614,11 +716,11 @@ function carteSegment(s, i) {
     if ((s.locuteur || "") === o[0]) opt.selected = true;
     choixLoc.appendChild(opt);
   });
-  choixLoc.addEventListener("change", function () { definirLocuteur(i, choixLoc.value); });
+  choixLoc.addEventListener("change", function () { definirLocuteur(idx(s), choixLoc.value); });
 
   var caseIncertain = element("input", { type: "checkbox" });
   caseIncertain.checked = !!s.incertain;
-  caseIncertain.addEventListener("change", function () { basculerIncertain(i, caseIncertain.checked); });
+  caseIncertain.addEventListener("change", function () { basculerIncertain(idx(s), caseIncertain.checked); });
 
   var conf = null;
   if (s.confiance != null) conf = element("span", { classe: "confiance" + (s.confiance < SEUIL_CONFIANCE ? " basse" : ""),
@@ -626,37 +728,36 @@ function carteSegment(s, i) {
 
   var entete = element("div", { classe: "entete" }, [
     element("span", { classe: "num", texte: "#" + (i + 1) }),
-    element("button", { classe: "petit", texte: "▶", title: "Écouter ce segment (F4)", onclick: function () { segCourant = i; allerA(s.debut, true); } }),
+    element("button", { classe: "petit", texte: "▶", title: "Écouter ce segment (F4)", onclick: function () { segCourant = idx(s); allerA(s.debut, true); } }),
     champTemps("debut"), element("span", { texte: "→" }), champTemps("fin"),
     choixLoc,
     element("label", { title: "Passage douteux à réécouter (Ctrl+I)" }, [caseIncertain, document.createTextNode(" à revoir")]),
     conf,
     element("span", { classe: "espace" }),
-    element("button", { classe: "petit", texte: "Fusionner ↓", title: "Fusionner avec le segment suivant", onclick: function () { fusionnerAvecSuivant(i); } }),
-    element("button", { classe: "petit", texte: "Supprimer", onclick: function () { supprimerSegment(i); } })
+    element("button", { classe: "petit", texte: "Fusionner ↓", title: "Fusionner avec le segment suivant", onclick: function () { fusionnerAvecSuivant(s); } }),
+    element("button", { classe: "petit", texte: "Supprimer", onclick: function () { supprimerSegment(s); } })
   ]);
 
   var zone = function (cle, etiquette, lang) {
     var t = element("textarea", { "data-cle": cle, lang: lang, spellcheck: lang === "fr" ? "true" : "false", rows: "2" });
     t.value = s[cle] || "";
     t.addEventListener("input", function () { s[cle] = t.value; ajusterHauteur(t); modifie(); });
-    t.addEventListener("focus", function () { zoneActive = t; segCourantSaisie = i; });
+    t.addEventListener("focus", function () { zoneActive = t; segSaisi = s; });
     return element("div", {}, [element("div", { classe: "etiquette", texte: etiquette }), t]);
   };
 
   var note = element("input", { type: "text", placeholder: "Note du transcripteur (contexte, ton, geste…)" });
   note.value = s.note || "";
   note.addEventListener("input", function () { s.note = note.value; modifie(); });
-  note.addEventListener("focus", function () { zoneActive = note; segCourantSaisie = i; });
+  note.addEventListener("focus", function () { zoneActive = note; segSaisi = s; });
 
   carte.appendChild(entete);
   carte.appendChild(element("div", { classe: "colonnes" }, [zone("texte", "Kinyarwanda (ce qui est dit)", "rw"), zone("traduction", "Traduction française", "fr")]));
   carte.appendChild(element("div", { classe: "note" }, [note]));
   return carte;
 }
-var segCourantSaisie = -1;
+var segSaisi = null;
 
-function carte(i) { return document.querySelector('.segment[data-i="' + i + '"]'); }
 function focaliser(i, cle) {
   var c = carte(i);
   if (!c) return;
@@ -687,8 +788,7 @@ function suivreSegment(t) {
   var i = indexA(t);
   if (i === segCourant) return;
   if ($("boucle").checked && !audio.paused && segCourant >= 0) return;
-  var ancien = carte(segCourant);
-  if (ancien) ancien.classList.remove("actif");
+  Array.prototype.forEach.call(document.querySelectorAll(".segment.actif"), function (n) { n.classList.remove("actif"); });
   segCourant = i;
   var c = carte(i);
   if (c) {
@@ -701,10 +801,41 @@ function segmentCible() {
   // Le segment dans lequel on écrit, sinon celui que la lecture suit
   if (document.activeElement && document.activeElement.closest) {
     var c = document.activeElement.closest(".segment");
-    if (c) return parseInt(c.getAttribute("data-i"), 10);
+    if (c && c.segment) return idx(c.segment);
   }
-  return segCourant >= 0 ? segCourant : segCourantSaisie;
+  if (segCourant >= 0) return segCourant;
+  return segSaisi ? idx(segSaisi) : -1;
 }
+
+// ---------- Navigation dans un long entretien ----------
+$("filtre").onchange = function () { filtre = this.value; afficherSegments(); };
+function allerAHeure() {
+  var t = lireTemps($("allerA").value);
+  if (isNaN(t)) { statut("Heure non comprise : écrire par exemple 35:10 ou 00:35:10"); return; }
+  allerA(t, false);
+  var i = indexA(t);
+  if (i >= 0) {
+    if (!carte(i)) { filtre = "tous"; $("filtre").value = "tous"; afficherSegments(); }
+    focaliser(i, "texte");
+  }
+}
+$("btnAllerA").onclick = allerAHeure;
+$("allerA").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); allerAHeure(); } });
+function suivantARevoir() {
+  var depart = segmentCible(), n = projet.segments.length;
+  for (var k = 1; k <= n; k++) {
+    var i = ((depart < 0 ? -1 : depart) + k) % n, s = projet.segments[i];
+    if (s.incertain || !(s.texte || "").trim()) {
+      if (!carte(i)) { filtre = "tous"; $("filtre").value = "tous"; afficherSegments(); }
+      focaliser(i, "texte");
+      segCourant = i;
+      allerA(s.debut, false);
+      return;
+    }
+  }
+  statut("Aucun segment à revoir ni vide.");
+}
+$("btnSuivant").onclick = suivantARevoir;
 
 // ---------- Insertion (balises, glossaire, heure) ----------
 function inserer(txt) {
@@ -811,6 +942,7 @@ function normaliser(d) {
   if (d.meta) for (var k in p.meta) if (d.meta[k] != null) p.meta[k] = d.meta[k];
   if (d.audio) { p.audio.nom = d.audio.nom || ""; p.audio.taille = d.audio.taille || 0; p.audio.duree = d.audio.duree || 0; }
   p.moteur = d.moteur || null;
+  if (typeof d.position === "number") p.position = d.position;
   p.segments = liste.map(function (s) {
     var debut = num(s.debut, s.start, s.timestamp && s.timestamp[0]), fin = num(s.fin, s.end, s.timestamp && s.timestamp[1]);
     var seg = segmentVide(debut || 0, fin || debut || 0);
@@ -848,7 +980,7 @@ function telecharger(nom, contenu, type) {
 }
 function nomBase() {
   var code = (projet.meta.code || "").trim().replace(/[^\w-]+/g, "_");
-  var audioNom = (projet.audio.nom || "transcription").replace(/\.[^.]+$/, "").replace(/[^\w-]+/g, "_");
+  var audioNom = (projet.audio.nom || "transcription").replace(/\.[^.]+$/, "").replace(/_ecoute$/, "").replace(/[^\w-]+/g, "_");
   return code ? code + "_transcription" : audioNom;
 }
 function enregistrerProjet() {
@@ -1017,6 +1149,7 @@ document.addEventListener("keydown", function (e) {
   else if (ctrl && k === "ArrowLeft") { e.preventDefault(); deplacer(-3); }
   else if (ctrl && k === "ArrowRight") { e.preventDefault(); deplacer(3); }
   else if (k === "F2") { e.preventDefault(); nouveauSegment(); }
+  else if (k === "F8") { e.preventDefault(); suivantARevoir(); }
   else if (k === "F4") {
     e.preventDefault();
     var i = segmentCible(), s = projet.segments[i];
@@ -1028,7 +1161,11 @@ document.addEventListener("keydown", function (e) {
   else if (ctrl && (k === "s" || k === "S")) { e.preventDefault(); enregistrerProjet(); }
   else if (ctrl && (k === "h" || k === "H")) { e.preventDefault(); $("btnRemplacer").click(); }
 });
-window.addEventListener("beforeunload", function () { if (projet.segments.length) sauverNavigateur(); });
+window.addEventListener("beforeunload", function () {
+  if (!projet.segments.length) return;
+  if (audio.getAttribute("src")) projet.position = Math.round(audio.currentTime * 10) / 10;
+  sauverNavigateur();
+});
 
 // ---------- Démarrage ----------
 (function demarrer() {
