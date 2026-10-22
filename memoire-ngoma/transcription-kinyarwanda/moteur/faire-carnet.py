@@ -5,6 +5,7 @@ import os
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = open(os.path.join(ICI, "transcrire.py"), encoding="utf-8").read()
+WORD = open(os.path.join(ICI, "word.py"), encoding="utf-8").read()
 
 
 def md(texte):
@@ -37,6 +38,7 @@ les cellules une à une (bouton ▶ à gauche de chaque cellule).
     code("!pip -q install -U transformers peft sentencepiece librosa"),
     md("## 2. Écrire le script de transcription"),
     code("%%writefile transcrire.py\n" + SCRIPT),
+    code("%%writefile word.py\n" + WORD),
     md("""
 ## 3. Envoyer les enregistrements
 
@@ -60,7 +62,7 @@ vocabulaire de la santé. Essayez les deux sur un même entretien et gardez celu
 corrections. Retirez `--traduire` pour obtenir seulement le kinyarwanda.
 """),
     code("!python transcrire.py \"audios/*\" --modele badrex --traduire --sortie transcriptions"),
-    md("## 5. Récupérer les fichiers .json"),
+    md("## 5. Récupérer les documents Word (.docx), les fichiers .json et les copies d’écoute"),
     code("""
 import shutil
 from google.colab import files

@@ -110,9 +110,9 @@ dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top
   <div class="menu">
     <button id="btnExport">Exporter ▾</button>
     <div class="menu-liste cache" id="menuExport">
-      <button data-export="rtf-bi">Word (.rtf) — kinyarwanda + français</button>
-      <button data-export="rtf-fr">Word (.rtf) — français seulement</button>
-      <button data-export="rtf-rw">Word (.rtf) — kinyarwanda seulement</button>
+      <button data-export="docx-bi">Word (.docx) — tableau kinyarwanda | français</button>
+      <button data-export="docx-fr">Word (.docx) — français seulement (pour NVivo)</button>
+      <button data-export="docx-rw">Word (.docx) — kinyarwanda seulement</button>
       <button data-export="txt-fr">Texte (.txt) — français, pour NVivo / QualiCode</button>
       <button data-export="txt-bi">Texte (.txt) — kinyarwanda + français</button>
       <button data-export="csv">Tableau (.csv) — Excel</button>
@@ -255,7 +255,7 @@ dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top
     <h3>3. Sauvegarde</h3>
     <p>Le travail est enregistré automatiquement dans le navigateur à chaque modification (indication en haut à droite). Cela ne suffit pas : cliquez régulièrement sur « Enregistrer le projet » pour obtenir un fichier <i>.json</i> à garder dans le dossier chiffré de l’étude. Pour reprendre, ouvrez l’audio puis ce fichier.</p>
     <h3>4. Exporter</h3>
-    <p>« Word (.rtf) » s’ouvre dans Word et s’importe dans NVivo. « Texte (.txt) — français » s’importe dans NVivo et dans QualiCode. Le tableau .csv s’ouvre dans Excel (séparateur point-virgule).</p>
+    <p>« Word (.docx) » donne un vrai document Word modifiable : le texte se copie et se colle comme n’importe quel document. La version « tableau » met le kinyarwanda et le français côte à côte ; la version « français seulement » s’importe dans NVivo. « Texte (.txt) — français » s’importe dans NVivo et dans QualiCode. Le tableau .csv s’ouvre dans Excel (séparateur point-virgule).</p>
     <h3>5. Formats audio</h3>
     <p>Chrome lit le MP3, le WAV, le M4A/AAC, l’OGG et l’OPUS. Les fichiers AMR, 3GP ou WMA de certains enregistreurs doivent d’abord être convertis en MP3 (voir le guide). Le moteur produit une <b>copie d’écoute</b> (<i>…_ecoute.mp3</i>) : ouvrez-la plutôt que l’original, le déplacement dans l’audio y est exact même pour un entretien d’une heure.</p>
     <h3>6. Entretiens longs (50 minutes et plus)</h3>
@@ -1020,7 +1020,7 @@ function exporter(genre) {
   var manque = projet.segments.filter(function (s) { return (s.texte || "").trim() && !s.locuteur; }).length;
   if (manque) statut(manque + " segment(s) sans locuteur : ils sont exportés avec « ? ».");
   var base = nomBase(), bom = "﻿";
-  if (genre.indexOf("rtf") === 0) telecharger(base + (genre === "rtf-bi" ? "_rw-fr" : genre === "rtf-fr" ? "_fr" : "_rw") + ".rtf", rtf(segs, genre.slice(4)), "application/rtf");
+  if (genre.indexOf("docx") === 0) telecharger(base + (genre === "docx-bi" ? "_rw-fr" : genre === "docx-fr" ? "_fr" : "_rw") + ".docx", docx(segs, genre.slice(5)));
   else if (genre === "txt-fr" || genre === "txt-bi") telecharger(base + (genre === "txt-fr" ? "_fr" : "_rw-fr") + ".txt", bom + texte(segs, genre.slice(4)), "text/plain;charset=utf-8");
   else if (genre === "csv") telecharger(base + ".csv", bom + csv(projet.segments), "text/csv;charset=utf-8");
   else if (genre === "srt-rw" || genre === "srt-fr") telecharger(base + "_" + genre.slice(4) + ".srt", srt(segs, genre === "srt-rw" ? "texte" : "traduction"), "text/plain;charset=utf-8");
@@ -1062,46 +1062,117 @@ function srt(segs, cle) {
   return out.join("\r\n");
 }
 
-// RTF : s’ouvre dans Word (2007 et suivants), LibreOffice et s’importe dans NVivo
-function rtfEchapper(t) {
-  var out = "";
-  t = String(t == null ? "" : t);
-  for (var i = 0; i < t.length; i++) {
-    var c = t.charCodeAt(i), ch = t.charAt(i);
-    if (ch === "\\" || ch === "{" || ch === "}") out += "\\" + ch;
-    else if (ch === "\n") out += "\\line ";
-    else if (ch === "\r") continue;
-    else if (ch === "\t") out += "\\tab ";
-    else if (c > 127) out += "\\u" + (c > 32767 ? c - 65536 : c) + "?";
-    else out += ch;
-  }
-  return out;
+// ---------- Word (.docx) : vrai document Word modifiable, produit sans bibliothèque ni Internet ----------
+// Un .docx est une archive ZIP de fichiers XML ; l’archive est écrite ici sans compression.
+var TABLE_CRC = (function () {
+  var t = [];
+  for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(octets) {
+  var c = 0xFFFFFFFF;
+  for (var i = 0; i < octets.length; i++) c = TABLE_CRC[(c ^ octets[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
 }
-function rtf(segs, contenu) {
-  var r = ["{\\rtf1\\ansi\\ansicpg1252\\deff0\\uc1",
-    "{\\fonttbl{\\f0\\froman\\fcharset0 Times New Roman;}}",
-    "{\\colortbl;\\red90\\green90\\blue90;\\red181\\green84\\blue28;\\red107\\green79\\blue160;\\red31\\green95\\blue153;}",
-    "\\paperw11906\\paperh16838\\margl1701\\margr1417\\margt1417\\margb1417",
-    "\\f0\\fs24\\sl360\\slmult1"];
-  var entete = lignesEntete();
-  r.push("\\pard\\sa120{\\b\\fs28 " + rtfEchapper(entete[0]) + "}\\par");
-  entete.slice(1).forEach(function (l) { r.push("\\pard\\sa0{\\fs20\\cf1 " + rtfEchapper(l) + "}\\par"); });
-  r.push("\\pard\\sa120\\par");
-  segs.forEach(function (s) {
-    var couleur = s.locuteur === "E" ? "\\cf3" : s.locuteur === "P" ? "\\cf4" : "\\cf1";
-    var debut = "\\pard\\sa60\\keepn{\\fs18\\cf1 [" + formatTemps(s.debut) + "]} {\\b" + couleur + " " + rtfEchapper(nomLocuteur(s)) + " :} ";
-    var revoir = s.incertain ? " {\\cf2\\fs18 " + rtfEchapper("[à revoir]") + "}" : "";
-    if (contenu === "fr") r.push(debut.replace("\\keepn", "") + rtfEchapper(s.traduction || "[traduction manquante]") + revoir + "\\par");
-    else if (contenu === "rw") r.push(debut.replace("\\keepn", "") + rtfEchapper(s.texte) + revoir + "\\par");
-    else {
-      r.push(debut + rtfEchapper(s.texte) + revoir + "\\par");
-      r.push("\\pard\\li567\\sa60{\\i " + rtfEchapper(s.traduction || "[traduction manquante]") + "}\\par");
-    }
-    if (s.note) r.push("\\pard\\li567\\sa60{\\fs20\\cf1 Note : " + rtfEchapper(s.note) + "}\\par");
-    r.push("\\pard\\sa60\\par");
+function zipStocke(fichiers, type) {
+  var enc = new TextEncoder(), morceaux = [], central = [], decalage = 0, d = new Date();
+  var heure = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  var jour = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  fichiers.forEach(function (f) {
+    var nom = enc.encode(f[0]), donnees = enc.encode(f[1]), crc = crc32(donnees);
+    var l = new DataView(new ArrayBuffer(30));
+    l.setUint32(0, 0x04034b50, true); l.setUint16(4, 20, true); l.setUint16(6, 0x0800, true);
+    l.setUint16(10, heure, true); l.setUint16(12, jour, true); l.setUint32(14, crc, true);
+    l.setUint32(18, donnees.length, true); l.setUint32(22, donnees.length, true); l.setUint16(26, nom.length, true);
+    var c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+    c.setUint16(12, heure, true); c.setUint16(14, jour, true); c.setUint32(16, crc, true);
+    c.setUint32(20, donnees.length, true); c.setUint32(24, donnees.length, true); c.setUint16(28, nom.length, true);
+    c.setUint32(42, decalage, true);
+    morceaux.push(l, nom, donnees); central.push(c, nom);
+    decalage += 30 + nom.length + donnees.length;
   });
-  r.push("}");
-  return r.join("\r\n");
+  var tailleCentral = central.reduce(function (a, b) { return a + b.byteLength; }, 0);
+  var e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, fichiers.length, true); e.setUint16(10, fichiers.length, true);
+  e.setUint32(12, tailleCentral, true); e.setUint32(16, decalage, true);
+  return new Blob(morceaux.concat(central, [e]), { type: type });
+}
+function xmlEchapper(t) {
+  return String(t == null ? "" : t).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
+    .replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+}
+// o : gras, italique, sansCorrection (kinyarwanda : pas de soulignement rouge), couleur, taille (demi-points)
+function wRun(texte, o) {
+  o = o || {};
+  var pr = (o.gras ? "<w:b/>" : "") + (o.italique ? "<w:i/>" : "") + (o.sansCorrection ? "<w:noProof/>" : "") +
+    (o.couleur ? '<w:color w:val="' + o.couleur + '"/>' : "") + (o.taille ? '<w:sz w:val="' + o.taille + '"/><w:szCs w:val="' + o.taille + '"/>' : "");
+  return String(texte == null ? "" : texte).split(/\r?\n/).map(function (ligne, i) {
+    return "<w:r>" + (pr ? "<w:rPr>" + pr + "</w:rPr>" : "") + (i ? "<w:br/>" : "") + '<w:t xml:space="preserve">' + xmlEchapper(ligne) + "</w:t></w:r>";
+  }).join("");
+}
+function wPara(runs, o) {
+  o = o || {};
+  var pr = (o.garder ? "<w:keepNext/>" : "") + (o.apres != null ? '<w:spacing w:after="' + o.apres + '"/>' : "") + (o.retrait ? '<w:ind w:left="' + o.retrait + '"/>' : "");
+  return "<w:p>" + (pr ? "<w:pPr>" + pr + "</w:pPr>" : "") + runs + "</w:p>";
+}
+function wCellule(paragraphes, largeur, fond) {
+  return '<w:tc><w:tcPr><w:tcW w:w="' + largeur + '" w:type="dxa"/>' + (fond ? '<w:shd w:val="clear" w:color="auto" w:fill="' + fond + '"/>' : "") +
+    "</w:tcPr>" + paragraphes + "</w:tc>";
+}
+var COULEUR_LOC = { E: "6B4FA0", P: "1F5F99" };
+function docx(segs, contenu) {
+  var corps = [], entete = lignesEntete();
+  corps.push(wPara(wRun(entete[0], { gras: true, taille: 32 }), { apres: 120 }));
+  entete.slice(1).forEach(function (l) { corps.push(wPara(wRun(l, { couleur: "595959", taille: 20 }), { apres: 0 })); });
+  corps.push(wPara("", { apres: 120 }));
+  var revoir = function (s) { return s.incertain ? wRun(" [à revoir]", { couleur: "B5541C", taille: 18 }) : ""; };
+  var note = function (s) { return s.note ? wPara(wRun("Note : " + s.note, { italique: true, couleur: "595959", taille: 18 }), { apres: 0 }) : ""; };
+  if (contenu === "bi") {
+    // Tableau : une ligne par segment, kinyarwanda et français côte à côte
+    var L = [1000, 1300, 3385, 3385], bord = 'w:val="single" w:sz="4" w:space="0" w:color="A0A7B4"';
+    var t = ['<w:tbl><w:tblPr><w:tblW w:w="9070" w:type="dxa"/><w:tblBorders><w:top ' + bord + '/><w:left ' + bord + '/><w:bottom ' + bord +
+      '/><w:right ' + bord + '/><w:insideH ' + bord + '/><w:insideV ' + bord + '/></w:tblBorders><w:tblLayout w:type="fixed"/>' +
+      '<w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr>',
+      "<w:tblGrid>" + L.map(function (l) { return '<w:gridCol w:w="' + l + '"/>'; }).join("") + "</w:tblGrid>"];
+    t.push("<w:tr><w:trPr><w:tblHeader/></w:trPr>" + ["Heure", "Locuteur", "Kinyarwanda", "Français"].map(function (x, j) {
+      return wCellule(wPara(wRun(x, { gras: true, taille: 20 }), { apres: 0 }), L[j], "E8EDF2");
+    }).join("") + "</w:tr>");
+    segs.forEach(function (s) {
+      t.push("<w:tr><w:trPr><w:cantSplit/></w:trPr>" +
+        wCellule(wPara(wRun(formatTemps(s.debut), { couleur: "595959", taille: 18 }), { apres: 0 }), L[0]) +
+        wCellule(wPara(wRun(nomLocuteur(s), { gras: true, couleur: COULEUR_LOC[s.locuteur], taille: 20 }), { apres: 0 }), L[1]) +
+        wCellule(wPara(wRun(s.texte, { sansCorrection: true, taille: 22 }) + revoir(s), { apres: 0 }), L[2]) +
+        wCellule(wPara(wRun(s.traduction || "[traduction manquante]", { taille: 22 }), { apres: 0 }) + note(s), L[3]) + "</w:tr>");
+    });
+    t.push("</w:tbl>");
+    corps.push(t.join(""), wPara(""));
+  } else {
+    segs.forEach(function (s) {
+      var texte = contenu === "fr" ? (s.traduction || "[traduction manquante]") : s.texte;
+      corps.push(wPara(wRun("[" + formatTemps(s.debut) + "] ", { couleur: "595959", taille: 18 }) +
+        wRun(nomLocuteur(s) + " : ", { gras: true, couleur: COULEUR_LOC[s.locuteur] }) +
+        wRun(texte, { sansCorrection: contenu === "rw" }) + revoir(s), { apres: s.note ? 0 : 160 }));
+      if (s.note) corps.push(wPara(wRun("Note : " + s.note, { italique: true, couleur: "595959", taille: 20 }), { apres: 160, retrait: 567 }));
+    });
+  }
+  var W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"', X = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  var document_ = X + "<w:document " + W + "><w:body>" + corps.join("") +
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1418" w:right="1418" w:bottom="1418" w:left="1418" w:header="709" w:footer="709" w:gutter="0"/></w:sectPr></w:body></w:document>';
+  var styles = X + "<w:styles " + W + '><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman"/>' +
+    '<w:sz w:val="24"/><w:szCs w:val="24"/><w:lang w:val="fr-FR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>' +
+    '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>' +
+    '<w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:uiPriority w:val="99"/><w:semiHidden/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/>' +
+    '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>';
+  return zipStocke([
+    ["[Content_Types].xml", X + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>'],
+    ["_rels/.rels", X + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'],
+    ["word/_rels/document.xml.rels", X + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+    ["word/document.xml", document_],
+    ["word/styles.xml", styles]
+  ], "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 }
 
 // ---------- Rechercher / remplacer ----------

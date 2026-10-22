@@ -12,6 +12,8 @@ Audios longs (50 min et plus) : le traitement se fait segment par segment, avec 
 temps restant. Un fichier « .partiel.json » est enregistré au fur et à mesure : après une coupure,
 relancer la même commande reprend là où le calcul s’était arrêté. Une copie d’écoute MP3 à débit
 constant (…_ecoute.mp3) est produite pour que l’éditeur se place à l’instant exact de chaque segment.
+Un document Word modifiable (…_rw-fr.docx : tableau Heure | Locuteur | Kinyarwanda | Français) est
+produit à côté du fichier JSON.
 
 Exemples :
   python transcrire.py P01.mp3 --traduire
@@ -32,7 +34,7 @@ import time
 
 import numpy as np
 
-VERSION = "1.1"
+VERSION = "1.2"
 SR = 16000
 
 # Modèles de reconnaissance de la parole en kinyarwanda (raccourcis ; un identifiant Hugging Face
@@ -325,13 +327,20 @@ def traiter(chemin, args, reco, trad):
         segments[0]["debut"] = 0.0
         segments[-1]["fin"] = round(total, 2)
     moteur["date"] = datetime.datetime.now().isoformat(timespec="seconds")
-    ecrire_json(cible, {
+    projet = {
         "format": "transcripteur-kinyarwanda", "version": 1,
         "meta": {"code": "", "date": "", "transcripteur": "", "verificateur": "", "mode": "verbatim"},
         "audio": audio, "moteur": moteur, "segments": segments,
-    })
+    }
+    ecrire_json(cible, projet)
     if os.path.exists(partiel):
         os.remove(partiel)
+    if args.word and reco:
+        try:
+            from word import ecrire_docx   # word.py, à côté de ce script
+            print("  document Word : " + ecrire_docx(projet, os.path.join(args.sortie, base + "_rw-fr.docx")))
+        except ImportError:
+            print("  (word.py absent : pas de document Word)")
     a_revoir = sum(1 for s in segments if s.get("incertain"))
     print(f"  écrit : {cible}" + (f" ({a_revoir} segment(s) à revoir)" if reco else "")
           + f" — {duree_lisible(time.time() - debut_lecture)} au total")
@@ -351,6 +360,8 @@ def main(argv=None):
     p.add_argument("--sans-copie-ecoute", dest="copie_ecoute", action="store_false",
                    help="ne pas produire la copie MP3 d’écoute pour l’éditeur")
     p.add_argument("--recommencer", action="store_true", help="ignorer un fichier partiel et tout refaire")
+    p.add_argument("--sans-word", dest="word", action="store_false",
+                   help="ne pas produire le document Word (tableau kinyarwanda | français)")
     args = p.parse_args(argv)
 
     fichiers = []

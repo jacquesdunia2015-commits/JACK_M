@@ -12,6 +12,7 @@ utilisateurs, ni paiement, ni serveur.
 | `Transcripteur_Kinyarwanda.html` | Éditeur : écoute, transcription, traduction, correction, exports | Tout ordinateur, **y compris Windows 7** (Chrome 109 ou Firefox 115 ESR), sans Internet |
 | `Transcription_Kinyarwanda_Colab.ipynb` | Premier jet automatique dans Google Colab (GPU gratuit) | Navigateur récent ; Internet ; **accord de la directrice requis** (§ 8) |
 | `moteur/transcrire.py` | Le même moteur, à lancer sur un ordinateur | Windows 10/11, macOS ou Linux, 8 Go de mémoire au moins (16 Go conseillés) |
+| `moteur/word.py` | Transforme une transcription (.json) en document Word modifiable | Ordinateur avec Python |
 | `moteur/mesurer_wer.py` | Mesure la qualité du premier jet sur vos propres entretiens | Ordinateur avec Python |
 | `moteur/faire-carnet.py` | Régénère le carnet Colab après une modification du script | Développement uniquement |
 
@@ -36,7 +37,8 @@ utilisateurs, ni paiement, ni serveur.
 1. **Nommer l’enregistrement par le code du participant** (`P01.mp3`, `P02.m4a`…), jamais par son nom.
    Le garder dans le dossier sécurisé de l’étude.
 2. **Premier jet automatique (facultatif)** : avec Colab (§ 4) ou avec le script (§ 5). On obtient
-   `P01.json` et la copie d’écoute `P01_ecoute.mp3`.
+   `P01.json`, la copie d’écoute `P01_ecoute.mp3` et le document Word `P01_rw-fr.docx` (premier jet,
+   à corriger).
 3. **Ouvrir `Transcripteur_Kinyarwanda.html`** (double-clic ; sinon clic droit → *Ouvrir avec* → Chrome).
 4. Avec un premier jet : cliquer sur **Ouvrir une transcription** et choisir `P01.json`, puis sur
    **Ouvrir l’audio** et choisir la copie d’écoute `P01_ecoute.mp3`. Sans premier jet : **Ouvrir
@@ -58,9 +60,13 @@ utilisateurs, ni paiement, ni serveur.
    sans locuteur, aucun segment sans traduction, les segments « à revoir » réécoutés.
 10. **Enregistrer le projet** (**Ctrl+S**). Ranger `P01_transcription.json` dans le dossier sécurisé.
     Le navigateur garde aussi une copie automatique, mais elle ne remplace pas ce fichier.
-11. **Exporter.**
-    - *Word (.rtf) — kinyarwanda + français* : pour les annexes et le contrôle de fidélité.
-    - *Texte (.txt) — français* : pour l’import dans NVivo (ou dans QualiCode).
+11. **Exporter en Word (.docx).** Ce sont de vrais documents Word modifiables : le texte se copie et se
+    colle comme dans n’importe quel document.
+    - *Word — tableau kinyarwanda | français* : une ligne par segment (heure, locuteur, kinyarwanda,
+      traduction), pour les annexes, le contrôle de fidélité et le choix des citations.
+    - *Word — français seulement* : pour l’import dans NVivo (ou dans QualiCode).
+    - *Word — kinyarwanda seulement* : la transcription d’origine.
+    - Le texte (.txt) et le tableau Excel (.csv) restent disponibles.
 
 ## 4. Premier jet dans Google Colab
 
@@ -92,6 +98,8 @@ python moteur/transcrire.py "audios/*.m4a" --modele ubuzima --traduire --sortie 
   fichiers le soir.
 - Le paquet `imageio-ffmpeg` fournit ffmpeg, qui lit tous les formats (AAC, AMR, M4A…) et fabrique la copie d’écoute.
 - `--decoupage-seul` prépare seulement les segments aux silences, sans modèle.
+- `python moteur/word.py P01_transcription.json --contenu fr` transforme un projet corrigé en document
+  Word (`bi` : tableau, `fr` : français, `rw` : kinyarwanda).
 
 ## 6. Entretiens longs (50 minutes et plus)
 
