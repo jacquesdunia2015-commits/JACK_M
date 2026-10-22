@@ -1,0 +1,1263 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transcripteur Kinyarwanda</title>
+<!--
+  Transcripteur Kinyarwanda — éditeur de transcription et de traduction (kinyarwanda → français)
+  des entretiens enregistrés sur le terrain.
+  Fichier unique, sans connexion : il s’ouvre dans Chrome 109 ou Firefox 115 ESR (Windows 7).
+  L’audio reste sur l’ordinateur ; rien n’est envoyé sur Internet.
+  Il accepte le fichier JSON produit par le moteur automatique (moteur/transcrire.py)
+  ou permet une transcription entièrement manuelle.
+-->
+<style>
+:root {
+  --fond: #f6f7f9; --carte: #ffffff; --texte: #1d2430; --doux: #5b6576; --bord: #d9dee6;
+  --accent: #1f5f99; --accent-doux: #e6eef7; --alerte: #b5541c; --alerte-doux: #fbeee4;
+  --ok: #2e7d4f; --enq: #6b4fa0; --par: #1f5f99; --autre: #6d6d6d; --actif: #fff7d6;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--fond); color: var(--texte);
+  font: 15px/1.45 "Segoe UI", Arial, sans-serif; }
+button, select, input, textarea { font: inherit; color: inherit; }
+button { background: var(--carte); border: 1px solid var(--bord); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.principal { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.petit { padding: 2px 7px; font-size: 13px; }
+button:disabled { opacity: .5; cursor: default; }
+input[type=text], input[type=date], select, textarea { background: #fff; border: 1px solid var(--bord); border-radius: 5px; padding: 4px 6px; }
+textarea { width: 100%; resize: vertical; min-height: 44px; overflow: hidden; }
+textarea:focus, input:focus, select:focus { outline: 2px solid var(--accent-doux); border-color: var(--accent); }
+.cache { display: none !important; }
+
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 16px; background: var(--carte); border-bottom: 1px solid var(--bord); }
+header h1 { font-size: 17px; margin: 0 12px 0 0; }
+header .espace { flex: 1; }
+.menu { position: relative; display: inline-block; }
+.menu-liste { position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--carte); border: 1px solid var(--bord); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.12); z-index: 30; min-width: 270px; padding: 4px; }
+.menu-liste button { display: block; width: 100%; text-align: left; border: 0; padding: 7px 10px; }
+.menu-liste button:hover { background: var(--accent-doux); }
+
+#bandeau { padding: 8px 16px; background: var(--alerte-doux); border-bottom: 1px solid #efd2bd; font-size: 14px; }
+#infos { padding: 8px 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; background: var(--carte); border-bottom: 1px solid var(--bord); font-size: 14px; }
+#infos label { display: flex; align-items: center; gap: 6px; color: var(--doux); }
+#infos input[type=text] { width: 150px; }
+
+#lecteur { position: sticky; top: 0; z-index: 20; background: var(--carte); border-bottom: 1px solid var(--bord); padding: 8px 16px; }
+#lecteur .ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+#nomAudio { color: var(--doux); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+#temps { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 150px; }
+#piste { position: relative; height: 22px; margin-top: 8px; background: #eef1f5; border-radius: 4px; cursor: pointer; overflow: hidden; }
+#piste .seg { position: absolute; top: 3px; bottom: 3px; border-radius: 2px; opacity: .55; }
+#piste .seg.E { background: var(--enq); } #piste .seg.P { background: var(--par); } #piste .seg.A, #piste .seg.X { background: var(--autre); }
+#piste .seg.incertain { background: var(--alerte); opacity: .8; }
+#tete { position: absolute; top: 0; bottom: 0; width: 2px; background: #d22; left: 0; }
+
+main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; padding: 12px 16px 80px; }
+@media (max-width: 980px) { main { grid-template-columns: minmax(0, 1fr); } }
+
+.vide { padding: 30px; text-align: center; color: var(--doux); background: var(--carte); border: 1px dashed var(--bord); border-radius: 8px; }
+.segment { background: var(--carte); border: 1px solid var(--bord); border-left: 4px solid var(--autre); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; }
+.segment { content-visibility: auto; contain-intrinsic-size: auto 170px; }
+.segment.E { border-left-color: var(--enq); } .segment.P { border-left-color: var(--par); }
+.segment.actif { background: var(--actif); }
+.segment.incertain { box-shadow: inset 0 0 0 1px var(--alerte); }
+.segment .entete { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 13px; }
+.segment .num { color: var(--doux); min-width: 28px; }
+.segment input.t { width: 88px; font-variant-numeric: tabular-nums; padding: 2px 4px; }
+.segment .confiance { color: var(--doux); }
+.segment .confiance.basse { color: var(--alerte); font-weight: 600; }
+.segment .colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 700px) { .segment .colonnes { grid-template-columns: 1fr; } }
+.segment .etiquette { font-size: 12px; color: var(--doux); margin-bottom: 2px; }
+.segment .note { margin-top: 6px; }
+.segment .note input { width: 100%; font-size: 13px; }
+.segment .espace { flex: 1; }
+
+aside .carte { background: var(--carte); border: 1px solid var(--bord); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+aside h2 { font-size: 14px; margin: 0 0 8px; }
+aside .balises { display: flex; flex-wrap: wrap; gap: 4px; }
+#glossaireListe { max-height: 300px; overflow: auto; font-size: 13px; margin-top: 6px; }
+#glossaireListe div { display: flex; gap: 6px; padding: 3px 2px; border-bottom: 1px solid #f0f2f5; cursor: pointer; }
+#glossaireListe div:hover { background: var(--accent-doux); }
+#glossaireListe b { font-weight: 600; flex: 1; } #glossaireListe span { flex: 1; color: var(--doux); }
+#stats { font-size: 13px; } #stats div { display: flex; justify-content: space-between; }
+.raccourcis { font-size: 13px; } .raccourcis kbd { background: #eef1f5; border: 1px solid var(--bord); border-radius: 3px; padding: 0 4px; font-size: 12px; }
+
+dialog { border: 1px solid var(--bord); border-radius: 10px; padding: 16px 18px; max-width: 640px; width: calc(100% - 32px); }
+dialog::backdrop { background: rgba(0,0,0,.3); }
+dialog h2 { margin: 0 0 10px; font-size: 17px; }
+dialog .champs { display: grid; gap: 8px; }
+dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+#aide { max-width: 760px; } #aide .contenu { max-height: 65vh; overflow: auto; font-size: 14px; }
+#aide h3 { font-size: 15px; margin: 14px 0 4px; }
+
+#statut { position: fixed; left: 16px; bottom: 12px; background: #263243; color: #fff; padding: 7px 12px; border-radius: 6px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 50; max-width: calc(100% - 32px); }
+#statut.visible { opacity: .95; pointer-events: auto; }
+#statut button { margin-left: 10px; background: transparent; color: #fff; border-color: #6b7b92; }
+#sauvegarde { font-size: 12px; color: var(--doux); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Transcripteur Kinyarwanda</h1>
+  <button class="principal" id="btnAudio" title="Ouvrir l’enregistrement (MP3, WAV, M4A, OGG…)">Ouvrir l’audio</button>
+  <button id="btnProjet" title="Ouvrir un projet enregistré ou le fichier JSON du moteur automatique">Ouvrir une transcription</button>
+  <button id="btnEnregistrer" title="Ctrl+S">Enregistrer le projet</button>
+  <div class="menu">
+    <button id="btnExport">Exporter ▾</button>
+    <div class="menu-liste cache" id="menuExport">
+      <button data-export="docx-bi">Word (.docx) — tableau kinyarwanda | français</button>
+      <button data-export="docx-fr">Word (.docx) — français seulement (pour NVivo)</button>
+      <button data-export="docx-rw">Word (.docx) — kinyarwanda seulement</button>
+      <button data-export="txt-fr">Texte (.txt) — français, pour NVivo / QualiCode</button>
+      <button data-export="txt-bi">Texte (.txt) — kinyarwanda + français</button>
+      <button data-export="csv">Tableau (.csv) — Excel</button>
+      <button data-export="srt-rw">Sous-titres (.srt) — kinyarwanda</button>
+      <button data-export="srt-fr">Sous-titres (.srt) — français</button>
+    </div>
+  </div>
+  <button id="btnRemplacer" title="Rechercher et remplacer (anonymisation des noms) — Ctrl+H">Rechercher / remplacer</button>
+  <span class="espace"></span>
+  <span id="sauvegarde"></span>
+  <button id="btnAide">Aide</button>
+  <input type="file" id="fichierAudio" class="cache" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.opus,.amr,.3gp,.wma,.flac">
+  <input type="file" id="fichierProjet" class="cache" accept=".json,application/json">
+</header>
+
+<div id="bandeau" class="cache"></div>
+
+<div id="infos">
+  <label>Code du participant <input type="text" id="mCode" placeholder="P01"></label>
+  <label>Date de l’entretien <input type="date" id="mDate"></label>
+  <label>Transcrit par <input type="text" id="mTranscripteur" placeholder="initiales"></label>
+  <label>Vérifié par <input type="text" id="mVerificateur" placeholder="initiales"></label>
+  <label>Mode
+    <select id="mMode">
+      <option value="verbatim">Verbatim intégral (hésitations, répétitions)</option>
+      <option value="nettoye">Verbatim nettoyé (sens conservé)</option>
+    </select>
+  </label>
+</div>
+
+<div id="lecteur">
+  <div class="ligne">
+    <button id="btnLecture" title="Lecture / pause — Échap ou Ctrl+Espace">▶ Lecture</button>
+    <button id="btnRecul" title="Reculer de 3 s — Ctrl+←">⟲ 3 s</button>
+    <button id="btnAvance" title="Avancer de 3 s — Ctrl+→">3 s ⟳</button>
+    <span id="temps">00:00:00.0 / 00:00:00</span>
+    <label title="Vitesse de lecture">Vitesse
+      <select id="vitesse">
+        <option value="0.5">0,5×</option><option value="0.6">0,6×</option><option value="0.75">0,75×</option>
+        <option value="0.85">0,85×</option><option value="1" selected>1×</option><option value="1.25">1,25×</option><option value="1.5">1,5×</option>
+      </select>
+    </label>
+    <label title="À chaque reprise après une pause, l’audio recule un peu pour ne rien perdre">Retour à la reprise
+      <select id="retour"><option value="0">0 s</option><option value="1" selected>1 s</option><option value="2">2 s</option><option value="3">3 s</option></select>
+    </label>
+    <label title="Rejouer en boucle le segment en cours"><input type="checkbox" id="boucle"> Boucle</label>
+    <label title="Faire défiler la liste avec la lecture"><input type="checkbox" id="suivre" checked> Suivre</label>
+    <button class="principal" id="btnNouveau" title="Nouveau segment à la position de lecture — F2">+ Segment (F2)</button>
+    <span id="nomAudio">Aucun audio ouvert</span>
+  </div>
+  <div class="ligne" style="margin-top:6px">
+    <label title="Se placer à une heure précise de l’enregistrement">Aller à
+      <input type="text" id="allerA" placeholder="35:10" style="width:90px"></label>
+    <button id="btnAllerA">OK</button>
+    <button id="btnSuivant" title="Segment suivant marqué « à revoir » ou encore vide — F8">Suivant à revoir (F8)</button>
+    <label>Afficher
+      <select id="filtre">
+        <option value="tous">tous les segments</option>
+        <option value="revoir">à revoir</option>
+        <option value="vides">vides</option>
+        <option value="sanstrad">sans traduction</option>
+        <option value="sansloc">sans locuteur</option>
+      </select>
+    </label>
+    <span id="compteFiltre" style="color:var(--doux); font-size:13px"></span>
+  </div>
+  <div id="piste" title="Cliquer pour se placer dans l’enregistrement"><div id="tete"></div></div>
+  <audio id="audio" preload="metadata"></audio>
+</div>
+
+<main>
+  <section id="segments"></section>
+  <aside>
+    <div class="carte">
+      <h2>Balises (insérées au curseur)</h2>
+      <div class="balises" id="balises"></div>
+    </div>
+    <div class="carte">
+      <h2>Glossaire kinyarwanda → français</h2>
+      <input type="text" id="glossaireRecherche" placeholder="Chercher un terme…" style="width:100%">
+      <div id="glossaireListe"></div>
+      <div style="display:flex; gap:4px; margin-top:6px">
+        <input type="text" id="gRw" placeholder="kinyarwanda" style="flex:1; min-width:0">
+        <input type="text" id="gFr" placeholder="français" style="flex:1; min-width:0">
+        <button class="petit" id="gAjouter">Ajouter</button>
+      </div>
+      <p style="font-size:12px; color:var(--doux); margin:6px 0 0">Cliquer sur un terme l’insère dans la zone active. Liste de départ à vérifier et à compléter par vous.</p>
+    </div>
+    <div class="carte">
+      <h2>Avancement</h2>
+      <div id="stats"></div>
+    </div>
+    <div class="carte raccourcis">
+      <h2>Raccourcis clavier</h2>
+      <div><kbd>Échap</kbd> ou <kbd>Ctrl</kbd>+<kbd>Espace</kbd> lecture / pause</div>
+      <div><kbd>Ctrl</kbd>+<kbd>←</kbd> / <kbd>→</kbd> reculer / avancer de 3 s</div>
+      <div><kbd>F2</kbd> nouveau segment à la position de lecture</div>
+      <div><kbd>F4</kbd> réécouter le segment en cours</div>
+      <div><kbd>F8</kbd> aller au segment suivant à revoir</div>
+      <div><kbd>Alt</kbd>+<kbd>1</kbd> Enquêteur · <kbd>Alt</kbd>+<kbd>2</kbd> Participant · <kbd>Alt</kbd>+<kbd>3</kbd> Autre</div>
+      <div><kbd>Ctrl</kbd>+<kbd>I</kbd> marquer « à revoir »</div>
+      <div><kbd>Ctrl</kbd>+<kbd>K</kbd> insérer l’heure de l’audio [00:01:23]</div>
+      <div><kbd>Ctrl</kbd>+<kbd>S</kbd> enregistrer le projet</div>
+    </div>
+  </aside>
+</main>
+
+<dialog id="dlgRemplacer">
+  <h2>Rechercher et remplacer</h2>
+  <div class="champs">
+    <label>Rechercher <input type="text" id="rCherche" style="width:100%"></label>
+    <label>Remplacer par <input type="text" id="rPar" style="width:100%" placeholder="par ex. [NOM], [LIEU], [CENTRE]"></label>
+    <label>Dans
+      <select id="rDans"><option value="tout">kinyarwanda et français</option><option value="texte">kinyarwanda seulement</option><option value="trad">français seulement</option></select>
+    </label>
+    <label><input type="checkbox" id="rCasse"> Respecter les majuscules</label>
+    <div id="rResultat" style="color:var(--doux); font-size:14px"></div>
+  </div>
+  <div class="actions">
+    <button id="rCompter">Compter</button>
+    <button class="principal" id="rRemplacer">Remplacer tout</button>
+    <button id="rFermer">Fermer</button>
+  </div>
+</dialog>
+
+<dialog id="aide">
+  <h2>Aide — Transcripteur Kinyarwanda</h2>
+  <div class="contenu">
+    <p>Cet outil sert à transcrire en kinyarwanda, puis à traduire en français, les entretiens enregistrés sur le terrain. Il fonctionne sans Internet : l’audio ne quitte pas l’ordinateur.</p>
+    <h3>1. Deux façons de travailler</h3>
+    <p><b>A. Avec le moteur automatique.</b> Le script <i>moteur/transcrire.py</i> (ou le carnet Colab) produit un fichier <i>.json</i> : un premier jet découpé en segments, avec une proposition de traduction. Ouvrez l’audio, puis « Ouvrir une transcription » et choisissez ce fichier. Vous corrigez ensuite chaque segment en écoutant. Les segments dont la confiance est basse sont déjà marqués « à revoir ».</p>
+    <p><b>B. À la main.</b> Ouvrez l’audio et lancez la lecture. À chaque changement de locuteur, appuyez sur <b>F2</b> : un segment commence à la position de lecture. Tapez ce que vous entendez, puis la traduction.</p>
+    <h3>2. Règles de transcription conseillées</h3>
+    <ul>
+      <li>Écrire le kinyarwanda tel qu’il est dit, y compris les mots français ou anglais employés par le participant (CPN, tension, glucomètre…).</li>
+      <li>Ce qui ne s’entend pas : <b>[inaudible]</b> ; ce qui est douteux : mettre le mot entre crochets avec un point d’interrogation, puis marquer le segment « à revoir ».</li>
+      <li>Remplacer tout nom de personne par <b>[NOM]</b>, de lieu par <b>[LIEU]</b>, d’établissement par <b>[CENTRE]</b> (outil « Rechercher / remplacer »).</li>
+      <li>La traduction française rend le sens fidèlement ; conserver entre guillemets les expressions fortes à citer, avec le kinyarwanda d’origine.</li>
+    </ul>
+    <h3>3. Sauvegarde</h3>
+    <p>Le travail est enregistré automatiquement dans le navigateur à chaque modification (indication en haut à droite). Cela ne suffit pas : cliquez régulièrement sur « Enregistrer le projet » pour obtenir un fichier <i>.json</i> à garder dans le dossier chiffré de l’étude. Pour reprendre, ouvrez l’audio puis ce fichier.</p>
+    <h3>4. Exporter</h3>
+    <p>« Word (.docx) » donne un vrai document Word modifiable : le texte se copie et se colle comme n’importe quel document. La version « tableau » met le kinyarwanda et le français côte à côte ; la version « français seulement » s’importe dans NVivo. « Texte (.txt) — français » s’importe dans NVivo et dans QualiCode. Le tableau .csv s’ouvre dans Excel (séparateur point-virgule).</p>
+    <h3>5. Formats audio</h3>
+    <p>Chrome lit le MP3, le WAV, le M4A/AAC, l’OGG et l’OPUS. Les fichiers AMR, 3GP ou WMA de certains enregistreurs doivent d’abord être convertis en MP3 (voir le guide). Le moteur produit une <b>copie d’écoute</b> (<i>…_ecoute.mp3</i>) : ouvrez-la plutôt que l’original, le déplacement dans l’audio y est exact même pour un entretien d’une heure.</p>
+    <h3>6. Entretiens longs (50 minutes et plus)</h3>
+    <ul>
+      <li><b>Aller à</b> : taper une heure (35:10) puis Entrée pour s’y placer.</li>
+      <li><b>Suivant à revoir (F8)</b> : saute au prochain segment marqué « à revoir » ou encore vide.</li>
+      <li><b>Afficher</b> : ne montrer que les segments à revoir, vides, sans traduction ou sans locuteur.</li>
+      <li>La position d’écoute est mémorisée : à la reprise, l’audio repart là où vous vous étiez arrêté.</li>
+      <li>Travailler par tranches de 10 à 15 minutes et enregistrer le projet (Ctrl+S) à la fin de chaque tranche.</li>
+    </ul>
+    <h3>7. Confidentialité</h3>
+    <p>Ne pas copier les enregistrements sur un ordinateur partagé ; fermer l’onglet après le travail. Le menu « Effacer la copie du navigateur » (bas de cette aide) supprime la sauvegarde automatique de cet ordinateur une fois le projet enregistré en fichier.</p>
+    <p><button id="btnEffacer">Effacer la copie du navigateur pour ce projet</button></p>
+  </div>
+  <div class="actions"><button class="principal" id="aideFermer">Fermer</button></div>
+</dialog>
+
+<div id="statut"></div>
+
+<script>
+"use strict";
+// ---------- Données ----------
+var LOCUTEURS = { E: "Enquêteur", P: "Participant", A: "Autre", X: "?" };
+var BALISES = ["[inaudible]", "[?]", "[rires]", "[silence]", "[pause longue]", "[chevauchement]", "[interruption]",
+  "[en français : ]", "[en anglais : ]", "[NOM]", "[LIEU]", "[CENTRE]"];
+var SEUIL_CONFIANCE = 0.6;
+// Liste de départ, à vérifier et compléter par l’utilisateur (modifiable dans l’outil).
+var GLOSSAIRE_DEPART = [
+  ["umuvuduko w’amaraso", "tension artérielle"],
+  ["umuvuduko ukabije w’amaraso", "hypertension artérielle"],
+  ["diyabete", "diabète"],
+  ["isukari mu maraso", "glycémie (sucre dans le sang)"],
+  ["indwara zitandura", "maladies non transmissibles"],
+  ["umugore utwite", "femme enceinte"],
+  ["inda", "grossesse"],
+  ["kwipimisha", "se faire dépister / se faire examiner"],
+  ["gupima", "mesurer, examiner, dépister"],
+  ["ikigo nderabuzima", "centre de santé"],
+  ["ibitaro", "hôpital"],
+  ["ibitaro by’akarere", "hôpital de district"],
+  ["kohereza umurwayi", "référer un patient"],
+  ["umuforomo / umuforomokazi", "infirmier / infirmière"],
+  ["umubyaza", "sage-femme"],
+  ["umujyanama w’ubuzima", "agent de santé communautaire"],
+  ["mituweli", "mutuelle de santé"],
+  ["kuboneza urubyaro", "planification familiale"],
+  ["kubyara", "accoucher"],
+  ["imiti", "médicaments"],
+  ["ibikoresho", "matériel, équipements"],
+  ["umunzani", "balance (pèse-personne)"],
+  ["amahugurwa", "formation"],
+  ["ubukangurambaga", "sensibilisation, campagne"],
+  ["indyo yuzuye", "alimentation équilibrée"],
+  ["imyitozo ngororamubiri", "activité physique"],
+  ["umubyibuho ukabije", "obésité"],
+  ["umunyu", "sel"],
+  ["isukari", "sucre"],
+  ["abakozi", "personnel"],
+  ["umurongo", "file d’attente"],
+  ["igihe", "temps"]
+];
+
+var projet = nouveauProjet();
+var cleProjet = null;          // clé de la sauvegarde automatique
+var urlAudio = null;
+var segCourant = -1;           // segment suivi par la lecture
+var zoneActive = null;         // dernière zone de saisie utilisée
+var derniereSuppression = null;
+var minuterieSauvegarde = null;
+
+function nouveauProjet() {
+  return { format: "transcripteur-kinyarwanda", version: 1,
+    meta: { code: "", date: "", transcripteur: "", verificateur: "", mode: "verbatim" },
+    audio: { nom: "", taille: 0, duree: 0 }, moteur: null, segments: [] };
+}
+
+var $ = function (id) { return document.getElementById(id); };
+var audio = $("audio");
+
+// ---------- Temps ----------
+function deuxChiffres(n) { return (n < 10 ? "0" : "") + n; }
+function formatTemps(s, dixiemes) {
+  if (!isFinite(s) || s < 0) s = 0;
+  var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = Math.floor(s % 60);
+  var t = deuxChiffres(h) + ":" + deuxChiffres(m) + ":" + deuxChiffres(sec);
+  return dixiemes ? t + "." + Math.floor((s * 10) % 10) : t;
+}
+// Début – fin d’un segment, pour retrouver le passage dans l’audio
+function plageTemps(s) { return isFinite(s.fin) ? formatTemps(s.debut) + " – " + formatTemps(s.fin) : formatTemps(s.debut); }
+function lireTemps(txt) {
+  var parties = String(txt).trim().replace(",", ".").split(":");
+  if (!parties.length || parties.length > 3) return NaN;
+  var s = 0;
+  for (var i = 0; i < parties.length; i++) {
+    var v = parseFloat(parties[i]);
+    if (isNaN(v)) return NaN;
+    s = s * 60 + v;
+  }
+  return s;
+}
+function tempsSrt(s) {
+  var ms = Math.round(s * 1000), h = Math.floor(ms / 3600000), m = Math.floor(ms % 3600000 / 60000),
+    sec = Math.floor(ms % 60000 / 1000), r = ms % 1000;
+  return deuxChiffres(h) + ":" + deuxChiffres(m) + ":" + deuxChiffres(sec) + "," + ("00" + r).slice(-3);
+}
+function duree() { return isFinite(audio.duration) && audio.duration > 0 ? audio.duration : (projet.audio.duree || 0); }
+
+// ---------- Statut ----------
+var minuterieStatut = null;
+function statut(msg, action, libelle) {
+  var el = $("statut");
+  el.textContent = msg;
+  if (action) {
+    var b = document.createElement("button");
+    b.textContent = libelle;
+    b.onclick = function () { action(); el.classList.remove("visible"); };
+    el.appendChild(b);
+  }
+  el.classList.add("visible");
+  clearTimeout(minuterieStatut);
+  minuterieStatut = setTimeout(function () { el.classList.remove("visible"); }, action ? 8000 : 3500);
+}
+function bandeau(html) {
+  var b = $("bandeau");
+  if (!html) { b.classList.add("cache"); b.innerHTML = ""; return; }
+  b.innerHTML = html; b.classList.remove("cache");
+}
+
+// ---------- Sauvegarde automatique (navigateur) ----------
+function stockage(action, cle, valeur) {
+  try {
+    if (action === "lire") return window.localStorage.getItem(cle);
+    if (action === "ecrire") { window.localStorage.setItem(cle, valeur); return true; }
+    if (action === "effacer") { window.localStorage.removeItem(cle); return true; }
+  } catch (e) { return null; }
+}
+function modifie() {
+  clearTimeout(minuterieSauvegarde);
+  $("sauvegarde").textContent = "modifications…";
+  minuterieSauvegarde = setTimeout(sauverNavigateur, 700);
+  majStats();
+}
+function sauverNavigateur() {
+  if (!cleProjet) cleProjet = "tk:" + (projet.audio.nom || "sans-audio") + ":" + (projet.audio.taille || 0);
+  projet.modifie = new Date().toISOString();
+  var ok = stockage("ecrire", cleProjet, JSON.stringify(projet));
+  stockage("ecrire", "tk:dernier", cleProjet);
+  var h = new Date();
+  $("sauvegarde").textContent = ok ? "Copie automatique à " + deuxChiffres(h.getHours()) + ":" + deuxChiffres(h.getMinutes()) + ":" + deuxChiffres(h.getSeconds())
+    : "Copie automatique impossible : enregistrez le projet (Ctrl+S)";
+}
+
+// ---------- Métadonnées ----------
+var CHAMPS_META = { mCode: "code", mDate: "date", mTranscripteur: "transcripteur", mVerificateur: "verificateur", mMode: "mode" };
+function afficherMeta() {
+  for (var id in CHAMPS_META) $(id).value = projet.meta[CHAMPS_META[id]] || (id === "mMode" ? "verbatim" : "");
+}
+Object.keys(CHAMPS_META).forEach(function (id) {
+  $(id).addEventListener("input", function () { projet.meta[CHAMPS_META[id]] = this.value; modifie(); });
+});
+
+// ---------- Audio ----------
+$("btnAudio").onclick = function () { $("fichierAudio").click(); };
+$("fichierAudio").onchange = function () {
+  var f = this.files[0];
+  this.value = "";
+  if (!f) return;
+  if (urlAudio) URL.revokeObjectURL(urlAudio);
+  urlAudio = URL.createObjectURL(f);
+  audio.src = urlAudio;
+  audio.playbackRate = parseFloat($("vitesse").value);
+  $("nomAudio").textContent = f.name;
+  var cle = "tk:" + f.name + ":" + f.size;
+  var dejaTranscrit = projet.segments.some(function (s) { return (s.texte || "").trim(); });
+  // Un découpage venu du moteur (même sans texte) est gardé ; seul le segment unique par défaut est remplacé
+  var decoupage = projet.moteur || projet.segments.length > 1;
+  if (!dejaTranscrit && !decoupage) {
+    // Rien d’écrit à l’écran : reprendre la copie automatique de cet audio s’il y en a une
+    projet.segments = [];
+    var copie = stockage("lire", cle);
+    if (copie) {
+      try {
+        var p = JSON.parse(copie);
+        if (p && p.segments && p.segments.length) {
+          chargerProjet(p, true);
+          statut("Travail précédent sur cet audio retrouvé et rouvert (" + p.segments.length + " segments).");
+        }
+      } catch (e) {}
+    }
+  }
+  if (dejaTranscrit && projet.audio.nom && projet.audio.nom !== f.name)
+    bandeau("Attention : la transcription affichée a été faite sur « " + echapperHtml(projet.audio.nom) + " », l’audio ouvert est « " + echapperHtml(f.name) + " ».");
+  else bandeau("");
+  projet.audio.nom = f.name;
+  projet.audio.taille = f.size;
+  cleProjet = cle;
+  modifie();
+};
+audio.addEventListener("loadedmetadata", function () {
+  projet.audio.duree = audio.duration;
+  if (!projet.segments.length) {
+    projet.segments.push(segmentVide(0, audio.duration));
+    afficherSegments();
+  } else {
+    var dernier = projet.segments[projet.segments.length - 1];
+    if (!(dernier.fin > 0)) dernier.fin = audio.duration;
+  }
+  if (projet.position > 2 && projet.position < audio.duration) {
+    audio.currentTime = projet.position;
+    statut("Reprise à " + formatTemps(projet.position) + ", là où vous vous étiez arrêté.");
+  }
+  majPiste(); majTemps(); majStats();
+});
+audio.addEventListener("error", function () {
+  if (!audio.getAttribute("src")) return;
+  bandeau("<b>Ce format audio n’est pas lu par le navigateur.</b> Convertissez l’enregistrement en MP3 (voir le guide, § « Formats audio »), puis rouvrez-le.");
+});
+audio.addEventListener("timeupdate", function () {
+  majTemps();
+  var t = audio.currentTime;
+  if ($("boucle").checked && segCourant >= 0 && !audio.paused) {
+    var s = projet.segments[segCourant];
+    if (s && t >= s.fin - 0.05) { audio.currentTime = s.debut; return; }
+  }
+  suivreSegment(t);
+});
+audio.addEventListener("play", function () { $("btnLecture").textContent = "⏸ Pause"; });
+audio.addEventListener("pause", function () {
+  $("btnLecture").textContent = "▶ Lecture";
+  projet.position = Math.round(audio.currentTime * 10) / 10;   // pour reprendre au même endroit
+  modifie();
+});
+
+function lectureOuPause() {
+  if (!audio.getAttribute("src")) { statut("Ouvrez d’abord l’enregistrement audio."); return; }
+  if (audio.paused) {
+    var r = parseFloat($("retour").value);
+    if (r > 0 && audio.currentTime > 0) audio.currentTime = Math.max(0, audio.currentTime - r);
+    var p = audio.play();
+    if (p && p.catch) p.catch(function () {});
+  } else audio.pause();
+}
+function deplacer(d) { if (audio.getAttribute("src")) audio.currentTime = Math.max(0, Math.min(duree(), audio.currentTime + d)); }
+function allerA(t, jouer) {
+  if (!audio.getAttribute("src")) { statut("Ouvrez d’abord l’enregistrement audio."); return; }
+  audio.currentTime = Math.max(0, t);
+  if (jouer) { var p = audio.play(); if (p && p.catch) p.catch(function () {}); }
+}
+$("btnLecture").onclick = lectureOuPause;
+$("btnRecul").onclick = function () { deplacer(-3); };
+$("btnAvance").onclick = function () { deplacer(3); };
+$("vitesse").onchange = function () { audio.playbackRate = parseFloat(this.value); };
+$("piste").onclick = function (e) {
+  var r = this.getBoundingClientRect(), d = duree();
+  if (d) allerA((e.clientX - r.left) / r.width * d, false);
+};
+
+function majTemps() {
+  $("temps").textContent = formatTemps(audio.currentTime || 0, true) + " / " + formatTemps(duree());
+  var d = duree();
+  $("tete").style.left = d ? (audio.currentTime / d * 100) + "%" : "0";
+}
+function majPiste() {
+  var piste = $("piste"), d = duree();
+  Array.prototype.slice.call(piste.querySelectorAll(".seg")).forEach(function (n) { n.remove(); });
+  if (!d) return;
+  projet.segments.forEach(function (s) {
+    var n = document.createElement("div");
+    n.className = "seg " + (s.locuteur || "X") + (s.incertain ? " incertain" : "");
+    n.style.left = (s.debut / d * 100) + "%";
+    n.style.width = Math.max(0.2, (s.fin - s.debut) / d * 100) + "%";
+    piste.insertBefore(n, $("tete"));
+  });
+}
+
+// ---------- Segments ----------
+function segmentVide(debut, fin) {
+  return { debut: debut, fin: fin, locuteur: "", texte: "", traduction: "", incertain: false, note: "" };
+}
+function indexA(t) {
+  for (var i = 0; i < projet.segments.length; i++) {
+    var s = projet.segments[i];
+    if (t >= s.debut && t < s.fin) return i;
+  }
+  return -1;
+}
+function trier() { projet.segments.sort(function (a, b) { return a.debut - b.debut; }); }
+
+function nouveauSegment() {
+  if (!audio.getAttribute("src") && !projet.segments.length) { statut("Ouvrez d’abord l’enregistrement audio."); return; }
+  var t = Math.round((audio.currentTime || 0) * 10) / 10, i = indexA(t), nouveau, coupe = null;
+  if (i >= 0) {
+    coupe = projet.segments[i];
+    if (t - coupe.debut < 0.3) { focaliser(i, "texte"); return; }  // déjà au début d’un segment
+    nouveau = segmentVide(t, coupe.fin);
+    coupe.fin = t;
+    projet.segments.splice(i + 1, 0, nouveau);
+  } else {
+    var fin = duree() || t + 10;
+    projet.segments.forEach(function (s) { if (s.debut > t && s.debut < fin) fin = s.debut; });
+    nouveau = segmentVide(t, fin);
+    projet.segments.push(nouveau);
+    trier();
+  }
+  i = idx(nouveau);
+  // Le nouveau tour de parole revient en général à l’autre locuteur
+  var prec = projet.segments[i - 1];
+  if (prec && (prec.locuteur === "E" || prec.locuteur === "P")) nouveau.locuteur = prec.locuteur === "E" ? "P" : "E";
+  if (coupe) majCarte(coupe);
+  insererCarte(nouveau);
+  focaliser(i, "texte");
+  majPiste(); modifie();
+}
+function supprimerSegment(s) {
+  var i = idx(s);
+  if (i < 0) return;
+  derniereSuppression = { index: i, segment: s };
+  projet.segments.splice(i, 1);
+  var prec = projet.segments[i - 1];
+  if (prec && projet.segments[i]) prec.fin = projet.segments[i].debut;
+  else if (prec) prec.fin = Math.max(prec.fin, s.fin);
+  retirerCarte(s);
+  if (prec) majCarte(prec);
+  numeroter(); majPiste(); modifie();
+  statut("Segment " + (i + 1) + " supprimé.", function () {
+    var d = derniereSuppression;
+    if (!d) return;
+    projet.segments.splice(d.index, 0, d.segment);
+    trier(); afficherSegments(); modifie();
+    derniereSuppression = null;
+  }, "Annuler");
+}
+function fusionnerAvecSuivant(a) {
+  var i = idx(a), b = projet.segments[i + 1];
+  if (!b) return;
+  a.fin = b.fin;
+  a.texte = joindre(a.texte, b.texte);
+  a.traduction = joindre(a.traduction, b.traduction);
+  a.note = joindre(a.note, b.note);
+  a.incertain = a.incertain || b.incertain;
+  if (a.confiance != null || b.confiance != null) a.confiance = Math.min(a.confiance == null ? 1 : a.confiance, b.confiance == null ? 1 : b.confiance);
+  projet.segments.splice(i + 1, 1);
+  retirerCarte(b); majCarte(a); numeroter();
+  focaliser(i, "texte"); majPiste(); modifie();
+}
+function joindre(x, y) { x = (x || "").trim(); y = (y || "").trim(); return x && y ? x + " " + y : x || y; }
+
+function ajusterHauteur(t) { t.style.height = "auto"; t.style.height = (t.scrollHeight + 2) + "px"; }
+// Pour des centaines de zones : toutes les écritures, puis toutes les lectures, puis les écritures
+// (une seule mise en page au lieu d’une par zone).
+function ajusterHauteurs(zones) {
+  zones = Array.prototype.slice.call(zones);
+  zones.forEach(function (t) { t.style.height = "auto"; });
+  var h = zones.map(function (t) { return t.scrollHeight; });
+  zones.forEach(function (t, k) { t.style.height = (h[k] + 2) + "px"; });
+}
+
+// ---------- Affichage des segments (adapté aux entretiens longs) ----------
+var cartes = new Map();          // segment → carte affichée
+var filtre = "tous";
+var FILTRES = {
+  tous: function () { return true; },
+  revoir: function (s) { return s.incertain; },
+  vides: function (s) { return !(s.texte || "").trim(); },
+  sanstrad: function (s) { return (s.texte || "").trim() && !(s.traduction || "").trim(); },
+  sansloc: function (s) { return !s.locuteur; }
+};
+function idx(s) { return projet.segments.indexOf(s); }
+function carte(i) { return cartes.get(projet.segments[i]) || null; }
+
+function afficherSegments() {
+  var conteneur = $("segments");
+  conteneur.innerHTML = "";
+  cartes = new Map();
+  if (!projet.segments.length) {
+    conteneur.innerHTML = '<div class="vide">Ouvrez l’enregistrement audio pour commencer, puis appuyez sur <b>F2</b> à chaque changement de locuteur.<br>Ou ouvrez le fichier <i>.json</i> produit par le moteur automatique.</div>';
+    majPiste(); majStats(); majCompteFiltre();
+    return;
+  }
+  var frag = document.createDocumentFragment(), garder = FILTRES[filtre];
+  projet.segments.forEach(function (s, i) {
+    if (!garder(s)) return;
+    var c = carteSegment(s, i);
+    cartes.set(s, c);
+    frag.appendChild(c);
+  });
+  if (!cartes.size) frag.appendChild(element("div", { classe: "vide", texte: "Aucun segment ne correspond à ce filtre." }));
+  conteneur.appendChild(frag);
+  ajusterHauteurs(conteneur.querySelectorAll("textarea"));
+  segCourant = -1;
+  suivreSegment(audio.currentTime || 0);
+  majPiste(); majStats(); majCompteFiltre();
+}
+function insererCarte(s) {
+  if (filtre !== "tous") { afficherSegments(); return; }
+  var i = idx(s), c = carteSegment(s, i), suivant = carte(i + 1);
+  cartes.set(s, c);
+  if (suivant) $("segments").insertBefore(c, suivant); else $("segments").appendChild(c);
+  ajusterHauteurs(c.querySelectorAll("textarea"));
+  numeroter(); majCompteFiltre();
+}
+function majCarte(s) {
+  var ancienne = cartes.get(s);
+  if (!ancienne) return;
+  var c = carteSegment(s, idx(s));
+  if (ancienne.classList.contains("actif")) c.classList.add("actif");
+  ancienne.parentNode.replaceChild(c, ancienne);
+  cartes.set(s, c);
+  ajusterHauteurs(c.querySelectorAll("textarea"));
+}
+function retirerCarte(s) {
+  var c = cartes.get(s);
+  if (c) { c.remove(); cartes.delete(s); }
+  segCourant = -1;
+  majCompteFiltre();
+}
+function numeroter() {
+  projet.segments.forEach(function (s, i) {
+    var c = cartes.get(s);
+    if (c) c.firstChild.firstChild.textContent = "#" + (i + 1);
+  });
+}
+function majCompteFiltre() {
+  $("compteFiltre").textContent = filtre === "tous" ? projet.segments.length + " segments"
+    : cartes.size + " segment(s) affiché(s) sur " + projet.segments.length;
+}
+
+function element(tag, attributs, enfants) {
+  var n = document.createElement(tag);
+  for (var k in attributs || {}) {
+    if (k === "texte") n.textContent = attributs[k];
+    else if (k === "classe") n.className = attributs[k];
+    else if (k.slice(0, 2) === "on") n.addEventListener(k.slice(2), attributs[k]);
+    else n.setAttribute(k, attributs[k]);
+  }
+  (enfants || []).forEach(function (e) { if (e) n.appendChild(e); });
+  return n;
+}
+
+function carteSegment(s, i) {
+  var carte = element("div", { classe: "segment " + (s.locuteur || "X") + (s.incertain ? " incertain" : "") });
+  carte.segment = s;
+
+  var champTemps = function (cle) {
+    var inp = element("input", { classe: "t", type: "text", value: formatTemps(s[cle], true), title: cle === "debut" ? "Début" : "Fin" });
+    inp.addEventListener("change", function () {
+      var v = lireTemps(inp.value), j = idx(s);
+      if (isNaN(v)) { inp.value = formatTemps(s[cle], true); statut("Heure non comprise : écrire par exemple 00:01:23.5"); return; }
+      s[cle] = v;
+      if (cle === "debut") { var p = projet.segments[j - 1]; if (p && p.fin > v) p.fin = v; trier(); }
+      if (cle === "fin") { var n = projet.segments[j + 1]; if (n && n.debut < v) n.debut = v; }
+      afficherSegments(); modifie();
+    });
+    return inp;
+  };
+
+  var choixLoc = element("select", { title: "Locuteur (Alt+1, Alt+2, Alt+3)" });
+  [["", "Locuteur ?"], ["E", "Enquêteur"], ["P", "Participant"], ["A", "Autre personne"]].forEach(function (o) {
+    var opt = element("option", { value: o[0], texte: o[1] });
+    if ((s.locuteur || "") === o[0]) opt.selected = true;
+    choixLoc.appendChild(opt);
+  });
+  choixLoc.addEventListener("change", function () { definirLocuteur(idx(s), choixLoc.value); });
+
+  var caseIncertain = element("input", { type: "checkbox" });
+  caseIncertain.checked = !!s.incertain;
+  caseIncertain.addEventListener("change", function () { basculerIncertain(idx(s), caseIncertain.checked); });
+
+  var conf = null;
+  if (s.confiance != null) conf = element("span", { classe: "confiance" + (s.confiance < SEUIL_CONFIANCE ? " basse" : ""),
+    texte: "confiance du moteur " + Math.round(s.confiance * 100) + " %", title: "Estimation du moteur automatique : indicative seulement" });
+
+  var entete = element("div", { classe: "entete" }, [
+    element("span", { classe: "num", texte: "#" + (i + 1) }),
+    element("button", { classe: "petit", texte: "▶", title: "Écouter ce segment (F4)", onclick: function () { segCourant = idx(s); allerA(s.debut, true); } }),
+    champTemps("debut"), element("span", { texte: "→" }), champTemps("fin"),
+    choixLoc,
+    element("label", { title: "Passage douteux à réécouter (Ctrl+I)" }, [caseIncertain, document.createTextNode(" à revoir")]),
+    conf,
+    element("span", { classe: "espace" }),
+    element("button", { classe: "petit", texte: "Fusionner ↓", title: "Fusionner avec le segment suivant", onclick: function () { fusionnerAvecSuivant(s); } }),
+    element("button", { classe: "petit", texte: "Supprimer", onclick: function () { supprimerSegment(s); } })
+  ]);
+
+  var zone = function (cle, etiquette, lang) {
+    var t = element("textarea", { "data-cle": cle, lang: lang, spellcheck: lang === "fr" ? "true" : "false", rows: "2" });
+    t.value = s[cle] || "";
+    t.addEventListener("input", function () { s[cle] = t.value; ajusterHauteur(t); modifie(); });
+    t.addEventListener("focus", function () { zoneActive = t; segSaisi = s; });
+    return element("div", {}, [element("div", { classe: "etiquette", texte: etiquette }), t]);
+  };
+
+  var note = element("input", { type: "text", placeholder: "Note du transcripteur (contexte, ton, geste…)" });
+  note.value = s.note || "";
+  note.addEventListener("input", function () { s.note = note.value; modifie(); });
+  note.addEventListener("focus", function () { zoneActive = note; segSaisi = s; });
+
+  carte.appendChild(entete);
+  carte.appendChild(element("div", { classe: "colonnes" }, [zone("texte", "Kinyarwanda (ce qui est dit)", "rw"), zone("traduction", "Traduction française", "fr")]));
+  carte.appendChild(element("div", { classe: "note" }, [note]));
+  return carte;
+}
+var segSaisi = null;
+
+function focaliser(i, cle) {
+  var c = carte(i);
+  if (!c) return;
+  var t = c.querySelector('textarea[data-cle="' + cle + '"]');
+  if (t) { t.focus(); t.setSelectionRange(t.value.length, t.value.length); }
+  c.scrollIntoView({ block: "nearest" });
+}
+function definirLocuteur(i, l) {
+  var s = projet.segments[i];
+  if (!s) return;
+  s.locuteur = l;
+  var c = carte(i);
+  if (c) {
+    c.className = "segment " + (l || "X") + (s.incertain ? " incertain" : "") + (i === segCourant ? " actif" : "");
+    c.querySelector("select").value = l;
+  }
+  majPiste(); modifie();
+}
+function basculerIncertain(i, valeur) {
+  var s = projet.segments[i];
+  if (!s) return;
+  s.incertain = valeur == null ? !s.incertain : valeur;
+  var c = carte(i);
+  if (c) { c.classList.toggle("incertain", s.incertain); c.querySelector('input[type=checkbox]').checked = s.incertain; }
+  majPiste(); modifie();
+}
+function suivreSegment(t) {
+  var i = indexA(t);
+  if (i === segCourant) return;
+  if ($("boucle").checked && !audio.paused && segCourant >= 0) return;
+  Array.prototype.forEach.call(document.querySelectorAll(".segment.actif"), function (n) { n.classList.remove("actif"); });
+  segCourant = i;
+  var c = carte(i);
+  if (c) {
+    c.classList.add("actif");
+    var saisieEnCours = document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName) && document.activeElement.type !== "checkbox";
+    if ($("suivre").checked && !audio.paused && !saisieEnCours) c.scrollIntoView({ block: "center" });
+  }
+}
+function segmentCible() {
+  // Le segment dans lequel on écrit, sinon celui que la lecture suit
+  if (document.activeElement && document.activeElement.closest) {
+    var c = document.activeElement.closest(".segment");
+    if (c && c.segment) return idx(c.segment);
+  }
+  if (segCourant >= 0) return segCourant;
+  return segSaisi ? idx(segSaisi) : -1;
+}
+
+// ---------- Navigation dans un long entretien ----------
+$("filtre").onchange = function () { filtre = this.value; afficherSegments(); };
+function allerAHeure() {
+  var t = lireTemps($("allerA").value);
+  if (isNaN(t)) { statut("Heure non comprise : écrire par exemple 35:10 ou 00:35:10"); return; }
+  allerA(t, false);
+  var i = indexA(t);
+  if (i >= 0) {
+    if (!carte(i)) { filtre = "tous"; $("filtre").value = "tous"; afficherSegments(); }
+    focaliser(i, "texte");
+  }
+}
+$("btnAllerA").onclick = allerAHeure;
+$("allerA").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); allerAHeure(); } });
+function suivantARevoir() {
+  var depart = segmentCible(), n = projet.segments.length;
+  for (var k = 1; k <= n; k++) {
+    var i = ((depart < 0 ? -1 : depart) + k) % n, s = projet.segments[i];
+    if (s.incertain || !(s.texte || "").trim()) {
+      if (!carte(i)) { filtre = "tous"; $("filtre").value = "tous"; afficherSegments(); }
+      focaliser(i, "texte");
+      segCourant = i;
+      allerA(s.debut, false);
+      return;
+    }
+  }
+  statut("Aucun segment à revoir ni vide.");
+}
+$("btnSuivant").onclick = suivantARevoir;
+
+// ---------- Insertion (balises, glossaire, heure) ----------
+function inserer(txt) {
+  var z = zoneActive;
+  if (!z || !document.body.contains(z)) { statut("Cliquez d’abord dans une zone de texte."); return; }
+  var debut = z.selectionStart, fin = z.selectionEnd;
+  if (debut > 0 && !/\s/.test(z.value.charAt(debut - 1))) txt = " " + txt;
+  z.value = z.value.slice(0, debut) + txt + z.value.slice(fin);
+  var pos = debut + txt.length;
+  if (/ \]$/.test(txt)) pos -= 1;   // curseur dans « [en français : ] »
+  z.focus(); z.setSelectionRange(pos, pos);
+  z.dispatchEvent(new Event("input"));
+}
+BALISES.forEach(function (b) {
+  $("balises").appendChild(element("button", { classe: "petit", texte: b, onmousedown: function (e) { e.preventDefault(); }, onclick: function () { inserer(b); } }));
+});
+
+// ---------- Glossaire ----------
+var glossaire = (function () {
+  try { var g = JSON.parse(stockage("lire", "tk:glossaire") || "null"); if (g && g.length) return g; } catch (e) {}
+  return GLOSSAIRE_DEPART.slice();
+})();
+function afficherGlossaire() {
+  var q = $("glossaireRecherche").value.trim().toLowerCase(), liste = $("glossaireListe");
+  liste.innerHTML = "";
+  glossaire.forEach(function (g, i) {
+    if (q && (g[0] + " " + g[1]).toLowerCase().indexOf(q) < 0) return;
+    var ligne = element("div", { title: "Cliquer : insérer le terme adapté à la zone active (kinyarwanda ou français). Clic droit : supprimer." }, [
+      element("b", { texte: g[0] }), element("span", { texte: g[1] })]);
+    ligne.addEventListener("mousedown", function (e) { e.preventDefault(); });
+    ligne.addEventListener("click", function () {
+      var cle = zoneActive && zoneActive.getAttribute("data-cle");
+      inserer(cle === "texte" ? g[0] : g[1]);
+    });
+    ligne.addEventListener("contextmenu", function (e) {
+      e.preventDefault();
+      if (confirm("Retirer « " + g[0] + " » du glossaire ?")) { glossaire.splice(i, 1); sauverGlossaire(); }
+    });
+    liste.appendChild(ligne);
+  });
+}
+function sauverGlossaire() { stockage("ecrire", "tk:glossaire", JSON.stringify(glossaire)); afficherGlossaire(); }
+$("glossaireRecherche").oninput = afficherGlossaire;
+$("gAjouter").onclick = function () {
+  var rw = $("gRw").value.trim(), fr = $("gFr").value.trim();
+  if (!rw || !fr) { statut("Écrire le terme en kinyarwanda et sa traduction."); return; }
+  glossaire.unshift([rw, fr]); $("gRw").value = ""; $("gFr").value = ""; sauverGlossaire();
+};
+
+// ---------- Statistiques ----------
+function compterMots(t) { t = (t || "").trim(); return t ? t.split(/\s+/).length : 0; }
+function majStats() {
+  var d = duree(), couvert = 0, vides = 0, sansTrad = 0, incertains = 0, sansLoc = 0, motsRw = 0, motsFr = 0;
+  projet.segments.forEach(function (s) {
+    var transcrit = (s.texte || "").trim().length > 0;
+    if (transcrit) couvert += Math.max(0, s.fin - s.debut); else vides++;
+    if (transcrit && !(s.traduction || "").trim()) sansTrad++;
+    if (s.incertain) incertains++;
+    if (!s.locuteur) sansLoc++;
+    motsRw += compterMots(s.texte); motsFr += compterMots(s.traduction);
+  });
+  var lignes = [
+    ["Durée de l’audio", d ? formatTemps(d) : "—"],
+    ["Segments", projet.segments.length],
+    ["Audio transcrit", d ? Math.min(100, Math.round(couvert / d * 100)) + " %" : "—"],
+    ["Segments vides", vides],
+    ["Sans traduction", sansTrad],
+    ["À revoir", incertains],
+    ["Sans locuteur", sansLoc],
+    ["Mots kinyarwanda / français", motsRw + " / " + motsFr]
+  ];
+  $("stats").innerHTML = "";
+  lignes.forEach(function (l) { $("stats").appendChild(element("div", {}, [element("span", { texte: l[0] }), element("b", { texte: String(l[1]) })])); });
+}
+
+// ---------- Ouvrir / enregistrer un projet ----------
+$("btnProjet").onclick = function () { $("fichierProjet").click(); };
+$("fichierProjet").onchange = function () {
+  var f = this.files[0];
+  this.value = "";
+  if (!f) return;
+  var lecteur = new FileReader();
+  lecteur.onload = function () {
+    var donnees;
+    try { donnees = JSON.parse(lecteur.result); } catch (e) { statut("Ce fichier n’est pas un fichier JSON valide."); return; }
+    var p = normaliser(donnees);
+    if (!p) { statut("Aucun segment reconnu dans ce fichier."); return; }
+    if (projet.segments.some(function (s) { return (s.texte || "").trim(); }) &&
+      !confirm("Remplacer la transcription affichée par celle du fichier « " + f.name + " » ?")) return;
+    chargerProjet(p, false);
+    statut(p.segments.length + " segments chargés depuis « " + f.name + " ».");
+    if (!audio.getAttribute("src")) bandeau("Ouvrez maintenant l’enregistrement audio" + (p.audio.nom ? " « <b>" + echapperHtml(p.audio.nom) + "</b> »" : "") + " pour écouter et corriger.");
+    else if (p.audio.nom && p.audio.nom !== $("nomAudio").textContent) bandeau("Attention : cette transcription a été faite sur « " + echapperHtml(p.audio.nom) + " », l’audio ouvert est « " + echapperHtml($("nomAudio").textContent) + " ».");
+  };
+  lecteur.readAsText(f, "utf-8");
+};
+function echapperHtml(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+// Accepte le projet de cet outil, le JSON du moteur, ou une liste de segments {start, end, text}
+function normaliser(d) {
+  var liste = Array.isArray(d) ? d : d && (d.segments || d.chunks);
+  if (!Array.isArray(liste) || !liste.length) return null;
+  var p = nouveauProjet();
+  if (d.meta) for (var k in p.meta) if (d.meta[k] != null) p.meta[k] = d.meta[k];
+  if (d.audio) { p.audio.nom = d.audio.nom || ""; p.audio.taille = d.audio.taille || 0; p.audio.duree = d.audio.duree || 0; }
+  p.moteur = d.moteur || null;
+  if (typeof d.position === "number") p.position = d.position;
+  p.segments = liste.map(function (s) {
+    var debut = num(s.debut, s.start, s.timestamp && s.timestamp[0]), fin = num(s.fin, s.end, s.timestamp && s.timestamp[1]);
+    var seg = segmentVide(debut || 0, fin || debut || 0);
+    seg.texte = s.texte != null ? s.texte : (s.text || "");
+    seg.traduction = s.traduction || s.translation || "";
+    seg.locuteur = { E: "E", P: "P", A: "A" }[s.locuteur] || "";
+    seg.note = s.note || "";
+    if (s.confiance != null) seg.confiance = s.confiance;
+    seg.incertain = s.incertain != null ? !!s.incertain : (seg.confiance != null && seg.confiance < SEUIL_CONFIANCE);
+    return seg;
+  });
+  p.segments.sort(function (a, b) { return a.debut - b.debut; });
+  return p;
+}
+function num() { for (var i = 0; i < arguments.length; i++) if (typeof arguments[i] === "number" && isFinite(arguments[i])) return arguments[i]; return null; }
+
+function chargerProjet(p, depuisCopie) {
+  var nomAudio = projet.audio.nom, tailleAudio = projet.audio.taille;
+  projet = p;
+  if (audio.getAttribute("src")) {
+    if (!depuisCopie && !projet.audio.nom) { projet.audio.nom = nomAudio; projet.audio.taille = tailleAudio; }
+    if (isFinite(audio.duration)) projet.audio.duree = audio.duration;
+  }
+  cleProjet = "tk:" + (projet.audio.nom || "sans-audio") + ":" + (projet.audio.taille || 0);
+  afficherMeta(); afficherSegments(); modifie();
+}
+
+function telecharger(nom, contenu, type) {
+  var blob = contenu instanceof Blob ? contenu : new Blob([contenu], { type: type });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = nom;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+}
+function nomBase() {
+  var code = (projet.meta.code || "").trim().replace(/[^\w-]+/g, "_");
+  var audioNom = (projet.audio.nom || "transcription").replace(/\.[^.]+$/, "").replace(/_ecoute$/, "").replace(/[^\w-]+/g, "_");
+  return code ? code + "_transcription" : audioNom;
+}
+function enregistrerProjet() {
+  projet.modifie = new Date().toISOString();
+  telecharger(nomBase() + ".json", JSON.stringify(projet, null, 1), "application/json");
+  sauverNavigateur();
+  statut("Projet enregistré : rangez le fichier dans le dossier sécurisé de l’étude.");
+}
+$("btnEnregistrer").onclick = enregistrerProjet;
+
+// ---------- Exports ----------
+$("btnExport").onclick = function (e) { e.stopPropagation(); $("menuExport").classList.toggle("cache"); };
+document.addEventListener("click", function () { $("menuExport").classList.add("cache"); });
+Array.prototype.forEach.call(document.querySelectorAll("[data-export]"), function (b) {
+  b.onclick = function () { $("menuExport").classList.add("cache"); exporter(b.getAttribute("data-export")); };
+});
+
+function segmentsAExporter() {
+  return projet.segments.filter(function (s) { return (s.texte || "").trim() || (s.traduction || "").trim(); });
+}
+function lignesEntete() {
+  var m = projet.meta, l = [];
+  l.push("Transcription d’entretien" + (m.code ? " — " + m.code : ""));
+  if (m.date) l.push("Date de l’entretien : " + m.date);
+  if (projet.audio.duree) l.push("Durée de l’enregistrement : " + formatTemps(projet.audio.duree));
+  l.push("Mode : " + (m.mode === "nettoye" ? "verbatim nettoyé" : "verbatim intégral") + " · Langue de l’entretien : kinyarwanda · Traduction : français");
+  if (m.transcripteur) l.push("Transcrit par : " + m.transcripteur);
+  if (m.verificateur) l.push("Vérifié par : " + m.verificateur);
+  if (projet.moteur && projet.moteur.modele) l.push("Premier jet automatique : " + projet.moteur.modele + (projet.moteur.traduction ? " ; traduction automatique : " + projet.moteur.traduction : "") + " — entièrement relu et corrigé à l’écoute");
+  return l;
+}
+function nomLocuteur(s) { return LOCUTEURS[s.locuteur || "X"]; }
+
+function exporter(genre) {
+  var segs = segmentsAExporter();
+  if (!segs.length) { statut("Rien à exporter : la transcription est vide."); return; }
+  var manque = projet.segments.filter(function (s) { return (s.texte || "").trim() && !s.locuteur; }).length;
+  if (manque) statut(manque + " segment(s) sans locuteur : ils sont exportés avec « ? ».");
+  var base = nomBase(), bom = "﻿";
+  if (genre.indexOf("docx") === 0) telecharger(base + (genre === "docx-bi" ? "_rw-fr" : genre === "docx-fr" ? "_fr" : "_rw") + ".docx", docx(segs, genre.slice(5)));
+  else if (genre === "txt-fr" || genre === "txt-bi") telecharger(base + (genre === "txt-fr" ? "_fr" : "_rw-fr") + ".txt", bom + texte(segs, genre.slice(4)), "text/plain;charset=utf-8");
+  else if (genre === "csv") telecharger(base + ".csv", bom + csv(projet.segments), "text/csv;charset=utf-8");
+  else if (genre === "srt-rw" || genre === "srt-fr") telecharger(base + "_" + genre.slice(4) + ".srt", srt(segs, genre === "srt-rw" ? "texte" : "traduction"), "text/plain;charset=utf-8");
+}
+
+function texte(segs, contenu) {
+  var out = lignesEntete().concat([""]);
+  segs.forEach(function (s) {
+    var h = "[" + plageTemps(s) + "] ", qui = nomLocuteur(s) + " : ";
+    if (contenu === "fr") out.push(h + qui + (s.traduction || "[traduction manquante]") + (s.incertain ? " [à revoir]" : ""));
+    else {
+      out.push(h + qui + (s.texte || "") + (s.incertain ? " [à revoir]" : ""));
+      out.push("    → " + (s.traduction || "[traduction manquante]"));
+    }
+    if (s.note) out.push("    (Note : " + s.note + ")");
+    out.push("");
+  });
+  return out.join("\r\n");
+}
+
+function csv(segs) {
+  var cellule = function (v) { v = String(v == null ? "" : v); return /[;"\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  var lignes = [["N°", "Début", "Fin", "Locuteur", "Kinyarwanda", "Français", "À revoir", "Confiance du moteur", "Note"].join(";")];
+  segs.forEach(function (s, i) {
+    lignes.push([i + 1, formatTemps(s.debut, true), formatTemps(s.fin, true), nomLocuteur(s), s.texte, s.traduction,
+      s.incertain ? "oui" : "", s.confiance != null ? Math.round(s.confiance * 100) + " %" : "", s.note].map(cellule).join(";"));
+  });
+  return lignes.join("\r\n");
+}
+
+function srt(segs, cle) {
+  var out = [], n = 0;
+  segs.forEach(function (s) {
+    var t = (s[cle] || "").trim();
+    if (!t) return;
+    n++;
+    out.push(String(n), tempsSrt(s.debut) + " --> " + tempsSrt(Math.max(s.fin, s.debut + 0.5)), nomLocuteur(s) + " : " + t, "");
+  });
+  return out.join("\r\n");
+}
+
+// ---------- Word (.docx) : vrai document Word modifiable, produit sans bibliothèque ni Internet ----------
+// Un .docx est une archive ZIP de fichiers XML ; l’archive est écrite ici sans compression.
+var TABLE_CRC = (function () {
+  var t = [];
+  for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(octets) {
+  var c = 0xFFFFFFFF;
+  for (var i = 0; i < octets.length; i++) c = TABLE_CRC[(c ^ octets[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function zipStocke(fichiers, type) {
+  var enc = new TextEncoder(), morceaux = [], central = [], decalage = 0, d = new Date();
+  var heure = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  var jour = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  fichiers.forEach(function (f) {
+    var nom = enc.encode(f[0]), donnees = enc.encode(f[1]), crc = crc32(donnees);
+    var l = new DataView(new ArrayBuffer(30));
+    l.setUint32(0, 0x04034b50, true); l.setUint16(4, 20, true); l.setUint16(6, 0x0800, true);
+    l.setUint16(10, heure, true); l.setUint16(12, jour, true); l.setUint32(14, crc, true);
+    l.setUint32(18, donnees.length, true); l.setUint32(22, donnees.length, true); l.setUint16(26, nom.length, true);
+    var c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+    c.setUint16(12, heure, true); c.setUint16(14, jour, true); c.setUint32(16, crc, true);
+    c.setUint32(20, donnees.length, true); c.setUint32(24, donnees.length, true); c.setUint16(28, nom.length, true);
+    c.setUint32(42, decalage, true);
+    morceaux.push(l, nom, donnees); central.push(c, nom);
+    decalage += 30 + nom.length + donnees.length;
+  });
+  var tailleCentral = central.reduce(function (a, b) { return a + b.byteLength; }, 0);
+  var e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, fichiers.length, true); e.setUint16(10, fichiers.length, true);
+  e.setUint32(12, tailleCentral, true); e.setUint32(16, decalage, true);
+  return new Blob(morceaux.concat(central, [e]), { type: type });
+}
+function xmlEchapper(t) {
+  return String(t == null ? "" : t).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
+    .replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+}
+// o : gras, italique, sansCorrection (kinyarwanda : pas de soulignement rouge), couleur, taille (demi-points)
+function wRun(texte, o) {
+  o = o || {};
+  var pr = (o.gras ? "<w:b/>" : "") + (o.italique ? "<w:i/>" : "") + (o.sansCorrection ? "<w:noProof/>" : "") +
+    (o.couleur ? '<w:color w:val="' + o.couleur + '"/>' : "") + (o.taille ? '<w:sz w:val="' + o.taille + '"/><w:szCs w:val="' + o.taille + '"/>' : "");
+  return String(texte == null ? "" : texte).split(/\r?\n/).map(function (ligne, i) {
+    return "<w:r>" + (pr ? "<w:rPr>" + pr + "</w:rPr>" : "") + (i ? "<w:br/>" : "") + '<w:t xml:space="preserve">' + xmlEchapper(ligne) + "</w:t></w:r>";
+  }).join("");
+}
+function wPara(runs, o) {
+  o = o || {};
+  var pr = (o.garder ? "<w:keepNext/>" : "") + (o.apres != null ? '<w:spacing w:after="' + o.apres + '"/>' : "") + (o.retrait ? '<w:ind w:left="' + o.retrait + '"/>' : "");
+  return "<w:p>" + (pr ? "<w:pPr>" + pr + "</w:pPr>" : "") + runs + "</w:p>";
+}
+function wCellule(paragraphes, largeur, fond) {
+  return '<w:tc><w:tcPr><w:tcW w:w="' + largeur + '" w:type="dxa"/>' + (fond ? '<w:shd w:val="clear" w:color="auto" w:fill="' + fond + '"/>' : "") +
+    "</w:tcPr>" + paragraphes + "</w:tc>";
+}
+var COULEUR_LOC = { E: "6B4FA0", P: "1F5F99" };
+function docx(segs, contenu) {
+  var corps = [], entete = lignesEntete();
+  corps.push(wPara(wRun(entete[0], { gras: true, taille: 32 }), { apres: 120 }));
+  entete.slice(1).forEach(function (l) { corps.push(wPara(wRun(l, { couleur: "595959", taille: 20 }), { apres: 0 })); });
+  corps.push(wPara("", { apres: 120 }));
+  var revoir = function (s) { return s.incertain ? wRun(" [à revoir]", { couleur: "B5541C", taille: 18 }) : ""; };
+  var note = function (s) { return s.note ? wPara(wRun("Note : " + s.note, { italique: true, couleur: "595959", taille: 18 }), { apres: 0 }) : ""; };
+  if (contenu === "bi") {
+    // Tableau : une ligne par segment, kinyarwanda et français côte à côte
+    var L = [1250, 1200, 3310, 3310], bord = 'w:val="single" w:sz="4" w:space="0" w:color="A0A7B4"';
+    var t = ['<w:tbl><w:tblPr><w:tblW w:w="9070" w:type="dxa"/><w:tblBorders><w:top ' + bord + '/><w:left ' + bord + '/><w:bottom ' + bord +
+      '/><w:right ' + bord + '/><w:insideH ' + bord + '/><w:insideV ' + bord + '/></w:tblBorders><w:tblLayout w:type="fixed"/>' +
+      '<w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr>',
+      "<w:tblGrid>" + L.map(function (l) { return '<w:gridCol w:w="' + l + '"/>'; }).join("") + "</w:tblGrid>"];
+    t.push("<w:tr><w:trPr><w:tblHeader/></w:trPr>" + ["Heure", "Locuteur", "Kinyarwanda", "Français"].map(function (x, j) {
+      return wCellule(wPara(wRun(x, { gras: true, taille: 20 }), { apres: 0 }), L[j], "E8EDF2");
+    }).join("") + "</w:tr>");
+    segs.forEach(function (s) {
+      t.push("<w:tr><w:trPr><w:cantSplit/></w:trPr>" +
+        wCellule(wPara(wRun(plageTemps(s), { couleur: "595959", taille: 18 }), { apres: 0 }), L[0]) +
+        wCellule(wPara(wRun(nomLocuteur(s), { gras: true, couleur: COULEUR_LOC[s.locuteur], taille: 20 }), { apres: 0 }), L[1]) +
+        wCellule(wPara(wRun(s.texte, { sansCorrection: true, taille: 22 }) + revoir(s), { apres: 0 }), L[2]) +
+        wCellule(wPara(wRun(s.traduction || "[traduction manquante]", { taille: 22 }), { apres: 0 }) + note(s), L[3]) + "</w:tr>");
+    });
+    t.push("</w:tbl>");
+    corps.push(t.join(""), wPara(""));
+  } else {
+    segs.forEach(function (s) {
+      var texte = contenu === "fr" ? (s.traduction || "[traduction manquante]") : s.texte;
+      corps.push(wPara(wRun("[" + plageTemps(s) + "] ", { couleur: "595959", taille: 18 }) +
+        wRun(nomLocuteur(s) + " : ", { gras: true, couleur: COULEUR_LOC[s.locuteur] }) +
+        wRun(texte, { sansCorrection: contenu === "rw" }) + revoir(s), { apres: s.note ? 0 : 160 }));
+      if (s.note) corps.push(wPara(wRun("Note : " + s.note, { italique: true, couleur: "595959", taille: 20 }), { apres: 160, retrait: 567 }));
+    });
+  }
+  var W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"', X = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  var document_ = X + "<w:document " + W + "><w:body>" + corps.join("") +
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1418" w:right="1418" w:bottom="1418" w:left="1418" w:header="709" w:footer="709" w:gutter="0"/></w:sectPr></w:body></w:document>';
+  var styles = X + "<w:styles " + W + '><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman"/>' +
+    '<w:sz w:val="24"/><w:szCs w:val="24"/><w:lang w:val="fr-FR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>' +
+    '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>' +
+    '<w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:uiPriority w:val="99"/><w:semiHidden/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/>' +
+    '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>';
+  return zipStocke([
+    ["[Content_Types].xml", X + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>'],
+    ["_rels/.rels", X + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'],
+    ["word/_rels/document.xml.rels", X + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+    ["word/document.xml", document_],
+    ["word/styles.xml", styles]
+  ], "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+}
+
+// ---------- Rechercher / remplacer ----------
+function motif() {
+  var q = $("rCherche").value;
+  if (!q) return null;
+  return new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $("rCasse").checked ? "g" : "gi");
+}
+function champsCibles() { var d = $("rDans").value; return d === "tout" ? ["texte", "traduction", "note"] : [d]; }
+function compter() {
+  var m = motif(), n = 0;
+  if (!m) return 0;
+  projet.segments.forEach(function (s) { champsCibles().forEach(function (c) { var r = (s[c] || "").match(m); if (r) n += r.length; }); });
+  return n;
+}
+$("btnRemplacer").onclick = function () { $("rResultat").textContent = ""; $("dlgRemplacer").showModal(); $("rCherche").focus(); };
+$("rCompter").onclick = function () { $("rResultat").textContent = compter() + " occurrence(s) trouvée(s)."; };
+$("rRemplacer").onclick = function () {
+  var m = motif(), n = compter();
+  if (!m || !n) { $("rResultat").textContent = "Aucune occurrence."; return; }
+  var par = $("rPar").value;
+  projet.segments.forEach(function (s) { champsCibles().forEach(function (c) { if (s[c]) s[c] = s[c].replace(m, function () { return par; }); }); });
+  afficherSegments(); modifie();
+  $("rResultat").textContent = n + " remplacement(s) effectué(s).";
+};
+$("rFermer").onclick = function () { $("dlgRemplacer").close(); };
+
+// ---------- Aide ----------
+$("btnAide").onclick = function () { $("aide").showModal(); };
+$("aideFermer").onclick = function () { $("aide").close(); };
+$("btnEffacer").onclick = function () {
+  if (!cleProjet) { statut("Aucune copie automatique pour ce projet."); return; }
+  if (!confirm("Effacer la copie automatique de ce projet dans ce navigateur ? Vérifiez d’abord que vous avez enregistré le projet en fichier.")) return;
+  stockage("effacer", cleProjet);
+  if (stockage("lire", "tk:dernier") === cleProjet) stockage("effacer", "tk:dernier");
+  $("sauvegarde").textContent = "Copie du navigateur effacée";
+  statut("Copie automatique effacée de ce navigateur.");
+};
+
+// ---------- Clavier ----------
+document.addEventListener("keydown", function (e) {
+  var k = e.key, ctrl = e.ctrlKey || e.metaKey;
+  if (document.querySelector("dialog[open]")) return;
+  if (k === "Escape" || (ctrl && (k === " " || e.code === "Space"))) { e.preventDefault(); lectureOuPause(); }
+  else if (ctrl && k === "ArrowLeft") { e.preventDefault(); deplacer(-3); }
+  else if (ctrl && k === "ArrowRight") { e.preventDefault(); deplacer(3); }
+  else if (k === "F2") { e.preventDefault(); nouveauSegment(); }
+  else if (k === "F8") { e.preventDefault(); suivantARevoir(); }
+  else if (k === "F4") {
+    e.preventDefault();
+    var i = segmentCible(), s = projet.segments[i];
+    if (s) { segCourant = i; allerA(s.debut, true); }
+  }
+  else if (e.altKey && (k === "1" || k === "2" || k === "3")) { e.preventDefault(); definirLocuteur(segmentCible(), { 1: "E", 2: "P", 3: "A" }[k]); }
+  else if (ctrl && (k === "i" || k === "I")) { e.preventDefault(); basculerIncertain(segmentCible()); }
+  else if (ctrl && (k === "k" || k === "K")) { e.preventDefault(); inserer("[" + formatTemps(audio.currentTime || 0) + "]"); }
+  else if (ctrl && (k === "s" || k === "S")) { e.preventDefault(); enregistrerProjet(); }
+  else if (ctrl && (k === "h" || k === "H")) { e.preventDefault(); $("btnRemplacer").click(); }
+});
+window.addEventListener("beforeunload", function () {
+  if (!projet.segments.length) return;
+  if (audio.getAttribute("src")) projet.position = Math.round(audio.currentTime * 10) / 10;
+  sauverNavigateur();
+});
+
+// ---------- Démarrage ----------
+(function demarrer() {
+  afficherMeta(); afficherGlossaire(); afficherSegments();
+  var cle = stockage("lire", "tk:dernier"), copie = cle && stockage("lire", cle);
+  if (!copie) return;
+  try {
+    var p = JSON.parse(copie);
+    if (!p.segments || !p.segments.some(function (s) { return (s.texte || "").trim(); })) return;
+    var quand = p.modifie ? new Date(p.modifie).toLocaleString("fr-FR") : "";
+    bandeau("Travail en cours retrouvé : <b>" + echapperHtml(p.meta.code || p.audio.nom || "transcription") + "</b>" + (quand ? " (" + quand + ")" : "") +
+      ". <button id='btnReprendre'>Reprendre</button> <button id='btnIgnorer'>Ignorer</button>");
+    $("btnReprendre").onclick = function () {
+      chargerProjet(p, true);
+      bandeau("Ouvrez l’enregistrement audio <b>" + echapperHtml(p.audio.nom || "") + "</b> pour continuer.");
+    };
+    $("btnIgnorer").onclick = function () { bandeau(""); };
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

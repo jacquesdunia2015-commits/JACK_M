@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#17334f">
+<meta name="description" content="MediStat — gestion des dossiers médicaux, du laboratoire et analyse statistique des données. Fonctionne hors ligne, sur ordinateur comme sur téléphone.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MediStat">
+<meta name="format-detection" content="telephone=no">
+<title>MediStat — Dossiers médicaux, laboratoire et analyse de données</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icone-192.png">
+<link rel="icon" type="image/svg+xml" href="assets/icone.svg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Écran de démarrage, remplacé dès que l'application est prête -->
+<div id="demarrage" class="demarrage">
+  <svg class="demarrage__logo" viewBox="0 0 96 96" aria-hidden="true">
+    <rect width="96" height="96" rx="22" fill="#17334f"/>
+    <path d="M20 58h10l6-16 8 26 8-34 7 24h17" fill="none" stroke="#38bdf8"
+          stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <p class="demarrage__nom">MediStat</p>
+  <div class="chargeur" aria-hidden="true"></div>
+  <p id="demarrageEtat" class="demarrage__etat">Ouverture de la base locale…</p>
+  <noscript>
+    <p class="demarrage__erreur">
+      MediStat nécessite JavaScript. Activez-le dans les réglages de votre navigateur.
+    </p>
+  </noscript>
+</div>
+
+<!-- Coquille applicative -->
+<div id="application" hidden>
+
+  <header class="barre-haut">
+    <button id="btnMenu" class="icone-btn barre-haut__menu" aria-label="Ouvrir le menu">☰</button>
+    <div class="marque">
+      <svg class="marque__logo" viewBox="0 0 96 96" aria-hidden="true">
+        <rect width="96" height="96" rx="22" fill="#17334f"/>
+        <path d="M20 58h10l6-16 8 26 8-34 7 24h17" fill="none" stroke="#38bdf8"
+              stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="marque__texte">
+        <strong>MediStat</strong>
+        <span id="nomEtablissement" class="marque__etablissement"></span>
+      </div>
+    </div>
+
+    <div class="barre-haut__recherche">
+      <input id="rechercheGlobale" class="champ champ--recherche" type="search"
+             placeholder="Rechercher un patient, une demande, un code-barres…"
+             aria-label="Recherche globale" autocomplete="off">
+      <div id="resultatsRecherche" class="recherche-resultats" hidden></div>
+    </div>
+
+    <div class="barre-haut__actions">
+      <span id="indicateurReseau" class="indicateur" title="État de la connexion"></span>
+      <div id="zoneLangue" class="barre-haut__langue"></div>
+      <button id="btnNotifications" class="icone-btn" aria-label="Notifications">
+        🔔<span id="compteurNotifications" class="pastille" hidden>0</span>
+      </button>
+      <button id="btnVerrouiller" class="icone-btn" aria-label="Verrouiller la session" title="Verrouiller (Ctrl+L)">🔒</button>
+      <button id="btnTheme" class="icone-btn" aria-label="Thème clair ou sombre" title="Thème">🌓</button>
+      <button id="btnCompte" class="compte" aria-label="Mon compte">
+        <span id="avatarCompte" class="avatar"></span>
+        <span id="nomCompte" class="compte__nom"></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="corps">
+    <nav id="navigation" class="navigation" aria-label="Navigation principale">
+      <!-- Organisation porteuse, sous la marque du logiciel : le logo APSA se
+           lit juste en dessous de celui de MediStat, sans concurrencer la
+           navigation qui suit. -->
+      <a class="marque-apsa" href="https://www.apsa.org" target="_blank" rel="noopener noreferrer">
+        <img class="marque-apsa__logo" src="assets/apsa.svg" width="46" height="46"
+             alt="APSA — Actions pour la Promotion de la Santé en Afrique">
+        <span class="marque-apsa__texte">
+          <strong>APSA</strong>
+          <span>Actions pour la Promotion<br>de la Santé en Afrique</span>
+        </span>
+      </a>
+
+      <div class="navigation__section">
+        <span class="navigation__titre" data-i18n="grp_soins">Soins</span>
+        <a class="nav-lien" href="#/tableau-de-bord" data-vue="tableau-de-bord"><span class="nav-lien__icone">📊</span><span class="nav-lien__texte" data-i18n="nav_bord">Tableau de bord</span></a>
+        <a class="nav-lien" href="#/patients" data-vue="patients" data-droit="patient:lecture"><span class="nav-lien__icone">🧑‍⚕️</span><span class="nav-lien__texte" data-i18n="nav_patients">Patients</span></a>
+        <a class="nav-lien" href="#/consultations" data-vue="consultations" data-droit="consultation:lecture"><span class="nav-lien__icone">🩺</span><span class="nav-lien__texte" data-i18n="nav_consultations">Consultations</span></a>
+        <a class="nav-lien" href="#/rendez-vous" data-vue="rendez-vous" data-droit="rendezVous:lecture"><span class="nav-lien__icone">📅</span><span class="nav-lien__texte" data-i18n="nav_rdv">Rendez-vous</span></a>
+      </div>
+      <div class="navigation__section">
+        <span class="navigation__titre" data-i18n="grp_labo">Laboratoire</span>
+        <a class="nav-lien" href="#/demandes" data-vue="demandes" data-droit="demande:lecture"><span class="nav-lien__icone">📋</span><span class="nav-lien__texte" data-i18n="nav_demandes">Demandes d'examens</span></a>
+        <a class="nav-lien" href="#/paillasse" data-vue="paillasse" data-droit="resultat:creation"><span class="nav-lien__icone">🔬</span><span class="nav-lien__texte" data-i18n="nav_paillasse">Paillasse</span></a>
+        <a class="nav-lien" href="#/validation" data-vue="validation" data-droit="resultat:validation"><span class="nav-lien__icone">✅</span><span class="nav-lien__texte" data-i18n="nav_validation">Validation</span><span id="badgeValidation" class="pastille pastille--nav" hidden>0</span></a>
+        <a class="nav-lien" href="#/messages" data-vue="messages" data-droit="notification:lecture"><span class="nav-lien__icone">✉️</span><span class="nav-lien__texte" data-i18n="nav_messages">Messages aux patients</span></a>
+        <a class="nav-lien" href="#/catalogue" data-vue="catalogue" data-droit="testCatalogue:lecture"><span class="nav-lien__icone">🧪</span><span class="nav-lien__texte" data-i18n="nav_catalogue">Catalogue des tests</span></a>
+      </div>
+      <div class="navigation__section">
+        <span class="navigation__titre" data-i18n="grp_analyse">Analyse de données</span>
+        <a class="nav-lien" href="#/jeux-donnees" data-vue="jeux-donnees" data-droit="analyse:lecture"><span class="nav-lien__icone">🗃️</span><span class="nav-lien__texte" data-i18n="nav_donnees">Jeux de données</span></a>
+        <a class="nav-lien" href="#/statistiques" data-vue="statistiques" data-droit="analyse:lecture"><span class="nav-lien__icone">📈</span><span class="nav-lien__texte" data-i18n="nav_stats">Statistiques</span></a>
+        <a class="nav-lien" href="#/qualitatif" data-vue="qualitatif" data-droit="analyse:lecture"><span class="nav-lien__icone">💬</span><span class="nav-lien__texte" data-i18n="nav_qualitatif">Analyse qualitative</span></a>
+        <a class="nav-lien" href="#/rapports" data-vue="rapports" data-droit="statistiques:lecture"><span class="nav-lien__icone">📄</span><span class="nav-lien__texte" data-i18n="nav_rapports">Rapports</span></a>
+      </div>
+      <div class="navigation__section">
+        <span class="navigation__titre" data-i18n="grp_admin">Administration</span>
+        <a class="nav-lien" href="#/utilisateurs" data-vue="utilisateurs" data-droit="utilisateur:lecture"><span class="nav-lien__icone">👥</span><span class="nav-lien__texte" data-i18n="nav_utilisateurs">Utilisateurs</span></a>
+        <a class="nav-lien" href="#/etablissement" data-vue="etablissement" data-droit="etablissement:lecture"><span class="nav-lien__icone">🏥</span><span class="nav-lien__texte" data-i18n="nav_etablissement">Établissement</span></a>
+        <a class="nav-lien" href="#/audit" data-vue="audit" data-droit="audit:lecture"><span class="nav-lien__icone">🛡️</span><span class="nav-lien__texte" data-i18n="nav_audit">Journal d'audit</span></a>
+        <a class="nav-lien" href="#/facturation" data-vue="facturation" data-droit="facture:lecture"><span class="nav-lien__icone">💶</span><span class="nav-lien__texte" data-i18n="nav_facturation">Facturation</span></a>
+      </div>
+      <div class="navigation__section navigation__section--bas">
+        <a class="nav-lien" href="#/aide" data-vue="aide"><span class="nav-lien__icone">❓</span><span class="nav-lien__texte" data-i18n="nav_aide">Aide et documentation</span></a>
+        <button id="btnInstaller" class="nav-lien nav-lien--bouton" hidden><span class="nav-lien__icone">📲</span>Installer l'application</button>
+      </div>
+    </nav>
+
+    <main id="vue" class="vue" tabindex="-1"></main>
+  </div>
+
+  <!-- Barre de navigation mobile -->
+  <nav class="barre-mobile" aria-label="Navigation rapide">
+    <a class="barre-mobile__lien" href="#/tableau-de-bord" data-vue="tableau-de-bord"><span>📊</span><span data-i18n="nav_bord">Bord</span></a>
+    <a class="barre-mobile__lien" href="#/patients" data-vue="patients"><span>🧑‍⚕️</span><span data-i18n="nav_patients">Patients</span></a>
+    <a class="barre-mobile__lien" href="#/demandes" data-vue="demandes"><span>📋</span><span data-i18n="nav_demandes">Demandes</span></a>
+    <a class="barre-mobile__lien" href="#/statistiques" data-vue="statistiques"><span>📈</span><span data-i18n="nav_stats">Analyse</span></a>
+    <button class="barre-mobile__lien" id="btnMenuMobile"><span>☰</span>Menu</button>
+  </nav>
+</div>
+
+<!-- Écran de verrouillage -->
+<div id="verrou" class="verrou" hidden>
+  <div class="verrou__carte">
+    <div class="verrou__icone">🔒</div>
+    <h2 data-i18n="ses_verrouille">Session verrouillée</h2>
+    <p id="verrouMotif" class="texte-secondaire"></p>
+    <p><strong id="verrouUtilisateur"></strong></p>
+    <form id="formVerrou" class="formulaire">
+      <input id="verrouMotDePasse" class="champ" type="password" placeholder="Mot de passe" data-i18n-placeholder="ses_motdepasse"
+             autocomplete="current-password" aria-label="Mot de passe">
+      <button class="btn btn--primaire btn--large" type="submit" data-i18n="ses_deverrouiller">Déverrouiller</button>
+    </form>
+    <button id="btnQuitterSession" class="btn btn--fin">Fermer la session</button>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

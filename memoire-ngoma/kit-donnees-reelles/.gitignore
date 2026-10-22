@@ -1,0 +1,9 @@
+# Ce dossier ne contient que des gabarits VIERGES. Une fois remplis, les
+# fichiers contiennent des données de recherche : ils ne doivent jamais être
+# versés dans ce dépôt (§ 4.2.7 du protocole). Tout fichier ajouté ici est
+# donc ignoré, sauf les gabarits eux-mêmes.
+*
+!.gitignore
+!LISEZ-MOI.md
+!Memoire_Ngoma_DONNEES_REELLES_vierge.projx
+!Outils_de_collecte_VIERGES.docx
