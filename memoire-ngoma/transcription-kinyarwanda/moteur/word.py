@@ -9,6 +9,7 @@ Même mise en forme que l’export « Word » de l’éditeur :
 
   python word.py transcriptions/P01.json                 → transcriptions/P01_rw-fr.docx
   python word.py P01_transcription.json --contenu fr     → P01_transcription_fr.docx
+  python word.py transcriptions/P01.json --a-remplir     → P01_a_remplir.docx (tableau vide, heures placées)
 """
 import argparse
 import datetime
@@ -71,8 +72,11 @@ def lignes_entete(projet):
     return l
 
 
-def document_xml(projet, contenu="bi"):
-    segs = [s for s in projet.get("segments", []) if (s.get("texte") or "").strip() or (s.get("traduction") or "").strip()]
+def document_xml(projet, contenu="bi", vides=False):
+    """vides=True garde les segments sans texte : document à remplir à la main, heures déjà placées."""
+    segs = [s for s in projet.get("segments", [])
+            if vides or (s.get("texte") or "").strip() or (s.get("traduction") or "").strip()]
+    manquante = "" if vides else "[traduction manquante]"
     entete = lignes_entete(projet)
     corps = [para(run(entete[0], gras=True, taille=32), apres=120)]
     corps += [para(run(l, couleur="595959", taille=20), apres=0) for l in entete[1:]]
@@ -102,13 +106,13 @@ def document_xml(projet, contenu="bi"):
                      + cellule(para(run(heure(s.get("debut")), couleur="595959", taille=18), apres=0), L[0])
                      + cellule(para(run(qui(s), gras=True, couleur=COULEUR_LOC.get(s.get("locuteur")), taille=20), apres=0), L[1])
                      + cellule(para(run(s.get("texte"), sans_correction=True, taille=22) + revoir(s), apres=0), L[2])
-                     + cellule(para(run(s.get("traduction") or "[traduction manquante]", taille=22), apres=0) + note, L[3])
+                     + cellule(para(run(s.get("traduction") or manquante, taille=22), apres=0) + note, L[3])
                      + "</w:tr>")
         t.append("</w:tbl>")
         corps += ["".join(t), para("")]
     else:
         for s in segs:
-            texte = (s.get("traduction") or "[traduction manquante]") if contenu == "fr" else s.get("texte")
+            texte = (s.get("traduction") or manquante) if contenu == "fr" else s.get("texte")
             corps.append(para(run(f"[{heure(s.get('debut'))}] ", couleur="595959", taille=18)
                               + run(qui(s) + " : ", gras=True, couleur=COULEUR_LOC.get(s.get("locuteur")))
                               + run(texte, sans_correction=contenu == "rw") + revoir(s), apres=0 if s.get("note") else 160))
@@ -139,11 +143,11 @@ DOC_RELS = (X + '<Relationships xmlns="http://schemas.openxmlformats.org/package
             'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>')
 
 
-def ecrire_docx(projet, chemin, contenu="bi"):
+def ecrire_docx(projet, chemin, contenu="bi", vides=False):
     date = datetime.datetime.now().timetuple()[:6]
     with zipfile.ZipFile(chemin, "w", zipfile.ZIP_DEFLATED) as z:
         for nom, texte in (("[Content_Types].xml", TYPES), ("_rels/.rels", RELS), ("word/_rels/document.xml.rels", DOC_RELS),
-                           ("word/document.xml", document_xml(projet, contenu)), ("word/styles.xml", STYLES)):
+                           ("word/document.xml", document_xml(projet, contenu, vides)), ("word/styles.xml", STYLES)):
             z.writestr(zipfile.ZipInfo(nom, date), texte.encode("utf-8"), zipfile.ZIP_DEFLATED)
     return chemin
 
@@ -156,12 +160,14 @@ def main():
     p = argparse.ArgumentParser(description="Transcription (.json) en document Word modifiable (.docx).")
     p.add_argument("projets", nargs="+", help="fichiers JSON du moteur ou projets enregistrés depuis l’éditeur")
     p.add_argument("--contenu", choices=["bi", "fr", "rw"], default="bi", help="bi (tableau, défaut), fr ou rw")
+    p.add_argument("--a-remplir", action="store_true",
+                   help="garder les segments vides : tableau à remplir dans Word, heures déjà placées")
     a = p.parse_args()
     for chemin in a.projets:
         with open(chemin, encoding="utf-8") as f:
             projet = json.load(f)
-        cible = os.path.splitext(chemin)[0] + SUFFIXES[a.contenu] + ".docx"
-        print("écrit :", ecrire_docx(projet, cible, a.contenu))
+        cible = os.path.splitext(chemin)[0] + ("_a_remplir" if a.a_remplir else SUFFIXES[a.contenu]) + ".docx"
+        print("écrit :", ecrire_docx(projet, cible, a.contenu, a.a_remplir))
 
 
 if __name__ == "__main__":
