@@ -343,6 +343,8 @@ function formatTemps(s, dixiemes) {
   var t = deuxChiffres(h) + ":" + deuxChiffres(m) + ":" + deuxChiffres(sec);
   return dixiemes ? t + "." + Math.floor((s * 10) % 10) : t;
 }
+// Début – fin d’un segment, pour retrouver le passage dans l’audio
+function plageTemps(s) { return isFinite(s.fin) ? formatTemps(s.debut) + " – " + formatTemps(s.fin) : formatTemps(s.debut); }
 function lireTemps(txt) {
   var parties = String(txt).trim().replace(",", ".").split(":");
   if (!parties.length || parties.length > 3) return NaN;
@@ -1029,7 +1031,7 @@ function exporter(genre) {
 function texte(segs, contenu) {
   var out = lignesEntete().concat([""]);
   segs.forEach(function (s) {
-    var h = "[" + formatTemps(s.debut) + "] ", qui = nomLocuteur(s) + " : ";
+    var h = "[" + plageTemps(s) + "] ", qui = nomLocuteur(s) + " : ";
     if (contenu === "fr") out.push(h + qui + (s.traduction || "[traduction manquante]") + (s.incertain ? " [à revoir]" : ""));
     else {
       out.push(h + qui + (s.texte || "") + (s.incertain ? " [à revoir]" : ""));
@@ -1130,7 +1132,7 @@ function docx(segs, contenu) {
   var note = function (s) { return s.note ? wPara(wRun("Note : " + s.note, { italique: true, couleur: "595959", taille: 18 }), { apres: 0 }) : ""; };
   if (contenu === "bi") {
     // Tableau : une ligne par segment, kinyarwanda et français côte à côte
-    var L = [1000, 1300, 3385, 3385], bord = 'w:val="single" w:sz="4" w:space="0" w:color="A0A7B4"';
+    var L = [1250, 1200, 3310, 3310], bord = 'w:val="single" w:sz="4" w:space="0" w:color="A0A7B4"';
     var t = ['<w:tbl><w:tblPr><w:tblW w:w="9070" w:type="dxa"/><w:tblBorders><w:top ' + bord + '/><w:left ' + bord + '/><w:bottom ' + bord +
       '/><w:right ' + bord + '/><w:insideH ' + bord + '/><w:insideV ' + bord + '/></w:tblBorders><w:tblLayout w:type="fixed"/>' +
       '<w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr>',
@@ -1140,7 +1142,7 @@ function docx(segs, contenu) {
     }).join("") + "</w:tr>");
     segs.forEach(function (s) {
       t.push("<w:tr><w:trPr><w:cantSplit/></w:trPr>" +
-        wCellule(wPara(wRun(formatTemps(s.debut), { couleur: "595959", taille: 18 }), { apres: 0 }), L[0]) +
+        wCellule(wPara(wRun(plageTemps(s), { couleur: "595959", taille: 18 }), { apres: 0 }), L[0]) +
         wCellule(wPara(wRun(nomLocuteur(s), { gras: true, couleur: COULEUR_LOC[s.locuteur], taille: 20 }), { apres: 0 }), L[1]) +
         wCellule(wPara(wRun(s.texte, { sansCorrection: true, taille: 22 }) + revoir(s), { apres: 0 }), L[2]) +
         wCellule(wPara(wRun(s.traduction || "[traduction manquante]", { taille: 22 }), { apres: 0 }) + note(s), L[3]) + "</w:tr>");
@@ -1150,7 +1152,7 @@ function docx(segs, contenu) {
   } else {
     segs.forEach(function (s) {
       var texte = contenu === "fr" ? (s.traduction || "[traduction manquante]") : s.texte;
-      corps.push(wPara(wRun("[" + formatTemps(s.debut) + "] ", { couleur: "595959", taille: 18 }) +
+      corps.push(wPara(wRun("[" + plageTemps(s) + "] ", { couleur: "595959", taille: 18 }) +
         wRun(nomLocuteur(s) + " : ", { gras: true, couleur: COULEUR_LOC[s.locuteur] }) +
         wRun(texte, { sansCorrection: contenu === "rw" }) + revoir(s), { apres: s.note ? 0 : 160 }));
       if (s.note) corps.push(wPara(wRun("Note : " + s.note, { italique: true, couleur: "595959", taille: 20 }), { apres: 160, retrait: 567 }));

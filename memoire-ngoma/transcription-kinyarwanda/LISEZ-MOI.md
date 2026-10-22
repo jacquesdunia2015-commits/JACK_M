@@ -67,6 +67,8 @@ utilisateurs, ni paiement, ni serveur.
     - *Word — français seulement* : pour l’import dans NVivo (ou dans QualiCode).
     - *Word — kinyarwanda seulement* : la transcription d’origine.
     - Le texte (.txt) et le tableau Excel (.csv) restent disponibles.
+    - Chaque segment porte son heure de début et de fin (`[00:05:12 – 00:05:31]`), la même en
+      kinyarwanda et en français : pour corriger, *Aller à* 05:12 dans l’éditeur et réécouter le passage.
 
 ## 4. Premier jet dans Google Colab
 

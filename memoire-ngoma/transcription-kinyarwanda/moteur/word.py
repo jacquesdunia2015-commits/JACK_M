@@ -30,6 +30,11 @@ def heure(s):
     return f"{s // 3600:02d}:{s % 3600 // 60:02d}:{s % 60:02d}"
 
 
+def plage(seg):
+    """Début – fin du segment, pour retrouver le passage dans l’audio."""
+    return f"{heure(seg.get('debut'))} – {heure(seg.get('fin'))}" if seg.get("fin") is not None else heure(seg.get("debut"))
+
+
 def run(texte, gras=False, italique=False, sans_correction=False, couleur=None, taille=None):
     pr = (("<w:b/>" if gras else "") + ("<w:i/>" if italique else "") + ("<w:noProof/>" if sans_correction else "")
           + (f'<w:color w:val="{couleur}"/>' if couleur else "")
@@ -89,7 +94,7 @@ def document_xml(projet, contenu="bi", vides=False):
         return LOCUTEURS.get(s.get("locuteur"), "?")
 
     if contenu == "bi":
-        L = [1000, 1300, 3385, 3385]
+        L = [1250, 1200, 3310, 3310]
         bord = 'w:val="single" w:sz="4" w:space="0" w:color="A0A7B4"'
         t = ['<w:tbl><w:tblPr><w:tblW w:w="9070" w:type="dxa"/><w:tblBorders>'
              + "".join(f"<w:{c} {bord}/>" for c in ("top", "left", "bottom", "right", "insideH", "insideV"))
@@ -103,7 +108,7 @@ def document_xml(projet, contenu="bi", vides=False):
         for s in segs:
             note = para(run("Note : " + s["note"], italique=True, couleur="595959", taille=18), apres=0) if s.get("note") else ""
             t.append("<w:tr><w:trPr><w:cantSplit/></w:trPr>"
-                     + cellule(para(run(heure(s.get("debut")), couleur="595959", taille=18), apres=0), L[0])
+                     + cellule(para(run(plage(s), couleur="595959", taille=18), apres=0), L[0])
                      + cellule(para(run(qui(s), gras=True, couleur=COULEUR_LOC.get(s.get("locuteur")), taille=20), apres=0), L[1])
                      + cellule(para(run(s.get("texte"), sans_correction=True, taille=22) + revoir(s), apres=0), L[2])
                      + cellule(para(run(s.get("traduction") or manquante, taille=22), apres=0) + note, L[3])
@@ -113,7 +118,7 @@ def document_xml(projet, contenu="bi", vides=False):
     else:
         for s in segs:
             texte = (s.get("traduction") or manquante) if contenu == "fr" else s.get("texte")
-            corps.append(para(run(f"[{heure(s.get('debut'))}] ", couleur="595959", taille=18)
+            corps.append(para(run(f"[{plage(s)}] ", couleur="595959", taille=18)
                               + run(qui(s) + " : ", gras=True, couleur=COULEUR_LOC.get(s.get("locuteur")))
                               + run(texte, sans_correction=contenu == "rw") + revoir(s), apres=0 if s.get("note") else 160))
             if s.get("note"):
