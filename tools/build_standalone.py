@@ -78,6 +78,12 @@ def main() -> None:
             # perdu), puis le projet embarqué est installé et ouvert. Si la
             # bonne version est déjà là, on ne touche à rien : le travail fait
             # depuis dans l'application est préservé.
+            # QC_REMPLACE=id1,id2 : projets que le projet embarqué remplace.
+            # Ils sont retirés du navigateur au moment où le nouveau projet
+            # s'installe, et à ce moment seulement : un projet recréé ensuite
+            # à la main n'est plus jamais touché.
+            remplaces = [i.strip() for i in os.environ.get("QC_REMPLACE", "").split(",")
+                         if i.strip() and i.strip() != projet.get("id")]
             if projet.get("id"):
                 bundle.append(
                     "(function () {\n"
@@ -96,6 +102,7 @@ def main() -> None:
                     "        }\n"
                     '        S.remplacerProjet(__QC["sample"].buildSampleProject());\n'
                     "        await S.persistNow();\n"
+                    f"        for (const ancien of {json.dumps(remplaces)}) S.deleteProjectById(ancien);\n"
                     "        return true;\n"
                     "      }\n"
                     "    } catch (e) { console.error(e); }\n"
