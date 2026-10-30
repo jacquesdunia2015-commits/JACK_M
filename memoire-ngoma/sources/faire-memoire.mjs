@@ -325,6 +325,21 @@ function listeSigles() {
    directeurs adjoints honoraires, enseignants permanents, vacataires, professionnels. Tableaux en
    11 pt, interligne simple. Sans le fichier, l'emplacement reste signalé « à compléter ». */
 function listePersonnel() {
+  // Pages scannées de la liste signée par la Directrice (personnel-page1.jpg, 2, 3) : reproduites
+  // telles quelles, une image par page, sans titre ajouté. Hauteur limitée à 23 cm pour que la page
+  // tienne dans la zone de texte et que le saut qui suit ne laisse pas de page blanche.
+  const scans = [1, 2, 3].map(k => new URL(`./personnel-page${k}.jpg`, import.meta.url)).filter(u => existsSync(u));
+  if (scans.length) {
+    const PX_CM = 96 / 2.54;
+    return scans.map((u, k) => {
+      const data = readFileSync(u);
+      const w = data.readUInt16BE(data.indexOf(Buffer.from([0xff, 0xc0])) + 7);
+      const h = data.readUInt16BE(data.indexOf(Buffer.from([0xff, 0xc0])) + 5);
+      const hauteur = Math.round(23 * PX_CM), largeur = Math.min(Math.round(hauteur * w / h), Math.round(LARGEUR / 567 * PX_CM));
+      return new Paragraph({ alignment: AlignmentType.CENTER, pageBreakBefore: k > 0, spacing: { before: 0, after: 0 },
+        children: [new ImageRun({ type: "jpg", data, transformation: { width: largeur, height: Math.round(largeur * h / w) } })] });
+    });
+  }
   const f = new URL("./personnel.json", import.meta.url);
   if (!existsSync(f)) return [titrePage("LISTE DU PERSONNEL DE L’ÉCOLE"), aCompleter(T.LISTE_PERSONNEL)];
   const L = JSON.parse(readFileSync(f, "utf8"));

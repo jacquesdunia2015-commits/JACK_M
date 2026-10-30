@@ -4,3 +4,5 @@ protocole.json
 figures/
 # Liste nominative du personnel de l’ENATSE (transmise par l’auteur) : hors dépôt public.
 personnel.json
+# Liste du personnel signée (pages scannées, insérées telles quelles dans le mémoire) : hors dépôt public.
+personnel-page*.jpg
