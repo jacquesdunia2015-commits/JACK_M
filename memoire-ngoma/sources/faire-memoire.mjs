@@ -320,33 +320,41 @@ function listeSigles() {
 }
 
 /* ---------- Liste du personnel de l'École ----------
-   Liste officielle transmise par l'auteur (personnel.json, hors dépôt public). Présentée en
-   tableaux (11 pt, interligne simple) pour tenir sur une page. Sans le fichier, l'emplacement
-   reste signalé « à compléter ». */
+   Liste officielle 2025-2026 signée par la Directrice (personnel.json, hors dépôt public), reprise
+   section par section comme dans l'original : direction, personnel administratif, directeurs et
+   directeurs adjoints honoraires, enseignants permanents, vacataires, professionnels. Tableaux en
+   11 pt, interligne simple. Sans le fichier, l'emplacement reste signalé « à compléter ». */
 function listePersonnel() {
   const f = new URL("./personnel.json", import.meta.url);
   if (!existsSync(f)) return [titrePage("LISTE DU PERSONNEL DE L’ÉCOLE"), aCompleter(T.LISTE_PERSONNEL)];
   const L = JSON.parse(readFileSync(f, "utf8"));
-  // Tableaux serrés (11 pt, interligne simple, marges réduites) pour tenir la page.
-  const cel = (t, w, o = {}) => new TableCell({ width: { size: w, type: WidthType.DXA }, columnSpan: o.span,
+  const cel = (t, w, o = {}) => new TableCell({ width: { size: w, type: WidthType.DXA },
     shading: o.fond ? { type: ShadingType.CLEAR, fill: o.fond, color: "auto" } : undefined,
     margins: { top: 10, bottom: 10, left: 60, right: 60 },
-    children: String(t).split("\n").map(l => new Paragraph({ spacing: { before: 0, after: 0, line: 240 },
-      children: [new TextRun({ text: l, bold: o.gras, size: 19 })] })) });
-  const tab = (lignes, w, { entete = false } = {}) => new Table({ style: "TableauSerre", width: { size: LARGEUR, type: WidthType.DXA }, columnWidths: w,
-    rows: lignes.map((l, i) => new TableRow({ tableHeader: entete && i === 0, cantSplit: true,
-      children: l.length === 1 ? [cel(l[0], LARGEUR, { span: w.length, gras: true, fond: "E8EDF2" })]
-        : l.map((c, j) => cel(c, w[j], { gras: entete && i === 0, fond: entete && i === 0 ? "E8EDF2" : null })) })) });
-  const pc = x => Math.round(LARGEUR * x);
-  const quatre = [pc(0.2), pc(0.3), pc(0.2)]; quatre.push(LARGEUR - quatre.reduce((a, c) => a + c, 0));
-  const parDeux = l => { const out = []; for (let i = 0; i < l.length; i += 2) out.push([...l[i], ...(l[i + 1] || ["", ""])]); return out; };
-  const deux = [pc(0.3), LARGEUR - pc(0.3)];
-  const trois = [pc(0.3), pc(0.3)]; trois.push(LARGEUR - trois[0] - trois[1]);
+    children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: String(t), bold: o.gras, size: 22 })] })] });
+  // Une section : sous-titre, puis tableau numéroté avec ligne d'en-tête répétée.
+  const section = (titre, entetes, lignes, parts) => {
+    const w = [567, ...parts.map(x => Math.round((LARGEUR - 567) * x))];
+    w[w.length - 1] = LARGEUR - w.slice(0, -1).reduce((a, c) => a + c, 0);
+    const rangs = [["N°", ...entetes], ...lignes.map((l, k) => [String(k + 1).padStart(2, "0"), ...l])];
+    return [
+      new Paragraph({ keepNext: true, spacing: { before: 200, after: 80 }, children: [new TextRun({ text: titre, bold: true, size: 24 })] }),
+      new Table({ style: "TableauSerre", width: { size: LARGEUR, type: WidthType.DXA }, columnWidths: w,
+        rows: rangs.map((l, i) => new TableRow({ tableHeader: i === 0, cantSplit: true,
+          children: l.map((c, j) => cel(c, w[j], { gras: i === 0, fond: i === 0 ? "E8EDF2" : null })) })) }),
+    ];
+  };
   return [
-    titrePage("LISTE DU PERSONNEL DE L’ÉCOLE"),
-    tab([...L.honoraires.map(([a, b]) => [a, b.replace(/\n/g, " ; ")]), [L.annee], ...L.administration,
-      ["Personnel enseignant permanent de l’École"], ...L.permanents,
-      ["Enseignants vacataires (responsable ; statut — grade et spécialité)"], ...L.vacataires.map(([n, st, g]) => [n, `${st} — ${g}`])], deux),
+    titrePage("LISTE DU PERSONNEL ADMINISTRATIF ET ENSEIGNANT DE L’ENATSE"),
+    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 }, children: [new TextRun({ text: `Année académique ${L.annee}`, bold: true })] }),
+    ...L.direction.map(([f, n]) => new Paragraph({ spacing: { after: 40 }, children: [
+      new TextRun({ text: `${f.toUpperCase()} : `, bold: true }), new TextRun({ text: n })] })),
+    ...section("PERSONNEL ADMINISTRATIF", ["Nom et prénoms", "Titre"], L.administratif, [0.5, 0.5]),
+    ...section("DIRECTEURS HONORAIRES", ["Nom et prénoms", "Titre", "Spécialité"], L.directeurs_honoraires, [0.38, 0.25, 0.37]),
+    ...section("DIRECTEURS ADJOINTS HONORAIRES", ["Nom et prénoms", "Titre", "Spécialité"], L.adjoints_honoraires, [0.38, 0.25, 0.37]),
+    ...section("ENSEIGNANTS PERMANENTS", ["Nom et prénoms", "Titre", "Spécialité"], L.permanents, [0.33, 0.25, 0.42]),
+    ...section("ENSEIGNANTS VACATAIRES", ["Nom et prénoms", "Titre / Grade", "Spécialité", "Établissement de provenance"], L.vacataires, [0.3, 0.22, 0.3, 0.18]),
+    ...section("PROFESSIONNELS", ["Nom et prénoms", "Titre / Grade", "Spécialité", "Établissement de provenance"], L.professionnels, [0.27, 0.27, 0.26, 0.2]),
   ];
 }
 
