@@ -93,6 +93,16 @@ memo("Faits de contexte confirmés par le chercheur",
      "Les obstacles financiers cités par les participants portent sur les soins à l’hôpital (ticket modérateur) et sur le "
      "transport ou l’ambulance, que le centre prend parfois en charge. Ne jamais coder ni écrire « coût du transfert ».")
 
+memo("Décisions méthodologiques pour le mémoire (3 novembre 2026)",
+     "Logiciel : écrire « les transcriptions ont été codées à l’aide d’un logiciel d’aide à l’analyse qualitative », sans le "
+     "nommer. Double codage : écrire « Le double codage par un pair extérieur, prévu au protocole, n’a pu être réalisé faute de "
+     "moyens ; la cohérence du codage a été contrôlée par un recodage répété et par les discussions critiques avec la directrice "
+     "sur l’arbre de codage. » Pas de coefficient kappa. Pré-test : une infirmière de CS02 (deux prévues). Traduction : par le "
+     "chercheur, termes difficiles clarifiés avec les participants pendant l’entretien ; pas de vérification bilingue "
+     "indépendante. Outils traduits par écrit en kinyarwanda ; les participants lisaient les questions du guide. Observation : "
+     "une grille dans chacun des neuf centres d’entretien. À régler : le formulaire de consentement en kinyarwanda annonce un "
+     "entretien sans enregistrement (point 3) et n’a pas de case pour l’enregistrement.")
+
 # Table de répartition reçue (repartition.json, hors dépôt) : codes et profils, sans aucun nom.
 REP = os.path.join(ICI, "repartition.json")
 if os.path.exists(REP):
