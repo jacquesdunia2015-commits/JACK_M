@@ -168,7 +168,11 @@ for f in fichiers:
                                   "end": i + len(extrait), "text": extrait, "weight": 0, "comment": "",
                                   "created": MAINTENANT, "coder": "chercheur"})
 if fichiers:
-    p["versionSimulation"] = "version-finale-" + "-".join(f[:-5] for f in fichiers)
+    # La version change dès que le contenu change : le fichier unique installe alors la nouvelle version.
+    import hashlib
+    empreinte = hashlib.sha1(json.dumps([p["documents"], p["segments"], p["codes"]], ensure_ascii=False,
+                                        sort_keys=True).encode("utf-8")).hexdigest()[:8]
+    p["versionSimulation"] = "version-finale-" + "-".join(f[:-5] for f in fichiers) + "-" + empreinte
 
 p["modified"] = MAINTENANT
 json.dump(p, open(SORTIE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
