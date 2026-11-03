@@ -6,3 +6,5 @@ figures/
 personnel.json
 # Liste du personnel signée (pages scannées, insérées telles quelles dans le mémoire) : hors dépôt public.
 personnel-page*.jpg
+# Table de répartition (profils des participants) : hors dépôt public.
+repartition.json

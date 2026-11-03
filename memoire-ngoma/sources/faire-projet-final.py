@@ -93,6 +93,15 @@ memo("Faits de contexte confirmés par le chercheur",
      "Les obstacles financiers cités par les participants portent sur les soins à l’hôpital (ticket modérateur) et sur le "
      "transport ou l’ambulance, que le centre prend parfois en charge. Ne jamais coder ni écrire « coût du transfert ».")
 
+# Table de répartition reçue (repartition.json, hors dépôt) : codes et profils, sans aucun nom.
+REP = os.path.join(ICI, "repartition.json")
+if os.path.exists(REP):
+    R = json.load(open(REP, encoding="utf-8"))
+    lignes = [f"{x['code']} : {x['cs']} ; {x['sexe']} ; {x['age']} ans ; {x['qualification']} ; CPN {x['anciennete_cpn']} ; "
+              f"MNT {x['formation_mnt']} ; {x['milieu']}" for x in R["participants"]]
+    memo(f"Table de répartition reçue le {R['recu_le']}",
+         "\n".join(lignes) + "\nCentres sans participant : " + ", ".join(R["centres_sans_participant"]) + ".")
+
 p["modified"] = MAINTENANT
 json.dump(p, open(SORTIE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 reste = [t for t in [p["memo"]] + [c["name"] for c in p["codes"]] + [m["title"] + m["text"] for m in p["memos"]]
