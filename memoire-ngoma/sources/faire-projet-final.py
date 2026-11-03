@@ -112,8 +112,66 @@ if os.path.exists(REP):
     memo(f"Table de répartition reçue le {R['recu_le']}",
          "\n".join(lignes) + "\nCentres sans participant : " + ", ".join(R["centres_sans_participant"]) + ".")
 
+# Entretiens vérifiés (donnees-finales/Pxx.json, hors dépôt) : texte retenu, journal, codages.
+DONNEES = os.path.join(ICI, "donnees-finales")
+G_ENT = p["documentGroups"][0]["id"]
+familles = {c["id"]: c for c in p["codes"] if not c.get("parentId")}
+
+
+def code_id(nom):
+    if "/" in nom[:3]:
+        num, nom = nom.split("/", 1)
+        cands = [c for c in p["codes"] if c["name"] == nom and c.get("parentId")
+                 and familles[c["parentId"]]["name"].startswith(num + ".")]
+    else:
+        cands = [c for c in p["codes"] if c["name"] == nom and c.get("parentId")]
+        if len(cands) > 1:
+            cands = [c for c in cands if not familles[c["parentId"]]["name"].startswith("9.")]
+    if nom.startswith("[inductif]") and not cands:
+        parent = [c for c in familles.values() if c["name"].startswith("6.")][0]
+        compteur[0] += 1
+        c = {"id": f"ci{compteur[0]:04d}", "name": nom, "parentId": parent["id"], "color": parent.get("color", "#888888"),
+             "created": MAINTENANT}
+        p["codes"].append(c); familles  # code inductif rattaché aux conditions systémiques
+        return c["id"]
+    assert len(cands) == 1, f"code introuvable ou ambigu : {nom} ({len(cands)})"
+    return cands[0]["id"]
+
+
+profils = {}
+if os.path.exists(REP):
+    profils = {x["code"]: x for x in json.load(open(REP, encoding="utf-8"))["participants"]}
+fichiers = sorted(f for f in os.listdir(DONNEES) if f.endswith(".json")) if os.path.isdir(DONNEES) else []
+for f in fichiers:
+    E = json.load(open(os.path.join(DONNEES, f), encoding="utf-8"))
+    x = profils.get(E["code"], {})
+    compteur[0] += 1
+    doc = {"id": f"de{compteur[0]:04d}", "name": f"Entretien {E['code']} ({x.get('cs', '')})", "groupId": G_ENT,
+           "text": E["texte"], "created": MAINTENANT,
+           "variables": {"type_document": "entretien", "code_structure": x.get("cs", ""),
+                         "qualification": x.get("qualification", ""), "sexe": x.get("sexe", ""),
+                         "tranche_age": x.get("age", ""), "anciennete_totale": x.get("anciennete_totale", ""),
+                         "anciennete_cpn": x.get("anciennete_cpn", ""), "titulaire": x.get("titulaire", ""),
+                         "formation_mnt": x.get("formation_mnt", ""), "secteur": x.get("milieu", ""),
+                         "langue_entretien": x.get("langue", "")}}
+    p["documents"].append(doc)
+    if E.get("journal"):
+        compteur[0] += 1
+        p["memos"].append({"id": f"mj{compteur[0]:04d}", "targetType": "document", "targetId": doc["id"],
+                           "created": MAINTENANT, "title": f"Journal de bord : {E['code']}", "text": E["journal"]})
+    for extrait, noms in E["codages"]:
+        i = doc["text"].find(extrait)
+        assert i >= 0, f"{E['code']} : extrait introuvable : {extrait[:60]}"
+        for nom in noms:
+            compteur[0] += 1
+            p["segments"].append({"id": f"sg{compteur[0]:05d}", "docId": doc["id"], "codeId": code_id(nom), "start": i,
+                                  "end": i + len(extrait), "text": extrait, "weight": 0, "comment": "",
+                                  "created": MAINTENANT, "coder": "chercheur"})
+if fichiers:
+    p["versionSimulation"] = "version-finale-" + "-".join(f[:-5] for f in fichiers)
+
 p["modified"] = MAINTENANT
 json.dump(p, open(SORTIE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-reste = [t for t in [p["memo"]] + [c["name"] for c in p["codes"]] + [m["title"] + m["text"] for m in p["memos"]]
+reste = [t for t in [p["memo"]] + [c["name"] for c in p["codes"]] + [m["title"] + m["text"] for m in p["memos"]] + [d["text"] for d in p["documents"]]
          if re.search(r"[—–]|^\s*-\s", t, re.M)]
-print(f"écrit : {SORTIE} ; {len(p['codes'])} codes ; {len(p['memos'])} mémos ; textes avec tirets : {len(reste)}")
+print(f"écrit : {SORTIE} ; {len(p['documents'])} documents ; {len(p['codes'])} codes ; {len(p['segments'])} codages ; {len(p['memos'])} mémos ; textes avec tirets : {len(reste)}")

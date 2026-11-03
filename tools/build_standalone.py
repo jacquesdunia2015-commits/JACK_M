@@ -75,7 +75,8 @@ def main() -> None:
             # Démarrage : si le navigateur contient déjà un projet de même
             # identifiant mais d'une autre version (champ versionSimulation),
             # l'ancien est conservé sous un nouvel identifiant (rien n'est
-            # perdu), puis le projet embarqué est installé et ouvert. Si la
+            # perdu), puis le projet embarqué est installé et ouvert. Un
+            # ancien projet sans document ni codage est simplement remplacé. Si la
             # bonne version est déjà là, on ne touche à rien : le travail fait
             # depuis dans l'application est préservé.
             # QC_REMPLACE=id1,id2 : projets que le projet embarqué remplace.
@@ -95,7 +96,7 @@ def main() -> None:
                     "    try {\n"
                     "      const present = await S.loadProjectById(ID);\n"
                     "      if (!present || (VERSION && present.versionSimulation !== VERSION)) {\n"
-                    "        if (present) {\n"
+                    "        if (present && ((present.documents || []).length || (present.segments || []).length)) {\n"
                     "          S.remplacerProjet(Object.assign({}, present, {\n"
                     "            id: S.uid(), name: present.name + \" (ancienne version, conservée)\" }));\n"
                     "          if (!(await S.persistNow())) throw new Error(\"sauvegarde de l'ancienne version impossible\");\n"

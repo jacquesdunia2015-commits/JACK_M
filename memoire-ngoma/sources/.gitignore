@@ -8,3 +8,5 @@ personnel.json
 personnel-page*.jpg
 # Table de répartition (profils des participants) : hors dépôt public.
 repartition.json
+# Transcriptions et codages des données réelles : hors dépôt public.
+donnees-finales/
