@@ -119,6 +119,7 @@ familles = {c["id"]: c for c in p["codes"] if not c.get("parentId")}
 
 
 def code_id(nom):
+    nom_complet = nom
     if "/" in nom[:3]:
         num, nom = nom.split("/", 1)
         cands = [c for c in p["codes"] if c["name"] == nom and c.get("parentId")
@@ -128,7 +129,11 @@ def code_id(nom):
         if len(cands) > 1:
             cands = [c for c in cands if not familles[c["parentId"]]["name"].startswith("9.")]
     if nom.startswith("[inductif]") and not cands:
-        parent = [c for c in familles.values() if c["name"].startswith("6.")][0]
+        cands = [c for c in p["codes"] if c["name"] == nom]   # déjà créé par un entretien précédent
+        if cands:
+            return cands[0]["id"]
+        fam = num if "/" in nom_complet[:3] else "6"         # famille indiquée, sinon conditions systémiques
+        parent = [c for c in familles.values() if c["name"].startswith(fam + ".")][0]
         compteur[0] += 1
         c = {"id": f"ci{compteur[0]:04d}", "name": nom, "parentId": parent["id"], "color": parent.get("color", "#888888"),
              "created": MAINTENANT}
