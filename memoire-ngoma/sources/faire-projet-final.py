@@ -66,6 +66,16 @@ memo("Échantillon réalisé (déclaré par le chercheur le 3 novembre 2026)",
      "50 ans et plus. Un centre urbain et huit ruraux. À confirmer par la table de répartition. Dans les deux centres à quatre "
      "participants, vérifier la diversité des profils (règle du protocole, section 4.2.3.1).")
 
+memo("Piste d’audit : seconde passe de codage (6 novembre 2026)",
+     "Seconde passe complète sur les seize entretiens, après la clôture du premier codage. Trois opérations : (1) relecture "
+     "intégrale de tous les passages de participants restés sans code, entretien par entretien, et codage de ceux qui relèvent "
+     "d’un code de la grille ; (2) application rétroactive, sur l’ensemble du corpus, des codes inductifs apparus en cours "
+     "d’analyse (rôle des ASM notamment), par recherche systématique des termes associés ; (3) contrôle de la provenance : aucun "
+     "passage ajouté ne reprend la réponse d’un autre participant, et les passages laissés en attente de vérification sur "
+     "l’enregistrement restent non codés. Aucun code nouveau ni aucun thème nouveau n’en résulte ; les ajouts renforcent les "
+     "thèmes existants. Quelques effectifs du chapitre des résultats sont mis à jour (explication du résultat et du risque, "
+     "adaptation niée, légitimité, destinataires désignés, formation proposée). Copie des fichiers antérieurs conservée.")
+
 memo("Table de répartition de référence",
      "Source unique pour les attributions. À recevoir avant tout entretien.\n"
      "Colonnes : code participant (P..), code centre (CS..), milieu (rural ou urbain), qualification, sexe, tranche d’âge, "
