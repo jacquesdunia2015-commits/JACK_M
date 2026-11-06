@@ -159,6 +159,10 @@ for f in fichiers:
                          "anciennete_cpn": x.get("anciennete_cpn", ""), "titulaire": x.get("titulaire", ""),
                          "formation_mnt": x.get("formation_mnt", ""), "secteur": x.get("milieu", ""),
                          "langue_entretien": x.get("langue", "")}}
+    if E.get("type") == "observation":   # fiche d'observation du service : corpus secondaire
+        milieu = next((y.get("milieu", "") for y in profils.values() if y.get("cs") == E["cs"]), "")
+        doc.update({"name": f"Observation {E['cs']}", "groupId": p["documentGroups"][1]["id"],
+                    "variables": {"type_document": "observation", "code_structure": E["cs"], "secteur": milieu}})
     p["documents"].append(doc)
     if E.get("journal"):
         compteur[0] += 1
