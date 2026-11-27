@@ -62,11 +62,15 @@ leur date sans la clé privée du créateur. La clé publique correspondante est
 Un candidat qui n'est pas encore membre répond « Non » à « Êtes-vous membre du CNBM ? » puis « Oui, je demande mon adhésion ».
 Le conseil retrouve ces fiches avec le filtre **Demandes d'adhésion** et les accepte (bouton **✅ Accepter l'adhésion**, avec le n° de carte attribué).
 
-## Limites actuelles (sans serveur)
+## Version avec serveur en ligne
 
-- Un compte n'existe que **sur l'appareil où il a été créé**. Pour se connecter depuis n'importe quel appareil, il faut un serveur en ligne.
-- Les fiches partent par **e-mail**, envoyé par le membre lui-même.
-- Mot de passe oublié : code de récupération donné à l'inscription, ou réinitialisation par un administrateur sur le même appareil.
+Le dossier [`serveur/`](serveur/LISEZ-MOI.md) contient le serveur de la plateforme (Node.js, sans dépendance) :
+comptes utilisables depuis n'importe quel appareil, **fiches transmises directement dans l'espace du conseil**
+(ni e-mail, ni WhatsApp), registre partagé par province, tableau de bord du créateur. Déploiement en un clic sur
+Render avec [`serveur/render.yaml`](serveur/render.yaml), ou avec Docker. Test automatique : `node cnbm/serveur/test-serveur.mjs`.
+
+Sans serveur (par exemple sur GitHub Pages tant que `SERVEUR_PAR_DEFAUT` n'est pas renseigné), l'application
+reste utilisable : comptes sur l'appareil, envoi des fiches par e-mail et import par le conseil.
 
 ## Distribution
 

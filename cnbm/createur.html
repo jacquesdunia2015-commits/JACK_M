@@ -10,6 +10,7 @@
 :root{--bleu:#0b5fa5;--bleu-f:#084a82;--bleu-c:#e8f1fa;--jaune:#f7d618;--rouge:#ce1021;--txt:#1b2733;--txt2:#5a6b7b;--bord:#d5dde6;--fond:#f4f7fa;
   --ok:#1a7f37;--ok-c:#e6f4ea;--att:#9a6700;--att-c:#fff8dc;--err:#b42318;--err-c:#fdecea}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--txt);background:var(--fond)}
 header{background:#1b2733;color:#fff;padding:12px 16px;position:relative}
 header::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:4px;background:linear-gradient(90deg,var(--jaune) 0 33%,var(--rouge) 33% 66%,var(--jaune) 66%)}
@@ -68,7 +69,7 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:7px 9px;b
   <form id="fAbo" class="grille">
     <label>Province / niveau<select name="province" id="province" required></select></label>
     <label>Nom du conseil<input name="conseil" id="nomConseil" required></label>
-    <label>E-mail de réception des fiches<input name="email" type="email" required placeholder="cpbm.nordkivu@exemple.cd"></label>
+    <label>E-mail du conseil <span style="font-weight:400;color:var(--txt2)">(contact ; réception des fiches seulement sans serveur)</span><input name="email" type="email" placeholder="cpbm.nordkivu@exemple.cd"></label>
     <label>Formule<select name="formule" id="formule">
       <option value="1">Mensuel (1 mois)</option><option value="3">Trimestriel (3 mois)</option><option value="6">Semestriel (6 mois)</option>
       <option value="12" selected>Annuel (12 mois)</option><option value="0">Essai gratuit (30 jours)</option></select></label>
@@ -79,10 +80,18 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:7px 9px;b
     <label>Montant payé<input name="montant" placeholder="ex. 100 USD"></label>
     <label>Mode de paiement<select name="paiement"><option></option><option>M-Pesa</option><option>Orange Money</option><option>Airtel Money</option><option>Afrimoney</option><option>Virement bancaire</option><option>Espèces</option><option>Gratuit</option></select></label>
     <label>Référence du paiement<input name="reference"></label>
+    <label>Adresse du serveur <span style="font-weight:400;color:var(--txt2)">(vide = mode sans serveur)</span><input name="serveur" id="urlSrv" type="url" placeholder="https://cnbm-rdc.onrender.com"></label>
     <label>Adresse de l'application<input name="url" id="urlApp" required></label>
     <div style="grid-column:1/-1"><button class="btn ok" type="submit">✍️ Générer et signer l'abonnement</button></div>
   </form>
   <div id="resultat"></div>
+</section>
+
+<section class="carte">
+  <h2>🖥️ Tableau de bord du serveur</h2>
+  <p class="aide">Activité réelle de la plateforme en ligne : conseils, comptes ouverts et fiches reçues. La demande est signée avec votre clé : seul le créateur peut la consulter.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="tbSrv" type="url" placeholder="https://cnbm-rdc.onrender.com" style="flex:1;min-width:220px"><button class="btn" id="tbOk">🔄 Actualiser</button></div>
+  <div id="tbRes" style="margin-top:12px"></div>
 </section>
 
 <section class="carte">
@@ -179,6 +188,19 @@ function calculerFin() {
 }
 $("#formule").onchange = calculerFin; $("#debut").onchange = calculerFin;
 $("#debut").value = iso(new Date()); calculerFin();
+$("#urlSrv").value = LS.get("cnbm-createur-serveur", "");
+// Page servie par le serveur CNBM lui-même : son adresse est proposée d'office.
+(async () => {
+  if (LS.get("cnbm-createur-serveur") || !/^https?:$/.test(location.protocol)) return;
+  try {
+    const r = await fetch(location.origin + "/api/sante", { cache: "no-store" });
+    if (r.ok && (await r.json()).service === "cnbm-recensement") {
+      $("#urlSrv").value = location.origin; $("#tbSrv").value = location.origin;
+      $("#urlApp").value = location.origin + "/index.html";
+    }
+  } catch {}
+})();
+$("#urlSrv").addEventListener("change", () => { const u = $("#urlSrv").value.trim().replace(/\/$/, ""); if (u) $("#urlApp").value = u + "/index.html"; });
 $("#urlApp").value = LS.get("cnbm-createur-url", location.protocol.startsWith("http") ? new URL("index.html", location.href).href : "https://jacquesdunia2015-commits.github.io/JACK_M/cnbm/index.html");
 
 const registre = () => { try { return JSON.parse(LS.get("cnbm-createur-registre", "[]")); } catch { return []; } };
@@ -194,8 +216,9 @@ $("#fAbo").onsubmit = async e => {
   if (!v.province) return toast("Choisissez la province.");
   if (v.expire < v.debut) return toast("La date de fin est avant la date de début.");
   LS.set("cnbm-createur-url", v.url.trim());
+  const serveur = (v.serveur || "").trim().replace(/\/$/, ""); LS.set("cnbm-createur-serveur", serveur);
   const id = idAbo(v.province), formule = $("#formule").selectedOptions[0].textContent;
-  const base = { v: 1, id, province: v.province, conseil: v.conseil.trim(), email: v.email.trim(), debut: v.debut, expire: v.expire, emis: new Date().toISOString() };
+  const base = { v: 1, id, province: v.province, conseil: v.conseil.trim(), email: v.email.trim(), debut: v.debut, expire: v.expire, emis: new Date().toISOString(), ...(serveur ? { serveur } : {}) };
   const jMembres = await signer({ ...base, type: "membre" });
   const jAdmin = await signer({ ...base, type: "admin", formule, membres: jMembres });
   const lien = v.url.trim().split("?")[0] + "?inscription=" + encodeURIComponent(jMembres);
@@ -221,7 +244,7 @@ ${a.cle}
 2) MEMBRES : partagez-leur ce LIEN D'INSCRIPTION (WhatsApp, e-mail) :
 ${a.lien}
 
-Les fiches des membres seront envoyées à : ${a.email}
+${a.serveur ? "Les fiches des membres arriveront directement dans votre Espace responsables, à l'intérieur de la plateforme (ni e-mail, ni WhatsApp)." : "Les fiches des membres seront envoyées à : " + a.email}
 
 Ne communiquez la clé d'abonnement qu'aux administrateurs du conseil.`;
 }
@@ -280,6 +303,30 @@ $("#inReg").onchange = async e => {
   try { const o = JSON.parse(await f.text()); if (o.format !== "cnbm-registre-abonnements") throw 0;
     const r = registre(), ids = new Set(r.map(a => a.id)); o.abonnements.forEach(a => !ids.has(a.id) && r.push(a)); sauverRegistre(r); afficherRegistre(); toast("Registre restauré");
   } catch { toast("Fichier de registre non reconnu."); }
+};
+
+/* ---------------- Tableau de bord du serveur ---------------- */
+$("#tbSrv").value = LS.get("cnbm-createur-serveur", "");
+$("#tbOk").onclick = async () => {
+  const u = $("#tbSrv").value.trim().replace(/\/$/, ""), z = $("#tbRes");
+  if (!u) return msg(z, "att", "Indiquez l'adresse du serveur.");
+  msg(z, "inf", "Interrogation du serveur…");
+  try {
+    const ts = String(Date.now());
+    const sig = b64u(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, clePrivee, new TextEncoder().encode("createur:" + ts)));
+    const r = await fetch(u + "/api/createur/tableau", { headers: { "x-createur": ts + "." + sig }, cache: "no-store" });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.erreur || "Erreur " + r.status);
+    LS.set("cnbm-createur-serveur", u);
+    const mo = o => o > 1073741824 ? (o / 1073741824).toFixed(2) + " Go" : (o / 1048576).toFixed(1) + " Mo";
+    z.innerHTML = `<div class="stats">${[[j.conseils.length, "conseils connus du serveur"], [j.conseils.filter(c => jours(c) >= 0).length, "abonnements actifs"], [j.totaux.comptes, "comptes ouverts"], [j.totaux.fiches, "fiches reçues"], [mo(j.totaux.fichiers.t), "de fichiers (" + j.totaux.fichiers.n + ")"]]
+        .map(([n, t]) => `<div class="stat"><b>${n}</b><span>${t}</span></div>`).join("")}</div>
+      <div class="table-w"><table><thead><tr><th>Conseil</th><th>Valable jusqu'au</th><th>Administrateurs</th><th>Membres inscrits</th><th>Fiches reçues</th></tr></thead><tbody>
+      ${j.conseils.map(c => { const jr = jours(c); return `<tr><td><b>${esc(c.nom)}</b><br><span style="color:var(--txt2)">${esc(c.province)} · ${esc(c.id)}</span></td>
+        <td>${dFr(c.expire)} <span class="pastille ${jr < 0 ? "p-err" : jr <= 30 ? "p-att" : "p-ok"}">${jr < 0 ? "Expiré" : jr <= 30 ? jr + " j" : "Actif"}</span></td>
+        <td>${c.admins}</td><td>${c.membres}</td><td>${c.fiches}</td></tr>`; }).join("") || `<tr><td colspan="5" style="text-align:center;color:var(--txt2)">Aucun conseil n'utilise encore le serveur.</td></tr>`}
+      </tbody></table></div><p class="aide" style="margin-top:6px">Mis à jour le ${new Date(j.heure).toLocaleString("fr-FR")}.</p>`;
+  } catch (e) { msg(z, "err", "⚠️ " + esc(e.message === "Failed to fetch" ? "Serveur injoignable : vérifiez l'adresse et votre connexion." : e.message)); }
 };
 
 (async () => {

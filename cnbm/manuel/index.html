@@ -104,7 +104,15 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li><b>L'administrateur</b> importe les fiches reçues, accepte les adhésions, et obtient la <b>liste complète en Excel</b>.</li>
 </ol>
 
-<div class="note">Les comptes et les données sont enregistrés <b>dans l'appareil</b> (téléphone ou ordinateur) où ils ont été créés. Un membre doit donc toujours utiliser le même appareil pour se connecter. Les fiches arrivent au conseil <b>par e-mail</b>.</div>
+<h3>Deux façons de fonctionner</h3>
+<table>
+<tr><th></th><th>☁️ Avec le serveur en ligne (recommandé)</th><th>📱 Sans serveur</th></tr>
+<tr><td>Comptes</td><td>Utilisables depuis <b>n'importe quel appareil</b></td><td>Valables seulement sur l'appareil où ils ont été créés</td></tr>
+<tr><td>Envoi des fiches</td><td><b>Directement dans l'espace du conseil</b>, à l'intérieur de la plateforme, automatiquement dès qu'il y a Internet. Ni e-mail, ni WhatsApp</td><td>Par e-mail, puis import par le conseil</td></tr>
+<tr><td>Registre du conseil</td><td>Mis à jour tout seul (« 🔄 Synchroniser »)</td><td>Import manuel des pièces jointes</td></tr>
+<tr><td>Changement de téléphone</td><td>Le membre retrouve sa fiche, sa photo et ses documents</td><td>Il faut recréer la fiche</td></tr>
+</table>
+<div class="note">Le petit nuage <b>☁️</b> à côté de « En ligne », en haut de l'écran, indique que l'application est reliée au serveur. Sans nuage, elle fonctionne sans serveur. Dans les deux cas, on peut remplir sa fiche <b>sans Internet</b>.</div>
 </section>
 
 <section data-p="membre admin createur">
@@ -125,7 +133,7 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li data-p="admin"><a href="#a-abonnement">B1. Obtenir l'abonnement</a></li>
 <li data-p="admin"><a href="#a-compte">B2. Créer le compte administrateur</a></li>
 <li data-p="admin"><a href="#a-lien">B3. Inviter les membres</a></li>
-<li data-p="admin"><a href="#a-import">B4. Recevoir et importer les fiches</a></li>
+<li data-p="admin"><a href="#a-import">B4. Recevoir les fiches</a></li>
 <li data-p="admin"><a href="#a-registre">B5. Consulter le registre</a></li>
 <li data-p="admin"><a href="#a-adhesion">B6. Traiter les demandes d'adhésion</a></li>
 <li data-p="admin"><a href="#a-excel">B7. Liste Excel, impression, sauvegarde</a></li>
@@ -137,6 +145,7 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li data-p="createur"><a href="#c-acces">C2. Accéder à l'espace créateur</a></li>
 <li data-p="createur"><a href="#c-abo">C3. Délivrer un abonnement</a></li>
 <li data-p="createur"><a href="#c-envoi">C4. Transmettre au conseil</a></li>
+<li data-p="createur"><a href="#c-serveur">C4 bis. Le serveur en ligne</a></li>
 <li data-p="createur"><a href="#c-registre">C5. Suivre et renouveler</a></li>
 <li data-p="createur"><a href="#c-securite">C6. Sécurité et perte de clé</a></li>
 <li data-p="membre admin createur"><a href="#depannage">Dépannage</a></li>
@@ -205,9 +214,12 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 
 <h3 id="m-media">A5. Photo passeport et vidéo</h3>
 <ul>
-<li><b>Photo</b> : « 📷 Prendre / choisir une photo ». Visage de face, fond clair. La photo est recadrée automatiquement au format passeport.</li>
+<li><b>Photo passeport</b> : deux possibilités, au choix.
+  <ul><li><b>« 📸 Prendre la photo maintenant »</b> : la caméra s'ouvre <b>dans la plateforme</b>. Placez le visage dans l'ovale (de face, fond clair, bonne lumière), touchez « 📸 Prendre la photo », puis « ✅ Utiliser cette photo » ou « ↩️ Reprendre ». « 🔄 Changer de caméra » passe à la caméra arrière (pratique pour photographier un collègue).</li>
+  <li><b>« 📁 Choisir une photo »</b> : une photo déjà enregistrée sur l'appareil. Elle est recadrée automatiquement au format passeport.</li></ul>
+  Sur un appareil <b>sans caméra</b>, seul « Choisir une photo » est proposé.</li>
 <li><b>Vidéo</b> (facultative, <b>2 minutes maximum</b>) : présentez-vous (nom, fonction, lieu de travail).
-  <ul><li>« 🎥 Enregistrer maintenant » : la caméra s'ouvre ; touchez <b>⏺️ Commencer</b>, puis <b>⏹️ Arrêter</b>. L'enregistrement s'arrête seul à 2 minutes. « 🔄 Changer de caméra » passe à la caméra arrière.</li>
+  <ul><li>« 🎥 Filmer maintenant » : la caméra s'ouvre dans la plateforme ; touchez <b>⏺️ Commencer</b>, puis <b>⏹️ Arrêter</b>. L'enregistrement s'arrête seul à 2 minutes. « 🔄 Changer de caméra » passe à la caméra arrière.</li>
   <li>« 📁 Choisir une vidéo » : une vidéo déjà filmée. Si elle est trop lourde pour un e-mail, l'application la <b>compresse automatiquement</b> (gardez la page ouverte pendant la compression).</li></ul></li>
 </ul>
 <div class="duo">
@@ -248,9 +260,15 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li>si vous êtes <b>membre en règle</b> : carte de membre, serment prêté, cotisations à jour ;</li>
 <li>les éléments <b>facultatifs mais recommandés</b> (formations, vidéo, e-mail).</li>
 </ul>
+<p>Le récapitulatif s'ouvre aussi depuis l'onglet <b>📂 Fiches enregistrées</b> (bouton « 📄 Récapitulatif » sur chaque fiche).</p>
 <p><b>« ⬇️ Télécharger mon récapitulatif »</b> enregistre un document avec toutes vos données et la liste de contrôle : gardez-le comme <b>fichier de référence</b>. <b>« 🖨️ Ouvrir pour imprimer / enregistrer en PDF »</b> permet de l'imprimer ou d'en faire un PDF (choisir « Enregistrer au format PDF » comme imprimante).</p>
 
 <h3 id="m-envoyer">A8. Envoyer sa fiche au conseil</h3>
+<h4>☁️ Avec le serveur en ligne</h4>
+<p>Il n'y a <b>rien à faire de plus</b> : dès que vous touchez « ✅ Valider et enregistrer », la fiche, la photo, la vidéo et les documents partent <b>directement dans l'espace de votre conseil provincial</b>, à l'intérieur de la plateforme (ni e-mail, ni WhatsApp). Sans Internet, la fiche attend et part <b>toute seule</b> au retour de la connexion. Le bouton <b>« ☁️ Envoyer à mon conseil »</b> permet aussi de l'envoyer tout de suite.</p>
+<figure class="tel"><img src="img/s1-envoi-interne.jpg" alt="Envoi dans la plateforme"><figcaption>Avec le serveur : envoi direct dans l'espace du conseil.</figcaption></figure>
+<p>La fiche passe au statut <b>« Envoyée »</b>. Quand le conseil accepte votre adhésion, vous voyez le changement (membre, n° de carte) à votre prochaine connexion. Sur un nouveau téléphone, connectez-vous avec le même identifiant : votre fiche est récupérée.</p>
+<h4>📱 Sans serveur</h4>
 <p>Quand vous avez Internet, touchez <b>« 📤 Envoyer aux responsables »</b>. L'adresse e-mail de votre conseil s'affiche (bouton « Copier »).</p>
 <figure class="tel"><img src="img/m11-envoi.jpg" alt="Envoi"><figcaption>La fenêtre d'envoi.</figcaption></figure>
 <h4>Sur téléphone</h4>
@@ -315,7 +333,11 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li>Joignez si possible la <b>partie A</b> de ce manuel.</li>
 </ol>
 
-<h3 id="a-import">B4. Recevoir et importer les fiches</h3>
+<h3 id="a-import">B4. Recevoir les fiches</h3>
+<h4>☁️ Avec le serveur en ligne</h4>
+<p>Les fiches envoyées par les membres arrivent <b>directement dans votre Espace responsables</b>, avec la photo, la vidéo et les pièces justificatives : pas d'e-mail, pas de WhatsApp, pas d'import. Le registre se met à jour à chaque ouverture de l'Espace responsables ; le bouton <b>« 🔄 Synchroniser avec le serveur »</b> le rafraîchit à tout moment. Les fiches reçues par le serveur portent le signe ☁️. Les photos, vidéos et documents se téléchargent à l'ouverture de la fiche.</p>
+<p>Vous ne voyez que les fiches de <b>votre province</b> ; le bureau national voit toutes les provinces. Accepter une adhésion, réinitialiser un mot de passe ou nommer un administrateur s'appliquent <b>directement sur le serveur</b>, pour tous les appareils.</p>
+<h4>📱 Sans serveur : import des pièces jointes</h4>
 <p>Chaque membre envoie un e-mail avec ses pièces jointes : <code>…_fiche.txt</code>, <code>…_photo.jpg</code>, éventuellement la vidéo, et un fichier <code>…_docN_…</code> (photo ou PDF) par pièce justificative.</p>
 <ol>
 <li>Ouvrez les e-mails reçus et <b>téléchargez toutes les pièces jointes</b> (dans Gmail : « Tout télécharger »).</li>
@@ -336,6 +358,11 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li><b>Recherche</b> : nom, téléphone, hôpital, ville… (plusieurs mots possibles).</li>
 <li><b>Filtres</b> : province, catégorie, et statut (<i>demandes d'adhésion, membres en règle, sans carte de membre, sans serment, cotisations en retard</i>). Les statistiques et les exports suivent les filtres.</li>
 <li><b>Fiche détaillée</b> : touchez une ligne pour voir toutes les données, la photo, la vidéo et les <b>pièces justificatives</b>, imprimer la fiche, télécharger la vidéo ou retirer la fiche du registre.</li>
+</ul>
+<h4>Télécharger le récapitulatif d'un membre</h4>
+<ul>
+<li>Dans la fiche détaillée, <b>« 📄 Récapitulatif (télécharger / PDF) »</b> affiche la liste de contrôle du dossier (complet ou non, membre en règle ou non) et permet de <b>télécharger</b> le document récapitulatif du membre, avec sa photo, ou de l'<b>imprimer / enregistrer en PDF</b>.</li>
+<li>Sous le registre, <b>« 📄 Récapitulatifs de la sélection »</b> réunit dans <b>un seul document</b> les récapitulatifs de tous les membres affichés (une page par membre). Filtrez d'abord, par exemple « Demandes d'adhésion » ou une catégorie, pour ne garder que les fiches utiles.</li>
 </ul>
 <h4>Vérifier les pièces justificatives</h4>
 <p>Dans la fiche détaillée, la rubrique <b>« Pièces justificatives »</b> montre chaque document (aperçu des photos, icône 📄 pour les PDF). Touchez un document pour l'<b>ouvrir ou le télécharger</b>. « fichier non importé » signifie que le fichier joint à l'e-mail n'a pas encore été importé.</p>
@@ -438,6 +465,11 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li><b>✉️ E-mail</b> : ouvre votre messagerie vers l'adresse du conseil, message prérempli.</li>
 </ul>
 <div class="astuce">Envoyez aussi au conseil la <b>partie B</b> de ce manuel pour ses administrateurs et la <b>partie A</b> pour ses membres.</div>
+
+<h3 id="c-serveur">C4 bis. Le serveur en ligne</h3>
+<p>Une fois le serveur installé (voir <code>cnbm/serveur/LISEZ-MOI.md</code>), ouvrez l'espace créateur <b>depuis l'adresse du serveur</b> (<code>https://&lt;votre-serveur&gt;/createur.html</code>). Le champ <b>« Adresse du serveur »</b> du formulaire d'abonnement est alors rempli tout seul : les clés et les liens d'inscription délivrés renvoient vers le serveur, et les fiches des membres arrivent dans l'espace du conseil.</p>
+<p>La rubrique <b>« 🖥️ Tableau de bord du serveur »</b> (bouton « 🔄 Actualiser ») montre l'activité réelle : conseils, abonnements actifs, comptes ouverts, fiches reçues, volume des fichiers, et, pour chaque conseil, le nombre d'administrateurs, de membres inscrits et de fiches reçues. La demande est signée avec votre clé : vous seul pouvez la consulter.</p>
+<p>Pour basculer un conseil déjà abonné vers le serveur, délivrez-lui un renouvellement (bouton « Renouveler ») : sa nouvelle clé et son nouveau lien pointent vers le serveur.</p>
 
 <h3 id="c-registre">C5. Suivre et renouveler les abonnements</h3>
 <figure><img src="img/c4-registre.jpg" alt="Registre des abonnements"><figcaption>Le registre des abonnements.</figcaption></figure>
