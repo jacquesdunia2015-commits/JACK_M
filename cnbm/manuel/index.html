@@ -112,6 +112,9 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <tr><td>Registre du conseil</td><td>Import manuel des pièces jointes</td><td>Mis à jour par « 🔄 Synchroniser »</td><td>Mis à jour par « 🔄 Synchroniser »</td></tr>
 <tr><td>Comptes</td><td colspan="2">Valables sur l'appareil où ils ont été créés</td><td>Utilisables sur n'importe quel appareil</td></tr>
 </table>
+<h3>La carte de la RDC</h3>
+<p>Sur l'écran d'accueil, à côté du logo, la carte de la RDC tourne en 3D : un tour montre les 26 provinces et leurs chefs-lieux, le suivant les 145 territoires. <b>Touchez-la</b> pour ouvrir la <b>carte interactive</b> : touchez une province, elle s'agrandit et montre ses territoires et ses villes. Les onglets donnent aussi la carte des chefs-lieux, celle des 145 territoires et leurs listes.</p>
+<figure class="tel"><img src="img/p1-explorer.jpg" alt="Carte interactive"><figcaption>Carte interactive : le Nord-Kivu et ses territoires.</figcaption></figure>
 <div class="note">Le petit nuage <b>☁️</b> à côté de « En ligne », en haut de l'écran, indique que la réception automatique est active. Dans tous les cas, on peut remplir sa fiche <b>sans Internet</b> ; la fiche part dès que la connexion revient.</div>
 </section>
 
@@ -135,6 +138,7 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li data-p="admin"><a href="#a-lien">B3. Inviter les membres</a></li>
 <li data-p="admin"><a href="#a-import">B4. Recevoir les fiches (Google Drive gratuit)</a></li>
 <li data-p="admin"><a href="#a-registre">B5. Consulter le registre</a></li>
+<li data-p="admin"><a href="#a-carte">B5 bis. La carte des adhérents</a></li>
 <li data-p="admin"><a href="#a-adhesion">B6. Traiter les demandes d'adhésion</a></li>
 <li data-p="admin"><a href="#a-excel">B7. Liste Excel, impression, sauvegarde</a></li>
 <li data-p="admin"><a href="#a-comptes">B8. Gérer les comptes</a></li>
@@ -211,6 +215,16 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <figure><img src="img/m6-adhesion.jpg" alt="Adhésion"><figcaption>Section 7 : situation d'adhésion au CNBM.</figcaption></figure>
 </div>
 <div class="astuce">Si vous travaillez hors de la RDC, écrivez le pays (ex. « Angola ») : la province devient automatiquement « Hors RDC ».</div>
+<h4>Indiquer son lieu de travail sur la carte</h4>
+<p>Pour chaque lieu de travail, précisez le <b>territoire</b> (ou la ville administrative), de l'une de ces trois façons :</p>
+<ul>
+<li><b>« 🗺️ Choisir sur la carte »</b> : la carte de la RDC s'ouvre ; touchez votre <b>province</b>, elle s'agrandit et montre ses territoires ; touchez votre <b>territoire</b>. La province, le territoire et la localité se remplissent seuls.</li>
+<li><b>« 📍 Me localiser ici »</b> (sur votre lieu de travail, GPS activé) : l'application trouve votre territoire et enregistre la position exacte.</li>
+<li>La liste <b>« Territoire »</b>, qui propose les territoires et villes de la province choisie.</li>
+</ul>
+<p>Dans la section Adresse, <b>« 📍 Localiser mon domicile »</b> fait de même pour votre domicile.</p>
+<figure class="tel"><img src="img/m5b-carte-choix.jpg" alt="Choisir son territoire sur la carte"><figcaption>Choix du lieu de travail : la province touchée s'ouvre sur ses territoires.</figcaption></figure>
+<div class="note">Ces informations permettent au conseil de voir sur la <b>carte des adhérents</b> où se trouvent ses membres. La localisation GPS demande l'autorisation du téléphone ; si vous la refusez, choisissez simplement sur la carte.</div>
 
 <h3 id="m-media">A5. Photo passeport et vidéo</h3>
 <ul>
@@ -368,6 +382,17 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li><b>Filtres</b> : province, catégorie, et statut (<i>demandes d'adhésion, membres en règle, sans carte de membre, sans serment, cotisations en retard</i>). Les statistiques et les exports suivent les filtres.</li>
 <li><b>Fiche détaillée</b> : touchez une ligne pour voir toutes les données, la photo, la vidéo et les <b>pièces justificatives</b>, imprimer la fiche, télécharger la vidéo ou retirer la fiche du registre.</li>
 </ul>
+<h4 id="a-carte">🗺️ La carte des adhérents</h4>
+<p>Sous le registre, la <b>carte des adhérents</b> montre où travaillent vos membres :</p>
+<ul>
+<li>chaque <b>province</b>, puis chaque <b>territoire</b>, est coloré selon le nombre d'adhérents (de blanc pour aucun à bleu foncé pour 20 et plus), avec le nombre dans une pastille rouge ;</li>
+<li>les <b>points rouges</b> sont les lieux de travail localisés par GPS ;</li>
+<li>touchez une <b>province</b> pour l'ouvrir sur ses territoires, puis un <b>territoire</b> pour la <b>liste de ses adhérents</b> ; touchez un nom pour ouvrir sa fiche ;</li>
+<li>les <b>filtres</b> du registre s'appliquent : par exemple, n'affichez que les biologistes ou les demandes d'adhésion ;</li>
+<li>la case « Compter aussi les autres lieux de travail » ajoute les lieux secondaires.</li>
+</ul>
+<figure><img src="img/a4b-carte-adherents.jpg" alt="Carte des adhérents"><figcaption>Carte des adhérents : la province du Nord-Kivu ouverte sur ses territoires.</figcaption></figure>
+<div class="note">Les fiches dont le territoire n'est pas reconnu sont signalées sous la carte. Demandez à ces membres de préciser leur lieu de travail sur la carte.</div>
 <h4>Télécharger le récapitulatif d'un membre</h4>
 <ul>
 <li>Dans la fiche détaillée, <b>« 📄 Récapitulatif (télécharger / PDF) »</b> affiche la liste de contrôle du dossier (complet ou non, membre en règle ou non) et permet de <b>télécharger</b> le document récapitulatif du membre, avec sa photo, ou de l'<b>imprimer / enregistrer en PDF</b>.</li>
