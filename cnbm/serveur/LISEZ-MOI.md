@@ -38,7 +38,7 @@ Ouvrir ensuite http://localhost:8080 (l'application) et http://localhost:8080/cr
 ### Render (recommandé, le plus simple)
 
 1. Créez un compte sur https://render.com.
-2. **New → Blueprint**, puis choisissez ce dépôt GitHub : le fichier `render.yaml` configure tout (Docker, disque de 5 Go, contrôle de santé).
+2. **New → Blueprint**, choisissez ce dépôt GitHub et, dans **Blueprint Path**, saisissez `cnbm/serveur/render.yaml`. Ce fichier configure tout : Docker, disque de 5 Go, contrôle de santé. Le `render.yaml` à la racine du dépôt appartient à un autre projet (LocaGest).
 3. Une fois le déploiement terminé, notez l'adresse, par exemple `https://cnbm-rdc.onrender.com`.
 
 Coût indicatif : offre *Starter* avec un disque persistant, quelques dollars par mois. L'offre gratuite n'a **pas de disque** : les données y seraient perdues à chaque redémarrage, ne l'utilisez pas.

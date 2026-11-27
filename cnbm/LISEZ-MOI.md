@@ -67,7 +67,7 @@ Le conseil retrouve ces fiches avec le filtre **Demandes d'adhésion** et les ac
 Le dossier [`serveur/`](serveur/LISEZ-MOI.md) contient le serveur de la plateforme (Node.js, sans dépendance) :
 comptes utilisables depuis n'importe quel appareil, **fiches transmises directement dans l'espace du conseil**
 (ni e-mail, ni WhatsApp), registre partagé par province, tableau de bord du créateur. Déploiement en un clic sur
-Render avec [`render.yaml`](../render.yaml), ou avec Docker. Test automatique : `node cnbm/serveur/test-serveur.mjs`.
+Render avec [`serveur/render.yaml`](serveur/render.yaml), ou avec Docker. Test automatique : `node cnbm/serveur/test-serveur.mjs`.
 
 Sans serveur (par exemple sur GitHub Pages tant que `SERVEUR_PAR_DEFAUT` n'est pas renseigné), l'application
 reste utilisable : comptes sur l'appareil, envoi des fiches par e-mail et import par le conseil.

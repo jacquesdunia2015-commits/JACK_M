@@ -2,6 +2,7 @@
 # Aucune dépendance à installer : tout est dans Node.js (node:sqlite, node:crypto).
 FROM node:22-alpine
 WORKDIR /app
+# Seul le dossier cnbm/ est copié (le reste du dépôt n'est pas nécessaire).
 COPY cnbm ./cnbm
 ENV PORT=8080 \
     DONNEES=/donnees \

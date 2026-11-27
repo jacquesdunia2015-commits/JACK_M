@@ -1,4 +1,0 @@
-# Seul le dossier cnbm/ est nécessaire à l'image du serveur CNBM.
-*
-!cnbm/
-cnbm/manuel/*.pdf
