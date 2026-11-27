@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0b5fa5"/>
+  <path d="M0 400 L512 150 L512 210 L0 460 Z" fill="#f7d618"/>
+  <path d="M0 415 L512 165 L512 195 L0 445 Z" fill="#ce1021"/>
+  <g fill="#fff" stroke="#0b5fa5" stroke-width="6" stroke-linejoin="round">
+    <!-- socle -->
+    <rect x="120" y="398" width="272" height="34" rx="14"/>
+    <!-- bras -->
+    <path d="M300 398 h46 v-40 c0-90-40-150-104-176 l-14 34 c46 22 72 66 72 142 z"/>
+    <!-- platine -->
+    <rect x="150" y="300" width="150" height="22" rx="8"/>
+    <!-- tube optique (incliné) -->
+    <g transform="rotate(-28 230 190)">
+      <rect x="206" y="80" width="50" height="170" rx="10"/>
+      <rect x="196" y="60" width="70" height="30" rx="8"/>
+      <rect x="216" y="250" width="30" height="34" rx="6"/>
+    </g>
+    <!-- vis de mise au point -->
+    <circle cx="300" cy="266" r="22"/>
+  </g>
+  <circle cx="300" cy="266" r="8" fill="#0b5fa5"/>
+</svg>
