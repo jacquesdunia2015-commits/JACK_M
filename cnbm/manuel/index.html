@@ -66,7 +66,7 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <div class="couv"><div class="in">
   <img src="../icon-512.png" alt="">
   <div><h1 id="titre">Manuel d'utilisation<br>Plateforme de recensement CNBM-RDC</h1>
-  <p>Conseil national des biotechnologistes médicaux de la République démocratique du Congo</p>
+  <p>CNBM-RDC — Conseil National des Biologistes Médicaux et Techniciens de laboratoire en République Démocratique du Congo</p>
   <p id="sousTitre">Pour les adhérents · les administrateurs des conseils provinciaux et national · le créateur de la plateforme</p></div>
 </div></div>
 
@@ -104,15 +104,15 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li><b>L'administrateur</b> importe les fiches reçues, accepte les adhésions, et obtient la <b>liste complète en Excel</b>.</li>
 </ol>
 
-<h3>Deux façons de fonctionner</h3>
+<h3>Trois façons de recevoir les fiches</h3>
 <table>
-<tr><th></th><th>☁️ Avec le serveur en ligne (recommandé)</th><th>📱 Sans serveur</th></tr>
-<tr><td>Comptes</td><td>Utilisables depuis <b>n'importe quel appareil</b></td><td>Valables seulement sur l'appareil où ils ont été créés</td></tr>
-<tr><td>Envoi des fiches</td><td><b>Directement dans l'espace du conseil</b>, à l'intérieur de la plateforme, automatiquement dès qu'il y a Internet. Ni e-mail, ni WhatsApp</td><td>Par e-mail, puis import par le conseil</td></tr>
-<tr><td>Registre du conseil</td><td>Mis à jour tout seul (« 🔄 Synchroniser »)</td><td>Import manuel des pièces jointes</td></tr>
-<tr><td>Changement de téléphone</td><td>Le membre retrouve sa fiche, sa photo et ses documents</td><td>Il faut recréer la fiche</td></tr>
+<tr><th></th><th>📱 Sans réception automatique</th><th>☁️ Google Drive (gratuit) — recommandé aujourd'hui</th><th>🖥️ Serveur (plus tard)</th></tr>
+<tr><td>Coût</td><td>Gratuit</td><td><b>Gratuit</b> (compte Gmail du conseil)</td><td>Abonnement d'hébergement</td></tr>
+<tr><td>Envoi des fiches</td><td>Par e-mail, puis import par le conseil</td><td><b>Automatique dès que le membre a Internet</b>, directement dans l'espace du conseil. Ni e-mail, ni WhatsApp</td><td>Automatique, comme Google Drive</td></tr>
+<tr><td>Registre du conseil</td><td>Import manuel des pièces jointes</td><td>Mis à jour par « 🔄 Synchroniser »</td><td>Mis à jour par « 🔄 Synchroniser »</td></tr>
+<tr><td>Comptes</td><td colspan="2">Valables sur l'appareil où ils ont été créés</td><td>Utilisables sur n'importe quel appareil</td></tr>
 </table>
-<div class="note">Le petit nuage <b>☁️</b> à côté de « En ligne », en haut de l'écran, indique que l'application est reliée au serveur. Sans nuage, elle fonctionne sans serveur. Dans les deux cas, on peut remplir sa fiche <b>sans Internet</b>.</div>
+<div class="note">Le petit nuage <b>☁️</b> à côté de « En ligne », en haut de l'écran, indique que la réception automatique est active. Dans tous les cas, on peut remplir sa fiche <b>sans Internet</b> ; la fiche part dès que la connexion revient.</div>
 </section>
 
 <section data-p="membre admin createur">
@@ -133,7 +133,7 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li data-p="admin"><a href="#a-abonnement">B1. Obtenir l'abonnement</a></li>
 <li data-p="admin"><a href="#a-compte">B2. Créer le compte administrateur</a></li>
 <li data-p="admin"><a href="#a-lien">B3. Inviter les membres</a></li>
-<li data-p="admin"><a href="#a-import">B4. Recevoir les fiches</a></li>
+<li data-p="admin"><a href="#a-import">B4. Recevoir les fiches (Google Drive gratuit)</a></li>
 <li data-p="admin"><a href="#a-registre">B5. Consulter le registre</a></li>
 <li data-p="admin"><a href="#a-adhesion">B6. Traiter les demandes d'adhésion</a></li>
 <li data-p="admin"><a href="#a-excel">B7. Liste Excel, impression, sauvegarde</a></li>
@@ -264,11 +264,11 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <p><b>« ⬇️ Télécharger mon récapitulatif »</b> enregistre un document avec toutes vos données et la liste de contrôle : gardez-le comme <b>fichier de référence</b>. <b>« 🖨️ Ouvrir pour imprimer / enregistrer en PDF »</b> permet de l'imprimer ou d'en faire un PDF (choisir « Enregistrer au format PDF » comme imprimante).</p>
 
 <h3 id="m-envoyer">A8. Envoyer sa fiche au conseil</h3>
-<h4>☁️ Avec le serveur en ligne</h4>
+<h4>☁️ Avec la réception automatique (Google Drive ou serveur)</h4>
 <p>Il n'y a <b>rien à faire de plus</b> : dès que vous touchez « ✅ Valider et enregistrer », la fiche, la photo, la vidéo et les documents partent <b>directement dans l'espace de votre conseil provincial</b>, à l'intérieur de la plateforme (ni e-mail, ni WhatsApp). Sans Internet, la fiche attend et part <b>toute seule</b> au retour de la connexion. Le bouton <b>« ☁️ Envoyer à mon conseil »</b> permet aussi de l'envoyer tout de suite.</p>
-<figure class="tel"><img src="img/s1-envoi-interne.jpg" alt="Envoi dans la plateforme"><figcaption>Avec le serveur : envoi direct dans l'espace du conseil.</figcaption></figure>
-<p>La fiche passe au statut <b>« Envoyée »</b>. Quand le conseil accepte votre adhésion, vous voyez le changement (membre, n° de carte) à votre prochaine connexion. Sur un nouveau téléphone, connectez-vous avec le même identifiant : votre fiche est récupérée.</p>
-<h4>📱 Sans serveur</h4>
+<figure class="tel"><img src="img/s1-envoi-interne.jpg" alt="Envoi dans la plateforme"><figcaption>Réception automatique : envoi direct dans l'espace du conseil.</figcaption></figure>
+<p>La fiche passe au statut <b>« Envoyée »</b>. Pour que la réception automatique soit active, ouvrez une fois le <b>lien d'inscription</b> envoyé par votre conseil : le ☁️ apparaît alors en haut de l'écran. Avec le serveur, vous retrouvez en plus votre fiche sur un nouveau téléphone.</p>
+<h4>📱 Sans réception automatique</h4>
 <p>Quand vous avez Internet, touchez <b>« 📤 Envoyer aux responsables »</b>. L'adresse e-mail de votre conseil s'affiche (bouton « Copier »).</p>
 <figure class="tel"><img src="img/m11-envoi.jpg" alt="Envoi"><figcaption>La fenêtre d'envoi.</figcaption></figure>
 <h4>Sur téléphone</h4>
@@ -334,7 +334,16 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 </ol>
 
 <h3 id="a-import">B4. Recevoir les fiches</h3>
-<h4>☁️ Avec le serveur en ligne</h4>
+<h4 id="a-drive">☁️ Activer la réception automatique gratuite (Google Drive)</h4>
+<p>Sans serveur payant, le conseil peut recevoir les fiches <b>automatiquement</b>, sans e-mail ni WhatsApp, grâce à un petit script gratuit installé sur un <b>compte Gmail du conseil</b>. Les fiches, photos, vidéos et documents sont rangés dans son Google Drive (un dossier par membre), avec un tableau Google Sheets « Registre ». La mise en place prend environ 15 minutes, une seule fois, sur un ordinateur :</p>
+<ol>
+<li>Espace responsables → carte <b>« ☁️ Réception automatique des fiches (Google Drive, gratuit) »</b> → ouvrez le <b>guide pas à pas</b> et téléchargez le script <code>Code.gs</code> (aussi en PDF : <code>CNBM_Guide_Google_Drive.pdf</code>).</li>
+<li>Sur https://script.google.com, avec le compte Gmail du conseil : nouveau projet, collez le script, exécutez <b>« initialiser »</b>, puis notez la <b>clé d'accès administrateur</b>.</li>
+<li><b>Déployer</b> → Nouveau déploiement → Application Web, « Exécuter en tant que : Moi », « Qui peut accéder : Tout le monde » → copiez l'adresse qui se termine par <code>/exec</code>.</li>
+<li>Dans l'application, collez l'adresse et la clé, puis <b>« 🔌 Tester et enregistrer »</b>.</li>
+<li>Copiez le <b>lien d'inscription des membres</b> de la carte « Abonnement » (il contient maintenant l'adresse de réception) et partagez-le.</li>
+</ol>
+<h4>☁️ Avec la réception automatique (Google Drive ou serveur)</h4>
 <p>Les fiches envoyées par les membres arrivent <b>directement dans votre Espace responsables</b>, avec la photo, la vidéo et les pièces justificatives : pas d'e-mail, pas de WhatsApp, pas d'import. Le registre se met à jour à chaque ouverture de l'Espace responsables ; le bouton <b>« 🔄 Synchroniser avec le serveur »</b> le rafraîchit à tout moment. Les fiches reçues par le serveur portent le signe ☁️. Les photos, vidéos et documents se téléchargent à l'ouverture de la fiche.</p>
 <p>Vous ne voyez que les fiches de <b>votre province</b> ; le bureau national voit toutes les provinces. Accepter une adhésion, réinitialiser un mot de passe ou nommer un administrateur s'appliquent <b>directement sur le serveur</b>, pour tous les appareils.</p>
 <h4>📱 Sans serveur : import des pièces jointes</h4>
@@ -442,7 +451,7 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <table>
 <tr><th>Champ</th><th>À saisir</th></tr>
 <tr><td>Province / niveau</td><td>L'une des 26 provinces, ou « National (toutes les provinces) »</td></tr>
-<tr><td>Nom du conseil</td><td>Rempli automatiquement, modifiable (ex. « Conseil provincial des biotechnologistes médicaux — Nord-Kivu »)</td></tr>
+<tr><td>Nom du conseil</td><td>Rempli automatiquement, modifiable (ex. « Conseil provincial des Biologistes Médicaux et Techniciens de laboratoire — Nord-Kivu »)</td></tr>
 <tr><td>E-mail de réception</td><td>L'adresse où <b>les membres enverront leurs fiches</b> (celle du conseil)</td></tr>
 <tr><td>Formule</td><td>Mensuel, trimestriel, semestriel, annuel ou essai gratuit de 30 jours. La <b>date de fin</b> se calcule seule (modifiable)</td></tr>
 <tr><td>Début</td><td>Date de départ de l'abonnement</td></tr>
@@ -466,7 +475,9 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 </ul>
 <div class="astuce">Envoyez aussi au conseil la <b>partie B</b> de ce manuel pour ses administrateurs et la <b>partie A</b> pour ses membres.</div>
 
-<h3 id="c-serveur">C4 bis. Le serveur en ligne</h3>
+<h3 id="c-serveur">C4 bis. Réception automatique : Google Drive aujourd'hui, serveur plus tard</h3>
+<p>En attendant un serveur, chaque conseil peut activer <b>gratuitement</b> la réception automatique par Google Drive (voir la partie B, « Recevoir les fiches », et le guide <code>CNBM_Guide_Google_Drive.pdf</code>). Vous n'avez rien à faire de votre côté : l'administrateur du conseil relie lui-même son Google Drive, et son lien d'inscription inclut l'adresse de réception.</p>
+<h4>Le serveur en ligne (plus tard)</h4>
 <p>Une fois le serveur installé (voir <code>cnbm/serveur/LISEZ-MOI.md</code>), ouvrez l'espace créateur <b>depuis l'adresse du serveur</b> (<code>https://&lt;votre-serveur&gt;/createur.html</code>). Le champ <b>« Adresse du serveur »</b> du formulaire d'abonnement est alors rempli tout seul : les clés et les liens d'inscription délivrés renvoient vers le serveur, et les fiches des membres arrivent dans l'espace du conseil.</p>
 <p>La rubrique <b>« 🖥️ Tableau de bord du serveur »</b> (bouton « 🔄 Actualiser ») montre l'activité réelle : conseils, abonnements actifs, comptes ouverts, fiches reçues, volume des fichiers, et, pour chaque conseil, le nombre d'administrateurs, de membres inscrits et de fiches reçues. La demande est signée avec votre clé : vous seul pouvez la consulter.</p>
 <p>Pour basculer un conseil déjà abonné vers le serveur, délivrez-lui un renouvellement (bouton « Renouveler ») : sa nouvelle clé et son nouveau lien pointent vers le serveur.</p>
