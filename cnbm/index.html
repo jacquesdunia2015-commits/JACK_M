@@ -416,11 +416,13 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
 
   <div class="carte">
     <h2>Registre des membres (responsables)</h2>
-    <p class="aide">Ouvrez les e-mails reçus, téléchargez les pièces jointes (fiche <code>.txt</code>, photo, vidéo, documents), puis importez-les ici. Vous pouvez sélectionner des dizaines de fichiers à la fois.</p>
+    <p class="aide" id="aideImport">Ouvrez les e-mails reçus, téléchargez les pièces jointes (fiche <code>.txt</code>, photo, vidéo, documents), puis importez-les ici. Vous pouvez sélectionner des dizaines de fichiers à la fois.</p>
     <div class="actions" style="margin-top:0">
-      <label class="btn">📥 Importer des fiches reçues<input type="file" id="inImport" multiple accept=".txt,.json,.pdf,image/*,video/*,text/plain,application/json,application/pdf" hidden></label>
+      <label class="btn" id="lblImport">📥 Importer des fiches reçues<input type="file" id="inImport" multiple accept=".txt,.json,.pdf,image/*,video/*,text/plain,application/json,application/pdf" hidden></label>
       <button class="btn sec" id="btnLocales">➕ Ajouter les fiches de cet appareil</button>
+      <button class="btn ok" id="btnSynchro" hidden>🔄 Synchroniser avec le serveur</button>
     </div>
+    <div id="msgSynchro" class="info"></div>
     <div id="msgImport"></div>
   </div>
 
@@ -449,7 +451,7 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
     <div id="listeComptes" class="liste"></div>
   </div>
 
-  <div class="carte no-print">
+  <div class="carte no-print" id="carteEmail">
     <h2>⚙️ Paramètres d'envoi</h2>
     <p class="aide">Adresse(s) e-mail des responsables qui reçoivent les fiches. Séparez plusieurs adresses par une virgule. Pour que les membres l'aient automatiquement, partagez le lien de l'application avec <code>?email=votre@adresse</code> à la fin (voir Aide).</p>
     <div class="grille"><label class="ch">E-mail de réception<input id="pEmail" type="text" inputmode="email" placeholder="secretariat.cnbm@exemple.cd"></label></div>
@@ -517,7 +519,7 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
 <div class="imprimable" id="zoneImpr"></div>
 
 <!-- Dialogues -->
-<dialog id="dlEnvoi"><div class="dl-h"><h3>📤 Envoyer aux responsables</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="dlEnvoiC"></div></dialog>
+<dialog id="dlEnvoi"><div class="dl-h"><h3 id="dlEnvoiT">📤 Envoyer aux responsables</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="dlEnvoiC"></div></dialog>
 <dialog id="dlRec"><div class="dl-h"><h3>🎥 Vidéo de présentation</h3><button class="x" data-ferme>×</button></div><div class="dl-c">
   <div class="rec"><video id="recVid" playsinline muted autoplay></video><span class="chrono" id="recChrono">0:00 / 2:00</span></div>
   <p class="info">Tenez le téléphone à hauteur du visage, dans un endroit calme et éclairé. L'enregistrement s'arrête seul à 2 minutes.</p>
@@ -576,6 +578,10 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
    EMAIL_PAR_DEFAUT : adresse(s) qui recevront les fiches.
    ------------------------------------------------------------------ */
 const EMAIL_PAR_DEFAUT = "";
+/* Adresse du SERVEUR en ligne (ex. "https://cnbm-rdc.onrender.com"). Vide = détection
+   automatique : l'application servie par le serveur l'utilise d'elle-même. Sans serveur,
+   l'application fonctionne en mode local (comptes sur l'appareil, envoi par e-mail). */
+const SERVEUR_PAR_DEFAUT = "";
 /* Clé(s) PUBLIQUE(S) du créateur de la plateforme. Les clés d'abonnement des
    conseils provinciaux sont signées avec la clé PRIVÉE correspondante (page
    createur.html) et vérifiées ici, sans Internet. Une clé publique ne permet pas
@@ -758,6 +764,9 @@ function majEtat() {
 let minuteur = null;
 function sauverAuto() {
   clearTimeout(minuteur);
+  // Toute modification d'une fiche déjà envoyée la remet « à envoyer », immédiatement
+  // (une validation juste après la saisie doit la renvoyer).
+  if (courant && courant.statut === "envoyee") { courant.statut = "prete"; majEtat(); }
   minuteur = setTimeout(async () => {
     lireForm();
     const avant = courant.statut;
@@ -799,7 +808,9 @@ form.addEventListener("submit", async e => {
   courant.modifie = Date.now();
   await DB.put("fiches", courant);
   majEtat(); majCompteur();
-  msg($("#msgForm"), "ok", "✅ Fiche validée et enregistrée sur cet appareil. Touchez <b>📤 Envoyer aux responsables</b> dès que vous avez Internet.");
+  msg($("#msgForm"), "ok", SRV.actif() ? "✅ Fiche validée. Elle part <b>automatiquement</b> au serveur de votre conseil (dès que vous avez Internet)."
+    : "✅ Fiche validée et enregistrée sur cet appareil. Touchez <b>📤 Envoyer aux responsables</b> dès que vous avez Internet.");
+  synchroAuto();
   toast("Fiche enregistrée");
 });
 
@@ -1117,10 +1128,13 @@ function lignesFiche(f) {
   return L;
 }
 const adresse = d => [d.adrNumero && "N° " + d.adrNumero, d.adrAvenue && "Av. " + d.adrAvenue, d.adrQuartier && "Q. " + d.adrQuartier, d.adrCommune && "C. " + d.adrCommune, d.adrVille, d.adrProvince, d.adrPays].filter(Boolean).join(", ");
-function texteFiche(f) {
-  const meta = { format: "cnbm-fiche", version: 1, id: f.id, compte: f.compte || null, conseil: f.conseil || null, adhesionValidee: f.adhesionValidee || null, cree: f.cree, modifie: f.modifie, data: f.data, lieux: f.lieux, formations: f.formations || [], videoDuree: f.videoDuree,
+function metaFiche(f) {
+  return { format: "cnbm-fiche", version: 1, id: f.id, compte: f.compte || null, conseil: f.conseil || null, adhesionValidee: f.adhesionValidee || null, cree: f.cree, modifie: f.modifie, data: f.data, lieux: f.lieux, formations: f.formations || [], videoDuree: f.videoDuree,
                  documents: (f.documents || []).map((d, i) => ({ type: d.type, libelle: d.libelle || "", nom: d.nom || "", mime: d.mime, taille: d.taille, fichier: nomDoc(f, d, i) })),
                  photo: f.photo ? nomFichier(f, "photo.jpg") : null, video: f.video ? nomFichier(f, "video." + extVideo(f.video.type)) : null };
+}
+function texteFiche(f) {
+  const meta = metaFiche(f);
   return lignesFiche(f).join("\r\n") + "\r\n\r\n--- Ne pas modifier ce qui suit (lecture automatique par l'application) ---\r\n-----DEBUT DONNEES CNBM-----\r\n"
     + JSON.stringify(meta) + "\r\n-----FIN DONNEES CNBM-----\r\n";
 }
@@ -1149,6 +1163,39 @@ function ouvrirEnvoi(fiches) {
     + `\n\nPièces jointes : ${fichiers.length} fichier(s) — à importer dans l'application CNBM (Espace responsables).`;
   const peutPartager = !!(navigator.canShare && navigator.canShare({ files: fichiers }));
   const hors = !navigator.onLine;
+  if (SRV.actif() && session) {
+    c.innerHTML = `<p>${fiches.length === 1 ? "Fiche de <b>" + esc(nomComplet(fiches[0].data)) + "</b>" : "<b>" + fiches.length + " fiches</b>"} · ${fichiers.length - fiches.length} pièce(s) jointe(s) · ${taille(total)}</p>
+      ${hors ? `<div class="msg att">📴 Vous êtes hors connexion. La fiche partira <b>automatiquement</b> vers votre conseil dès que l'appareil retrouvera Internet.</div>`
+             : `<div class="msg inf">☁️ La fiche, la photo, la vidéo et les documents sont transmis <b>directement dans l'espace de votre conseil</b>, à l'intérieur de la plateforme (ni e-mail, ni WhatsApp).</div>`}
+      <div id="envProg" hidden><div class="progress"><div></div></div><div class="info" id="envProgTxt"></div></div>
+      <div class="actions" style="flex-direction:column;align-items:stretch">
+        <button class="btn ok" id="envServeur" ${hors ? "disabled" : ""}>☁️ Envoyer maintenant au conseil</button>
+      </div>
+      <div id="envMsgSrv"></div>`;
+    $("#envServeur", c).onclick = async () => {
+      const b = $("#envServeur", c); b.disabled = true; $("#envProg", c).hidden = false;
+      try {
+        for (const [i, f] of fiches.entries()) await envoyerAuServeur(f, (p, t) => { $(".progress>div", c).style.width = ((i + p) / fiches.length * 100) + "%"; $("#envProgTxt", c).textContent = t; });
+        if (courant && fiches.some(f => f.id === courant.id)) majEtat();
+        majCompteur(); afficherMesFiches(); dl.close();
+        toast(`✅ ${fiches.length} fiche(s) reçue(s) par le serveur du conseil.`, 5000);
+      } catch (e) { msg($("#envMsgSrv", c), "err", "⚠️ " + esc(e.message) + " — la fiche partira automatiquement plus tard."); b.disabled = false; }
+    };
+    dl.showModal();
+    return;
+  }
+  ouvrirEnvoiEmail(fiches, c, dl);
+  dl.showModal();
+}
+function ouvrirEnvoiEmail(fiches, c, dl) {
+  const fichiers = fiches.flatMap(fichiersFiche);
+  const total = fichiers.reduce((s, f) => s + f.size, 0);
+  const email = emailDest();
+  const sujet = fiches.length === 1 ? `Recensement CNBM — ${nomComplet(fiches[0].data)} — ${fiches[0].id}` : `Recensement CNBM — ${fiches.length} fiches`;
+  const corps = (fiches.length === 1 ? lignesFiche(fiches[0]).join("\n") : fiches.map(f => `- ${nomComplet(f.data)} (${f.id})`).join("\n"))
+    + `\n\nPièces jointes : ${fichiers.length} fichier(s) — à importer dans l'application CNBM (Espace responsables).`;
+  const peutPartager = !!(navigator.canShare && navigator.canShare({ files: fichiers }));
+  const hors = !navigator.onLine;
   c.innerHTML = `
     ${hors ? `<div class="msg att">📴 Vous êtes hors connexion. Vous pouvez préparer l'envoi : l'e-mail partira quand Internet reviendra (il reste dans la boîte d'envoi de Gmail).</div>` : ""}
     <p>${fiches.length === 1 ? "Fiche de <b>" + esc(nomComplet(fiches[0].data)) + "</b>" : "<b>" + fiches.length + " fiches</b>"} · ${fichiers.length} fichier(s) · ${taille(total)}</p>
@@ -1169,7 +1216,7 @@ function ouvrirEnvoi(fiches) {
     majCompteur(); afficherMesFiches(); dl.close(); toast("Merci ! Fiche(s) marquée(s) comme envoyée(s).");
   };
   $("#cpEmail", c) && ($("#cpEmail", c).onclick = () => copier(email));
-  $("#okEmail", c) && ($("#okEmail", c).onclick = () => { const v = $("#emailTmp", c).value.trim(); if (/@/.test(v)) { LS.set("cnbm-email", v); ouvrirEnvoi(fiches); } });
+  $("#okEmail", c) && ($("#okEmail", c).onclick = () => { const v = $("#emailTmp", c).value.trim(); if (/@/.test(v)) { LS.set("cnbm-email", v); ouvrirEnvoiEmail(fiches, c, dl); } });
   $("#envPartager", c) && ($("#envPartager", c).onclick = async () => {
     if (email) copier(email, true);
     try {
@@ -1185,7 +1232,6 @@ function ouvrirEnvoi(fiches) {
     setTimeout(() => { location.href = lien; }, 300);
   };
   $("#envMarquer", c).onclick = marquer;
-  dl.showModal();
 }
 function copier(t, silencieux) {
   (navigator.clipboard?.writeText(t) || Promise.reject()).then(() => !silencieux && toast("Copié : " + t))
@@ -1340,11 +1386,11 @@ function dessinerTable() {
     [nb("Technicien de laboratoire"), "techniciens"], [nb("Biologiste médical"), "biologistes"],
     [provs.size, "provinces / pays"], [l.filter(r => r.data.adhCarte === "Oui").length, "ont leur carte"],
     [l.filter(r => r.data.adhSerment === "Oui").length, "ont prêté serment"], [l.filter(r => /^Oui/.test(r.data.adhCotisation || "")).length, "en ordre de cotisations"],
-    [l.filter(r => r.photo).length, "avec photo"], [l.filter(r => r.video).length, "avec vidéo"]]
+    [l.filter(aPhoto).length, "avec photo"], [l.filter(aVideo).length, "avec vidéo"]]
     .map(([n, t]) => `<div class="stat"><b>${n}</b><span>${t}</span></div>`).join("");
-  if (!l.length) { tb.innerHTML = `<tr><td colspan="7" class="vide">${registre.length ? "Aucun résultat." : "Registre vide. Importez les fiches reçues par e-mail."}</td></tr>`; return; }
+  if (!l.length) { tb.innerHTML = `<tr><td colspan="7" class="vide">${registre.length ? "Aucun résultat." : SRV.actif() ? "Aucune fiche reçue pour l'instant. Partagez le lien d'inscription à vos membres." : "Registre vide. Importez les fiches reçues par e-mail."}</td></tr>`; return; }
   tb.innerHTML = l.map(r => { const p = lieuPrincipal(r); return `<tr class="cl" data-id="${esc(r.id)}">
-    <td><b>${esc(nomComplet(r.data))}</b>${r.photo ? " 📷" : ""}${r.video ? " 🎥" : ""}${estDemande(r) ? ' <span class="pastille p-prete">Demande d\'adhésion</span>' : ""}</td><td>${esc(r.data.categorie)}</td><td>${esc(r.data.telephone)}</td>
+    <td><b>${esc(nomComplet(r.data))}</b>${aPhoto(r) ? " 📷" : ""}${aVideo(r) ? " 🎥" : ""}${r.serveur ? " ☁️" : ""}${estDemande(r) ? ' <span class="pastille p-prete">Demande d\'adhésion</span>' : ""}</td><td>${esc(r.data.categorie)}</td><td>${esc(r.data.telephone)}</td>
     <td>${esc(p.etablissement)}${r.lieux.length > 1 ? ` <span class="info">(+${r.lieux.length - 1})</span>` : ""}</td><td>${esc(p.fonction)}</td><td>${esc(p.province)}</td><td>${dateFr(r.recu).slice(0, 10)}</td></tr>`; }).join("");
 }
 ["#fRech", "#fProv", "#fCat", "#fStatut"].forEach(s => $(s).addEventListener("input", dessinerTable));
@@ -1375,7 +1421,11 @@ function htmlDetail(r, urls) {
     ${urls.video ? `<h4 style="margin:14px 0 6px" class="no-print">Vidéo (${duree(r.videoDuree)})</h4><video class="apercu no-print" src="${urls.video}" controls playsinline></video>` : ""}`;
 }
 let urlsDet = [];
-function ouvrirDetail(r) {
+async function ouvrirDetail(r) {
+  if (r.serveur && SRV.actif() && navigator.onLine && manqueFichiers(r)) {
+    toast("Téléchargement des pièces depuis le serveur…", 2500);
+    try { await completerFichiers(r); } catch (e) { toast("⚠️ " + e.message, 5000); }
+  }
   urlsDet.forEach(u => URL.revokeObjectURL(u)); urlsDet = [];
   const urls = {};
   if (r.photo) urlsDet.push(urls.photo = URL.createObjectURL(r.photo));
@@ -1397,12 +1447,20 @@ function ouvrirDetail(r) {
     if (num === null) return;
     r.data.adhMembre = "Oui"; r.data.adhAnnee = r.data.adhAnnee || String(new Date().getFullYear());
     if (num.trim()) r.data.numeroOrdre = num.trim();
+    if (r.serveur && SRV.actif()) {
+      try { await SRV.appel("POST", `/api/fiches/${r.id}/adhesion`, { numero: num.trim() }); }
+      catch (e) { return toast("⚠️ " + e.message + " (réessayez avec Internet)", 6000); }
+    }
     r.adhesionValidee = Date.now();
     await DB.put("registre", r); $("#dlDet").close(); afficherRegistre();
     toast("Adhésion acceptée. Pensez à prévenir le membre (téléphone : " + (r.data.telephone || "?") + ").", 6000);
   });
   $("#detVid") && ($("#detVid").onclick = () => telecharger(r.video, nomFichier(r, "video." + extVideo(r.video.type))));
-  $("#detSup").onclick = async () => { if (confirm("Retirer cette fiche du registre ?")) { await DB.del("registre", r.id); $("#dlDet").close(); afficherRegistre(); } };
+  $("#detSup").onclick = async () => {
+    if (!confirm(r.serveur ? "Supprimer DÉFINITIVEMENT cette fiche du serveur du conseil (avec ses fichiers) ?" : "Retirer cette fiche du registre ?")) return;
+    if (r.serveur && SRV.actif()) { try { await SRV.appel("DELETE", "/api/fiches/" + r.id); } catch (e) { return toast("⚠️ " + e.message, 6000); } }
+    await DB.del("registre", r.id); $("#dlDet").close(); afficherRegistre();
+  };
   $("#dlDet").showModal();
 }
 
@@ -1432,12 +1490,14 @@ const COLS_MEMBRE = [
   ["Mois de cotisation payés", r => r.data.adhMoisPayes], ["Dernier mois payé", r => r.data.adhDernierMois],
   ["Demande d'adhésion", r => estDemande(r) ? "oui" : (r.adhesionValidee ? "acceptée le " + dateFr(r.adhesionValidee).slice(0, 10) : "")],
   ["Membre en règle", r => enRegle(r.data) ? "oui" : "non"], ["Dossier complet", r => controleDossier(r).complet ? "oui" : "non"],
-  ["Photo", r => r.photo ? "oui" : "non"], ["Vidéo", r => r.video ? "oui" : "non"],
+  ["Photo", r => aPhoto(r) ? "oui" : "non"], ["Vidéo", r => aVideo(r) ? "oui" : "non"],
   ["Nombre de documents", r => (r.documents || []).length], ["Documents fournis", r => (r.documents || []).map(d => d.type).join(" | ")],
   ["Diplôme fourni", r => (r.documents || []).some(d => d.type === "Diplôme") ? "oui" : "non"],
   ["Pièce d'identité fournie", r => (r.documents || []).some(d => /identité|Passeport/.test(d.type)) ? "oui" : "non"], ["Fiche du", r => dateFr(r.modifie)], ["Reçue le", r => dateFr(r.recu)]
 ];
 const NUMERIQUES = /^(N°|Année|Années|Nombre|Mois)/;
+const aPhoto = r => !!(r.photo || (r.fichiersServeur || []).some(x => /_photo\.jpg$/.test(x.nom)));
+const aVideo = r => !!(r.video || (r.fichiersServeur || []).some(x => /_video\./.test(x.nom)));
 function tableMembres(l) {
   const ent = COLS_MEMBRE.map(c => c[0]);
   return [ent, ...l.map((r, i) => COLS_MEMBRE.map(([h, f]) => { const v = f(r, i); return NUMERIQUES.test(h) && v !== "" && v != null && !isNaN(+v) ? +v : (v ?? ""); }))];
@@ -1522,6 +1582,12 @@ $("#btnCsv").onclick = () => {
 $("#btnImprListe").onclick = () => window.print();
 $("#btnSauv").onclick = async () => {
   if (!registre.length) return toast("Registre vide.");
+  const manquants = registre.filter(r => r.serveur && manqueFichiers(r));
+  if (manquants.length) {
+    if (!navigator.onLine) return toast("Connectez-vous à Internet : les photos, vidéos et documents de " + manquants.length + " fiche(s) doivent d'abord être téléchargés.", 6000);
+    for (const [i, r] of manquants.entries()) { msg($("#msgSynchro"), "inf", `Téléchargement des fichiers : ${i + 1} / ${manquants.length}…`); try { await completerFichiers(r); } catch {} }
+    msg($("#msgSynchro"));
+  }
   const enB64 = b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
   const parts = [`{"format":"cnbm-sauvegarde","version":1,"date":${Date.now()},"fiches":[`];
   for (let i = 0; i < registre.length; i++) {
@@ -1598,8 +1664,10 @@ function afficherAbonnement() {
       <div class="actions"><button class="btn" id="okCle">Activer la clé</button></div><div id="msgCle"></div></details>`;
   $("#cpLienM", c) && ($("#cpLienM", c).onclick = () => copier(lien));
   $("#okCle", c).onclick = async () => {
-    const err = await enregistrerCleAbonnement($("#nvCle", c).value);
+    const cleSaisie = $("#nvCle", c).value;
+    const err = await enregistrerCleAbonnement(cleSaisie);
     if (err) return msg($("#msgCle", c), "err", err);
+    if (SRV.actif()) { try { await SRV.appel("POST", "/api/abonnement", { cle: cleSaisie.trim() }); } catch (e) { msg($("#msgCle", c), "att", "Clé activée sur cet appareil, mais pas encore sur le serveur : " + esc(e.message)); } }
     afficherAbonnement(); toast("Abonnement activé : " + conseil.admin.conseil);
   };
 }
@@ -1682,6 +1750,144 @@ async function ouvrirRecap(f) {
 }
 $("#btnRecap").onclick = async () => { lireForm(); clearTimeout(minuteur); courant.modifie = Date.now(); await DB.put("fiches", courant); ouvrirRecap(courant); };
 
+/* ----------------------------- Serveur en ligne ----------------------------- */
+const SRV = {
+  url: "",
+  actif() { return !!this.url; },
+  jeton() { return LS.get("cnbm-jeton"); },
+  async sonder(u, ms = 5000) {
+    try {
+      const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
+      const r = await fetch(u.replace(/\/$/, "") + "/api/sante", { signal: ctl.signal, cache: "no-store" }); clearTimeout(t);
+      return r.ok && (await r.json()).service === "cnbm-recensement";
+    } catch { return false; }
+  },
+  async detecter() {
+    const param = new URLSearchParams(location.search).get("serveur");
+    if (param) LS.set("cnbm-serveur", param.trim().replace(/\/$/, ""));
+    const memo = LS.get("cnbm-serveur") || conseil.payload?.serveur || SERVEUR_PAR_DEFAUT;
+    if (memo) { this.url = memo.replace(/\/$/, ""); LS.set("cnbm-serveur", this.url); return; }
+    // Application servie par le serveur lui-même ?
+    if (/^https?:$/.test(location.protocol) && !/github\.io$/.test(location.hostname)) {
+      const ici = new URL(".", location.href).href.replace(/\/$/, "");
+      if (await this.sonder(ici, 3000)) { this.url = ici; LS.set("cnbm-serveur", ici); }
+    }
+  },
+  async appel(methode, chemin, corps, opts = {}) {
+    if (!this.url) throw new Error("Aucun serveur configuré.");
+    const h = {}; if (this.jeton()) h.authorization = "Bearer " + this.jeton();
+    let body;
+    if (corps instanceof Blob) { body = corps; h["content-type"] = "application/octet-stream"; h["x-fichier-mime"] = corps.type || "application/octet-stream"; }
+    else if (corps !== undefined) { body = JSON.stringify(corps); h["content-type"] = "application/json"; }
+    let r;
+    try { r = await fetch(this.url + chemin, { method: methode, headers: h, body, cache: "no-store" }); }
+    catch { throw new Error("Serveur injoignable (vérifiez votre connexion Internet)."); }
+    if (opts.blob && r.ok) return r.blob();
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(j.erreur || "Erreur du serveur (" + r.status + ")."); e.statut = r.status; throw e; }
+    return j;
+  }
+};
+const empreinteBlob = async b => [...new Uint8Array(await crypto.subtle.digest("SHA-256", await b.arrayBuffer()))].map(x => x.toString(16).padStart(2, "0")).join("");
+
+// Envoi d'une fiche et de ses fichiers (seuls les fichiers nouveaux ou modifiés partent).
+async function envoyerAuServeur(f, progres = () => {}) {
+  const meta = metaFiche(f), fichiers = fichiersFiche(f).slice(1); // sans le .txt
+  meta.fichiers = fichiers.map(x => x.name);
+  progres(0, "Envoi de la fiche…");
+  const rep = await SRV.appel("PUT", "/api/fiches/" + f.id, meta);
+  const surServeur = Object.fromEntries((rep.fichiers || []).map(x => [x.nom, x]));
+  for (const [i, x] of fichiers.entries()) {
+    const s = surServeur[x.name];
+    if (!(s && s.taille === x.size && s.empreinte === await empreinteBlob(x))) {
+      progres((i + 0.5) / (fichiers.length + 1), `Envoi de ${x.name.split("_").slice(2).join("_")} (${taille(x.size)})…`);
+      await SRV.appel("PUT", `/api/fiches/${f.id}/fichiers/${encodeURIComponent(x.name)}`, new Blob([x], { type: x.type }));
+    }
+  }
+  const ex = await DB.get("fiches", f.id) || f;
+  if (ex.modifie === f.modifie) { f.statut = "envoyee"; f.envoyee = Date.now(); f.serveurMaj = Date.now(); await DB.put("fiches", f); }
+  progres(1, "Terminé.");
+}
+let synchroEnCours = false;
+async function synchroAuto() {
+  if (!SRV.actif() || !session || !navigator.onLine || !SRV.jeton() || synchroEnCours) return;
+  synchroEnCours = true;
+  try {
+    const pretes = (await mesFiches()).filter(f => f.statut === "prete");
+    let n = 0;
+    for (const f of pretes) { try { await envoyerAuServeur(f); n++; } catch (e) { if (e.statut === 401) { toast("Reconnectez-vous pour envoyer vos fiches au serveur.", 6000); break; } } }
+    if (n) {
+      toast(`☁️ ${n} fiche(s) envoyée(s) automatiquement au conseil.`, 4500);
+      if (courant) { const c = await DB.get("fiches", courant.id); if (c && c.statut !== courant.statut) { courant.statut = c.statut; courant.envoyee = c.envoyee; majEtat(); } }
+      majCompteur(); if ($("#v-mesfiches").classList.contains("active")) afficherMesFiches();
+    }
+  } finally { synchroEnCours = false; }
+}
+// Fichiers d'une fiche du serveur → objets locaux (photo, vidéo, documents).
+async function telechargerFichiers(id, fichiersServeur, cible) {
+  for (const x of fichiersServeur || []) {
+    const a = (cible.documents || []).find(d => d.fichier === x.nom);
+    const deja = /_photo\.jpg$/.test(x.nom) ? cible.photo : /_video\./.test(x.nom) ? cible.video : a?.blob;
+    if (deja) continue;
+    const b = await SRV.appel("GET", `/api/fiches/${id}/fichiers/${encodeURIComponent(x.nom)}`, undefined, { blob: true });
+    const blob = new Blob([b], { type: x.mime });
+    if (/_photo\.jpg$/.test(x.nom)) cible.photo = blob;
+    else if (/_video\./.test(x.nom)) cible.video = blob;
+    else if (a) { a.blob = blob; a.mime = x.mime; a.taille = x.taille; }
+  }
+}
+const manqueFichiers = r => (r.fichiersServeur || []).some(x => /_photo\.jpg$/.test(x.nom) ? !r.photo : /_video\./.test(x.nom) ? !r.video : !(r.documents || []).find(d => d.fichier === x.nom)?.blob);
+async function completerFichiers(r) { await telechargerFichiers(r.id, r.fichiersServeur, r); await DB.put("registre", r); }
+
+// Le membre retrouve ses fiches sur un nouvel appareil (et les adhésions acceptées).
+async function recupererMesFiches() {
+  if (!SRV.actif() || !session || !navigator.onLine || !SRV.jeton()) return;
+  try {
+    const { fiches } = await SRV.appel("GET", "/api/mes-fiches");
+    let n = 0;
+    for (const s of fiches) {
+      const loc = await DB.get("fiches", s.id);
+      if (loc && (loc.statut !== "envoyee" || (loc.serveurMaj || 0) >= s.maj)) continue;
+      const f = Object.assign(loc || { id: s.id, cree: s.cree, photo: null, video: null }, {
+        compte: session.id, conseil: s.conseil || loc?.conseil || null, modifie: s.modifie, statut: "envoyee", envoyee: s.maj, serveurMaj: s.maj,
+        data: s.data, lieux: s.lieux || [], formations: s.formations || [], videoDuree: s.videoDuree ?? null, adhesionValidee: s.adhesionValidee || null,
+        documents: (s.documents || []).map(d => ({ ...d, blob: (loc?.documents || []).find(a => a.fichier === d.fichier)?.blob || null })) });
+      try { await telechargerFichiers(s.id, s.fichiersServeur, f); } catch {}
+      await DB.put("fiches", f); n++;
+      if (courant && courant.id === f.id) chargerDansForm(f);
+    }
+    if (n) { toast(`☁️ ${n} fiche(s) récupérée(s) depuis le serveur.`); majCompteur(); if (!courant?.data?.nom) { const m = (await mesFiches()).sort((a, b) => b.modifie - a.modifie)[0]; if (m) chargerDansForm(m); } }
+  } catch {}
+}
+// Registre du conseil : copie locale (consultable hors ligne) du registre du serveur.
+async function synchroRegistre(manuel = false) {
+  if (!SRV.actif() || !session || session.role !== "admin") return;
+  const zone = $("#msgSynchro");
+  if (!navigator.onLine) { msg(zone, "att", "📴 Hors ligne : registre affiché tel qu'à la dernière synchronisation (" + (dateFr(+LS.get("cnbm-synchro-" + session.id)) || "jamais") + ")."); return; }
+  msg(zone, "inf", "🔄 Synchronisation avec le serveur…");
+  try {
+    const depuis = manuel ? 0 : +LS.get("cnbm-synchro-" + session.id) || 0;
+    const r = await SRV.appel("GET", "/api/registre?depuis=" + depuis);
+    for (const s of r.fiches) {
+      const ex = await DB.get("registre", s.id);
+      const rec = Object.assign(ex || { photo: null, video: null }, {
+        id: s.id, serveur: true, compte: s.compte, conseil: s.conseil, cree: s.cree, modifie: s.modifie, recu: s.recu, data: s.data, lieux: s.lieux || [],
+        formations: s.formations || [], videoDuree: s.videoDuree ?? null, adhesionValidee: s.adhesionValidee || null, fichiersServeur: s.fichiersServeur,
+        documents: (s.documents || []).map(d => ({ ...d, blob: (ex?.documents || []).find(a => a.fichier === d.fichier)?.blob || null })) });
+      // Fichiers remplacés sur le serveur : l'ancienne copie locale est oubliée.
+      const tailles = Object.fromEntries((s.fichiersServeur || []).map(x => [x.nom, x.taille]));
+      if (rec.photo && !Object.keys(tailles).some(n => /_photo\.jpg$/.test(n) && tailles[n] === rec.photo.size)) rec.photo = null;
+      if (rec.video && !Object.keys(tailles).some(n => /_video\./.test(n) && tailles[n] === rec.video.size)) rec.video = null;
+      await DB.put("registre", rec);
+    }
+    LS.set("cnbm-synchro-" + session.id, String(r.maintenant));
+    msg(zone, "ok", `✅ Registre à jour (${r.fiches.length} fiche(s) nouvelle(s) ou modifiée(s)) · ${dateFr(r.maintenant)}`);
+    afficherRegistre();
+  } catch (e) { msg(zone, "err", "⚠️ " + esc(e.message)); }
+}
+$("#btnSynchro").onclick = () => synchroRegistre(true);
+addEventListener("online", () => { synchroAuto(); recupererMesFiches(); if ($("#v-admin").classList.contains("active")) synchroRegistre(); });
+
 /* ----------------------------- Comptes ----------------------------- */
 let session = null; // compte connecté
 const b64 = u => btoa(String.fromCharCode(...new Uint8Array(u)));
@@ -1728,6 +1934,8 @@ const valeurs = f => Object.fromEntries(new FormData(f).entries());
 
 function fermerSession() {
   clearTimeout(minuteur);
+  if (SRV.actif() && SRV.jeton()) SRV.appel("POST", "/api/deconnexion").catch(() => {});
+  try { localStorage.removeItem("cnbm-jeton"); } catch {}
   session = null;
   try { localStorage.removeItem("cnbm-session"); sessionStorage.removeItem("cnbm-session"); } catch {}
   document.body.classList.add("non-connecte");
@@ -1747,6 +1955,26 @@ async function ouvrirSession(c, accueil = true) {
   chargerDansForm(f && f.compte === c.id ? f : miennes.sort((a, b) => b.modifie - a.modifie)[0] || ficheVide());
   montrer(accueil && c.role === "admin" ? "admin" : "fiche");
   majCompteur();
+  $("#btnSynchro").hidden = !SRV.actif();
+  $("#carteEmail").hidden = SRV.actif();
+  $("#btnEnvoyerCourant").textContent = SRV.actif() ? "☁️ Envoyer à mon conseil" : "📤 Envoyer aux responsables";
+  $("#dlEnvoiT").textContent = SRV.actif() ? "☁️ Envoyer à mon conseil" : "📤 Envoyer aux responsables";
+  $("#lblImport").firstChild.textContent = SRV.actif() ? "📥 Importer une sauvegarde " : "📥 Importer des fiches reçues ";
+  $("#aideImport").textContent = SRV.actif() ? "Les fiches des membres arrivent directement ici, à l'intérieur de la plateforme : aucun e-mail ni WhatsApp. « Synchroniser » affiche les dernières fiches reçues ; « Importer une sauvegarde » sert seulement à restaurer un fichier de sauvegarde."
+    : "Ouvrez les e-mails reçus, téléchargez les pièces jointes (fiche .txt, photo, vidéo, documents), puis importez-les ici. Vous pouvez sélectionner des dizaines de fichiers à la fois.";
+  if (SRV.actif() && SRV.jeton()) {
+    const lien = LS.get("cnbm-conseil");
+    if (lien && c.role !== "admin") SRV.appel("POST", "/api/rattachement", { jetonConseil: lien }).catch(() => {});
+    recupererMesFiches().then(synchroAuto);
+  }
+}
+// Copie locale d'un compte du serveur : permet de se reconnecter sur cet appareil sans Internet.
+async function miroirCompte(cs, mdp, codeServeur) {
+  const c = Object.assign(await DB.get("comptes", cs.id) || {}, { id: cs.id, type: cs.type, nom: cs.nom, role: cs.role, cree: cs.cree, conseil: cs.province || null, serveur: true, echecs: 0, bloqueJusqua: 0, derniereConnexion: Date.now() });
+  await definirMdp(c, mdp);
+  if (codeServeur) { const sel = crypto.getRandomValues(new Uint8Array(16)); c.selCode = b64(sel); c.hashCode = await hacher(normCode(codeServeur), sel); }
+  await DB.put("comptes", c);
+  return c;
 }
 
 const ESSAIS = { max: 5, attente: 5 * 60 * 1000 };
@@ -1754,8 +1982,23 @@ $("#fConnexion").onsubmit = async e => {
   e.preventDefault();
   const f = e.target, v = valeurs(f), n = normIdent(v.ident);
   if (!n) return msgAuth(f, "err", "Numéro de téléphone ou adresse e-mail non valide.");
+  if (SRV.actif() && navigator.onLine) {
+    msgAuth(f, "inf", "Connexion…");
+    try {
+      const r = await SRV.appel("POST", "/api/connexion", { ident: v.ident, mdp: v.mdp || "" });
+      LS.set("cnbm-jeton", r.jeton);
+      if (r.compte.role === "admin" && r.conseil?.cle) await enregistrerCleAbonnement(r.conseil.cle).catch(() => {});
+      const c = await miroirCompte(r.compte, v.mdp);
+      f.reset(); msgAuth(f);
+      await ouvrirSession(c); toast(`Bienvenue, ${c.nom || c.id}`);
+      return;
+    } catch (err) {
+      if (err.statut && !(err.statut === 404 && await DB.get("comptes", n.id))) return msgAuth(f, "err", esc(err.message));
+      // Serveur injoignable (ou compte encore uniquement local) : connexion sur l'appareil.
+    }
+  }
   const c = await DB.get("comptes", n.id);
-  if (!c) return msgAuth(f, "err", "Aucun compte avec ce téléphone/e-mail sur cet appareil. Touchez « Créer un compte ».<br><small>Le compte n'existe que sur l'appareil où il a été créé.</small>");
+  if (!c) return msgAuth(f, "err", SRV.actif() && !navigator.onLine ? "Pas d'Internet, et ce compte ne s'est jamais connecté sur cet appareil. Connectez-vous une première fois avec Internet." : "Aucun compte avec ce téléphone/e-mail sur cet appareil. Touchez « Créer un compte ».<br><small>Le compte n'existe que sur l'appareil où il a été créé.</small>");
   if (c.bloqueJusqua > Date.now()) return msgAuth(f, "err", `Trop d'essais. Réessayez dans ${Math.ceil((c.bloqueJusqua - Date.now()) / 60000)} minute(s).`);
   if (!(await verifierMdp(c, v.mdp || ""))) {
     c.echecs = (c.echecs || 0) + 1;
@@ -1782,6 +2025,24 @@ async function nouveauCompte(f, role) {
     if (!p || p.type !== "admin") return msgAuth(f, "err", "Clé d'abonnement invalide. Vérifiez qu'elle a été copiée en entier.");
     if (joursRestants(p) < 0) return msgAuth(f, "err", `Cette clé d'abonnement a expiré le ${new Date(p.expire).toLocaleDateString("fr-FR")}.`);
   }
+  if (SRV.actif()) {
+    if (!navigator.onLine) return msgAuth(f, "err", "📴 La création d'un compte demande Internet (le compte est enregistré sur le serveur du CNBM). Réessayez une fois connecté.");
+    msgAuth(f, "inf", "Création du compte…");
+    try {
+      const r = role === "admin" ? await SRV.appel("POST", "/api/admin/inscription", { nom: v.nom, ident: v.ident, mdp: v.mdp, cle: v.code.trim() })
+                                 : await SRV.appel("POST", "/api/inscription", { nom: v.nom, ident: v.ident, mdp: v.mdp, jetonConseil: LS.get("cnbm-conseil") || undefined });
+      LS.set("cnbm-jeton", r.jeton);
+      if (role === "admin") await enregistrerCleAbonnement(v.code);
+      const c = await miroirCompte(r.compte, v.mdp, r.codeRecup);
+      f.reset(); msgAuth(f);
+      if (!r.codeRecup) { await ouvrirSession(c); return toast("Compte administrateur activé."); }
+      $("#codeRecup").textContent = r.codeRecup;
+      $("#cpCode").onclick = () => copier(r.codeRecup);
+      $("#okCode").onclick = async () => { $("#dlCode").close(); await ouvrirSession(c); toast("Compte créé. Bienvenue !"); };
+      $("#dlCode").showModal();
+    } catch (err) { msgAuth(f, "err", esc(err.message)); }
+    return;
+  }
   if (await DB.get("comptes", n.id)) return msgAuth(f, "err", "Un compte existe déjà avec ce téléphone/e-mail sur cet appareil. Connectez-vous.");
   const c = { id: n.id, type: n.type, nom: v.nom.trim(), role, cree: Date.now(), conseil: conseil.payload?.province || null };
   if (role === "admin") { const err = await enregistrerCleAbonnement(v.code); if (err) return msgAuth(f, "err", err); c.conseil = conseil.admin.province; }
@@ -1801,6 +2062,14 @@ $("#dlCode").addEventListener("cancel", e => e.preventDefault()); // oblige à c
 $("#fOubli").onsubmit = async e => {
   e.preventDefault();
   const f = e.target, v = valeurs(f), n = normIdent(v.ident), c = n && await DB.get("comptes", n.id);
+  if (SRV.actif() && navigator.onLine) {
+    try {
+      await SRV.appel("POST", "/api/recuperation", { ident: v.ident, code: v.code, mdp: v.mdp });
+      if (c) { await definirMdp(c, v.mdp); c.echecs = 0; c.bloqueJusqua = 0; await DB.put("comptes", c); }
+      f.reset(); panneauAuth("connexion");
+      return msgAuth($("#fConnexion"), "ok", "Mot de passe changé. Connectez-vous.");
+    } catch (err) { if (err.statut) return msgAuth(f, "err", esc(err.message)); }
+  }
   if (!c) return msgAuth(f, "err", "Aucun compte avec ce téléphone/e-mail sur cet appareil.");
   if ((v.mdp || "").length < (c.role === "admin" ? 8 : 6)) return msgAuth(f, "err", "Nouveau mot de passe trop court.");
   if (!c.hashCode || await hacher(normCode(v.code), Uint8Array.from(atob(c.selCode), x => x.charCodeAt(0))) !== c.hashCode)
@@ -1815,7 +2084,8 @@ $("#btnCompte").onclick = () => {
   if (!session) return;
   const c = $("#dlCompteC");
   c.innerHTML = `<dl class="det"><dt>Nom</dt><dd>${esc(session.nom)}</dd><dt>Identifiant</dt><dd>${esc(session.id)}</dd>
-      <dt>Type de compte</dt><dd>${session.role === "admin" ? "🏛️ Administrateur" : "👤 Membre"}</dd><dt>Créé le</dt><dd>${dateFr(session.cree)}</dd></dl>
+      <dt>Type de compte</dt><dd>${session.role === "admin" ? "🏛️ Administrateur" : "👤 Membre"}</dd><dt>Créé le</dt><dd>${dateFr(session.cree)}</dd>
+      <dt>Stockage</dt><dd>${SRV.actif() ? "☁️ Serveur en ligne (" + esc(SRV.url.replace(/^https?:\/\//, "")) + ")" + (SRV.jeton() ? "" : " — <b>reconnectez-vous avec Internet</b>") : "📱 Cet appareil uniquement"}</dd></dl>
     <h4 style="margin:16px 0 8px">Changer le mot de passe</h4>
     <form id="fMdp" class="grille" novalidate>
       <label class="ch">Mot de passe actuel<input name="ancien" type="password" required autocomplete="current-password"></label>
@@ -1827,13 +2097,21 @@ $("#btnCompte").onclick = () => {
   $("#fMdp").onsubmit = async e => {
     e.preventDefault();
     const f = e.target, v = valeurs(f), cpt = await DB.get("comptes", session.id);
-    if (!(await verifierMdp(cpt, v.ancien || ""))) return msgAuth(f, "err", "Mot de passe actuel incorrect.");
+    if (SRV.actif() && SRV.jeton()) {
+      try { await SRV.appel("POST", "/api/mdp", { ancien: v.ancien, mdp: v.mdp }); }
+      catch (err) { return msgAuth(f, "err", esc(err.message)); }
+    } else if (!(await verifierMdp(cpt, v.ancien || ""))) return msgAuth(f, "err", "Mot de passe actuel incorrect.");
     if ((v.mdp || "").length < (cpt.role === "admin" ? 8 : 6)) return msgAuth(f, "err", "Nouveau mot de passe trop court.");
     await definirMdp(cpt, v.mdp); await DB.put("comptes", cpt); session = cpt; f.reset();
     msgAuth(f, "ok", "Mot de passe changé.");
   };
   $("#nvCode").onclick = async () => {
-    const cpt = await DB.get("comptes", session.id), code = await definirCode(cpt);
+    const cpt = await DB.get("comptes", session.id);
+    let code;
+    if (SRV.actif() && SRV.jeton()) {
+      try { code = (await SRV.appel("POST", "/api/code-recuperation")).codeRecup; } catch (err) { return toast("⚠️ " + err.message, 5000); }
+      const sel = crypto.getRandomValues(new Uint8Array(16)); cpt.selCode = b64(sel); cpt.hashCode = await hacher(normCode(code), sel);
+    } else code = await definirCode(cpt);
     await DB.put("comptes", cpt); session = cpt;
     $("#dlCompte").close();
     $("#codeRecup").textContent = code; $("#cpCode").onclick = () => copier(code);
@@ -1845,6 +2123,7 @@ $("#btnCompte").onclick = () => {
 };
 
 async function afficherComptes() {
+  if (SRV.actif() && SRV.jeton() && navigator.onLine) return afficherComptesServeur();
   const box = $("#listeComptes"), t = (await DB.all("comptes")).sort((a, b) => (a.role === b.role ? 0 : a.role === "admin" ? -1 : 1) || a.nom.localeCompare(b.nom, "fr"));
   const fiches = await DB.all("fiches");
   box.innerHTML = t.map(c => `<div class="item" data-id="${esc(c.id)}"><div class="ph">${c.role === "admin" ? "🏛️" : "👤"}</div>
@@ -1870,6 +2149,31 @@ async function afficherComptes() {
   };
 }
 
+async function afficherComptesServeur() {
+  const box = $("#listeComptes");
+  let l;
+  try { l = (await SRV.appel("GET", "/api/comptes")).comptes; } catch (e) { box.innerHTML = `<div class="msg err">⚠️ ${esc(e.message)}</div>`; return; }
+  box.innerHTML = l.map(c => `<div class="item" data-id="${esc(c.id)}"><div class="ph">${c.role === "admin" ? "🏛️" : "👤"}</div>
+    <div class="c"><b>${esc(c.nom)}${c.id === session.id ? " (vous)" : ""}</b><div>${esc(c.id)} · ${c.role === "admin" ? "Administrateur" : "Membre"} · ${c.fiches} fiche(s)${c.province ? " · " + esc(c.province) : ""}</div>
+    <div>Créé le ${dateFr(c.cree)}${c.derniere ? " · dernière connexion " + dateFr(c.derniere) : ""}</div></div>
+    ${c.id === session.id ? "" : `<div class="bt"><button class="btn sec petit" data-a="mdp">🔑 Réinitialiser le mot de passe</button>
+      <button class="btn sec petit" data-a="role">${c.role === "admin" ? "Retirer admin" : "Nommer admin"}</button></div>`}</div>`).join("") || `<div class="vide">Aucun compte.</div>`;
+  box.onclick = async e => {
+    const a = e.target.closest("[data-a]")?.dataset.a, id = e.target.closest("[data-id]")?.dataset.id;
+    if (!a || !id) return;
+    const c = l.find(x => x.id === id);
+    try {
+      if (a === "mdp" && confirm(`Réinitialiser le mot de passe de ${c.nom} ? Un mot de passe provisoire va être affiché.`)) {
+        const r = await SRV.appel("POST", `/api/comptes/${encodeURIComponent(id)}/reinitialiser`);
+        alert(`Mot de passe provisoire de ${c.nom} : ${r.provisoire}\n\nCommuniquez-le à la personne ; elle pourra le changer dans « Mon compte ».`);
+      }
+      if (a === "role" && confirm(c.role === "admin" ? `Retirer les droits d'administrateur à ${c.nom} ?` : `Donner les droits d'administrateur à ${c.nom} ? Cette personne verra tout le registre du conseil.`))
+        await SRV.appel("POST", `/api/comptes/${encodeURIComponent(id)}/role`);
+    } catch (err) { toast("⚠️ " + err.message, 5000); }
+    afficherComptesServeur();
+  };
+}
+
 /* ----------------------------- Navigation & démarrage ----------------------------- */
 function montrer(v) {
   if (!session) v = "auth";
@@ -1878,14 +2182,15 @@ function montrer(v) {
   $$("nav button").forEach(b => b.setAttribute("aria-selected", b.dataset.vue === v));
   $$(".vue").forEach(s => s.classList.toggle("active", s.id === "v-" + v));
   if (v === "mesfiches") afficherMesFiches();
-  if (v === "admin") { afficherAbonnement(); afficherRegistre(); afficherComptes(); }
+  if (v === "admin") { afficherAbonnement(); afficherRegistre().then(() => synchroRegistre()); afficherComptes(); }
 }
 $$("nav button").forEach(b => b.onclick = () => montrer(b.dataset.vue));
 $$("[data-ferme]").forEach(b => b.onclick = () => b.closest("dialog").close());
 $("#dlDet").addEventListener("close", () => $$("video", $("#dlDet")).forEach(v => v.pause()));
 
 function majReseau() {
-  const r = $("#reseau"); r.textContent = navigator.onLine ? "🌐 En ligne" : "📴 Hors ligne"; r.classList.toggle("hors", !navigator.onLine);
+  const r = $("#reseau"); r.textContent = (navigator.onLine ? "🌐 En ligne" : "📴 Hors ligne") + (SRV.actif() ? " · ☁️" : ""); r.classList.toggle("hors", !navigator.onLine);
+  r.title = SRV.actif() ? "Serveur : " + SRV.url : "Mode local (sans serveur)";
   majCompteur();
 }
 addEventListener("online", majReseau); addEventListener("offline", majReseau);
@@ -1902,6 +2207,7 @@ $("#btnInstaller").onclick = async () => { if (!invite) return; invite.prompt();
     if (pj && pj.type === "membre") LS.set("cnbm-conseil", ins.trim()); else toast("Lien d'inscription invalide : demandez un nouveau lien à votre conseil.", 6000);
   }
   try { await chargerConseil(); } catch {}
+  try { await SRV.detecter(); } catch {}
   $("#pEmail").value = emailDest();
   const p = new URLSearchParams(location.search).get("email");
   if (p && /@/.test(p)) { LS.set("cnbm-email", p.trim()); $("#pEmail").value = p.trim(); }
