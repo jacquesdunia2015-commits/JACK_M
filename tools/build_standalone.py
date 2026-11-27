@@ -72,6 +72,37 @@ def main() -> None:
                 + json.dumps(projet, ensure_ascii=False)
                 + ");\n};\n"
             )
+            # Démarrage : si le navigateur contient déjà un projet de même
+            # identifiant mais d'une autre version (champ versionSimulation),
+            # l'ancien est conservé sous un nouvel identifiant (rien n'est
+            # perdu), puis le projet embarqué est installé et ouvert. Si la
+            # bonne version est déjà là, on ne touche à rien : le travail fait
+            # depuis dans l'application est préservé.
+            if projet.get("id"):
+                bundle.append(
+                    "(function () {\n"
+                    '  const S = __QC["state"];\n'
+                    "  const chargerOrigine = S.loadPersisted;\n"
+                    f"  const ID = {json.dumps(projet['id'])};\n"
+                    f"  const VERSION = {json.dumps(projet.get('versionSimulation'))};\n"
+                    "  S.loadPersisted = async function () {\n"
+                    "    try {\n"
+                    "      const present = await S.loadProjectById(ID);\n"
+                    "      if (!present || (VERSION && present.versionSimulation !== VERSION)) {\n"
+                    "        if (present) {\n"
+                    "          S.remplacerProjet(Object.assign({}, present, {\n"
+                    "            id: S.uid(), name: present.name + \" (ancienne version, conservée)\" }));\n"
+                    "          if (!(await S.persistNow())) throw new Error(\"sauvegarde de l'ancienne version impossible\");\n"
+                    "        }\n"
+                    '        S.remplacerProjet(__QC["sample"].buildSampleProject());\n'
+                    "        await S.persistNow();\n"
+                    "        return true;\n"
+                    "      }\n"
+                    "    } catch (e) { console.error(e); }\n"
+                    "    return chargerOrigine();\n"
+                    "  };\n"
+                    "})();\n"
+                )
             print(f"Projet embarqué : {chemin.name} — "
                   f"{len(projet.get('documents', []))} documents, "
                   f"{len(projet.get('codes', []))} codes, "

@@ -364,6 +364,20 @@ export function redoAction() {
   return true;
 }
 
+/**
+ * Remplace le projet courant — SEULE manière de le faire.
+ *
+ * L'historique d'annulation contient des instantanés du projet PRÉCÉDENT. Le
+ * conserver après un changement de projet ferait « annuler » vers le contenu
+ * d'un autre projet : les documents du projet ouvert étaient remplacés par ceux
+ * du précédent, puis la sauvegarde automatique enregistrait le résultat sous le
+ * nom du projet ouvert. Un corpus disparaissait sur un simple Ctrl+Z.
+ */
+export function remplacerProjet(projet) {
+  state.project = projet;
+  clearUndoHistory();
+}
+
 export function canUndo() { return _undoStack.length > 0; }
 export function canRedo() { return _redoStack.length > 0; }
 

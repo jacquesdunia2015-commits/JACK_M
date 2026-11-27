@@ -1,0 +1,1799 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CNBM-RDC — Recensement des membres</title>
+<meta name="description" content="Fiche de recensement des membres du Conseil national des biotechnologistes médicaux de la RDC. Fonctionne sans Internet.">
+<meta name="theme-color" content="#0b5fa5">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{
+  --bleu:#0b5fa5; --bleu-f:#084a82; --bleu-c:#e8f1fa; --jaune:#f7d618; --rouge:#ce1021;
+  --txt:#1b2733; --txt2:#5a6b7b; --bord:#d5dde6; --fond:#f4f7fa; --carte:#fff;
+  --ok:#1a7f37; --ok-c:#e6f4ea; --att:#9a6700; --att-c:#fff8dc; --err:#b42318; --err-c:#fdecea;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--txt);background:var(--fond)}
+header{background:var(--bleu);color:#fff;padding:10px 16px calc(10px);position:sticky;top:0;z-index:20;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+header::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:4px;background:linear-gradient(90deg,var(--jaune) 0 33%,var(--rouge) 33% 66%,var(--jaune) 66%)}
+.hd{display:flex;align-items:center;gap:10px;max-width:960px;margin:0 auto}
+.hd img{width:40px;height:40px;border-radius:9px;flex:none}
+.hd h1{font-size:16px;margin:0;line-height:1.2}
+.hd small{display:block;font-weight:400;opacity:.85;font-size:12px}
+.reseau{margin-left:auto;font-size:12px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.18);white-space:nowrap}
+.reseau.hors{background:var(--rouge)}
+nav{display:flex;gap:4px;max-width:960px;margin:12px auto 0;padding:0 16px;overflow-x:auto}
+nav button{flex:none;border:1px solid var(--bord);background:#fff;color:var(--txt);padding:9px 14px;border-radius:99px;font:inherit;font-size:14px;cursor:pointer}
+nav button[aria-selected=true]{background:var(--bleu);border-color:var(--bleu);color:#fff;font-weight:600}
+main{max-width:960px;margin:0 auto;padding:12px 16px 80px}
+.vue{display:none}.vue.active{display:block}
+.carte{background:var(--carte);border:1px solid var(--bord);border-radius:var(--r);padding:16px;margin:0 0 14px}
+.carte h2{font-size:17px;margin:0 0 4px;color:var(--bleu-f);display:flex;align-items:center;gap:8px}
+.carte h2 .n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--bleu);color:#fff;font-size:13px;flex:none}
+.carte>p.aide{margin:0 0 12px;color:var(--txt2);font-size:14px}
+.grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 14px}
+label.ch{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:600}
+label.ch span.opt{font-weight:400;color:var(--txt2)}
+label.ch .req{color:var(--rouge)}
+input,select,textarea{font:inherit;font-weight:400;width:100%;padding:10px 11px;border:1px solid var(--bord);border-radius:8px;background:#fff;color:var(--txt);min-height:44px}
+input:focus,select:focus,textarea:focus{outline:3px solid rgba(11,95,165,.25);border-color:var(--bleu)}
+input:user-invalid,select:user-invalid{border-color:var(--err);background:var(--err-c)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--bleu);background:var(--bleu);color:#fff;font:inherit;font-weight:600;font-size:15px;padding:10px 16px;border-radius:10px;cursor:pointer;min-height:44px;text-decoration:none}
+.btn:hover{background:var(--bleu-f)}
+.btn.sec{background:#fff;color:var(--bleu)}
+.btn.sec:hover{background:var(--bleu-c)}
+.btn.dang{background:#fff;color:var(--err);border-color:var(--err)}
+.btn.ok{background:var(--ok);border-color:var(--ok)}
+.btn.petit{font-size:13px;padding:6px 10px;min-height:36px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.lieu{border:1px dashed var(--bord);border-radius:10px;padding:12px;margin:0 0 12px;background:#fbfcfe}
+.lieu-t{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-weight:700;color:var(--bleu-f)}
+.media{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.apercu-photo{width:140px;aspect-ratio:7/9;border:2px dashed var(--bord);border-radius:8px;display:grid;place-items:center;color:var(--txt2);font-size:13px;text-align:center;overflow:hidden;background:#fafafa;margin-bottom:8px}
+.apercu-photo img{width:100%;height:100%;object-fit:cover}
+video.apercu{width:100%;max-height:260px;background:#000;border-radius:8px;margin-bottom:8px}
+.info{font-size:13px;color:var(--txt2);margin:4px 0}
+.msg{padding:10px 12px;border-radius:8px;margin:8px 0;font-size:14px}
+.msg.ok{background:var(--ok-c);color:var(--ok)}
+.msg.att{background:var(--att-c);color:var(--att)}
+.msg.err{background:var(--err-c);color:var(--err)}
+.msg.inf{background:var(--bleu-c);color:var(--bleu-f)}
+.progress{height:8px;background:#e5eaf0;border-radius:99px;overflow:hidden;margin:6px 0}
+.progress>div{height:100%;width:0;background:var(--bleu);transition:width .3s}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.consent input{width:22px;height:22px;min-height:0;flex:none;margin-top:2px}
+.liste{display:grid;gap:10px}
+.item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--bord);border-radius:10px;padding:10px}
+.item img,.item .ph{width:48px;height:62px;border-radius:6px;object-fit:cover;background:#eef2f6;flex:none;display:grid;place-items:center;color:var(--txt2);font-size:20px}
+.item .c{flex:1;min-width:0}
+.item .c b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .c div{font-size:13px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .bt{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pastille{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;vertical-align:middle}
+.p-brouillon{background:#eef2f6;color:var(--txt2)}.p-prete{background:var(--att-c);color:var(--att)}.p-envoyee{background:var(--ok-c);color:var(--ok)}
+.filtres{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.stat{background:var(--bleu-c);border-radius:10px;padding:10px}
+.stat b{display:block;font-size:22px;color:var(--bleu-f)}
+.stat span{font-size:12px;color:var(--txt2)}
+.table-w{overflow-x:auto;border:1px solid var(--bord);border-radius:10px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:8px 10px;border-bottom:1px solid #edf1f5;text-align:left;vertical-align:top}
+th{background:#f7f9fb;position:sticky;top:0;white-space:nowrap}
+tr.cl{cursor:pointer}tr.cl:hover{background:var(--bleu-c)}
+dialog{border:none;border-radius:14px;padding:0;width:min(640px,calc(100vw - 24px));max-height:calc(100vh - 24px);box-shadow:0 10px 40px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(10,25,40,.55)}
+.dl-h{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bord);background:var(--bleu-c);position:sticky;top:0}
+.dl-h h3{margin:0;font-size:16px}
+.dl-c{padding:16px;overflow:auto}
+.x{border:none;background:none;font-size:24px;cursor:pointer;line-height:1;color:var(--txt2);min-width:44px;min-height:44px}
+.email-box{display:flex;gap:6px;align-items:center;background:var(--bleu-c);padding:8px 10px;border-radius:8px;font-weight:700;word-break:break-all}
+.det{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:14px}
+.det dt{color:var(--txt2)}.det dd{margin:0}
+.det-h{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px}
+.det-h img{width:105px;aspect-ratio:7/9;object-fit:cover;border-radius:6px;border:1px solid var(--bord)}
+.rec{position:relative}
+.rec video{width:100%;background:#000;border-radius:10px;max-height:60vh}
+.rec .chrono{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.65);color:#fff;padding:4px 10px;border-radius:99px;font-variant-numeric:tabular-nums;font-weight:700}
+.rec .chrono.on::before{content:"● ";color:#ff4d4d}
+.aide-txt h3{color:var(--bleu-f);font-size:16px;margin:18px 0 6px}
+.aide-txt ol,.aide-txt ul{padding-left:22px}
+.aide-txt li{margin:4px 0}
+.vide{text-align:center;color:var(--txt2);padding:24px}
+#banniere{display:none}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#1b2733;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:99;max-width:calc(100vw - 32px);box-shadow:0 4px 16px rgba(0,0,0,.25)}
+@media (max-width:600px){
+  .filtres{grid-template-columns:1fr 1fr}.filtres input{grid-column:1/-1}
+  .item{flex-wrap:wrap}.item .bt{width:100%;justify-content:flex-start}
+  .det{grid-template-columns:1fr}.det dt{margin-top:6px}
+  .hd h1{font-size:14px}
+}
+.imprimable{display:none}
+.compte{display:flex;align-items:center;gap:6px;margin-left:8px}
+.compte button{border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.12);color:#fff;font:inherit;font-size:12px;padding:4px 10px;border-radius:99px;cursor:pointer;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis}
+body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{display:none!important}
+.auth{max-width:460px;margin:8px auto}
+.auth .onglets{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#e5eaf0;padding:4px;border-radius:10px;margin-bottom:14px}
+.auth .onglets button{border:none;background:none;font:inherit;font-weight:600;padding:10px;border-radius:8px;cursor:pointer;color:var(--txt2)}
+.auth .onglets button[aria-selected=true]{background:#fff;color:var(--bleu-f);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.auth form{display:grid;gap:12px}
+.auth .lien{background:none;border:none;color:var(--bleu);font:inherit;font-size:14px;cursor:pointer;padding:6px 0;text-decoration:underline;text-align:left}
+.code-recup{font:700 24px/1.3 ui-monospace,Consolas,monospace;letter-spacing:2px;text-align:center;background:var(--att-c);color:#5a3d00;border:2px dashed var(--att);border-radius:10px;padding:14px;margin:10px 0;user-select:all}
+.mdp{position:relative}.mdp input{padding-right:52px}
+.mdp button{position:absolute;right:4px;bottom:4px;height:36px;min-width:44px;border:none;background:none;cursor:pointer;font-size:18px}
+@media print{
+  header,nav,.no-print,.toast,dialog::backdrop{display:none!important}
+  body{background:#fff}main{padding:0;max-width:none}
+  body.imp-fiche main{display:none}
+  body.imp-fiche .imprimable{display:block}
+  dialog{display:none!important}
+  .carte{border:none;padding:0}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <img src="icon.svg" alt="">
+    <h1>CNBM-RDC · Recensement des membres
+      <small id="sousTitre">Conseil national des biotechnologistes médicaux — République démocratique du Congo</small></h1>
+    <span id="reseau" class="reseau">…</span>
+    <span class="compte"><button id="btnCompte" title="Mon compte">👤</button></span>
+  </div>
+</header>
+
+<nav role="tablist">
+  <button role="tab" data-vue="fiche" aria-selected="true">📝 Ma fiche</button>
+  <button role="tab" data-vue="mesfiches" aria-selected="false">📂 Fiches enregistrées <span id="nbFiches"></span></button>
+  <button role="tab" data-vue="admin" aria-selected="false">🏛️ Espace responsables</button>
+  <button role="tab" data-vue="aide" aria-selected="false">❓ Aide</button>
+</nav>
+
+<main>
+<div id="banniere" class="msg inf no-print"></div>
+
+<!-- ===================== CONNEXION / INSCRIPTION ===================== -->
+<section id="v-auth" class="vue">
+ <div class="auth">
+  <div class="carte">
+    <h2>Bienvenue</h2>
+    <div id="authConseil"></div>
+    <p class="aide">Pour remplir votre fiche de recensement, ouvrez d'abord un compte avec votre <b>numéro de téléphone</b> ou votre <b>adresse e-mail</b> et un mot de passe. Fonctionne aussi sans Internet.</p>
+    <div class="onglets" role="tablist">
+      <button type="button" data-auth="connexion" aria-selected="true">Se connecter</button>
+      <button type="button" data-auth="inscription" aria-selected="false">Créer un compte</button>
+    </div>
+
+    <form id="fConnexion" data-panneau="connexion" novalidate>
+      <label class="ch">Téléphone ou e-mail<input name="ident" required autocomplete="username" placeholder="+243 8XX XXX XXX ou nom@exemple.com"></label>
+      <label class="ch mdp">Mot de passe<input name="mdp" type="password" required autocomplete="current-password"><button type="button" data-voir aria-label="Afficher le mot de passe">👁️</button></label>
+      <div data-msg></div>
+      <button class="btn" type="submit">Se connecter</button>
+      <button type="button" class="lien" data-auth="oubli">Mot de passe oublié ?</button>
+    </form>
+
+    <form id="fInscription" data-panneau="inscription" novalidate hidden>
+      <label class="ch">Nom complet <span class="req">*</span><input name="nom" required autocomplete="name" placeholder="ex. MBUYI KALALA Jean"></label>
+      <label class="ch">Téléphone ou e-mail <span class="req">*</span><input name="ident" required autocomplete="username" placeholder="+243 8XX XXX XXX ou nom@exemple.com"></label>
+      <label class="ch mdp">Mot de passe <span class="opt">(6 caractères au moins)</span><input name="mdp" type="password" required minlength="6" autocomplete="new-password"><button type="button" data-voir aria-label="Afficher le mot de passe">👁️</button></label>
+      <label class="ch">Confirmer le mot de passe<input name="mdp2" type="password" required autocomplete="new-password"></label>
+      <div data-msg></div>
+      <button class="btn ok" type="submit">Créer mon compte</button>
+    </form>
+
+    <form id="fOubli" data-panneau="oubli" novalidate hidden>
+      <p class="aide" style="margin:0">Saisissez le <b>code de récupération</b> qui vous a été donné à la création du compte. Sans ce code, demandez à un administrateur du CNBM de réinitialiser votre mot de passe.</p>
+      <label class="ch">Téléphone ou e-mail<input name="ident" required autocomplete="username"></label>
+      <label class="ch">Code de récupération<input name="code" required autocapitalize="characters" placeholder="XXXX-XXXX-XXXX"></label>
+      <label class="ch mdp">Nouveau mot de passe<input name="mdp" type="password" required minlength="6" autocomplete="new-password"><button type="button" data-voir aria-label="Afficher le mot de passe">👁️</button></label>
+      <div data-msg></div>
+      <button class="btn" type="submit">Changer le mot de passe</button>
+      <button type="button" class="lien" data-auth="connexion">← Retour à la connexion</button>
+    </form>
+
+    <form id="fAdmin" data-panneau="admin" novalidate hidden>
+      <p class="aide" style="margin:0">Réservé aux responsables d'un <b>conseil provincial</b> (ou du bureau national) abonné à la plateforme. Collez la <b>clé d'abonnement</b> reçue lors de la souscription.</p>
+      <label class="ch">Nom complet<input name="nom" required autocomplete="name"></label>
+      <label class="ch">Téléphone ou e-mail<input name="ident" required autocomplete="username"></label>
+      <label class="ch mdp">Mot de passe <span class="opt">(8 caractères au moins)</span><input name="mdp" type="password" required minlength="8" autocomplete="new-password"><button type="button" data-voir aria-label="Afficher le mot de passe">👁️</button></label>
+      <label class="ch">Clé d'abonnement du conseil<textarea name="code" required rows="4" autocomplete="off" spellcheck="false" placeholder="CNBM1.…"></textarea></label>
+      <div data-msg></div>
+      <button class="btn" type="submit">Créer le compte administrateur</button>
+      <button type="button" class="lien" data-auth="connexion">← Retour à la connexion</button>
+    </form>
+  </div>
+  <p style="text-align:center"><button type="button" class="lien" data-auth="admin">🏛️ Je suis responsable d'un conseil provincial : créer un compte administrateur</button></p>
+ </div>
+</section>
+
+<!-- ===================== FICHE ===================== -->
+<section id="v-fiche" class="vue active">
+<form id="form" novalidate autocomplete="on">
+  <div class="msg inf" id="etatFiche">Nouvelle fiche. Tout ce que vous saisissez est enregistré automatiquement sur cet appareil, même sans Internet.</div>
+
+  <div class="carte">
+    <h2><span class="n">1</span> Identité</h2>
+    <p class="aide">Écrivez votre nom exactement comme sur votre pièce d'identité ou votre diplôme.</p>
+    <div class="grille">
+      <label class="ch">Nom <span class="req">*</span><input data-f="nom" required autocapitalize="characters" autocomplete="family-name"></label>
+      <label class="ch">Postnom <span class="opt">(si vous en avez un)</span><input data-f="postnom" autocapitalize="characters"></label>
+      <label class="ch">Prénom <span class="req">*</span><input data-f="prenom" required autocapitalize="words" autocomplete="given-name"></label>
+      <label class="ch">Sexe <span class="req">*</span>
+        <select data-f="sexe" required><option value="">— Choisir —</option><option>Masculin</option><option>Féminin</option></select></label>
+      <label class="ch">Année de naissance <span class="req">*</span><input data-f="anneeNaissance" required type="number" inputmode="numeric" min="1935" max="2010" placeholder="ex. 1988"></label>
+      <label class="ch">Nationalité<input data-f="nationalite" value="Congolaise (RDC)"></label>
+    </div>
+  </div>
+
+  <div class="carte">
+    <h2><span class="n">2</span> Contacts</h2>
+    <div class="grille">
+      <label class="ch">Téléphone principal <span class="req">*</span><input data-f="telephone" required type="tel" inputmode="tel" pattern="^\+?[0-9 ]{9,17}$" placeholder="+243 8XX XXX XXX" autocomplete="tel"></label>
+      <label class="ch">WhatsApp / 2ᵉ numéro <span class="opt">(facultatif)</span><input data-f="telephone2" type="tel" inputmode="tel" pattern="^\+?[0-9 ]{9,17}$" placeholder="+243 …"></label>
+      <label class="ch">Adresse e-mail <span class="opt">(facultatif)</span><input data-f="email" type="email" inputmode="email" autocomplete="email"></label>
+    </div>
+  </div>
+
+  <div class="carte">
+    <h2><span class="n">3</span> Adresse physique (domicile)</h2>
+    <div class="grille">
+      <label class="ch">N° <span class="opt">(parcelle)</span><input data-f="adrNumero"></label>
+      <label class="ch">Avenue / rue <span class="req">*</span><input data-f="adrAvenue" required></label>
+      <label class="ch">Quartier <span class="req">*</span><input data-f="adrQuartier" required></label>
+      <label class="ch">Commune / secteur / chefferie <span class="req">*</span><input data-f="adrCommune" required></label>
+      <label class="ch">Ville ou territoire <span class="req">*</span><input data-f="adrVille" required list="dl-villes"></label>
+      <label class="ch">Pays <span class="req">*</span><input data-f="adrPays" required value="RDC" list="dl-pays" data-pays-pour="adrProvince"></label>
+      <label class="ch">Province <span class="req">*</span><select data-f="adrProvince" required data-province></select></label>
+    </div>
+  </div>
+
+  <div class="carte">
+    <h2><span class="n">4</span> Profil professionnel</h2>
+    <div class="grille">
+      <label class="ch">Catégorie <span class="req">*</span>
+        <select data-f="categorie" required>
+          <option value="">— Choisir —</option>
+          <option>Technicien de laboratoire</option>
+          <option>Biologiste médical</option>
+          <option>Biotechnologiste médical</option>
+          <option>Étudiant / stagiaire</option>
+          <option>Autre</option>
+        </select></label>
+      <label class="ch">Diplôme le plus élevé <span class="req">*</span>
+        <select data-f="diplome" required>
+          <option value="">— Choisir —</option>
+          <option>Diplôme d'État (D6 / A3)</option>
+          <option>Gradué (A1 / Bac+3)</option>
+          <option>Licencié (L2 / Bac+5)</option>
+          <option>Master</option>
+          <option>Spécialiste / DES</option>
+          <option>Doctorat (PhD)</option>
+          <option>Autre</option>
+        </select></label>
+      <label class="ch">Spécialité / option<input data-f="specialite" list="dl-specialites" placeholder="ex. Biologie médicale"></label>
+      <label class="ch">Institution de formation<input data-f="ecole" placeholder="ex. ISTM Kinshasa"></label>
+      <label class="ch">Année d'obtention du diplôme <span class="req">*</span><input data-f="anneeDiplome" required type="number" inputmode="numeric" min="1950" max="2027"></label>
+      <label class="ch">Année d'obtention du premier diplôme <span class="opt">(si différent)</span><input data-f="anneePremierDiplome" type="number" inputmode="numeric" min="1950" max="2027"></label>
+    </div>
+    <h3 style="font-size:15px;margin:16px 0 8px;color:var(--bleu-f)">Carrière</h3>
+    <div class="grille">
+      <label class="ch">Année de début du travail <span class="req">*</span><input data-f="anneeDebutTravail" required type="number" inputmode="numeric" min="1950" max="2027" placeholder="ex. 2012"></label>
+      <label class="ch">Premier emploi : établissement <span class="req">*</span><input data-f="premierEmploi" required placeholder="ex. Centre de santé de …"></label>
+      <label class="ch">Premier emploi : ville / territoire, province<input data-f="premierEmploiLieu" placeholder="ex. Kikwit, Kwilu"></label>
+      <label class="ch">Nombre d'années d'expérience <span class="req">*</span><input data-f="experience" required type="number" inputmode="numeric" min="0" max="70"></label>
+    </div>
+    <p class="info">Le nombre d'années d'expérience est calculé à partir de l'année de début ; corrigez-le si vous avez eu des interruptions.</p>
+  </div>
+
+  <div class="carte">
+    <h2><span class="n">5</span> Lieux de travail et fonctions</h2>
+    <p class="aide">Ajoutez <b>chaque</b> hôpital, centre de santé, laboratoire ou institution où vous exercez (ex. un hôpital public et un laboratoire privé).</p>
+    <div id="lieux"></div>
+    <button type="button" class="btn sec" id="ajLieu">➕ Ajouter un autre lieu de travail</button>
+  </div>
+
+  <div class="carte">
+    <h2><span class="n">6</span> Formations suivies durant la carrière</h2>
+    <p class="aide">Formations continues, séminaires, stages, certifications (ex. assurance qualité, biosécurité, GeneXpert, VIH, paludisme…). Ajoutez-en autant que nécessaire.</p>
+    <div id="formations"></div>
+    <button type="button" class="btn sec" id="ajFormation">➕ Ajouter une formation</button>
+  </div>
+
+  <div class="carte">
+    <h2><span class="n">7</span> Adhésion au CNBM</h2>
+    <p class="aide">Conseil national des biotechnologistes médicaux de la RDC.</p>
+    <div class="grille">
+      <label class="ch">Êtes-vous membre du CNBM ? <span class="req">*</span>
+        <select data-f="adhMembre" required><option value="">— Choisir —</option><option>Oui</option><option>Non</option><option>Demande en cours</option></select></label>
+      <label class="ch" data-si-non-membre hidden>Souhaitez-vous adhérer au CNBM ?
+        <select data-f="adhDemande"><option value="">— Choisir —</option><option>Oui, je demande mon adhésion</option><option>Pas maintenant</option></select></label>
+      <label class="ch" data-si-membre>Année d'adhésion<input data-f="adhAnnee" type="number" inputmode="numeric" min="1950" max="2027"></label>
+      <label class="ch" data-si-membre>Avez-vous votre carte de membre ?
+        <select data-f="adhCarte"><option value="">— Choisir —</option><option>Oui</option><option>Non</option></select></label>
+      <label class="ch" data-si-membre>N° de carte / d'inscription<input data-f="numeroOrdre"></label>
+      <label class="ch" data-si-membre>Avez-vous prêté serment ?
+        <select data-f="adhSerment"><option value="">— Choisir —</option><option>Oui</option><option>Non</option></select></label>
+      <label class="ch" data-si-membre>Année de prestation de serment<input data-f="adhSermentAnnee" type="number" inputmode="numeric" min="1950" max="2027"></label>
+      <label class="ch" data-si-membre>En ordre de cotisations ?
+        <select data-f="adhCotisation"><option value="">— Choisir —</option><option>Oui, à jour</option><option>Non, en retard</option></select></label>
+      <label class="ch" data-si-membre>Nombre de mois de cotisation déjà payés<input data-f="adhMoisPayes" type="number" inputmode="numeric" min="0" max="900"></label>
+      <label class="ch" data-si-membre>Dernier mois payé <span class="opt">(mois/année)</span><input data-f="adhDernierMois" placeholder="ex. 10/2026"></label>
+    </div>
+  </div>
+
+  <div class="carte">
+    <h2><span class="n">8</span> Photo passeport et vidéo</h2>
+    <div class="media">
+      <div>
+        <b>Photo passeport</b> <span class="info">(recommandée)</span>
+        <div class="apercu-photo" id="apPhoto">Aucune photo</div>
+        <div class="actions" style="margin-top:0">
+          <label class="btn sec petit">📷 Prendre / choisir une photo<input type="file" id="inPhoto" accept="image/*" hidden></label>
+          <button type="button" class="btn dang petit" id="supPhoto" hidden>Retirer</button>
+        </div>
+        <p class="info">Visage de face, fond clair. La photo est recadrée au format passeport automatiquement.</p>
+      </div>
+      <div>
+        <b>Vidéo de présentation</b> <span class="info">(facultative, 2 minutes maximum)</span>
+        <video class="apercu" id="apVideo" controls playsinline hidden></video>
+        <div id="infoVideo" class="info"></div>
+        <div id="progVideo" hidden><div class="progress"><div></div></div><div class="info" id="progTxt"></div></div>
+        <div class="actions" style="margin-top:0">
+          <button type="button" class="btn sec petit" id="btnRec">🎥 Enregistrer maintenant</button>
+          <label class="btn sec petit">📁 Choisir une vidéo<input type="file" id="inVideo" accept="video/*" hidden></label>
+          <button type="button" class="btn dang petit" id="supVideo" hidden>Retirer</button>
+        </div>
+        <p class="info">Présentez-vous : nom, fonction, lieu de travail. Les longues vidéos de téléphone sont compressées automatiquement pour pouvoir être envoyées par e-mail.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="carte">
+    <h2><span class="n">9</span> Consentement</h2>
+    <label class="consent"><input type="checkbox" data-f="consentement" required>
+      <span>J'atteste que ces informations sont exactes et j'accepte qu'elles soient transmises au Conseil national des biotechnologistes médicaux de la RDC, qui les utilise uniquement pour la gestion de ses membres et ne les communique pas à des tiers. <span class="req">*</span></span></label>
+  </div>
+
+  <div id="msgForm"></div>
+  <div class="actions no-print">
+    <button type="submit" class="btn ok">✅ Valider et enregistrer</button>
+    <button type="button" class="btn" id="btnEnvoyerCourant">📤 Envoyer aux responsables</button>
+    <button type="button" class="btn sec" id="btnRecap">📄 Mon récapitulatif (vérifier mon dossier)</button>
+    <button type="button" class="btn sec" id="btnNouvelle">🆕 Nouvelle fiche (autre personne)</button>
+  </div>
+</form>
+</section>
+
+<!-- ===================== MES FICHES ===================== -->
+<section id="v-mesfiches" class="vue">
+  <div class="carte">
+    <h2>Fiches enregistrées sur cet appareil</h2>
+    <p class="aide">Une même personne (par exemple un secrétaire provincial) peut saisir les fiches de plusieurs collègues ici, puis les envoyer quand Internet est disponible.</p>
+    <div class="actions" style="margin-top:0;margin-bottom:12px">
+      <button class="btn" id="btnEnvoyerTout">📤 Envoyer toutes les fiches prêtes</button>
+      <button class="btn sec" id="btnXlsxLocal">📊 Liste Excel de ces fiches</button>
+    </div>
+    <div id="listeFiches" class="liste"></div>
+  </div>
+</section>
+
+<!-- ===================== ADMIN ===================== -->
+<section id="v-admin" class="vue">
+  <div class="carte no-print" id="carteAbo"></div>
+
+  <div class="carte">
+    <h2>Registre des membres (responsables)</h2>
+    <p class="aide">Ouvrez les e-mails reçus, téléchargez les pièces jointes (fiche <code>.txt</code>, photo, vidéo), puis importez-les ici. Vous pouvez sélectionner des dizaines de fichiers à la fois.</p>
+    <div class="actions" style="margin-top:0">
+      <label class="btn">📥 Importer des fiches reçues<input type="file" id="inImport" multiple accept=".txt,.json,image/*,video/*,text/plain,application/json" hidden></label>
+      <button class="btn sec" id="btnLocales">➕ Ajouter les fiches de cet appareil</button>
+    </div>
+    <div id="msgImport"></div>
+  </div>
+
+  <div class="carte">
+    <div class="stats" id="stats"></div>
+    <div class="filtres">
+      <input id="fRech" type="search" placeholder="🔍 Rechercher : nom, téléphone, hôpital, ville…">
+      <select id="fProv"><option value="">Toutes les provinces</option></select>
+      <select id="fCat"><option value="">Toutes les catégories</option></select>
+      <select id="fStatut"><option value="">Tous les statuts</option><option value="demande">Demandes d'adhésion</option><option value="regle">Membres en règle</option><option value="carte">Sans carte de membre</option><option value="serment">Sans serment</option><option value="cotis">Cotisations en retard</option></select>
+    </div>
+    <div class="table-w"><table id="tab"><thead><tr>
+      <th>Nom complet</th><th>Catégorie</th><th>Téléphone</th><th>Lieu de travail principal</th><th>Fonction</th><th>Province</th><th>Reçue le</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div class="actions no-print">
+      <button class="btn ok" id="btnXlsx">📊 Liste complète en Excel (.xlsx)</button>
+      <button class="btn sec" id="btnCsv">Exporter en CSV</button>
+      <button class="btn sec" id="btnImprListe">🖨️ Imprimer la liste</button>
+      <button class="btn sec" id="btnSauv">💾 Sauvegarde complète (avec photos/vidéos)</button>
+    </div>
+  </div>
+
+  <div class="carte no-print">
+    <h2>👥 Comptes ouverts sur cet appareil</h2>
+    <p class="aide">Membres et administrateurs qui se sont inscrits sur cet appareil. Vous pouvez réinitialiser le mot de passe d'un membre qui l'a oublié, ou nommer un autre administrateur.</p>
+    <div id="listeComptes" class="liste"></div>
+  </div>
+
+  <div class="carte no-print">
+    <h2>⚙️ Paramètres d'envoi</h2>
+    <p class="aide">Adresse(s) e-mail des responsables qui reçoivent les fiches. Séparez plusieurs adresses par une virgule. Pour que les membres l'aient automatiquement, partagez le lien de l'application avec <code>?email=votre@adresse</code> à la fin (voir Aide).</p>
+    <div class="grille"><label class="ch">E-mail de réception<input id="pEmail" type="text" inputmode="email" placeholder="secretariat.cnbm@exemple.cd"></label></div>
+    <div class="actions"><button class="btn sec" id="btnSavEmail">Enregistrer</button><button class="btn sec" id="btnLien">🔗 Copier le lien à partager aux membres</button></div>
+  </div>
+</section>
+
+<!-- ===================== AIDE ===================== -->
+<section id="v-aide" class="vue">
+  <div class="carte aide-txt">
+    <h2>Comment utiliser l'application</h2>
+    <h3>1. Installer l'application (une seule fois, avec Internet)</h3>
+    <ul>
+      <li><b>Téléphone Android (Chrome)</b> : ouvrez le lien, touchez le menu <b>⋮</b> puis <b>« Installer l'application »</b> ou <b>« Ajouter à l'écran d'accueil »</b>.</li>
+      <li><b>iPhone (Safari)</b> : touchez le bouton <b>Partager</b> <span aria-hidden="true">⬆️</span> puis <b>« Sur l'écran d'accueil »</b>.</li>
+      <li><b>Ordinateur (Chrome / Edge)</b> : cliquez sur l'icône d'installation dans la barre d'adresse, ou menu → <b>« Installer »</b>.</li>
+      <li><b>Sans lien Internet</b> : le fichier <code>index.html</code> peut aussi être copié (clé USB, WhatsApp) et ouvert directement dans le navigateur.</li>
+    </ul>
+    <p><button class="btn" id="btnInstaller" hidden>📲 Installer maintenant</button></p>
+    <h3>2. Ouvrir son compte</h3>
+    <ol>
+      <li>À la première ouverture, touchez <b>« Créer un compte »</b>.</li>
+      <li>Saisissez votre nom, votre <b>numéro de téléphone ou votre e-mail</b>, et choisissez un mot de passe.</li>
+      <li>Notez le <b>code de récupération</b> affiché : il sert si vous oubliez votre mot de passe.</li>
+      <li>Les fois suivantes, connectez-vous avec le même téléphone/e-mail et mot de passe. Votre compte est enregistré <b>sur l'appareil où vous l'avez créé</b>.</li>
+    </ol>
+    <h3>3. Remplir sa fiche (Internet pas nécessaire)</h3>
+    <ol>
+      <li>Onglet <b>📝 Ma fiche</b> : remplissez les champs marqués d'une étoile <span style="color:var(--rouge)">*</span>.</li>
+      <li>Ajoutez tous vos lieux de travail, votre photo passeport et, si vous le souhaitez, une vidéo de 2 minutes maximum.</li>
+      <li>Touchez <b>✅ Valider et enregistrer</b>. La fiche reste sur votre appareil.</li>
+    </ol>
+    <h3>Vérifier son dossier</h3>
+    <p>Le bouton <b>📄 Mon récapitulatif</b> produit un document téléchargeable (et imprimable en PDF) avec toutes vos données et une liste de contrôle : ce qui est complet ✅, ce qui manque ❌, et si vous remplissez les conditions d'un membre en règle (carte, serment, cotisations).</p>
+    <h3>4. Envoyer aux responsables (avec Internet)</h3>
+    <ol>
+      <li>Touchez <b>📤 Envoyer aux responsables</b>.</li>
+      <li>Sur téléphone : choisissez <b>Gmail</b> (ou votre application e-mail). Les fichiers sont déjà joints : tapez l'adresse affichée dans le champ « À », puis envoyez.</li>
+      <li>Sur ordinateur : les fichiers sont téléchargés, puis votre messagerie s'ouvre. Joignez les fichiers téléchargés (dossier « Téléchargements ») et envoyez.</li>
+    </ol>
+    <h3>5. Pour les responsables</h3>
+    <ol>
+      <li>Votre conseil provincial souscrit un abonnement auprès du créateur de la plateforme et reçoit une <b>clé d'abonnement</b>.</li>
+      <li>Créez votre compte administrateur : écran de connexion → <b>« Je suis responsable d'un conseil provincial »</b>, puis collez la clé.</li>
+      <li>Dans <b>🏛️ Espace responsables → Abonnement</b>, copiez le <b>lien d'inscription des membres</b> et partagez-le (WhatsApp, e-mail) : chaque membre qui l'ouvre est rattaché à votre conseil.</li>
+      <li>Les <b>demandes d'adhésion</b> des nouveaux membres apparaissent avec le filtre « Demandes d'adhésion » ; ouvrez la fiche et touchez <b>✅ Accepter l'adhésion</b>.</li>
+      <li>Téléchargez les pièces jointes des e-mails reçus.</li>
+      <li>Onglet <b>🏛️ Espace responsables</b> → <b>📥 Importer</b> : sélectionnez tous les fichiers d'un coup.</li>
+      <li>Recherchez, filtrez par province, ouvrez une fiche pour voir la photo et la vidéo.</li>
+      <li><b>📊 Liste complète en Excel</b> : un fichier <code>.xlsx</code> avec toutes les personnes inscrites et toutes leurs données (3 feuilles : Membres, Lieux de travail, Formations). Relancez-le après chaque import pour avoir la liste à jour.</li>
+      <li>Faites régulièrement une <b>💾 Sauvegarde complète</b> et gardez-la en lieu sûr : effacer les données du navigateur efface le registre.</li>
+    </ol>
+    <h3>Confidentialité</h3>
+    <p>Les données ne sont envoyées à aucun serveur par l'application : elles restent sur l'appareil jusqu'à ce que vous les envoyiez vous-même par e-mail aux responsables du CNBM.</p>
+  </div>
+</section>
+</main>
+
+<div class="imprimable" id="zoneImpr"></div>
+
+<!-- Dialogues -->
+<dialog id="dlEnvoi"><div class="dl-h"><h3>📤 Envoyer aux responsables</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="dlEnvoiC"></div></dialog>
+<dialog id="dlRec"><div class="dl-h"><h3>🎥 Vidéo de présentation</h3><button class="x" data-ferme>×</button></div><div class="dl-c">
+  <div class="rec"><video id="recVid" playsinline muted autoplay></video><span class="chrono" id="recChrono">0:00 / 2:00</span></div>
+  <p class="info">Tenez le téléphone à hauteur du visage, dans un endroit calme et éclairé. L'enregistrement s'arrête seul à 2 minutes.</p>
+  <div id="recMsg"></div>
+  <div class="actions"><button class="btn" id="recStart">⏺️ Commencer</button><button class="btn dang" id="recStop" hidden>⏹️ Arrêter</button><button class="btn sec" id="recCam">🔄 Changer de caméra</button></div>
+</div></dialog>
+<dialog id="dlCompte"><div class="dl-h"><h3>👤 Mon compte</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="dlCompteC"></div></dialog>
+<dialog id="dlCode"><div class="dl-h"><h3>🔑 Votre code de récupération</h3></div><div class="dl-c">
+  <p>Votre compte est créé. Notez ce code <b>sur papier</b> ou faites une capture d'écran : il vous permettra de changer votre mot de passe si vous l'oubliez.</p>
+  <div class="code-recup" id="codeRecup"></div>
+  <div class="actions"><button class="btn sec" id="cpCode">Copier le code</button><button class="btn ok" id="okCode">J'ai noté mon code, continuer</button></div>
+</div></dialog>
+<dialog id="dlRecap"><div class="dl-h"><h3>📄 Mon récapitulatif</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="dlRecapC"></div></dialog>
+<dialog id="dlDet"><div class="dl-h"><h3 id="detT">Fiche</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="detC"></div></dialog>
+
+<datalist id="dl-pays"><option>RDC</option><option>Congo-Brazzaville</option><option>Angola</option><option>Zambie</option><option>Tanzanie</option><option>Burundi</option><option>Rwanda</option><option>Ouganda</option><option>Soudan du Sud</option><option>Centrafrique</option><option>Cameroun</option><option>Afrique du Sud</option><option>Belgique</option><option>France</option><option>Canada</option></datalist>
+<datalist id="dl-villes"><option>Kinshasa</option><option>Lubumbashi</option><option>Mbuji-Mayi</option><option>Kisangani</option><option>Kananga</option><option>Bukavu</option><option>Goma</option><option>Kolwezi</option><option>Matadi</option><option>Likasi</option><option>Mbandaka</option><option>Kikwit</option><option>Bunia</option><option>Uvira</option><option>Butembo</option><option>Beni</option><option>Kindu</option><option>Kalemie</option><option>Bandundu</option><option>Boma</option><option>Gemena</option><option>Isiro</option><option>Tshikapa</option><option>Kabinda</option><option>Kamina</option><option>Lisala</option><option>Gbadolite</option><option>Boende</option><option>Lusambo</option><option>Buta</option><option>Inongo</option><option>Kenge</option></datalist>
+<datalist id="dl-specialites"><option>Biologie médicale</option><option>Techniques de laboratoire</option><option>Biochimie clinique</option><option>Hématologie</option><option>Microbiologie / bactériologie</option><option>Parasitologie</option><option>Immunologie / sérologie</option><option>Virologie</option><option>Biologie moléculaire</option><option>Anatomie pathologique / cytologie</option><option>Transfusion sanguine</option><option>Santé publique</option></datalist>
+<datalist id="dl-fonctions"><option>Chef de laboratoire</option><option>Chef de service</option><option>Biologiste</option><option>Technicien de laboratoire</option><option>Technicien supérieur</option><option>Responsable qualité</option><option>Responsable de banque de sang</option><option>Superviseur de zone de santé</option><option>Enseignant / formateur</option><option>Chercheur</option><option>Directeur / gestionnaire</option><option>Stagiaire</option></datalist>
+
+<template id="tplLieu">
+  <div class="lieu">
+    <div class="lieu-t"><span class="lieu-n">Lieu de travail 1</span><button type="button" class="btn dang petit lieu-sup">Supprimer</button></div>
+    <div class="grille">
+      <label class="ch">Nom de l'hôpital / établissement <span class="req">*</span><input data-l="etablissement" required placeholder="ex. Hôpital général de référence de Kinshasa"></label>
+      <label class="ch">Type d'établissement
+        <select data-l="type"><option value="">— Choisir —</option><option>Public (État)</option><option>Privé</option><option>Confessionnel</option><option>ONG / projet</option><option>Militaire / police</option><option>Université / institut</option><option>Autre</option></select></label>
+      <label class="ch">Fonction occupée <span class="req">*</span><input data-l="fonction" required list="dl-fonctions"></label>
+      <label class="ch">Service / département<input data-l="service" placeholder="ex. Laboratoire, banque de sang"></label>
+      <label class="ch">Depuis (année)<input data-l="depuis" type="number" inputmode="numeric" min="1950" max="2027"></label>
+      <label class="ch">Zone de santé<input data-l="zoneSante"></label>
+      <label class="ch">Ville ou territoire <span class="req">*</span><input data-l="ville" required list="dl-villes"></label>
+      <label class="ch">Pays <span class="req">*</span><input data-l="pays" required value="RDC" list="dl-pays" data-pays-pour="province"></label>
+      <label class="ch">Province <span class="req">*</span><select data-l="province" required data-province></select></label>
+    </div>
+  </div>
+</template>
+<template id="tplFormation">
+  <div class="lieu">
+    <div class="lieu-t"><span class="lieu-n">Formation 1</span><button type="button" class="btn dang petit lieu-sup">Supprimer</button></div>
+    <div class="grille">
+      <label class="ch">Intitulé de la formation <span class="req">*</span><input data-o="intitule" required placeholder="ex. Assurance qualité au laboratoire"></label>
+      <label class="ch">Organisé par<input data-o="organisme" placeholder="ex. INRB, PNLS, OMS, ONG…"></label>
+      <label class="ch">Année<input data-o="annee" type="number" inputmode="numeric" min="1950" max="2027"></label>
+      <label class="ch">Durée<input data-o="duree" placeholder="ex. 5 jours"></label>
+      <label class="ch">Lieu<input data-o="lieu" placeholder="ex. Kinshasa"></label>
+      <label class="ch">Certificat / attestation obtenu ?<select data-o="certificat"><option value="">—</option><option>Oui</option><option>Non</option></select></label>
+    </div>
+  </div>
+</template>
+
+<script>
+"use strict";
+/* ------------------------------------------------------------------
+   CONFIGURATION — à adapter par le secrétariat avant de diffuser.
+   EMAIL_PAR_DEFAUT : adresse(s) qui recevront les fiches.
+   ------------------------------------------------------------------ */
+const EMAIL_PAR_DEFAUT = "";
+/* Clé(s) PUBLIQUE(S) du créateur de la plateforme. Les clés d'abonnement des
+   conseils provinciaux sont signées avec la clé PRIVÉE correspondante (page
+   createur.html) et vérifiées ici, sans Internet. Une clé publique ne permet pas
+   de fabriquer d'abonnement : elle peut être publiée sans risque. */
+const CLES_PUBLIQUES_CREATEUR = [
+  {"kty":"EC","crv":"P-256","x":"QtAuIrLPQ_Sum1u5TJcSgv4Owry3JjWOok62Jb7KG-Q","y":"bYiC8AHFx7mrcA5UcF_KJ--GAmePdWBX92b2X5dFcpU"}
+];
+const VIDEO_MAX_S = 120;              // 2 minutes
+const VIDEO_MAX_OCTETS = 18 * 1024 * 1024; // au-delà : compression (limite Gmail = 25 Mo)
+
+const PROVINCES = ["Bas-Uele","Équateur","Haut-Katanga","Haut-Lomami","Haut-Uele","Ituri","Kasaï","Kasaï-Central","Kasaï-Oriental","Kinshasa","Kongo-Central","Kwango","Kwilu","Lomami","Lualaba","Mai-Ndombe","Maniema","Mongala","Nord-Kivu","Nord-Ubangi","Sankuru","Sud-Kivu","Sud-Ubangi","Tanganyika","Tshopo","Tshuapa"];
+const HORS_RDC = "Hors RDC (étranger)";
+const CHAMPS_LIEU = ["etablissement","type","fonction","service","depuis","zoneSante","ville","pays","province"];
+const CHAMPS_FORM = ["intitule","organisme","annee","duree","lieu","certificat"];
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dateFr = t => t ? new Date(t).toLocaleString("fr-FR", {day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
+const taille = o => o > 1048576 ? (o / 1048576).toFixed(1) + " Mo" : Math.max(1, Math.round(o / 1024)) + " Ko";
+const duree = s => isFinite(s) ? Math.floor(s / 60) + ":" + String(Math.round(s % 60)).padStart(2, "0") : "?";
+function toast(t, ms = 3200) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.append(d); setTimeout(() => d.remove(), ms); }
+function msg(el, type, html) { el.innerHTML = html ? `<div class="msg ${type}">${html}</div>` : ""; }
+
+/* ----------------------------- Stockage ----------------------------- */
+const LS = {
+  get(k, d = "") { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+};
+const DB = {
+  _db: null,
+  open() {
+    if (this._db) return Promise.resolve(this._db);
+    return new Promise((ok, ko) => {
+      const r = indexedDB.open("cnbm-recensement", 2);
+      r.onupgradeneeded = () => {
+        const d = r.result;
+        if (!d.objectStoreNames.contains("fiches")) d.createObjectStore("fiches", { keyPath: "id" });
+        if (!d.objectStoreNames.contains("registre")) d.createObjectStore("registre", { keyPath: "id" });
+        if (!d.objectStoreNames.contains("comptes")) d.createObjectStore("comptes", { keyPath: "id" });
+      };
+      r.onsuccess = () => { this._db = r.result; ok(r.result); };
+      r.onerror = () => ko(r.error);
+    });
+  },
+  async tx(store, mode, fn) {
+    const d = await this.open();
+    return new Promise((ok, ko) => {
+      const t = d.transaction(store, mode), s = t.objectStore(store);
+      const r = fn(s);
+      t.oncomplete = () => ok(r && "result" in r ? r.result : undefined);
+      t.onerror = () => ko(t.error); t.onabort = () => ko(t.error);
+    });
+  },
+  put(st, o) { return this.tx(st, "readwrite", s => s.put(o)); },
+  get(st, id) { return this.tx(st, "readonly", s => s.get(id)); },
+  all(st) { return this.tx(st, "readonly", s => s.getAll()); },
+  del(st, id) { return this.tx(st, "readwrite", s => s.delete(id)); }
+};
+
+/* ----------------------------- Utilitaires fiche ----------------------------- */
+function nouvelId() {
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let r = ""; const v = crypto.getRandomValues(new Uint8Array(6));
+  v.forEach(x => r += a[x % a.length]);
+  return `CNBM-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${r}`;
+}
+function ficheVide() {
+  const c = session || {};
+  return { id: nouvelId(), compte: c.id || null, conseil: conseil.payload ? { id: conseil.payload.id, nom: conseil.payload.conseil, province: conseil.payload.province } : null, cree: Date.now(), modifie: Date.now(), statut: "brouillon", envoyee: null,
+           data: { nationalite: "Congolaise (RDC)", adrPays: "RDC", telephone: c.type === "tel" ? c.id : "", email: c.type === "email" ? c.id : "" }, lieux: [{ pays: "RDC" }], formations: [],
+           photo: null, video: null, videoDuree: null };
+}
+const nomComplet = d => [d.nom, d.postnom].filter(Boolean).join(" ").toUpperCase() + (d.prenom ? " " + d.prenom : "");
+const lieuPrincipal = f => (f.lieux && f.lieux[0]) || {};
+const nomFichier = (f, suff) => `${f.id}_${(f.data.nom || "fiche").normalize("NFD").replace(/[^\w]/g, "").toUpperCase()}_${suff}`;
+const extVideo = t => /mp4/.test(t) ? "mp4" : /quicktime/.test(t) ? "mov" : /3gpp/.test(t) ? "3gp" : "webm";
+
+/* ----------------------------- Provinces ----------------------------- */
+function remplirProvinces(sel, pays, val) {
+  const rdc = !pays || /^(rdc|r\.?d\.?c\.?|congo[- ]kinshasa|r[ée]publique d[ée]mocratique du congo)$/i.test(pays.trim());
+  const opts = rdc ? PROVINCES : [HORS_RDC];
+  sel.innerHTML = (rdc ? `<option value="">— Choisir —</option>` : "") + opts.map(p => `<option>${esc(p)}</option>`).join("");
+  if (val && opts.includes(val)) sel.value = val; else if (!rdc) sel.value = HORS_RDC;
+}
+function brancherPays(racine) {
+  $$("[data-pays-pour]", racine).forEach(inp => {
+    const cible = inp.dataset.paysPour;
+    const sel = $(`[data-f="${cible}"],[data-l="${cible}"]`, racine);
+    const maj = () => remplirProvinces(sel, inp.value, sel.value);
+    inp.addEventListener("input", maj); maj();
+  });
+}
+
+/* ----------------------------- Formulaire ----------------------------- */
+let courant = null;       // fiche en cours d'édition
+let urlsTemp = [];
+const form = $("#form");
+
+function afficherLieux() {
+  const box = $("#lieux"); box.innerHTML = "";
+  courant.lieux.forEach((l, i) => {
+    const n = $("#tplLieu").content.firstElementChild.cloneNode(true);
+    $(".lieu-n", n).textContent = i === 0 ? "Lieu de travail principal" : `Lieu de travail ${i + 1}`;
+    $(".lieu-sup", n).hidden = courant.lieux.length < 2;
+    $(".lieu-sup", n).onclick = () => { lireForm(); courant.lieux.splice(i, 1); afficherLieux(); sauverAuto(); };
+    CHAMPS_LIEU.forEach(c => { const e = $(`[data-l="${c}"]`, n); if (c !== "province") e.value = l[c] ?? (c === "pays" ? "RDC" : ""); });
+    box.append(n);
+    brancherPays(n);
+    remplirProvinces($('[data-l="province"]', n), $('[data-l="pays"]', n).value, l.province);
+  });
+}
+
+function afficherFormations() {
+  const box = $("#formations"); box.innerHTML = "";
+  courant.formations = courant.formations || [];
+  if (!courant.formations.length) box.innerHTML = `<p class="info" style="margin:0 0 10px">Aucune formation ajoutée.</p>`;
+  courant.formations.forEach((o, i) => {
+    const n = $("#tplFormation").content.firstElementChild.cloneNode(true);
+    n.classList.add("formation");
+    $(".lieu-n", n).textContent = `Formation ${i + 1}`;
+    $(".lieu-sup", n).onclick = () => { lireForm(); courant.formations.splice(i, 1); afficherFormations(); sauverAuto(); };
+    CHAMPS_FORM.forEach(c => $(`[data-o="${c}"]`, n).value = o[c] ?? "");
+    box.append(n);
+  });
+}
+function majMembre() {
+  const m = $('[data-f="adhMembre"]').value;
+  $$("[data-si-membre]").forEach(l => l.hidden = m === "Non");
+  $$("[data-si-non-membre]").forEach(l => l.hidden = !(m === "Non" || m === "Demande en cours"));
+}
+function majExperience() {
+  const deb = +$('[data-f="anneeDebutTravail"]').value, ex = $('[data-f="experience"]');
+  if (deb >= 1950 && deb <= new Date().getFullYear() && (!ex.value || ex.dataset.auto === "1")) {
+    ex.value = new Date().getFullYear() - deb; ex.dataset.auto = "1";
+  }
+}
+form.addEventListener("input", e => {
+  if (e.target.dataset.f === "anneeDebutTravail") majExperience();
+  if (e.target.dataset.f === "experience") e.target.dataset.auto = "0";
+  if (e.target.dataset.f === "adhMembre") majMembre();
+}, true);
+form.addEventListener("change", e => { if (e.target.dataset.f === "adhMembre") majMembre(); }, true);
+
+function chargerDansForm(f) {
+  courant = f;
+  f.formations = f.formations || [];
+  $$("[data-f]", form).forEach(e => {
+    const v = f.data[e.dataset.f];
+    if (e.type === "checkbox") e.checked = !!v;
+    else if (!e.hasAttribute("data-province")) e.value = v ?? (e.defaultValue || "");
+  });
+  brancherPays(form);
+  remplirProvinces($('[data-f="adrProvince"]'), $('[data-f="adrPays"]').value, f.data.adrProvince);
+  afficherLieux(); afficherFormations(); majMembre();
+  $('[data-f="experience"]').dataset.auto = "0";
+  afficherPhoto(); afficherVideo();
+  majEtat();
+  msg($("#msgForm"));
+}
+
+function lireForm() {
+  $$("[data-f]", form).forEach(e => courant.data[e.dataset.f] = e.type === "checkbox" ? e.checked : e.value.trim());
+  courant.lieux = $$("#lieux .lieu").map(b => Object.fromEntries(CHAMPS_LIEU.map(c => [c, $(`[data-l="${c}"]`, b).value.trim()])));
+  courant.formations = $$("#formations .formation").map(b => Object.fromEntries(CHAMPS_FORM.map(c => [c, $(`[data-o="${c}"]`, b).value.trim()])));
+}
+
+function majEtat() {
+  const f = courant, e = $("#etatFiche");
+  if (f.statut === "envoyee") { e.className = "msg ok"; e.innerHTML = `Fiche <b>${esc(f.id)}</b> envoyée le ${dateFr(f.envoyee)}. Si vous la modifiez, renvoyez-la.`; }
+  else if (f.statut === "prete") { e.className = "msg att"; e.innerHTML = `Fiche <b>${esc(f.id)}</b> complète et enregistrée. Il reste à l'<b>envoyer</b> aux responsables.`; }
+  else { e.className = "msg inf"; e.innerHTML = `Fiche <b>${esc(f.id)}</b> en cours. Tout est enregistré automatiquement sur cet appareil, même sans Internet.`; }
+}
+
+let minuteur = null;
+function sauverAuto() {
+  clearTimeout(minuteur);
+  minuteur = setTimeout(async () => {
+    lireForm();
+    const avant = courant.statut;
+    if (courant.statut !== "brouillon" && !form.checkValidity()) courant.statut = "brouillon";
+    else if (courant.statut === "envoyee") courant.statut = "prete"; // modifiée après envoi
+    courant.modifie = Date.now();
+    await DB.put("fiches", courant);
+    LS.set("cnbm-courante-" + session.id, courant.id);
+    if (avant !== courant.statut) majEtat();
+    majCompteur();
+  }, 400);
+}
+form.addEventListener("input", sauverAuto);
+form.addEventListener("change", sauverAuto);
+
+function validerFiche() {
+  lireForm();
+  const erreurs = [];
+  if (!form.checkValidity()) {
+    const premier = $$("input,select", form).find(e => !e.checkValidity());
+    if (premier) {
+      const lab = premier.closest("label")?.childNodes[0]?.textContent.trim() || "un champ";
+      erreurs.push(premier.validity.patternMismatch ? `Le numéro « ${esc(premier.value)} » n'est pas valide (exemple : +243 812 345 678).`
+        : premier.validity.rangeUnderflow || premier.validity.rangeOverflow ? `Valeur incorrecte pour « ${esc(lab)} ».`
+        : premier.type === "checkbox" ? "Cochez la case de consentement." : `Champ obligatoire manquant : « ${esc(lab)} ».`);
+      premier.focus({ preventScroll: true });
+      premier.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+  }
+  return erreurs;
+}
+
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = validerFiche();
+  if (err.length) { msg($("#msgForm"), "err", "⚠️ " + err[0]); return; }
+  clearTimeout(minuteur);
+  if (courant.statut !== "envoyee") courant.statut = "prete";
+  courant.modifie = Date.now();
+  await DB.put("fiches", courant);
+  majEtat(); majCompteur();
+  msg($("#msgForm"), "ok", "✅ Fiche validée et enregistrée sur cet appareil. Touchez <b>📤 Envoyer aux responsables</b> dès que vous avez Internet.");
+  toast("Fiche enregistrée");
+});
+
+$("#ajLieu").onclick = () => { lireForm(); courant.lieux.push({ pays: "RDC" }); afficherLieux(); sauverAuto(); $$("#lieux .lieu").pop().scrollIntoView({ block: "start", behavior: "smooth" }); };
+$("#ajFormation").onclick = () => { lireForm(); courant.formations.push({}); afficherFormations(); sauverAuto(); $$("#formations .formation").pop().scrollIntoView({ block: "start", behavior: "smooth" }); };
+$("#btnNouvelle").onclick = async () => {
+  if (courant.statut === "brouillon" && (courant.data.nom || courant.data.prenom) && !confirm("La fiche en cours n'est pas validée. Elle reste enregistrée comme brouillon dans « Fiches enregistrées ». Commencer une nouvelle fiche ?")) return;
+  chargerDansForm(ficheVide()); window.scrollTo(0, 0);
+};
+$("#btnEnvoyerCourant").onclick = async () => {
+  const err = validerFiche();
+  if (err.length) { msg($("#msgForm"), "err", "⚠️ Complétez la fiche avant l'envoi. " + err[0]); return; }
+  if (courant.statut === "brouillon") courant.statut = "prete";
+  clearTimeout(minuteur); courant.modifie = Date.now();
+  await DB.put("fiches", courant); majEtat(); majCompteur();
+  ouvrirEnvoi([courant]);
+};
+
+/* ----------------------------- Photo ----------------------------- */
+function lireImage(fichier) {
+  return new Promise((ok, ko) => {
+    const u = URL.createObjectURL(fichier), img = new Image();
+    img.onload = () => { URL.revokeObjectURL(u); ok(img); };
+    img.onerror = () => { URL.revokeObjectURL(u); ko(new Error("image illisible")); };
+    img.src = u;
+  });
+}
+async function photoPasseport(fichier) {
+  const img = await lireImage(fichier);
+  const W = 420, H = 540, rc = W / H, ri = img.naturalWidth / img.naturalHeight;
+  let sw, sh, sx, sy;
+  if (ri > rc) { sh = img.naturalHeight; sw = sh * rc; sx = (img.naturalWidth - sw) / 2; sy = 0; }
+  else { sw = img.naturalWidth; sh = sw / rc; sx = 0; sy = Math.max(0, (img.naturalHeight - sh) * 0.3); } // garde le haut (visage)
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, W, H);
+  x.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+  return new Promise(ok => c.toBlob(ok, "image/jpeg", 0.88));
+}
+function afficherPhoto() {
+  const ap = $("#apPhoto");
+  if (courant.photo) { const u = URL.createObjectURL(courant.photo); urlsTemp.push(u); ap.innerHTML = `<img src="${u}" alt="Photo passeport">`; }
+  else ap.textContent = "Aucune photo";
+  $("#supPhoto").hidden = !courant.photo;
+}
+$("#inPhoto").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  try { courant.photo = await photoPasseport(f); afficherPhoto(); sauverAuto(); }
+  catch { toast("Cette image n'a pas pu être lue. Essayez une photo JPEG ou PNG."); }
+};
+$("#supPhoto").onclick = () => { courant.photo = null; afficherPhoto(); sauverAuto(); };
+
+/* ----------------------------- Vidéo ----------------------------- */
+function afficherVideo() {
+  const v = $("#apVideo");
+  if (courant.video) {
+    const u = URL.createObjectURL(courant.video); urlsTemp.push(u);
+    v.src = u; v.hidden = false;
+    $("#infoVideo").textContent = `Vidéo : ${duree(courant.videoDuree)} · ${taille(courant.video.size)}`;
+  } else { v.removeAttribute("src"); v.hidden = true; $("#infoVideo").textContent = ""; }
+  $("#supVideo").hidden = !courant.video;
+}
+function dureeVideo(blob) {
+  return new Promise(ok => {
+    const v = document.createElement("video"), u = URL.createObjectURL(blob);
+    v.preload = "metadata"; v.muted = true;
+    const fin = d => { URL.revokeObjectURL(u); ok(d); };
+    v.onloadedmetadata = () => {
+      if (isFinite(v.duration)) return fin(v.duration);
+      // Certains WebM n'indiquent pas leur durée : on la force.
+      v.ontimeupdate = () => { v.ontimeupdate = null; fin(isFinite(v.duration) ? v.duration : NaN); };
+      v.currentTime = 1e7;
+    };
+    v.onerror = () => fin(NaN);
+    setTimeout(() => fin(NaN), 8000);
+    v.src = u;
+  });
+}
+function typeEnregistrement() {
+  if (!window.MediaRecorder) return "";
+  return ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp8,opus", "video/webm"].find(t => MediaRecorder.isTypeSupported(t)) || "";
+}
+// Ré-encode une vidéo trop lourde en 480p à faible débit (dure le temps de la vidéo).
+async function compresserVideo(fichier, maxS, progres) {
+  const type = typeEnregistrement();
+  if (!type || !HTMLCanvasElement.prototype.captureStream) throw new Error("compression non prise en charge");
+  const v = document.createElement("video"), u = URL.createObjectURL(fichier);
+  v.src = u; v.playsInline = true; v.preload = "auto";
+  await new Promise((ok, ko) => { v.onloadedmetadata = ok; v.onerror = () => ko(new Error("vidéo illisible")); });
+  const h = Math.min(480, v.videoHeight || 480), w = Math.round((v.videoWidth || 640) * h / (v.videoHeight || 480) / 2) * 2;
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const x = c.getContext("2d");
+  const flux = c.captureStream(25);
+  let ac = null;
+  try {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    const src = ac.createMediaElementSource(v), dst = ac.createMediaStreamDestination();
+    src.connect(dst); dst.stream.getAudioTracks().forEach(t => flux.addTrack(t));
+  } catch { v.muted = true; }
+  const rec = new MediaRecorder(flux, { mimeType: type, videoBitsPerSecond: 550000, audioBitsPerSecond: 64000 });
+  const morceaux = []; rec.ondataavailable = e => e.data.size && morceaux.push(e.data);
+  const limite = Math.min(maxS, isFinite(v.duration) ? v.duration : maxS);
+  return new Promise((ok, ko) => {
+    let fini = false;
+    const stop = () => { if (fini) return; fini = true; v.pause(); rec.state !== "inactive" && rec.stop(); };
+    rec.onstop = () => { URL.revokeObjectURL(u); ac && ac.close(); ok(new Blob(morceaux, { type: type.split(";")[0] })); };
+    const dessine = () => {
+      if (fini) return;
+      x.drawImage(v, 0, 0, w, h);
+      progres(Math.min(1, v.currentTime / limite), v.currentTime);
+      if (v.currentTime >= limite || v.ended) return stop();
+      requestAnimationFrame(dessine);
+    };
+    v.onended = stop;
+    rec.start(1000);
+    v.play().then(dessine).catch(err => { fini = true; rec.stop(); ko(err); });
+  });
+}
+async function accepterVideo(blob, dureeConnue) {
+  const d = dureeConnue ?? await dureeVideo(blob);
+  courant.video = blob; courant.videoDuree = d;
+  afficherVideo(); sauverAuto();
+}
+$("#inVideo").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  const d = await dureeVideo(f);
+  const trop = isFinite(d) && d > VIDEO_MAX_S + 2;
+  if (f.size <= VIDEO_MAX_OCTETS && !trop) return accepterVideo(f, d);
+  const pg = $("#progVideo"), barre = $(".progress>div", pg), t = $("#progTxt");
+  if (trop && !confirm(`Cette vidéo dure ${duree(d)}. Seules les 2 premières minutes seront gardées. Continuer ?`)) return;
+  pg.hidden = false; $("#btnRec").disabled = true;
+  t.textContent = `Compression de la vidéo (${taille(f.size)})… gardez cette page ouverte.`;
+  try {
+    const petit = await compresserVideo(f, VIDEO_MAX_S, (p, s) => { barre.style.width = (p * 100) + "%"; t.textContent = `Compression : ${Math.round(p * 100)} % (${duree(s)})… gardez cette page ouverte.`; });
+    await accepterVideo(petit, Math.min(isFinite(d) ? d : VIDEO_MAX_S, VIDEO_MAX_S));
+    toast(`Vidéo compressée : ${taille(f.size)} → ${taille(petit.size)}`);
+  } catch (err) {
+    if (trop) { toast("La vidéo dépasse 2 minutes et n'a pas pu être raccourcie ici. Utilisez « Enregistrer maintenant »."); }
+    else { await accepterVideo(f, d); toast("Compression impossible sur cet appareil : la vidéo est gardée telle quelle mais risque d'être trop lourde pour un e-mail."); }
+  } finally { pg.hidden = true; barre.style.width = "0"; $("#btnRec").disabled = false; }
+};
+$("#supVideo").onclick = () => { courant.video = null; courant.videoDuree = null; afficherVideo(); sauverAuto(); };
+
+/* Enregistrement direct */
+const REC = { flux: null, rec: null, morceaux: [], t0: 0, tick: null, face: "user" };
+async function camera() {
+  REC.flux && REC.flux.getTracks().forEach(t => t.stop());
+  REC.flux = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: REC.face, width: { ideal: 640 }, height: { ideal: 480 } }, audio: { echoCancellation: true, noiseSuppression: true } });
+  $("#recVid").srcObject = REC.flux;
+}
+function fermerRec() {
+  clearInterval(REC.tick);
+  if (REC.rec && REC.rec.state !== "inactive") { REC.annule = true; REC.rec.stop(); }
+  REC.flux && REC.flux.getTracks().forEach(t => t.stop()); REC.flux = null;
+  $("#recVid").srcObject = null;
+}
+$("#btnRec").onclick = async () => {
+  const dl = $("#dlRec");
+  msg($("#recMsg"));
+  $("#recStart").hidden = false; $("#recStop").hidden = true; $("#recChrono").className = "chrono"; $("#recChrono").textContent = "0:00 / 2:00";
+  if (!navigator.mediaDevices?.getUserMedia || !typeEnregistrement()) {
+    toast("L'enregistrement direct n'est pas possible dans ce navigateur. Utilisez « Choisir une vidéo » (l'appareil photo du téléphone s'ouvrira)."); return;
+  }
+  dl.showModal();
+  try { await camera(); }
+  catch (e) { msg($("#recMsg"), "err", "Impossible d'accéder à la caméra/au micro. Autorisez l'accès dans le navigateur" + (location.protocol === "file:" ? " (ou ouvrez l'application depuis son adresse Internet : certains navigateurs bloquent la caméra pour un fichier local)." : ".")); }
+};
+$("#recCam").onclick = async () => { if (REC.rec && REC.rec.state === "recording") return; REC.face = REC.face === "user" ? "environment" : "user"; try { await camera(); } catch {} };
+$("#recStart").onclick = () => {
+  if (!REC.flux) return;
+  const type = typeEnregistrement();
+  REC.morceaux = []; REC.annule = false;
+  REC.rec = new MediaRecorder(REC.flux, { mimeType: type, videoBitsPerSecond: 600000, audioBitsPerSecond: 64000 });
+  REC.rec.ondataavailable = e => e.data.size && REC.morceaux.push(e.data);
+  REC.rec.onstop = async () => {
+    clearInterval(REC.tick);
+    const d = (Date.now() - REC.t0) / 1000;
+    if (REC.annule) return;
+    const blob = new Blob(REC.morceaux, { type: type.split(";")[0] });
+    fermerRec(); $("#dlRec").close();
+    await accepterVideo(blob, Math.min(d, VIDEO_MAX_S));
+    toast("Vidéo enregistrée");
+  };
+  REC.rec.start(1000); REC.t0 = Date.now();
+  $("#recStart").hidden = true; $("#recStop").hidden = false; $("#recChrono").className = "chrono on";
+  REC.tick = setInterval(() => {
+    const s = (Date.now() - REC.t0) / 1000;
+    $("#recChrono").textContent = `${duree(Math.min(s, VIDEO_MAX_S))} / 2:00`;
+    if (s >= VIDEO_MAX_S) REC.rec.stop();
+  }, 250);
+};
+$("#recStop").onclick = () => REC.rec && REC.rec.state !== "inactive" && REC.rec.stop();
+$("#dlRec").addEventListener("close", fermerRec);
+
+/* ----------------------------- Export d'une fiche ----------------------------- */
+function lignesFiche(f) {
+  const d = f.data, L = [];
+  L.push("CONSEIL NATIONAL DES BIOTECHNOLOGISTES MÉDICAUX — RDC (CNBM)");
+  L.push("FICHE DE RECENSEMENT DES MEMBRES");
+  L.push("Identifiant : " + f.id);
+  if (f.conseil) L.push("Conseil : " + f.conseil.nom);
+  L.push("Date : " + dateFr(f.modifie));
+  L.push("");
+  L.push("IDENTITÉ");
+  L.push("  Nom : " + (d.nom || "").toUpperCase());
+  L.push("  Postnom : " + (d.postnom || "").toUpperCase());
+  L.push("  Prénom : " + (d.prenom || ""));
+  L.push("  Sexe : " + (d.sexe || ""));
+  L.push("  Année de naissance : " + (d.anneeNaissance || ""));
+  L.push("  Nationalité : " + (d.nationalite || ""));
+  L.push("CONTACTS");
+  L.push("  Téléphone : " + (d.telephone || ""));
+  L.push("  WhatsApp / 2e numéro : " + (d.telephone2 || ""));
+  L.push("  E-mail : " + (d.email || ""));
+  L.push("ADRESSE PHYSIQUE");
+  L.push("  " + adresse(d));
+  L.push("PROFIL PROFESSIONNEL");
+  L.push("  Catégorie : " + (d.categorie || ""));
+  L.push("  Diplôme : " + (d.diplome || "") + (d.specialite ? " — " + d.specialite : ""));
+  L.push("  Institution de formation : " + (d.ecole || ""));
+  L.push("  Année d'obtention du diplôme : " + (d.anneeDiplome || "") + (d.anneePremierDiplome ? " (premier diplôme : " + d.anneePremierDiplome + ")" : ""));
+  L.push("CARRIÈRE");
+  L.push("  Année de début du travail : " + (d.anneeDebutTravail || ""));
+  L.push("  Premier emploi : " + (d.premierEmploi || "") + (d.premierEmploiLieu ? " — " + d.premierEmploiLieu : ""));
+  L.push("  Années d'expérience : " + (d.experience || ""));
+  L.push("ADHÉSION AU CNBM");
+  L.push("  Membre : " + (d.adhMembre || ""));
+  if (d.adhMembre !== "Non") {
+    L.push("  Année d'adhésion : " + (d.adhAnnee || ""));
+    L.push("  Carte de membre : " + (d.adhCarte || "") + (d.numeroOrdre ? " — N° " + d.numeroOrdre : ""));
+    L.push("  Serment prêté : " + (d.adhSerment || "") + (d.adhSermentAnnee ? " (" + d.adhSermentAnnee + ")" : ""));
+    L.push("  En ordre de cotisations : " + (d.adhCotisation || ""));
+    L.push("  Mois de cotisation payés : " + (d.adhMoisPayes || "") + (d.adhDernierMois ? " — dernier mois payé : " + d.adhDernierMois : ""));
+  }
+  L.push("FORMATIONS SUIVIES");
+  if (!(f.formations || []).length) L.push("  (aucune déclarée)");
+  (f.formations || []).forEach((o, i) => L.push(`  ${i + 1}. ${o.intitule || ""}${o.organisme ? " — " + o.organisme : ""}${o.annee ? " (" + o.annee + ")" : ""}${o.duree ? ", " + o.duree : ""}${o.lieu ? ", " + o.lieu : ""}${o.certificat ? " — certificat : " + o.certificat : ""}`));
+  L.push("LIEUX DE TRAVAIL");
+  (f.lieux || []).forEach((l, i) => {
+    L.push(`  ${i + 1}. ${l.etablissement || ""}${l.type ? " (" + l.type + ")" : ""}`);
+    L.push(`     Fonction : ${l.fonction || ""}${l.service ? " — Service : " + l.service : ""}${l.depuis ? " — depuis " + l.depuis : ""}`);
+    L.push(`     ${[l.zoneSante && "Zone de santé " + l.zoneSante, l.ville, l.province !== HORS_RDC && l.province, l.pays].filter(Boolean).join(", ")}`);
+  });
+  L.push("PIÈCES JOINTES");
+  L.push("  Photo passeport : " + (f.photo ? "oui" : "non"));
+  L.push("  Vidéo : " + (f.video ? `oui (${duree(f.videoDuree)})` : "non"));
+  L.push("Consentement donné : " + (d.consentement ? "oui" : "non"));
+  return L;
+}
+const adresse = d => [d.adrNumero && "N° " + d.adrNumero, d.adrAvenue && "Av. " + d.adrAvenue, d.adrQuartier && "Q. " + d.adrQuartier, d.adrCommune && "C. " + d.adrCommune, d.adrVille, d.adrProvince, d.adrPays].filter(Boolean).join(", ");
+function texteFiche(f) {
+  const meta = { format: "cnbm-fiche", version: 1, id: f.id, compte: f.compte || null, conseil: f.conseil || null, adhesionValidee: f.adhesionValidee || null, cree: f.cree, modifie: f.modifie, data: f.data, lieux: f.lieux, formations: f.formations || [], videoDuree: f.videoDuree,
+                 photo: f.photo ? nomFichier(f, "photo.jpg") : null, video: f.video ? nomFichier(f, "video." + extVideo(f.video.type)) : null };
+  return lignesFiche(f).join("\r\n") + "\r\n\r\n--- Ne pas modifier ce qui suit (lecture automatique par l'application) ---\r\n-----DEBUT DONNEES CNBM-----\r\n"
+    + JSON.stringify(meta) + "\r\n-----FIN DONNEES CNBM-----\r\n";
+}
+function fichiersFiche(f) {
+  const out = [new File([texteFiche(f)], nomFichier(f, "fiche.txt"), { type: "text/plain" })];
+  if (f.photo) out.push(new File([f.photo], nomFichier(f, "photo.jpg"), { type: "image/jpeg" }));
+  if (f.video) out.push(new File([f.video], nomFichier(f, "video." + extVideo(f.video.type)), { type: f.video.type || "video/webm" }));
+  return out;
+}
+function telecharger(blob, nom) {
+  const a = document.createElement("a"), u = URL.createObjectURL(blob);
+  a.href = u; a.download = nom; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 60000);
+}
+
+/* ----------------------------- Envoi ----------------------------- */
+const emailDest = () => (conseil.payload?.email || LS.get("cnbm-email", EMAIL_PAR_DEFAUT)).trim();
+function ouvrirEnvoi(fiches) {
+  const dl = $("#dlEnvoi"), c = $("#dlEnvoiC");
+  const fichiers = fiches.flatMap(fichiersFiche);
+  const total = fichiers.reduce((s, f) => s + f.size, 0);
+  const email = emailDest();
+  const sujet = fiches.length === 1 ? `Recensement CNBM — ${nomComplet(fiches[0].data)} — ${fiches[0].id}` : `Recensement CNBM — ${fiches.length} fiches`;
+  const corps = (fiches.length === 1 ? lignesFiche(fiches[0]).join("\n") : fiches.map(f => `- ${nomComplet(f.data)} (${f.id})`).join("\n"))
+    + `\n\nPièces jointes : ${fichiers.length} fichier(s) — à importer dans l'application CNBM (Espace responsables).`;
+  const peutPartager = !!(navigator.canShare && navigator.canShare({ files: fichiers }));
+  const hors = !navigator.onLine;
+  c.innerHTML = `
+    ${hors ? `<div class="msg att">📴 Vous êtes hors connexion. Vous pouvez préparer l'envoi : l'e-mail partira quand Internet reviendra (il reste dans la boîte d'envoi de Gmail).</div>` : ""}
+    <p>${fiches.length === 1 ? "Fiche de <b>" + esc(nomComplet(fiches[0].data)) + "</b>" : "<b>" + fiches.length + " fiches</b>"} · ${fichiers.length} fichier(s) · ${taille(total)}</p>
+    ${total > 24 * 1048576 ? `<div class="msg att">⚠️ Le total dépasse 25 Mo (limite de Gmail). Envoyez plutôt les fiches une par une.</div>` : ""}
+    <p style="margin-bottom:4px">Adresse des responsables à mettre dans le champ <b>« À »</b> :</p>
+    ${email ? `<div class="email-box"><span style="flex:1">${esc(email)}</span><button class="btn sec petit" id="cpEmail">Copier</button></div>`
+            : `<div class="msg err">Aucune adresse de réception n'est configurée. Demandez-la à votre secrétariat, puis saisissez-la ici :</div>
+               <div style="display:flex;gap:6px"><input id="emailTmp" type="email" placeholder="adresse@exemple.cd"><button class="btn sec" id="okEmail">OK</button></div>`}
+    <div class="actions" style="flex-direction:column;align-items:stretch">
+      ${peutPartager ? `<button class="btn" id="envPartager">📤 Envoyer avec Gmail / WhatsApp / autre (fichiers joints)</button>` : ""}
+      <button class="btn ${peutPartager ? "sec" : ""}" id="envTelech">⬇️ Télécharger les fichiers puis ouvrir ma messagerie</button>
+      <button class="btn sec" id="envMarquer">✔️ C'est fait : marquer comme envoyée${fiches.length > 1 ? "s" : ""}</button>
+    </div>
+    <div id="envMsg"></div>`;
+  const marquer = async () => {
+    for (const f of fiches) { f.statut = "envoyee"; f.envoyee = Date.now(); await DB.put("fiches", f); }
+    if (courant && fiches.some(f => f.id === courant.id)) majEtat();
+    majCompteur(); afficherMesFiches(); dl.close(); toast("Merci ! Fiche(s) marquée(s) comme envoyée(s).");
+  };
+  $("#cpEmail", c) && ($("#cpEmail", c).onclick = () => copier(email));
+  $("#okEmail", c) && ($("#okEmail", c).onclick = () => { const v = $("#emailTmp", c).value.trim(); if (/@/.test(v)) { LS.set("cnbm-email", v); ouvrirEnvoi(fiches); } });
+  $("#envPartager", c) && ($("#envPartager", c).onclick = async () => {
+    if (email) copier(email, true);
+    try {
+      await navigator.share({ files: fichiers, title: sujet, text: (email ? `À envoyer à : ${email}\n` : "") + sujet });
+      msg($("#envMsg", c), "ok", "Si l'e-mail est parti, touchez <b>✔️ C'est fait</b>.");
+    } catch (e) { if (e.name !== "AbortError") msg($("#envMsg", c), "err", "Le partage a échoué. Utilisez le bouton « Télécharger ».") }
+  });
+  $("#envTelech", c).onclick = async () => {
+    for (const f of fichiers) { telecharger(f, f.name); await new Promise(r => setTimeout(r, 450)); }
+    const corpsCourt = corps.length > 1500 ? corps.slice(0, 1500) + "\n…" : corps;
+    const lien = `mailto:${encodeURIComponent(email).replace(/%40/g, "@").replace(/%2C/g, ",")}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corpsCourt + "\n\n>>> N'oubliez pas de JOINDRE les fichiers téléchargés : " + fichiers.map(f => f.name).join(", "))}`;
+    msg($("#envMsg", c), "inf", `Fichiers téléchargés (dossier « Téléchargements »). <a href="${esc(lien)}">Ouvrir ma messagerie</a>, puis <b>joignez ces fichiers</b> : ${fichiers.map(f => "<code>" + esc(f.name) + "</code>").join(", ")}`);
+    setTimeout(() => { location.href = lien; }, 300);
+  };
+  $("#envMarquer", c).onclick = marquer;
+  dl.showModal();
+}
+function copier(t, silencieux) {
+  (navigator.clipboard?.writeText(t) || Promise.reject()).then(() => !silencieux && toast("Copié : " + t))
+    .catch(() => { const a = document.createElement("textarea"); a.value = t; document.body.append(a); a.select(); try { document.execCommand("copy"); !silencieux && toast("Copié"); } catch {} a.remove(); });
+}
+
+/* ----------------------------- Mes fiches ----------------------------- */
+const mesFiches = async () => session ? (await DB.all("fiches")).filter(f => f.compte === session.id) : [];
+async function majCompteur() {
+  const t = await mesFiches();
+  $("#nbFiches").textContent = t.length ? `(${t.length})` : "";
+  const pretes = t.filter(f => f.statut === "prete").length, b = $("#banniere");
+  if (navigator.onLine && pretes) { b.style.display = "block"; b.innerHTML = `🌐 Vous êtes connecté : <b>${pretes}</b> fiche(s) prête(s) à envoyer. <a href="#" id="lienEnv">Envoyer maintenant</a>`; $("#lienEnv").onclick = e => { e.preventDefault(); envoyerPretes(); }; }
+  else b.style.display = "none";
+}
+async function envoyerPretes() {
+  const t = (await mesFiches()).filter(f => f.statut === "prete");
+  if (!t.length) return toast("Aucune fiche prête à envoyer. Validez d'abord une fiche.");
+  ouvrirEnvoi(t);
+}
+$("#btnEnvoyerTout").onclick = envoyerPretes;
+async function afficherMesFiches() {
+  const t = (await mesFiches()).sort((a, b) => b.modifie - a.modifie), box = $("#listeFiches");
+  urlsTemp.forEach(u => URL.revokeObjectURL(u)); urlsTemp = [];
+  if (!t.length) { box.innerHTML = `<div class="vide">Aucune fiche pour l'instant.</div>`; return; }
+  const lib = { brouillon: "Brouillon", prete: "À envoyer", envoyee: "Envoyée" };
+  box.innerHTML = "";
+  t.forEach(f => {
+    const d = document.createElement("div"); d.className = "item";
+    let img = `<div class="ph">👤</div>`;
+    if (f.photo) { const u = URL.createObjectURL(f.photo); urlsTemp.push(u); img = `<img src="${u}" alt="">`; }
+    const l = lieuPrincipal(f);
+    d.innerHTML = `${img}<div class="c"><b>${esc(nomComplet(f.data) || "(sans nom)")} <span class="pastille p-${f.statut}">${lib[f.statut]}</span></b>
+      <div>${esc(f.data.categorie || "")}${l.etablissement ? " · " + esc(l.etablissement) : ""}</div>
+      <div>${esc(f.id)} · modifiée le ${dateFr(f.modifie)}${f.envoyee ? " · envoyée le " + dateFr(f.envoyee) : ""}</div></div>
+      <div class="bt"><button class="btn sec petit" data-a="mod">✏️ Modifier</button>
+      ${f.statut !== "brouillon" ? `<button class="btn petit" data-a="env">📤 Envoyer</button>` : ""}
+      <button class="btn dang petit" data-a="sup">🗑️</button></div>`;
+    d.onclick = async e => {
+      const a = e.target.closest("[data-a]")?.dataset.a; if (!a) return;
+      if (a === "mod") { chargerDansForm(f); montrer("fiche"); window.scrollTo(0, 0); }
+      if (a === "env") ouvrirEnvoi([f]);
+      if (a === "sup" && confirm(`Supprimer définitivement la fiche de ${nomComplet(f.data) || f.id} de cet appareil ?`)) {
+        await DB.del("fiches", f.id);
+        if (courant.id === f.id) chargerDansForm(ficheVide());
+        afficherMesFiches(); majCompteur();
+      }
+    };
+    box.append(d);
+  });
+}
+
+/* ----------------------------- Registre (responsables) ----------------------------- */
+const RE_ID = /CNBM-\d{8}-[A-Z0-9]{6}/;
+function lireDonnees(texte) {
+  const m = texte.match(/-----DEBUT DONNEES CNBM-----\s*([\s\S]*?)\s*-----FIN DONNEES CNBM-----/);
+  const brut = m ? m[1] : texte.trim();
+  const o = JSON.parse(brut);
+  if (o.format === "cnbm-sauvegarde") return o.fiches;
+  if (o.format !== "cnbm-fiche" || !RE_ID.test(o.id)) throw new Error("format inconnu");
+  return [o];
+}
+function b64Blob(dataUrl) {
+  const [t, b] = dataUrl.split(","), mime = t.match(/:(.*?);/)[1], bin = atob(b), u = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return new Blob([u], { type: mime });
+}
+async function importer(fichiers) {
+  const zone = $("#msgImport");
+  if (!aboAdminValide()) return msg(zone, "err", "⛔ L'abonnement de votre conseil n'est pas actif. Renouvelez-le dans la carte « Abonnement » ci-dessus.");
+  msg(zone, "inf", `Import de ${fichiers.length} fichier(s)…`);
+  let nouv = 0, maj = 0, medias = 0; const erreurs = [], orphelins = [];
+  const textes = fichiers.filter(f => /\.(txt|json)$/i.test(f.name) || /^text\/|json/.test(f.type));
+  const autres = fichiers.filter(f => !textes.includes(f));
+  for (const f of textes) {
+    try {
+      for (const o of lireDonnees(await f.text())) {
+        const ex = await DB.get("registre", o.id);
+        const rec = Object.assign(ex || { recu: Date.now() }, { id: o.id, compte: o.compte || null, conseil: o.conseil || null, cree: o.cree, modifie: o.modifie, data: o.data, lieux: o.lieux || [], formations: o.formations || [], videoDuree: o.videoDuree ?? null, recuMaj: Date.now() });
+        if (typeof o.photo === "string" && o.photo.startsWith("data:")) rec.photo = b64Blob(o.photo);
+        if (typeof o.video === "string" && o.video.startsWith("data:")) rec.video = b64Blob(o.video);
+        if (o.recu) rec.recu = o.recu;
+        if (o.adhesionValidee) rec.adhesionValidee = o.adhesionValidee;
+        rec.photo = rec.photo instanceof Blob ? rec.photo : null; rec.video = rec.video instanceof Blob ? rec.video : null;
+        await DB.put("registre", rec); ex ? maj++ : nouv++;
+      }
+    } catch { erreurs.push(f.name); }
+  }
+  for (const f of autres) {
+    const id = (f.name.match(RE_ID) || [])[0];
+    const rec = id && await DB.get("registre", id);
+    if (!rec) { orphelins.push(f.name); continue; }
+    if (/^image\//.test(f.type) || /\.(jpe?g|png|webp)$/i.test(f.name)) rec.photo = new Blob([f], { type: f.type || "image/jpeg" });
+    else rec.video = new Blob([f], { type: f.type || "video/" + (f.name.split(".").pop() || "webm") });
+    await DB.put("registre", rec); medias++;
+  }
+  msg(zone, erreurs.length || orphelins.length ? "att" : "ok",
+    `✅ ${nouv} nouvelle(s) fiche(s), ${maj} mise(s) à jour, ${medias} photo(s)/vidéo(s) rattachée(s).`
+    + (erreurs.length ? `<br>⚠️ Fichiers non reconnus : ${erreurs.map(esc).join(", ")}` : "")
+    + (orphelins.length ? `<br>⚠️ Photos/vidéos sans fiche correspondante (importez aussi le fichier <code>_fiche.txt</code>) : ${orphelins.map(esc).join(", ")}` : ""));
+  afficherRegistre();
+}
+$("#inImport").onchange = e => { const f = [...e.target.files]; e.target.value = ""; if (f.length) importer(f); };
+$("#btnLocales").onclick = async () => {
+  const t = (await DB.all("fiches")).filter(f => f.statut !== "brouillon");
+  for (const f of t) { const ex = await DB.get("registre", f.id); await DB.put("registre", { ...f, recu: ex?.recu || Date.now(), recuMaj: Date.now() }); }
+  msg($("#msgImport"), t.length ? "ok" : "att", t.length ? `✅ ${t.length} fiche(s) de cet appareil ajoutée(s) au registre.` : "Aucune fiche validée sur cet appareil.");
+  afficherRegistre();
+};
+
+let registre = [];
+function filtrer() {
+  const q = $("#fRech").value.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+  const pv = $("#fProv").value, ct = $("#fCat").value, st = $("#fStatut").value;
+  return registre.filter(r => {
+    if (ct && r.data.categorie !== ct) return false;
+    if (st === "demande" && !estDemande(r)) return false;
+    if (st === "regle" && !enRegle(r.data)) return false;
+    if (st === "carte" && r.data.adhCarte === "Oui") return false;
+    if (st === "serment" && r.data.adhSerment === "Oui") return false;
+    if (st === "cotis" && /^Oui/.test(r.data.adhCotisation || "")) return false;
+    if (pv && !(r.lieux || []).some(l => l.province === pv) && r.data.adrProvince !== pv) return false;
+    if (!q) return true;
+    const h = JSON.stringify([r.id, r.data, r.lieux]).toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+    return q.split(/\s+/).every(m => h.includes(m));
+  });
+}
+async function afficherRegistre() {
+  registre = (await DB.all("registre")).sort((a, b) => nomComplet(a.data).localeCompare(nomComplet(b.data), "fr"));
+  const pvs = new Set(), cts = new Set();
+  registre.forEach(r => { (r.lieux || []).forEach(l => l.province && pvs.add(l.province)); r.data.categorie && cts.add(r.data.categorie); });
+  const rem = (sel, set, t) => { const v = sel.value; sel.innerHTML = `<option value="">${t}</option>` + [...set].sort().map(x => `<option>${esc(x)}</option>`).join(""); sel.value = v; };
+  rem($("#fProv"), pvs, "Toutes les provinces"); rem($("#fCat"), cts, "Toutes les catégories");
+  dessinerTable();
+}
+function dessinerTable() {
+  const l = filtrer(), tb = $("#tab tbody");
+  const nb = c => l.filter(r => r.data.categorie === c).length;
+  const provs = new Set(l.flatMap(r => (r.lieux || []).map(x => x.province).filter(Boolean)));
+  $("#stats").innerHTML = [[l.length, registre.length !== l.length ? `membres (sur ${registre.length})` : "membres recensés"],
+    [l.filter(estDemande).length, "demandes d'adhésion"], [l.filter(r => enRegle(r.data)).length, "membres en règle"],
+    [nb("Technicien de laboratoire"), "techniciens"], [nb("Biologiste médical"), "biologistes"],
+    [provs.size, "provinces / pays"], [l.filter(r => r.data.adhCarte === "Oui").length, "ont leur carte"],
+    [l.filter(r => r.data.adhSerment === "Oui").length, "ont prêté serment"], [l.filter(r => /^Oui/.test(r.data.adhCotisation || "")).length, "en ordre de cotisations"],
+    [l.filter(r => r.photo).length, "avec photo"], [l.filter(r => r.video).length, "avec vidéo"]]
+    .map(([n, t]) => `<div class="stat"><b>${n}</b><span>${t}</span></div>`).join("");
+  if (!l.length) { tb.innerHTML = `<tr><td colspan="7" class="vide">${registre.length ? "Aucun résultat." : "Registre vide. Importez les fiches reçues par e-mail."}</td></tr>`; return; }
+  tb.innerHTML = l.map(r => { const p = lieuPrincipal(r); return `<tr class="cl" data-id="${esc(r.id)}">
+    <td><b>${esc(nomComplet(r.data))}</b>${r.photo ? " 📷" : ""}${r.video ? " 🎥" : ""}${estDemande(r) ? ' <span class="pastille p-prete">Demande d\'adhésion</span>' : ""}</td><td>${esc(r.data.categorie)}</td><td>${esc(r.data.telephone)}</td>
+    <td>${esc(p.etablissement)}${r.lieux.length > 1 ? ` <span class="info">(+${r.lieux.length - 1})</span>` : ""}</td><td>${esc(p.fonction)}</td><td>${esc(p.province)}</td><td>${dateFr(r.recu).slice(0, 10)}</td></tr>`; }).join("");
+}
+["#fRech", "#fProv", "#fCat", "#fStatut"].forEach(s => $(s).addEventListener("input", dessinerTable));
+$("#tab tbody").onclick = e => { const tr = e.target.closest("tr[data-id]"); if (tr) ouvrirDetail(registre.find(r => r.id === tr.dataset.id)); };
+
+function htmlDetail(r, urls) {
+  const d = r.data, row = (k, v) => v ? `<dt>${k}</dt><dd>${esc(v)}</dd>` : "";
+  return `<div class="det-h">${urls.photo ? `<img src="${urls.photo}" alt="Photo">` : ""}<div>
+      <div style="font-size:18px;font-weight:700">${esc(nomComplet(d))}</div>
+      <div>${esc(d.categorie)} · ${esc(d.diplome)}</div><div class="info">${esc(r.id)}</div></div></div>
+    <dl class="det">${row("Sexe", d.sexe)}${row("Année de naissance", d.anneeNaissance)}${row("Nationalité", d.nationalite)}
+      ${row("Téléphone", d.telephone)}${row("WhatsApp / 2ᵉ n°", d.telephone2)}${row("E-mail", d.email)}${row("Adresse", adresse(d))}
+      ${row("Spécialité", d.specialite)}${row("Formation", [d.ecole, d.anneeDiplome].filter(Boolean).join(", "))}${row("Premier diplôme", d.anneePremierDiplome)}
+      ${row("Début du travail", d.anneeDebutTravail)}${row("Premier emploi", [d.premierEmploi, d.premierEmploiLieu].filter(Boolean).join(" — "))}${row("Expérience", d.experience ? d.experience + " an(s)" : "")}</dl>
+    <h4 style="margin:14px 0 6px">Adhésion au CNBM</h4>
+    <dl class="det">${row("Membre", d.adhMembre)}${row("Année d'adhésion", d.adhAnnee)}${row("Carte de membre", [d.adhCarte, d.numeroOrdre && "N° " + d.numeroOrdre].filter(Boolean).join(" — "))}
+      ${row("Serment prêté", [d.adhSerment, d.adhSermentAnnee].filter(Boolean).join(" — "))}${row("Cotisations", d.adhCotisation)}
+      ${row("Mois payés", [d.adhMoisPayes, d.adhDernierMois && "dernier : " + d.adhDernierMois].filter(Boolean).join(" — "))}</dl>
+    ${(r.formations || []).length ? `<h4 style="margin:14px 0 6px">Formations suivies</h4><ul style="margin:0;padding-left:20px">${r.formations.map(o => `<li>${esc(o.intitule)}${o.organisme ? " — " + esc(o.organisme) : ""}${o.annee ? " (" + esc(o.annee) + ")" : ""}${o.duree ? ", " + esc(o.duree) : ""}${o.lieu ? ", " + esc(o.lieu) : ""}</li>`).join("")}</ul>` : ""}
+    <h4 style="margin:14px 0 6px">Lieux de travail</h4>
+    ${(r.lieux || []).map((l, i) => `<div class="lieu" style="margin-bottom:8px"><b>${i + 1}. ${esc(l.etablissement)}</b>${l.type ? ` <span class="info">(${esc(l.type)})</span>` : ""}<br>
+      ${esc(l.fonction)}${l.service ? " — " + esc(l.service) : ""}${l.depuis ? " — depuis " + esc(l.depuis) : ""}<br>
+      <span class="info">${esc([l.zoneSante && "ZS " + l.zoneSante, l.ville, l.province !== HORS_RDC && l.province, l.pays].filter(Boolean).join(", "))}</span></div>`).join("")}
+    ${urls.video ? `<h4 style="margin:14px 0 6px" class="no-print">Vidéo (${duree(r.videoDuree)})</h4><video class="apercu no-print" src="${urls.video}" controls playsinline></video>` : ""}`;
+}
+let urlsDet = [];
+function ouvrirDetail(r) {
+  urlsDet.forEach(u => URL.revokeObjectURL(u)); urlsDet = [];
+  const urls = {};
+  if (r.photo) urlsDet.push(urls.photo = URL.createObjectURL(r.photo));
+  if (r.video) urlsDet.push(urls.video = URL.createObjectURL(r.video));
+  $("#detT").textContent = "Fiche de " + nomComplet(r.data);
+  $("#detC").innerHTML = htmlDetail(r, urls) + `<div class="actions no-print">
+    ${estDemande(r) ? `<button class="btn ok" id="detAdh">✅ Accepter l'adhésion</button>` : ""}
+    <button class="btn sec" id="detImpr">🖨️ Imprimer la fiche</button>
+    ${r.video ? `<button class="btn sec" id="detVid">⬇️ Télécharger la vidéo</button>` : ""}
+    <button class="btn dang" id="detSup">🗑️ Retirer du registre</button></div>`;
+  $("#detImpr").onclick = () => {
+    $("#zoneImpr").innerHTML = `<h2>CNBM-RDC — Fiche de recensement</h2>` + htmlDetail(r, { photo: urls.photo });
+    $("#dlDet").close(); document.body.classList.add("imp-fiche");
+    setTimeout(() => { window.print(); document.body.classList.remove("imp-fiche"); }, 200);
+  };
+  $("#detAdh") && ($("#detAdh").onclick = async () => {
+    const num = prompt(`Adhésion de ${nomComplet(r.data)}.\nNuméro de carte / d'inscription attribué (facultatif) :`, r.data.numeroOrdre || "");
+    if (num === null) return;
+    r.data.adhMembre = "Oui"; r.data.adhAnnee = r.data.adhAnnee || String(new Date().getFullYear());
+    if (num.trim()) r.data.numeroOrdre = num.trim();
+    r.adhesionValidee = Date.now();
+    await DB.put("registre", r); $("#dlDet").close(); afficherRegistre();
+    toast("Adhésion acceptée. Pensez à prévenir le membre (téléphone : " + (r.data.telephone || "?") + ").", 6000);
+  });
+  $("#detVid") && ($("#detVid").onclick = () => telecharger(r.video, nomFichier(r, "video." + extVideo(r.video.type))));
+  $("#detSup").onclick = async () => { if (confirm("Retirer cette fiche du registre ?")) { await DB.del("registre", r.id); $("#dlDet").close(); afficherRegistre(); } };
+  $("#dlDet").showModal();
+}
+
+function csv(lignes) {
+  const c = v => { const s = String(v ?? ""); return /[;"\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  return "﻿" + lignes.map(l => l.map(c).join(";")).join("\r\n");
+}
+/* Tableau « une ligne par membre » utilisé par l'export Excel et CSV */
+const COLS_MEMBRE = [
+  ["N°", (r, i) => i + 1], ["Identifiant", r => r.id], ["Compte (connexion)", r => r.compte || ""], ["Conseil de rattachement", r => r.conseil?.nom || ""], ["Nom", r => (r.data.nom || "").toUpperCase()], ["Postnom", r => (r.data.postnom || "").toUpperCase()], ["Prénom", r => r.data.prenom],
+  ["Sexe", r => r.data.sexe], ["Année de naissance", r => r.data.anneeNaissance], ["Nationalité", r => r.data.nationalite],
+  ["Téléphone", r => r.data.telephone], ["WhatsApp / 2e n°", r => r.data.telephone2], ["E-mail", r => r.data.email],
+  ["Adresse : N°", r => r.data.adrNumero], ["Avenue", r => r.data.adrAvenue], ["Quartier", r => r.data.adrQuartier], ["Commune", r => r.data.adrCommune],
+  ["Ville / territoire (domicile)", r => r.data.adrVille], ["Province (domicile)", r => r.data.adrProvince], ["Pays (domicile)", r => r.data.adrPays],
+  ["Catégorie", r => r.data.categorie], ["Diplôme", r => r.data.diplome], ["Spécialité", r => r.data.specialite], ["Institution de formation", r => r.data.ecole],
+  ["Année d'obtention du diplôme", r => r.data.anneeDiplome], ["Année du premier diplôme", r => r.data.anneePremierDiplome],
+  ["Année de début du travail", r => r.data.anneeDebutTravail], ["Premier emploi", r => r.data.premierEmploi], ["Lieu du premier emploi", r => r.data.premierEmploiLieu],
+  ["Années d'expérience", r => r.data.experience],
+  ["Établissement principal", r => lieuPrincipal(r).etablissement], ["Type", r => lieuPrincipal(r).type], ["Fonction principale", r => lieuPrincipal(r).fonction],
+  ["Service", r => lieuPrincipal(r).service], ["Zone de santé", r => lieuPrincipal(r).zoneSante], ["Ville / territoire (travail)", r => lieuPrincipal(r).ville],
+  ["Province (travail)", r => lieuPrincipal(r).province], ["Pays (travail)", r => lieuPrincipal(r).pays],
+  ["Autres lieux de travail", r => (r.lieux || []).slice(1).map(l => [l.etablissement, l.fonction, l.ville, l.province !== HORS_RDC && l.province, l.pays !== "RDC" && l.pays].filter(Boolean).join(", ")).join(" | ")],
+  ["Nombre de formations", r => (r.formations || []).length],
+  ["Formations suivies", r => (r.formations || []).map(o => [o.intitule, o.organisme, o.annee].filter(Boolean).join(", ")).join(" | ")],
+  ["Membre CNBM", r => r.data.adhMembre], ["Année d'adhésion", r => r.data.adhAnnee], ["Carte de membre", r => r.data.adhCarte], ["N° de carte", r => r.data.numeroOrdre],
+  ["Serment prêté", r => r.data.adhSerment], ["Année du serment", r => r.data.adhSermentAnnee], ["En ordre de cotisations", r => r.data.adhCotisation],
+  ["Mois de cotisation payés", r => r.data.adhMoisPayes], ["Dernier mois payé", r => r.data.adhDernierMois],
+  ["Demande d'adhésion", r => estDemande(r) ? "oui" : (r.adhesionValidee ? "acceptée le " + dateFr(r.adhesionValidee).slice(0, 10) : "")],
+  ["Membre en règle", r => enRegle(r.data) ? "oui" : "non"], ["Dossier complet", r => controleDossier(r).complet ? "oui" : "non"],
+  ["Photo", r => r.photo ? "oui" : "non"], ["Vidéo", r => r.video ? "oui" : "non"], ["Fiche du", r => dateFr(r.modifie)], ["Reçue le", r => dateFr(r.recu)]
+];
+const NUMERIQUES = /^(N°|Année|Années|Nombre|Mois)/;
+function tableMembres(l) {
+  const ent = COLS_MEMBRE.map(c => c[0]);
+  return [ent, ...l.map((r, i) => COLS_MEMBRE.map(([h, f]) => { const v = f(r, i); return NUMERIQUES.test(h) && v !== "" && v != null && !isNaN(+v) ? +v : (v ?? ""); }))];
+}
+function tableLieux(l) {
+  const t = [["Identifiant", "Nom complet", "Catégorie", "N° du lieu", "Établissement", "Type", "Fonction", "Service", "Depuis", "Zone de santé", "Ville / territoire", "Pays", "Province"]];
+  l.forEach(r => (r.lieux || []).forEach((q, i) => t.push([r.id, nomComplet(r.data), r.data.categorie || "", i + 1, ...CHAMPS_LIEU.map(k => k === "depuis" && q[k] ? +q[k] : q[k] || "")])));
+  return t;
+}
+function tableFormations(l) {
+  const t = [["Identifiant", "Nom complet", "Catégorie", "Intitulé de la formation", "Organisé par", "Année", "Durée", "Lieu", "Certificat"]];
+  l.forEach(r => (r.formations || []).forEach(o => t.push([r.id, nomComplet(r.data), r.data.categorie || "", o.intitule || "", o.organisme || "", o.annee ? +o.annee : "", o.duree || "", o.lieu || "", o.certificat || ""])));
+  return t;
+}
+
+/* --- Écriture d'un vrai fichier Excel (.xlsx) sans bibliothèque externe (fonctionne hors ligne) --- */
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u) { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = CRC[(c ^ u[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zip(fichiers) { // [{nom, texte}] — méthode « stockée » (sans compression)
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  const d = new Date(), dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)), dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate());
+  for (const f of fichiers) {
+    const nom = enc.encode(f.nom), data = enc.encode(f.texte), crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, dt, true); h.setUint16(12, dd, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+    h.setUint16(26, nom.length, true); h.setUint16(28, 0, true);
+    parts.push(h, nom, data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, dt, true); c.setUint16(14, dd, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+    c.setUint16(28, nom.length, true); c.setUint32(42, off, true);
+    central.push(c, nom);
+    off += 30 + nom.length + data.length;
+  }
+  const taille = central.reduce((s, x) => s + x.byteLength, 0);
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, fichiers.length, true); e.setUint16(10, fichiers.length, true);
+  e.setUint32(12, taille, true); e.setUint32(16, off, true);
+  return new Blob([...parts, ...central, e], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+}
+function xlsx(feuilles) { // [{nom, lignes:[[...]]}]
+  const x = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+  const col = n => { let s = ""; n++; while (n) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
+  const feuille = lignes => {
+    const nc = Math.max(1, ...lignes.map(l => l.length));
+    const larg = Array.from({ length: nc }, (_, j) => Math.min(50, Math.max(8, ...lignes.slice(0, 300).map(l => String(l[j] ?? "").length + 2))));
+    const rows = lignes.map((l, i) => `<row r="${i + 1}">` + l.map((v, j) => {
+      const ref = col(j) + (i + 1), st = i === 0 ? ' s="1"' : "";
+      if (typeof v === "number" && isFinite(v)) return `<c r="${ref}"${st}><v>${v}</v></c>`;
+      return v === "" || v == null ? "" : `<c r="${ref}" t="inlineStr"${st}><is><t xml:space="preserve">${x(v)}</t></is></c>`;
+    }).join("") + `</row>`).join("");
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`
+      + `<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`
+      + `<cols>${larg.map((w, j) => `<col min="${j + 1}" max="${j + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>`
+      + `<sheetData>${rows}</sheetData><autoFilter ref="A1:${col(nc - 1)}${Math.max(1, lignes.length)}"/></worksheet>`;
+  };
+  const f = [
+    { nom: "[Content_Types].xml", texte: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${feuilles.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>` },
+    { nom: "_rels/.rels", texte: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
+    { nom: "xl/workbook.xml", texte: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${feuilles.map((s, i) => `<sheet name="${x(s.nom.slice(0, 31))}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("")}</sheets></workbook>` },
+    { nom: "xl/_rels/workbook.xml.rels", texte: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${feuilles.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("")}<Relationship Id="rId${feuilles.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
+    { nom: "xl/styles.xml", texte: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B5FA5"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>` },
+    ...feuilles.map((s, i) => ({ nom: `xl/worksheets/sheet${i + 1}.xml`, texte: feuille(s.lignes) }))
+  ];
+  return zip(f);
+}
+function exporterExcel(l, prefixe) {
+  if (!l.length) return toast("Rien à exporter.");
+  if (prefixe.startsWith("CNBM_liste") && !aboAdminValide()) return toast("Abonnement inactif : renouvelez-le pour exporter le registre.", 5000);
+  const blob = xlsx([{ nom: "Membres", lignes: tableMembres(l) }, { nom: "Lieux de travail", lignes: tableLieux(l) }, { nom: "Formations", lignes: tableFormations(l) }]);
+  telecharger(blob, `${prefixe}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  toast(`Fichier Excel créé : ${l.length} personne(s).`);
+}
+$("#btnXlsx").onclick = () => exporterExcel(filtrer(), "CNBM_liste_des_membres");
+$("#btnXlsxLocal").onclick = async () => exporterExcel((await mesFiches()).filter(f => f.statut !== "brouillon").sort((a, b) => nomComplet(a.data).localeCompare(nomComplet(b.data), "fr")), "CNBM_fiches_appareil");
+$("#btnCsv").onclick = () => {
+  const l = filtrer(); if (!l.length) return toast("Rien à exporter.");
+  if (!aboAdminValide()) return toast("Abonnement inactif : renouvelez-le pour exporter le registre.", 5000);
+  telecharger(new Blob([csv(tableMembres(l))], { type: "text/csv;charset=utf-8" }), `CNBM_liste_des_membres_${new Date().toISOString().slice(0, 10)}.csv`);
+};
+$("#btnImprListe").onclick = () => window.print();
+$("#btnSauv").onclick = async () => {
+  if (!registre.length) return toast("Registre vide.");
+  const enB64 = b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
+  const parts = [`{"format":"cnbm-sauvegarde","version":1,"date":${Date.now()},"fiches":[`];
+  for (let i = 0; i < registre.length; i++) {
+    const r = registre[i];
+    const o = { format: "cnbm-fiche", id: r.id, compte: r.compte || null, conseil: r.conseil || null, adhesionValidee: r.adhesionValidee || null, cree: r.cree, modifie: r.modifie, recu: r.recu, data: r.data, lieux: r.lieux, formations: r.formations || [], videoDuree: r.videoDuree,
+                photo: r.photo ? await enB64(r.photo) : null, video: r.video ? await enB64(r.video) : null };
+    parts.push((i ? "," : "") + JSON.stringify(o));
+  }
+  parts.push("]}");
+  telecharger(new Blob(parts, { type: "application/json" }), `CNBM_sauvegarde_${new Date().toISOString().slice(0, 10)}.json`);
+  toast("Sauvegarde téléchargée. Gardez-la en lieu sûr ; elle se réimporte avec « Importer ».", 5000);
+};
+$("#btnSavEmail").onclick = () => { LS.set("cnbm-email", $("#pEmail").value.trim()); toast("Adresse enregistrée"); };
+$("#btnLien").onclick = () => {
+  const e = $("#pEmail").value.trim(); if (!e) return toast("Saisissez d'abord l'adresse e-mail.");
+  if (location.protocol === "file:") return toast("Ouvrez l'application depuis son adresse Internet pour obtenir un lien partageable.", 5000);
+  copier(location.origin + location.pathname + "?email=" + encodeURIComponent(e));
+};
+
+/* ----------------------------- Abonnements des conseils ----------------------------- */
+// Jeton = base64url(JSON) + "." + base64url(signature ECDSA P-256 / SHA-256), préfixé « CNBM1. »
+const b64uDec = t => Uint8Array.from(atob(t.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((t.length + 3) % 4)), c => c.charCodeAt(0));
+async function verifierJeton(jeton) {
+  try {
+    const t = String(jeton || "").trim().replace(/\s+/g, "").replace(/^CNBM1\./, "");
+    const [corps, sig] = t.split(".");
+    if (!corps || !sig) return null;
+    for (const jwk of CLES_PUBLIQUES_CREATEUR) {
+      const cle = await crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+      if (await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, cle, b64uDec(sig), new TextEncoder().encode(corps)))
+        return JSON.parse(new TextDecoder().decode(b64uDec(corps)));
+    }
+  } catch {}
+  return null;
+}
+const conseil = { payload: null, admin: null }; // payload = conseil de rattachement ; admin = abonnement (appareil admin)
+const finJour = d => new Date(d + "T23:59:59").getTime();
+const joursRestants = p => p ? Math.ceil((finJour(p.expire) - Date.now()) / 86400000) : -1;
+const aboAdminValide = () => !!conseil.admin && joursRestants(conseil.admin) >= 0;
+async function chargerConseil() {
+  conseil.admin = await verifierJeton(LS.get("cnbm-abonnement"));
+  if (conseil.admin && conseil.admin.type !== "admin") conseil.admin = null;
+  conseil.payload = conseil.admin || await verifierJeton(LS.get("cnbm-conseil"));
+  const p = conseil.payload;
+  $("#sousTitre").textContent = p ? p.conseil : "Conseil national des biotechnologistes médicaux — République démocratique du Congo";
+  $("#authConseil").innerHTML = p ? `<div class="msg inf">🏛️ Inscription auprès du <b>${esc(p.conseil)}</b></div>`
+    : `<div class="msg att">Pour être rattaché à votre conseil provincial, ouvrez de préférence le <b>lien d'inscription</b> envoyé par votre conseil.</div>`;
+}
+async function enregistrerCleAbonnement(jeton) {
+  const p = await verifierJeton(jeton);
+  if (!p || p.type !== "admin") return "Clé d'abonnement invalide (vérifiez qu'elle a été copiée en entier).";
+  if (joursRestants(p) < 0) return `Cette clé a expiré le ${new Date(p.expire).toLocaleDateString("fr-FR")}. Demandez un renouvellement.`;
+  const actuel = conseil.admin;
+  if (actuel && actuel.province !== p.province && !confirm(`Cet appareil est rattaché au ${actuel.conseil}. Le remplacer par ${p.conseil} ?`)) return "Opération annulée.";
+  LS.set("cnbm-abonnement", jeton.trim().replace(/\s+/g, ""));
+  await chargerConseil();
+  return null;
+}
+function afficherAbonnement() {
+  const c = $("#carteAbo"), p = conseil.admin, j = joursRestants(p);
+  const lien = p && p.membres && /^https?:$/.test(location.protocol) ? location.origin + location.pathname + "?inscription=" + encodeURIComponent(p.membres) : "";
+  c.innerHTML = `<h2>📜 Abonnement</h2>
+    ${!p ? `<div class="msg err">Aucun abonnement actif sur cet appareil.</div>`
+      : `<dl class="det"><dt>Conseil</dt><dd><b>${esc(p.conseil)}</b></dd><dt>Province</dt><dd>${esc(p.province)}</dd>
+         <dt>Formule</dt><dd>${esc(p.formule || "")}</dd><dt>Valable jusqu'au</dt><dd>${new Date(p.expire).toLocaleDateString("fr-FR")}</dd>
+         <dt>E-mail de réception</dt><dd>${esc(p.email || "")}</dd><dt>N° d'abonnement</dt><dd>${esc(p.id)}</dd></dl>
+         <div class="msg ${j < 0 ? "err" : j <= 30 ? "att" : "ok"}">${j < 0 ? "⛔ Abonnement expiré : l'import et l'export du registre sont bloqués. Renouvelez-le auprès du créateur de la plateforme." : j <= 30 ? `⚠️ L'abonnement expire dans ${j} jour(s). Pensez à le renouveler.` : `✅ Abonnement actif (${j} jours restants).`}</div>
+         <p style="margin:12px 0 4px"><b>Lien d'inscription des membres</b> — à partager par WhatsApp ou e-mail :</p>
+         ${lien ? `<div class="email-box"><span style="flex:1;font-weight:400;font-size:13px">${esc(lien)}</span><button class="btn sec petit" id="cpLienM">Copier</button></div>`
+                : `<div class="msg att">Ouvrez l'application depuis son adresse Internet pour obtenir le lien.</div>`}`}
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">${p ? "Renouveler / changer la clé d'abonnement" : "Saisir une clé d'abonnement"}</summary>
+      <textarea id="nvCle" rows="4" spellcheck="false" placeholder="CNBM1.…" style="margin-top:8px"></textarea>
+      <div class="actions"><button class="btn" id="okCle">Activer la clé</button></div><div id="msgCle"></div></details>`;
+  $("#cpLienM", c) && ($("#cpLienM", c).onclick = () => copier(lien));
+  $("#okCle", c).onclick = async () => {
+    const err = await enregistrerCleAbonnement($("#nvCle", c).value);
+    if (err) return msg($("#msgCle", c), "err", err);
+    afficherAbonnement(); toast("Abonnement activé : " + conseil.admin.conseil);
+  };
+}
+
+/* ----------------------------- Contrôle du dossier & récapitulatif ----------------------------- */
+const estDemande = r => !r.adhesionValidee && /^Oui/.test(r.data.adhDemande || "") && r.data.adhMembre !== "Oui";
+const enRegle = d => d.adhMembre === "Oui" && d.adhCarte === "Oui" && d.adhSerment === "Oui" && /^Oui/.test(d.adhCotisation || "");
+function controleDossier(f) {
+  const d = f.data || {}, l = f.lieux || [];
+  const oblig = [
+    ["Identité (nom, prénom, sexe, année de naissance)", d.nom && d.prenom && d.sexe && d.anneeNaissance],
+    ["Numéro de téléphone", d.telephone],
+    ["Adresse physique (avenue, quartier, commune, ville, province)", d.adrAvenue && d.adrQuartier && d.adrCommune && d.adrVille && d.adrProvince],
+    ["Catégorie, diplôme et année d'obtention", d.categorie && d.diplome && d.anneeDiplome],
+    ["Carrière (début du travail, premier emploi, expérience)", d.anneeDebutTravail && d.premierEmploi && d.experience !== "" && d.experience != null],
+    ["Lieu(x) de travail avec fonction et province", l.length && l.every(x => x.etablissement && x.fonction && x.province)],
+    ["Situation d'adhésion au CNBM", d.adhMembre],
+    ["Photo passeport", f.photo],
+    ["Consentement", d.consentement]
+  ].map(([t, ok]) => ({ t, ok: !!ok }));
+  const facult = [["Formations suivies (au moins une)", (f.formations || []).length], ["Vidéo de présentation", f.video], ["Adresse e-mail", d.email]].map(([t, ok]) => ({ t, ok: !!ok }));
+  const membre = d.adhMembre === "Oui" ? [
+    ["Carte de membre", d.adhCarte === "Oui"], ["Serment prêté", d.adhSerment === "Oui"], ["Cotisations à jour", /^Oui/.test(d.adhCotisation || "")]
+  ].map(([t, ok]) => ({ t, ok: !!ok })) : [];
+  const faits = oblig.filter(x => x.ok).length;
+  return { oblig, facult, membre, complet: faits === oblig.length, pct: Math.round(faits * 100 / oblig.length), enRegle: enRegle(d) };
+}
+function htmlControle(c, d) {
+  const li = x => `<li style="list-style:none;margin:3px 0">${x.ok ? "✅" : "❌"} ${esc(x.t)}</li>`;
+  return `<div class="msg ${c.complet ? "ok" : "att"}" style="font-weight:700">${c.complet ? "✅ Dossier complet : toutes les données demandées par le conseil sont fournies." : `⚠️ Dossier complet à ${c.pct} % — complétez les points marqués ❌.`}</div>
+    <h4 style="margin:10px 0 4px">Données obligatoires</h4><ul style="padding:0;margin:0">${c.oblig.map(li).join("")}</ul>
+    <h4 style="margin:10px 0 4px">Conditions de membre en règle</h4>
+    ${d.adhMembre === "Oui" ? `<ul style="padding:0;margin:0">${c.membre.map(li).join("")}</ul>
+      <div class="msg ${c.enRegle ? "ok" : "att"}">${c.enRegle ? "✅ Vous êtes membre en règle." : "⚠️ Vous n'êtes pas encore en règle : régularisez les points marqués ❌ auprès de votre conseil provincial."}</div>`
+      : `<p class="info">${/^Oui/.test(d.adhDemande || "") ? "📝 Demande d'adhésion envoyée avec cette fiche : le conseil vous contactera pour la carte, le serment et les cotisations." : d.adhMembre === "Demande en cours" ? "Adhésion en cours de traitement." : "Vous n'êtes pas membre du CNBM. Vous pouvez demander votre adhésion dans la section 7 de la fiche."}</p>`}
+    <h4 style="margin:10px 0 4px">Facultatif (recommandé)</h4><ul style="padding:0;margin:0">${c.facult.map(li).join("")}</ul>`;
+}
+const enDataUrl = b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
+async function documentRecap(f) {
+  const c = controleDossier(f), d = f.data, photo = f.photo ? await enDataUrl(f.photo) : "";
+  const nomConseil = conseil.payload?.conseil || "Conseil national des biotechnologistes médicaux — RDC";
+  const lignes = lignesFiche(f).slice(4).map(esc).join("\n");
+  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Récapitulatif ${esc(nomComplet(d))} — ${esc(f.id)}</title>
+<style>body{font:14px/1.45 system-ui,Arial,sans-serif;color:#1b2733;max-width:780px;margin:0 auto;padding:20px;background:#fff}
+.ent{display:flex;gap:16px;align-items:center;border-bottom:4px solid #0b5fa5;padding-bottom:10px;margin-bottom:14px}
+.ent img{width:110px;aspect-ratio:7/9;object-fit:cover;border:1px solid #ccc;border-radius:4px}
+h1{font-size:18px;margin:0;color:#084a82}h2{font-size:15px;color:#084a82;border-bottom:1px solid #d5dde6;padding-bottom:3px;margin:18px 0 6px}
+h4{font-size:14px}.msg{padding:8px 10px;border-radius:6px;margin:8px 0}.ok{background:#e6f4ea;color:#1a7f37}.att{background:#fff8dc;color:#7a5200}
+.info{color:#5a6b7b}pre{white-space:pre-wrap;font:13px/1.5 ui-monospace,Consolas,monospace;background:#f7f9fb;padding:10px;border-radius:6px}
+.pied{margin-top:24px;font-size:12px;color:#5a6b7b;border-top:1px solid #d5dde6;padding-top:8px}
+.bt{margin:10px 0}@media print{.bt{display:none}body{padding:0}}</style></head><body>
+<div class="bt"><button onclick="print()" style="font:inherit;padding:8px 14px">🖨️ Imprimer / enregistrer en PDF</button></div>
+<div class="ent">${photo ? `<img src="${photo}" alt="Photo">` : ""}<div><div style="font-size:12px;color:#5a6b7b">${esc(nomConseil)}</div>
+<h1>Récapitulatif de la fiche de recensement</h1><div style="font-size:17px;font-weight:700;margin-top:4px">${esc(nomComplet(d))}</div>
+<div>${esc(d.categorie || "")}</div><div class="info">Identifiant : ${esc(f.id)} · document établi le ${dateFr(Date.now())}</div></div></div>
+<h2>Vérification du dossier</h2>${htmlControle(c, d)}
+<h2>Données déclarées</h2><pre>${lignes}</pre>
+<div class="pied">Document généré par l'application de recensement du CNBM-RDC à partir des déclarations du membre. Il ne vaut pas carte de membre.
+Statut de la fiche : ${f.statut === "envoyee" ? "envoyée au conseil le " + dateFr(f.envoyee) : f.statut === "prete" ? "complète, pas encore envoyée" : "brouillon"}.</div>
+</body></html>`;
+}
+async function ouvrirRecap(f) {
+  const c = controleDossier(f), dl = $("#dlRecap");
+  $("#dlRecapC").innerHTML = htmlControle(c, f.data) + `<div class="actions" style="flex-direction:column;align-items:stretch">
+      <button class="btn" id="rcTel">⬇️ Télécharger mon récapitulatif</button>
+      <button class="btn sec" id="rcPdf">🖨️ Ouvrir pour imprimer / enregistrer en PDF</button></div>
+    <p class="info">Le document contient toutes vos données et la liste de contrôle ci-dessus. Gardez-le comme référence.</p>`;
+  const nom = nomFichier(f, "recapitulatif.html");
+  $("#rcTel").onclick = async () => telecharger(new Blob([await documentRecap(f)], { type: "text/html" }), nom);
+  $("#rcPdf").onclick = async () => {
+    const w = window.open("", "_blank");
+    const html = await documentRecap(f);
+    if (!w) return telecharger(new Blob([html], { type: "text/html" }), nom);
+    w.document.open(); w.document.write(html.replace("</body>", "<script>setTimeout(()=>print(),400)<\/script></body>")); w.document.close();
+  };
+  dl.showModal();
+}
+$("#btnRecap").onclick = async () => { lireForm(); clearTimeout(minuteur); courant.modifie = Date.now(); await DB.put("fiches", courant); ouvrirRecap(courant); };
+
+/* ----------------------------- Comptes ----------------------------- */
+let session = null; // compte connecté
+const b64 = u => btoa(String.fromCharCode(...new Uint8Array(u)));
+function normIdent(v) {
+  v = String(v || "").trim();
+  if (v.includes("@")) return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? { id: v.toLowerCase(), type: "email" } : null;
+  let d = v.replace(/[^\d]/g, "");
+  if (v.trim().startsWith("00")) d = d.slice(2);
+  if (d.length === 10 && d.startsWith("0")) d = "243" + d.slice(1);   // 0812345678
+  if (d.length === 9) d = "243" + d;                                    // 812345678
+  if (d.length < 9 || d.length > 15) return null;
+  return { id: "+" + d, type: "tel" };
+}
+async function hacher(mdp, sel) {
+  const cle = await crypto.subtle.importKey("raw", new TextEncoder().encode(mdp), "PBKDF2", false, ["deriveBits"]);
+  return b64(await crypto.subtle.deriveBits({ name: "PBKDF2", salt: sel, iterations: 150000, hash: "SHA-256" }, cle, 256));
+}
+async function definirMdp(c, mdp) {
+  const sel = crypto.getRandomValues(new Uint8Array(16));
+  c.sel = b64(sel); c.hash = await hacher(mdp, sel);
+}
+const selDe = c => Uint8Array.from(atob(c.sel), x => x.charCodeAt(0));
+async function verifierMdp(c, mdp) { return (await hacher(mdp, selDe(c))) === c.hash; }
+function codeRecup() {
+  const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", v = crypto.getRandomValues(new Uint8Array(12));
+  return [...v].map(x => a[x % a.length]).join("").replace(/(.{4})(?=.)/g, "$1-");
+}
+const normCode = c => String(c || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+async function definirCode(c) {
+  const code = codeRecup(), sel = crypto.getRandomValues(new Uint8Array(16));
+  c.selCode = b64(sel); c.hashCode = await hacher(normCode(code), sel);
+  return code;
+}
+function msgAuth(form, type, t) { msg($("[data-msg]", form), type, t); }
+function panneauAuth(nom) {
+  $$("[data-panneau]").forEach(f => { f.hidden = f.dataset.panneau !== nom; msgAuth(f); });
+  $$(".auth .onglets button").forEach(b => b.setAttribute("aria-selected", b.dataset.auth === nom));
+  $(".auth .onglets").hidden = !["connexion", "inscription"].includes(nom);
+  const f = $(`[data-panneau="${nom}"] input`); f && f.focus();
+}
+$$("[data-auth]").forEach(b => b.onclick = () => panneauAuth(b.dataset.auth));
+$$("[data-voir]").forEach(b => b.onclick = () => { const i = b.previousElementSibling; i.type = i.type === "password" ? "text" : "password"; });
+const valeurs = f => Object.fromEntries(new FormData(f).entries());
+
+function fermerSession() {
+  clearTimeout(minuteur);
+  session = null;
+  try { localStorage.removeItem("cnbm-session"); sessionStorage.removeItem("cnbm-session"); } catch {}
+  document.body.classList.add("non-connecte");
+  panneauAuth("connexion");
+  montrer("auth");
+}
+async function ouvrirSession(c, accueil = true) {
+  session = c;
+  LS.set("cnbm-session", c.id);
+  document.body.classList.remove("non-connecte");
+  $("#btnCompte").textContent = (c.role === "admin" ? "🏛️ " : "👤 ") + (c.nom || c.id).split(" ")[0];
+  $('nav button[data-vue="admin"]').hidden = c.role !== "admin";
+  // Fiches créées avant l'arrivée des comptes : rattachées au premier compte qui se connecte.
+  for (const f of await DB.all("fiches")) if (!f.compte) { f.compte = c.id; await DB.put("fiches", f); }
+  const id = LS.get("cnbm-courante-" + c.id), f = id && await DB.get("fiches", id);
+  const miennes = await mesFiches();
+  chargerDansForm(f && f.compte === c.id ? f : miennes.sort((a, b) => b.modifie - a.modifie)[0] || ficheVide());
+  montrer(accueil && c.role === "admin" ? "admin" : "fiche");
+  majCompteur();
+}
+
+const ESSAIS = { max: 5, attente: 5 * 60 * 1000 };
+$("#fConnexion").onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, v = valeurs(f), n = normIdent(v.ident);
+  if (!n) return msgAuth(f, "err", "Numéro de téléphone ou adresse e-mail non valide.");
+  const c = await DB.get("comptes", n.id);
+  if (!c) return msgAuth(f, "err", "Aucun compte avec ce téléphone/e-mail sur cet appareil. Touchez « Créer un compte ».<br><small>Le compte n'existe que sur l'appareil où il a été créé.</small>");
+  if (c.bloqueJusqua > Date.now()) return msgAuth(f, "err", `Trop d'essais. Réessayez dans ${Math.ceil((c.bloqueJusqua - Date.now()) / 60000)} minute(s).`);
+  if (!(await verifierMdp(c, v.mdp || ""))) {
+    c.echecs = (c.echecs || 0) + 1;
+    if (c.echecs >= ESSAIS.max) { c.bloqueJusqua = Date.now() + ESSAIS.attente; c.echecs = 0; }
+    await DB.put("comptes", c);
+    return msgAuth(f, "err", "Mot de passe incorrect.");
+  }
+  c.echecs = 0; c.bloqueJusqua = 0; c.derniereConnexion = Date.now();
+  await DB.put("comptes", c);
+  f.reset();
+  await ouvrirSession(c);
+  toast(`Bienvenue, ${c.nom || c.id}`);
+};
+
+async function nouveauCompte(f, role) {
+  const v = valeurs(f), n = normIdent(v.ident);
+  if (!(v.nom || "").trim()) return msgAuth(f, "err", "Indiquez votre nom complet.");
+  if (!n) return msgAuth(f, "err", "Numéro de téléphone ou adresse e-mail non valide (ex. +243 812 345 678 ou nom@exemple.com).");
+  const min = role === "admin" ? 8 : 6;
+  if ((v.mdp || "").length < min) return msgAuth(f, "err", `Le mot de passe doit contenir au moins ${min} caractères.`);
+  if ("mdp2" in v && v.mdp !== v.mdp2) return msgAuth(f, "err", "Les deux mots de passe ne sont pas identiques.");
+  if (role === "admin") {
+    const p = await verifierJeton(v.code);
+    if (!p || p.type !== "admin") return msgAuth(f, "err", "Clé d'abonnement invalide. Vérifiez qu'elle a été copiée en entier.");
+    if (joursRestants(p) < 0) return msgAuth(f, "err", `Cette clé d'abonnement a expiré le ${new Date(p.expire).toLocaleDateString("fr-FR")}.`);
+  }
+  if (await DB.get("comptes", n.id)) return msgAuth(f, "err", "Un compte existe déjà avec ce téléphone/e-mail sur cet appareil. Connectez-vous.");
+  const c = { id: n.id, type: n.type, nom: v.nom.trim(), role, cree: Date.now(), conseil: conseil.payload?.province || null };
+  if (role === "admin") { const err = await enregistrerCleAbonnement(v.code); if (err) return msgAuth(f, "err", err); c.conseil = conseil.admin.province; }
+  await definirMdp(c, v.mdp);
+  const code = await definirCode(c);
+  await DB.put("comptes", c);
+  f.reset();
+  $("#codeRecup").textContent = code;
+  $("#cpCode").onclick = () => copier(code);
+  $("#okCode").onclick = async () => { $("#dlCode").close(); await ouvrirSession(c); toast("Compte créé. Bienvenue !"); };
+  $("#dlCode").showModal();
+}
+$("#fInscription").onsubmit = e => { e.preventDefault(); nouveauCompte(e.target, "membre"); };
+$("#fAdmin").onsubmit = e => { e.preventDefault(); nouveauCompte(e.target, "admin"); };
+$("#dlCode").addEventListener("cancel", e => e.preventDefault()); // oblige à confirmer avoir noté le code
+
+$("#fOubli").onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, v = valeurs(f), n = normIdent(v.ident), c = n && await DB.get("comptes", n.id);
+  if (!c) return msgAuth(f, "err", "Aucun compte avec ce téléphone/e-mail sur cet appareil.");
+  if ((v.mdp || "").length < (c.role === "admin" ? 8 : 6)) return msgAuth(f, "err", "Nouveau mot de passe trop court.");
+  if (!c.hashCode || await hacher(normCode(v.code), Uint8Array.from(atob(c.selCode), x => x.charCodeAt(0))) !== c.hashCode)
+    return msgAuth(f, "err", "Code de récupération incorrect.");
+  await definirMdp(c, v.mdp); c.echecs = 0; c.bloqueJusqua = 0;
+  await DB.put("comptes", c);
+  f.reset(); panneauAuth("connexion");
+  msgAuth($("#fConnexion"), "ok", "Mot de passe changé. Connectez-vous.");
+};
+
+$("#btnCompte").onclick = () => {
+  if (!session) return;
+  const c = $("#dlCompteC");
+  c.innerHTML = `<dl class="det"><dt>Nom</dt><dd>${esc(session.nom)}</dd><dt>Identifiant</dt><dd>${esc(session.id)}</dd>
+      <dt>Type de compte</dt><dd>${session.role === "admin" ? "🏛️ Administrateur" : "👤 Membre"}</dd><dt>Créé le</dt><dd>${dateFr(session.cree)}</dd></dl>
+    <h4 style="margin:16px 0 8px">Changer le mot de passe</h4>
+    <form id="fMdp" class="grille" novalidate>
+      <label class="ch">Mot de passe actuel<input name="ancien" type="password" required autocomplete="current-password"></label>
+      <label class="ch">Nouveau mot de passe<input name="mdp" type="password" required autocomplete="new-password"></label>
+      <div data-msg style="grid-column:1/-1"></div>
+      <div><button class="btn sec" type="submit">Enregistrer</button></div>
+    </form>
+    <div class="actions"><button class="btn sec" id="nvCode">🔑 Nouveau code de récupération</button><button class="btn dang" id="deco">🚪 Se déconnecter</button></div>`;
+  $("#fMdp").onsubmit = async e => {
+    e.preventDefault();
+    const f = e.target, v = valeurs(f), cpt = await DB.get("comptes", session.id);
+    if (!(await verifierMdp(cpt, v.ancien || ""))) return msgAuth(f, "err", "Mot de passe actuel incorrect.");
+    if ((v.mdp || "").length < (cpt.role === "admin" ? 8 : 6)) return msgAuth(f, "err", "Nouveau mot de passe trop court.");
+    await definirMdp(cpt, v.mdp); await DB.put("comptes", cpt); session = cpt; f.reset();
+    msgAuth(f, "ok", "Mot de passe changé.");
+  };
+  $("#nvCode").onclick = async () => {
+    const cpt = await DB.get("comptes", session.id), code = await definirCode(cpt);
+    await DB.put("comptes", cpt); session = cpt;
+    $("#dlCompte").close();
+    $("#codeRecup").textContent = code; $("#cpCode").onclick = () => copier(code);
+    $("#okCode").onclick = () => $("#dlCode").close();
+    $("#dlCode").showModal();
+  };
+  $("#deco").onclick = () => { $("#dlCompte").close(); fermerSession(); toast("Vous êtes déconnecté."); };
+  $("#dlCompte").showModal();
+};
+
+async function afficherComptes() {
+  const box = $("#listeComptes"), t = (await DB.all("comptes")).sort((a, b) => (a.role === b.role ? 0 : a.role === "admin" ? -1 : 1) || a.nom.localeCompare(b.nom, "fr"));
+  const fiches = await DB.all("fiches");
+  box.innerHTML = t.map(c => `<div class="item" data-id="${esc(c.id)}"><div class="ph">${c.role === "admin" ? "🏛️" : "👤"}</div>
+    <div class="c"><b>${esc(c.nom)}${c.id === session.id ? " (vous)" : ""}</b><div>${esc(c.id)} · ${c.role === "admin" ? "Administrateur" : "Membre"} · ${fiches.filter(f => f.compte === c.id).length} fiche(s)</div>
+    <div>Créé le ${dateFr(c.cree)}${c.derniereConnexion ? " · dernière connexion " + dateFr(c.derniereConnexion) : ""}</div></div>
+    ${c.id === session.id ? "" : `<div class="bt"><button class="btn sec petit" data-a="mdp">🔑 Réinitialiser le mot de passe</button>
+      <button class="btn sec petit" data-a="role">${c.role === "admin" ? "Retirer admin" : "Nommer admin"}</button></div>`}</div>`).join("") || `<div class="vide">Aucun compte.</div>`;
+  box.onclick = async e => {
+    const a = e.target.closest("[data-a]")?.dataset.a, id = e.target.closest("[data-id]")?.dataset.id;
+    if (!a || !id) return;
+    const c = await DB.get("comptes", id);
+    if (a === "mdp") {
+      const tmp = codeRecup().slice(0, 9).replace("-", "");
+      if (!confirm(`Réinitialiser le mot de passe de ${c.nom} ? Un mot de passe provisoire va être affiché.`)) return;
+      await definirMdp(c, tmp); c.echecs = 0; c.bloqueJusqua = 0; await DB.put("comptes", c);
+      alert(`Mot de passe provisoire de ${c.nom} : ${tmp}\n\nCommuniquez-le à la personne ; elle pourra le changer dans « Mon compte ».`);
+    }
+    if (a === "role") {
+      if (!confirm(c.role === "admin" ? `Retirer les droits d'administrateur à ${c.nom} ?` : `Donner les droits d'administrateur à ${c.nom} ? Cette personne verra tout le registre sur cet appareil.`)) return;
+      c.role = c.role === "admin" ? "membre" : "admin"; await DB.put("comptes", c);
+    }
+    afficherComptes();
+  };
+}
+
+/* ----------------------------- Navigation & démarrage ----------------------------- */
+function montrer(v) {
+  if (!session) v = "auth";
+  else if (v === "auth") v = "fiche";
+  if (v === "admin" && session.role !== "admin") v = "fiche";
+  $$("nav button").forEach(b => b.setAttribute("aria-selected", b.dataset.vue === v));
+  $$(".vue").forEach(s => s.classList.toggle("active", s.id === "v-" + v));
+  if (v === "mesfiches") afficherMesFiches();
+  if (v === "admin") { afficherAbonnement(); afficherRegistre(); afficherComptes(); }
+}
+$$("nav button").forEach(b => b.onclick = () => montrer(b.dataset.vue));
+$$("[data-ferme]").forEach(b => b.onclick = () => b.closest("dialog").close());
+$("#dlDet").addEventListener("close", () => $$("video", $("#dlDet")).forEach(v => v.pause()));
+
+function majReseau() {
+  const r = $("#reseau"); r.textContent = navigator.onLine ? "🌐 En ligne" : "📴 Hors ligne"; r.classList.toggle("hors", !navigator.onLine);
+  majCompteur();
+}
+addEventListener("online", majReseau); addEventListener("offline", majReseau);
+
+let invite = null;
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); invite = e; $("#btnInstaller").hidden = false; });
+$("#btnInstaller").onclick = async () => { if (!invite) return; invite.prompt(); await invite.userChoice; invite = null; $("#btnInstaller").hidden = true; };
+
+(async function demarrer() {
+  if (!window.crypto?.subtle) { document.body.innerHTML = '<p style="padding:20px;font:16px system-ui">Ce navigateur est trop ancien pour l\'application CNBM. Utilisez Chrome, Edge, Firefox ou Safari à jour.</p>'; return; }
+  const ins = new URLSearchParams(location.search).get("inscription");
+  if (ins) {
+    const pj = await verifierJeton(ins);
+    if (pj && pj.type === "membre") LS.set("cnbm-conseil", ins.trim()); else toast("Lien d'inscription invalide : demandez un nouveau lien à votre conseil.", 6000);
+  }
+  try { await chargerConseil(); } catch {}
+  $("#pEmail").value = emailDest();
+  const p = new URLSearchParams(location.search).get("email");
+  if (p && /@/.test(p)) { LS.set("cnbm-email", p.trim()); $("#pEmail").value = p.trim(); }
+  try {
+    await DB.open();
+    const id = LS.get("cnbm-session") || sessionStorage.getItem("cnbm-session");
+    const c = id && await DB.get("comptes", id);
+    if (c) await ouvrirSession(c, false); else fermerSession();
+  } catch {
+    fermerSession();
+    msg($("#fConnexion [data-msg]"), "err", "⚠️ Ce navigateur bloque l'enregistrement local (mode privé ?). Ouvrez l'application dans un navigateur normal.");
+  }
+  majReseau();
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
+  if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
+})();
+</script>
+</body>
+</html>

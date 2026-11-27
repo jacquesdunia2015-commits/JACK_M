@@ -1,0 +1,16 @@
+{
+  "name": "CNBM-RDC — Recensement des membres",
+  "short_name": "CNBM Recensement",
+  "description": "Fiche de recensement des techniciens de laboratoire et biologistes médicaux — Conseil national des biotechnologistes médicaux de la RDC. Fonctionne sans Internet.",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b5fa5",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -14,7 +14,7 @@ const {
   addDocument, addGroup, addCode, addSegment, deleteSegment,
   trashDocument, trashCode, restoreTrashedDoc, restoreTrashedCode,
   segmentsOfCode, segmentsOfDoc, codeWithDescendants, childCodes,
-  undoAction, redoAction, canUndo, canRedo, clearUndoHistory,
+  undoAction, redoAction, canUndo, canRedo, clearUndoHistory, remplacerProjet, normalizeProject,
   upsertMemo, getMemo, saveQuery, deleteQuery, getDoc, getCode,
 } = await import("../js/state.js");
 
@@ -179,5 +179,21 @@ memeContenu("les ensembles sont convertis en listes", req.activatedCodes, ["c1",
 egal("le mode de recherche est conservé", req.retrievalMode, "and");
 deleteQuery(req.id);
 egal("la requête est supprimée", state.project.savedQueries.length, 0);
+
+titre("Changer de projet : « Annuler » ne doit jamais traverser d'un projet à l'autre");
+// Défaut corrigé : l'historique d'annulation survivait à l'ouverture d'un
+// projet. Ctrl+Z remplaçait alors les documents du projet ouvert par ceux du
+// précédent, et la sauvegarde automatique enregistrait ce résultat sous le nom
+// du projet ouvert.
+neuf();
+addDocument("Entretien du projet A", "texte A");
+egal("le projet A a de quoi être annulé", canUndo(), true);
+const projetB = normalizeProject({ format: "qualicode-projx", id: "projet-b", name: "Projet B",
+  documents: [{ id: "b1", name: "Entretien du projet B", text: "texte B", variables: {} }], codes: [], segments: [] });
+remplacerProjet(projetB);
+egal("après le changement de projet, plus rien à annuler", canUndo(), false);
+egal("« Annuler » est sans effet", undoAction(), false);
+egal("les documents du projet ouvert sont intacts", state.project.documents.map(d => d.name).join(), "Entretien du projet B");
+egal("c'est toujours le projet ouvert", state.project.id, "projet-b");
 
 bilan("Codage");
