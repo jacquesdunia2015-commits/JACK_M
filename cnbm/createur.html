@@ -100,6 +100,7 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:7px 9px;b
   <div class="table-w"><table><thead><tr><th>Conseil</th><th>Formule</th><th>Valable jusqu'au</th><th>Statut</th><th>Paiement</th><th>E-mail</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
   <div class="actions"><button class="btn sec" id="csv">📊 Exporter (Excel / CSV)</button><button class="btn sec" id="sauv">💾 Sauvegarder le registre</button>
     <label class="btn sec">📥 Restaurer un registre<input type="file" id="inReg" accept=".json" hidden></label>
+    <button class="btn sec" id="lienAcces">🔗 Mon lien d'accès personnel</button>
     <button class="btn dang" id="fermer">🔒 Fermer l'espace créateur</button></div>
 </section>
 </div>
@@ -133,6 +134,7 @@ function lireCle(texte) {
   return obj;
 }
 async function chargerCle(obj) {
+  objCle = obj;
   if (obj.format !== "cnbm-cle-createur" || !obj.privee) throw new ErreurCle("Ce fichier n'est pas la clé du créateur.");
   if (!window.crypto?.subtle) throw new ErreurCle("Ce navigateur ne permet pas la signature : ouvrez la page dans Chrome, Edge, Firefox ou Safari à jour, depuis son adresse https://.");
   const priv = { ...obj.privee }; delete priv.key_ops; delete priv.ext;
@@ -228,6 +230,7 @@ $("#fAbo").onsubmit = async e => {
   afficherResultat(r[r.length - 1]);
   afficherRegistre();
 };
+const lienAdmin = a => a.url.split("?")[0].split("#")[0] + "#admin=" + encodeURIComponent(a.cle);
 function message(a) {
   return `Bonjour,
 
@@ -236,10 +239,11 @@ Conseil : ${a.conseil}
 N° d'abonnement : ${a.id}
 Formule : ${a.formule} — valable du ${dFr(a.debut)} au ${dFr(a.expire)}
 
-1) ADMINISTRATEURS du conseil : ouvrez ${a.url.split("?")[0]}
-   → « Je suis responsable d'un conseil provincial » → créez votre compte et collez cette CLÉ D'ABONNEMENT :
+1) ADMINISTRATEURS du conseil : ouvrez ce LIEN D'ACTIVATION (la clé est déjà remplie), puis créez votre compte :
+${lienAdmin(a)}
 
-${a.cle}
+   (ou ouvrez ${a.url.split("?")[0]} → « Je suis responsable d'un conseil provincial » et collez cette CLÉ D'ABONNEMENT :
+${a.cle} )
 
 2) MEMBRES : partagez-leur ce LIEN D'INSCRIPTION (WhatsApp, e-mail) :
 ${a.lien}
@@ -251,13 +255,13 @@ Ne communiquez la clé d'abonnement qu'aux administrateurs du conseil.`;
 function afficherResultat(a) {
   $("#resultat").innerHTML = `<div class="msg ok">✅ Abonnement <b>${esc(a.id)}</b> créé pour <b>${esc(a.conseil)}</b>, valable jusqu'au ${dFr(a.expire)}.</div>
     <label>Clé d'abonnement (pour les administrateurs du conseil)<textarea rows="4" readonly>${esc(a.cle)}</textarea></label>
-    <div class="actions"><button class="btn sec petit" data-c="cle">Copier la clé</button></div>
+    <div class="actions"><button class="btn sec petit" data-c="cle">Copier la clé</button><button class="btn sec petit" data-c="admin">Copier le lien d'activation (administrateur)</button></div>
     <label style="margin-top:10px">Lien d'inscription (pour les membres)<textarea rows="3" readonly>${esc(a.lien)}</textarea></label>
     <div class="actions"><button class="btn sec petit" data-c="lien">Copier le lien</button>
       <button class="btn" data-c="msg">📋 Copier le message complet à envoyer au conseil</button>
       ${a.tel ? `<a class="btn ok" target="_blank" rel="noopener" href="https://wa.me/${esc(a.tel.replace(/[^\d]/g, ""))}?text=${encodeURIComponent(message(a))}">WhatsApp</a>` : ""}
       ${a.email ? `<a class="btn sec" href="mailto:${esc(a.email)}?subject=${encodeURIComponent("Abonnement plateforme CNBM-RDC — " + a.conseil)}&body=${encodeURIComponent(message(a))}">✉️ E-mail</a>` : ""}</div>`;
-  $("#resultat").onclick = e => { const c = e.target.dataset.c; if (c) copier(c === "cle" ? a.cle : c === "lien" ? a.lien : message(a)); };
+  $("#resultat").onclick = e => { const c = e.target.dataset.c; if (c) copier(c === "cle" ? a.cle : c === "admin" ? lienAdmin(a) : c === "lien" ? a.lien : message(a)); };
   $("#resultat").scrollIntoView({ behavior: "smooth" });
 }
 
@@ -329,7 +333,24 @@ $("#tbOk").onclick = async () => {
   } catch (e) { msg(z, "err", "⚠️ " + esc(e.message === "Failed to fetch" ? "Serveur injoignable : vérifiez l'adresse et votre connexion." : e.message)); }
 };
 
+const b64uTexte = t => new TextDecoder().decode(Uint8Array.from(atob(t.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((t.length + 3) % 4)), c => c.charCodeAt(0)));
+let objCle = null;
+function lienPersonnel() {
+  const o = { format: "cnbm-cle-createur", privee: objCle.privee, publique: objCle.publique };
+  return location.href.split("#")[0].split("?")[0] + "#cle=" + b64uTxt(JSON.stringify(o));
+}
+$("#lienAcces").onclick = () => {
+  if (!objCle) return;
+  if (!confirm("Ce lien OUVRE VOTRE ESPACE CRÉATEUR sans fichier : il contient votre clé privée.\nGardez-le pour vous seul (favori de votre navigateur, note personnelle), ne le partagez jamais.\n\nCopier le lien ?")) return;
+  copier(lienPersonnel());
+};
 (async () => {
+  // Lien d'accès personnel : https://…/createur.html#cle=…
+  const h = location.hash.match(/^#cle=([A-Za-z0-9_-]+)$/);
+  if (h) {
+    history.replaceState(null, "", location.pathname + location.search); // la clé ne reste pas affichée dans la barre d'adresse
+    try { await ouvrirAvec(b64uTexte(h[1])); return; } catch { msg($("#msgCle"), "err", "⚠️ Lien d'accès incomplet : recopiez-le en entier."); }
+  }
   const m = LS.get("cnbm-createur-cle");
   if (m) try { await chargerCle(JSON.parse(m)); } catch { LS.del("cnbm-createur-cle"); }
 })();
