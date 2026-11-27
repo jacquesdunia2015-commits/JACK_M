@@ -47,7 +47,11 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:7px 9px;b
   <h2>🔐 Ouvrir l'espace créateur</h2>
   <p class="aide">📘 <a href="manuel/index.html?partie=createur" target="_blank" rel="noopener">Guide du créateur</a> · <a href="manuel/CNBM_Guide_createur.pdf" download>PDF</a></p>
   <p class="aide">Chargez votre <b>fichier de clé privée de créateur</b> (<code>CLE-PRIVEE-CREATEUR-CNBM.json</code>). Cette clé signe les abonnements ; sans elle, personne ne peut en fabriquer. Ne la donnez jamais à personne et gardez-en une copie de sauvegarde (clé USB, e-mail personnel).</p>
-  <div class="actions"><label class="btn">📂 Charger ma clé<input type="file" id="inCle" accept=".json,application/json" hidden></label></div>
+  <div class="actions"><label class="btn">📂 Charger ma clé (fichier)<input type="file" id="inCle" hidden></label></div>
+  <p class="aide" style="margin:8px 0 4px">Le fichier est grisé ou introuvable sur le téléphone ? Ouvrez-le avec une application de notes ou de fichiers,
+    copiez <b>tout</b> son contenu (il commence par <code>{</code>) et collez-le ici :</p>
+  <textarea id="txtCle" rows="4" spellcheck="false" autocomplete="off" placeholder='{"format":"cnbm-cle-createur", …}'></textarea>
+  <div class="actions" style="margin-top:6px"><button class="btn sec" id="okTxtCle">🔓 Ouvrir avec la clé collée</button></div>
   <label style="flex-direction:row;align-items:center;gap:8px;font-weight:400;margin-top:10px"><input type="checkbox" id="memoCle" style="width:20px;min-height:0"> Se souvenir de la clé sur cet ordinateur (uniquement sur un ordinateur personnel)</label>
   <div id="msgCle"></div>
   <details style="margin-top:14px"><summary style="cursor:pointer">Je n'ai pas de clé / j'ai perdu ma clé</summary>
@@ -109,22 +113,41 @@ function copier(t) { (navigator.clipboard?.writeText(t) || Promise.reject()).the
 
 /* ---------------- Clé du créateur ---------------- */
 let clePrivee = null, clePub = null;
+class ErreurCle extends Error {}
+function lireCle(texte) {
+  let obj;
+  try { obj = JSON.parse(String(texte).replace(/^\uFEFF/, "").trim()); }
+  catch { throw new ErreurCle("Le contenu n'est pas lisible : le fichier a peut-être été coupé ou modifié. Utilisez le fichier d'origine CLE-PRIVEE-CREATEUR-CNBM.json."); }
+  if (obj && obj.kty === "EC" && obj.d) obj = { format: "cnbm-cle-createur", privee: obj };           // clé JWK seule
+  if (!obj || obj.format !== "cnbm-cle-createur" || !obj.privee || !obj.privee.d)
+    throw new ErreurCle(obj && obj.format === "cnbm-fiche" ? "Ce fichier est une fiche de membre, pas la clé du créateur." : "Ce fichier n'est pas la clé du créateur (il doit contenir « cnbm-cle-createur »).");
+  return obj;
+}
 async function chargerCle(obj) {
-  if (obj.format !== "cnbm-cle-createur" || !obj.privee) throw new Error("format");
-  clePrivee = await crypto.subtle.importKey("jwk", obj.privee, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+  if (obj.format !== "cnbm-cle-createur" || !obj.privee) throw new ErreurCle("Ce fichier n'est pas la clé du créateur.");
+  if (!window.crypto?.subtle) throw new ErreurCle("Ce navigateur ne permet pas la signature : ouvrez la page dans Chrome, Edge, Firefox ou Safari à jour, depuis son adresse https://.");
+  const priv = { ...obj.privee }; delete priv.key_ops; delete priv.ext;
+  try { clePrivee = await crypto.subtle.importKey("jwk", priv, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]); }
+  catch { throw new ErreurCle("La clé est endommagée et ne peut pas être utilisée. Reprenez une copie de sauvegarde du fichier."); }
   clePub = obj.publique;
   $("#verrou").hidden = true; $("#outils").hidden = false;
   afficherRegistre();
 }
-$("#inCle").onchange = async e => {
-  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+async function ouvrirAvec(texte) {
   try {
-    const obj = JSON.parse(await f.text());
+    const obj = lireCle(texte);
     await chargerCle(obj);
     if ($("#memoCle").checked) LS.set("cnbm-createur-cle", JSON.stringify(obj));
+    $("#txtCle").value = "";
     toast("Espace créateur ouvert");
-  } catch { msg($("#msgCle"), "err", "Ce fichier n'est pas une clé de créateur valide."); }
+  } catch (e) { msg($("#msgCle"), "err", "⚠️ " + (e instanceof ErreurCle ? e.message : "Ouverture impossible : " + e.message)); }
+}
+$("#inCle").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  if (f.size > 20000) return msg($("#msgCle"), "err", `⚠️ « ${f.name} » n'est pas la clé du créateur (fichier trop gros). Choisissez CLE-PRIVEE-CREATEUR-CNBM.json.`);
+  ouvrirAvec(await f.text());
 };
+$("#okTxtCle").onclick = () => { const t = $("#txtCle").value.trim(); if (!t) return msg($("#msgCle"), "err", "⚠️ Collez d'abord le contenu de la clé."); ouvrirAvec(t); };
 $("#nvCle").onclick = async () => {
   if (!confirm("Créer une NOUVELLE clé de créateur ? Les applications déjà diffusées ne la reconnaîtront qu'après mise à jour de index.html.")) return;
   const k = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
