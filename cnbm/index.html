@@ -440,6 +440,7 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
     <div class="actions no-print">
       <button class="btn ok" id="btnXlsx">📊 Liste complète en Excel (.xlsx)</button>
       <button class="btn sec" id="btnCsv">Exporter en CSV</button>
+      <button class="btn sec" id="btnRecaps">📄 Récapitulatifs de la sélection</button>
       <button class="btn sec" id="btnImprListe">🖨️ Imprimer la liste</button>
       <button class="btn sec" id="btnSauv">💾 Sauvegarde complète (avec photos/vidéos)</button>
     </div>
@@ -1267,13 +1268,14 @@ async function afficherMesFiches() {
     d.innerHTML = `${img}<div class="c"><b>${esc(nomComplet(f.data) || "(sans nom)")} <span class="pastille p-${f.statut}">${lib[f.statut]}</span></b>
       <div>${esc(f.data.categorie || "")}${l.etablissement ? " · " + esc(l.etablissement) : ""}</div>
       <div>${esc(f.id)} · modifiée le ${dateFr(f.modifie)}${f.envoyee ? " · envoyée le " + dateFr(f.envoyee) : ""}</div></div>
-      <div class="bt"><button class="btn sec petit" data-a="mod">✏️ Modifier</button>
+      <div class="bt"><button class="btn sec petit" data-a="mod">✏️ Modifier</button><button class="btn sec petit" data-a="recap">📄 Récapitulatif</button>
       ${f.statut !== "brouillon" ? `<button class="btn petit" data-a="env">📤 Envoyer</button>` : ""}
       <button class="btn dang petit" data-a="sup">🗑️</button></div>`;
     d.onclick = async e => {
       const a = e.target.closest("[data-a]")?.dataset.a; if (!a) return;
       if (a === "mod") { chargerDansForm(f); montrer("fiche"); window.scrollTo(0, 0); }
       if (a === "env") ouvrirEnvoi([f]);
+      if (a === "recap") ouvrirRecap(f);
       if (a === "sup" && confirm(`Supprimer définitivement la fiche de ${nomComplet(f.data) || f.id} de cet appareil ?`)) {
         await DB.del("fiches", f.id);
         if (courant.id === f.id) chargerDansForm(ficheVide());
@@ -1434,6 +1436,7 @@ async function ouvrirDetail(r) {
   $("#detT").textContent = "Fiche de " + nomComplet(r.data);
   $("#detC").innerHTML = htmlDetail(r, urls) + `<div class="actions no-print">
     ${estDemande(r) ? `<button class="btn ok" id="detAdh">✅ Accepter l'adhésion</button>` : ""}
+    <button class="btn" id="detRecap">📄 Récapitulatif (télécharger / PDF)</button>
     <button class="btn sec" id="detImpr">🖨️ Imprimer la fiche</button>
     ${r.video ? `<button class="btn sec" id="detVid">⬇️ Télécharger la vidéo</button>` : ""}
     <button class="btn dang" id="detSup">🗑️ Retirer du registre</button></div>`;
@@ -1442,6 +1445,7 @@ async function ouvrirDetail(r) {
     $("#dlDet").close(); document.body.classList.add("imp-fiche");
     setTimeout(() => { window.print(); document.body.classList.remove("imp-fiche"); }, 200);
   };
+  $("#detRecap").onclick = () => { $("#dlDet").close(); ouvrirRecap(r, true); };
   $("#detAdh") && ($("#detAdh").onclick = async () => {
     const num = prompt(`Adhésion de ${nomComplet(r.data)}.\nNuméro de carte / d'inscription attribué (facultatif) :`, r.data.numeroOrdre || "");
     if (num === null) return;
@@ -1580,6 +1584,11 @@ $("#btnCsv").onclick = () => {
   telecharger(new Blob([csv(tableMembres(l))], { type: "text/csv;charset=utf-8" }), `CNBM_liste_des_membres_${new Date().toISOString().slice(0, 10)}.csv`);
 };
 $("#btnImprListe").onclick = () => window.print();
+$("#btnRecaps").onclick = () => {
+  const l = filtrer();
+  if (l.length > 150 && !confirm(`Préparer ${l.length} récapitulatifs dans un seul document ? Cela peut prendre un moment. (Astuce : filtrez d'abord par statut ou catégorie.)`)) return;
+  recapsGroupes(l, false);
+};
 $("#btnSauv").onclick = async () => {
   if (!registre.length) return toast("Registre vide.");
   const manquants = registre.filter(r => r.serveur && manqueFichiers(r));
@@ -1685,7 +1694,7 @@ function controleDossier(f) {
     ["Carrière (début du travail, premier emploi, expérience)", d.anneeDebutTravail && d.premierEmploi && d.experience !== "" && d.experience != null],
     ["Lieu(x) de travail avec fonction et province", l.length && l.every(x => x.etablissement && x.fonction && x.province)],
     ["Situation d'adhésion au CNBM", d.adhMembre],
-    ["Photo passeport", f.photo],
+    ["Photo passeport", f.photo || aPhoto(f)],
     ...docsAttendus(f).filter(x => x.oblig).map(x => ["Document : " + x.t, x.ok]),
     ["Consentement", d.consentement]
   ].map(([t, ok]) => ({ t, ok: !!ok }));
@@ -1697,20 +1706,20 @@ function controleDossier(f) {
   const faits = oblig.filter(x => x.ok).length;
   return { oblig, facult, membre, complet: faits === oblig.length, pct: Math.round(faits * 100 / oblig.length), enRegle: enRegle(d) };
 }
-function htmlControle(c, d) {
+function htmlControle(c, d, tiers = false) {
   const li = x => `<li style="list-style:none;margin:3px 0">${x.ok ? "✅" : "❌"} ${esc(x.t)}</li>`;
-  return `<div class="msg ${c.complet ? "ok" : "att"}" style="font-weight:700">${c.complet ? "✅ Dossier complet : toutes les données demandées par le conseil sont fournies." : `⚠️ Dossier complet à ${c.pct} % — complétez les points marqués ❌.`}</div>
+  return `<div class="msg ${c.complet ? "ok" : "att"}" style="font-weight:700">${c.complet ? "✅ Dossier complet : toutes les données demandées par le conseil sont fournies." : `⚠️ Dossier complet à ${c.pct} % — ${tiers ? "il manque les points marqués ❌." : "complétez les points marqués ❌."}`}</div>
     <h4 style="margin:10px 0 4px">Données obligatoires</h4><ul style="padding:0;margin:0">${c.oblig.map(li).join("")}</ul>
     <h4 style="margin:10px 0 4px">Conditions de membre en règle</h4>
     ${d.adhMembre === "Oui" ? `<ul style="padding:0;margin:0">${c.membre.map(li).join("")}</ul>
-      <div class="msg ${c.enRegle ? "ok" : "att"}">${c.enRegle ? "✅ Vous êtes membre en règle." : "⚠️ Vous n'êtes pas encore en règle : régularisez les points marqués ❌ auprès de votre conseil provincial."}</div>`
-      : `<p class="info">${/^Oui/.test(d.adhDemande || "") ? "📝 Demande d'adhésion envoyée avec cette fiche : le conseil vous contactera pour la carte, le serment et les cotisations." : d.adhMembre === "Demande en cours" ? "Adhésion en cours de traitement." : "Vous n'êtes pas membre du CNBM. Vous pouvez demander votre adhésion dans la section 7 de la fiche."}</p>`}
+      <div class="msg ${c.enRegle ? "ok" : "att"}">${c.enRegle ? (tiers ? "✅ Membre en règle." : "✅ Vous êtes membre en règle.") : tiers ? "⚠️ Ce membre n'est pas encore en règle : points marqués ❌ à régulariser." : "⚠️ Vous n'êtes pas encore en règle : régularisez les points marqués ❌ auprès de votre conseil provincial."}</div>`
+      : `<p class="info">${/^Oui/.test(d.adhDemande || "") ? (tiers ? "📝 Demande d'adhésion jointe à cette fiche : à traiter (carte, serment, cotisations)." : "📝 Demande d'adhésion envoyée avec cette fiche : le conseil vous contactera pour la carte, le serment et les cotisations.") : d.adhMembre === "Demande en cours" ? "Adhésion en cours de traitement." : tiers ? "Non membre du CNBM (pas de demande d'adhésion)." : "Vous n'êtes pas membre du CNBM. Vous pouvez demander votre adhésion dans la section 7 de la fiche."}</p>`}
     <h4 style="margin:10px 0 4px">Facultatif (recommandé)</h4><ul style="padding:0;margin:0">${c.facult.map(li).join("")}</ul>`;
 }
 const enDataUrl = b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
-async function documentRecap(f) {
+async function documentRecap(f, pourConseil = false) {
   const c = controleDossier(f), d = f.data, photo = f.photo ? await enDataUrl(f.photo) : "";
-  const nomConseil = conseil.payload?.conseil || "Conseil national des biotechnologistes médicaux — RDC";
+  const nomConseil = f.conseil?.nom || conseil.payload?.conseil || "Conseil national des biotechnologistes médicaux — RDC";
   const lignes = lignesFiche(f).slice(4).map(esc).join("\n");
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Récapitulatif ${esc(nomComplet(d))} — ${esc(f.id)}</title>
@@ -1726,28 +1735,59 @@ h4{font-size:14px}.msg{padding:8px 10px;border-radius:6px;margin:8px 0}.ok{backg
 <div class="ent">${photo ? `<img src="${photo}" alt="Photo">` : ""}<div><div style="font-size:12px;color:#5a6b7b">${esc(nomConseil)}</div>
 <h1>Récapitulatif de la fiche de recensement</h1><div style="font-size:17px;font-weight:700;margin-top:4px">${esc(nomComplet(d))}</div>
 <div>${esc(d.categorie || "")}</div><div class="info">Identifiant : ${esc(f.id)} · document établi le ${dateFr(Date.now())}</div></div></div>
-<h2>Vérification du dossier</h2>${htmlControle(c, d)}
+<h2>Vérification du dossier</h2>${htmlControle(c, d, pourConseil)}
 <h2>Données déclarées</h2><pre>${lignes}</pre>
 <div class="pied">Document généré par l'application de recensement du CNBM-RDC à partir des déclarations du membre. Il ne vaut pas carte de membre.
-Statut de la fiche : ${f.statut === "envoyee" ? "envoyée au conseil le " + dateFr(f.envoyee) : f.statut === "prete" ? "complète, pas encore envoyée" : "brouillon"}.</div>
+${pourConseil ? `Fiche reçue par le conseil le ${dateFr(f.recu)}${f.adhesionValidee ? " · adhésion acceptée le " + dateFr(f.adhesionValidee) : ""}.`
+  : `Statut de la fiche : ${f.statut === "envoyee" ? "envoyée au conseil le " + dateFr(f.envoyee) : f.statut === "prete" ? "complète, pas encore envoyée" : "brouillon"}.`}</div>
 </body></html>`;
 }
-async function ouvrirRecap(f) {
+async function ouvrirRecap(f, pourConseil = false) {
   const c = controleDossier(f), dl = $("#dlRecap");
-  $("#dlRecapC").innerHTML = htmlControle(c, f.data) + `<div class="actions" style="flex-direction:column;align-items:stretch">
-      <button class="btn" id="rcTel">⬇️ Télécharger mon récapitulatif</button>
+  $("#dlRecap h3").textContent = pourConseil ? "📄 Récapitulatif de " + nomComplet(f.data) : "📄 Mon récapitulatif";
+  $("#dlRecapC").innerHTML = htmlControle(c, f.data, pourConseil) + `<div class="actions" style="flex-direction:column;align-items:stretch">
+      <button class="btn" id="rcTel">⬇️ Télécharger ${pourConseil ? "le" : "mon"} récapitulatif</button>
       <button class="btn sec" id="rcPdf">🖨️ Ouvrir pour imprimer / enregistrer en PDF</button></div>
-    <p class="info">Le document contient toutes vos données et la liste de contrôle ci-dessus. Gardez-le comme référence.</p>`;
+    <p class="info">${pourConseil ? "Le document contient toutes les données du membre, sa photo et la liste de contrôle ci-dessus." : "Le document contient toutes vos données et la liste de contrôle ci-dessus. Gardez-le comme référence."}</p>`;
   const nom = nomFichier(f, "recapitulatif.html");
-  $("#rcTel").onclick = async () => telecharger(new Blob([await documentRecap(f)], { type: "text/html" }), nom);
+  $("#rcTel").onclick = async () => telecharger(new Blob([await documentRecap(f, pourConseil)], { type: "text/html" }), nom);
   $("#rcPdf").onclick = async () => {
     const w = window.open("", "_blank");
-    const html = await documentRecap(f);
+    const html = await documentRecap(f, pourConseil);
     if (!w) return telecharger(new Blob([html], { type: "text/html" }), nom);
     w.document.open(); w.document.write(html.replace("</body>", "<script>setTimeout(()=>print(),400)<\/script></body>")); w.document.close();
   };
   dl.showModal();
 }
+// Plusieurs récapitulatifs dans un seul document (une page par membre), pour le conseil.
+async function photoServeur(r) {
+  const x = (r.fichiersServeur || []).find(x => /_photo\.jpg$/.test(x.nom));
+  if (!x || r.photo || !SRV.actif() || !navigator.onLine) return;
+  try { r.photo = new Blob([await SRV.appel("GET", `/api/fiches/${r.id}/fichiers/${encodeURIComponent(x.nom)}`, undefined, { blob: true })], { type: x.mime }); await DB.put("registre", r); } catch {}
+}
+async function recapsGroupes(liste, ouvrir) {
+  if (!liste.length) return toast("Aucune fiche dans la sélection.");
+  const zone = $("#msgSynchro"), morceaux = [];
+  let entete = "";
+  for (const [i, r] of liste.entries()) {
+    msg(zone, "inf", `Préparation des récapitulatifs : ${i + 1} / ${liste.length}…`);
+    await photoServeur(r);
+    const h = await documentRecap(r, true);
+    if (!entete) entete = h.slice(0, h.indexOf("<body>")).replace(/<title>[^<]*<\/title>/, `<title>Récapitulatifs CNBM — ${liste.length} membre(s)</title>`)
+      .replace("</style>", ".fiche{break-after:page;margin-bottom:40px}.fiche:last-child{break-after:auto}</style>");
+    morceaux.push(`<section class="fiche">${h.slice(h.indexOf('<div class="ent">'), h.lastIndexOf("</body>"))}</section>`);
+  }
+  msg(zone);
+  const html = entete + `<body><div class="bt"><button onclick="print()" style="font:inherit;padding:8px 14px">🖨️ Imprimer / enregistrer en PDF</button> <b>${liste.length}</b> récapitulatif(s)</div>${morceaux.join("")}</body></html>`;
+  const nom = `CNBM_recapitulatifs_${new Date().toISOString().slice(0, 10)}.html`;
+  if (ouvrir) {
+    const w = window.open("", "_blank");
+    if (w) { w.document.open(); w.document.write(html.replace("</body>", "<script>setTimeout(()=>print(),600)<\/script></body>")); w.document.close(); return; }
+  }
+  telecharger(new Blob([html], { type: "text/html" }), nom);
+  toast(`📄 ${liste.length} récapitulatif(s) téléchargé(s) dans un seul document.`, 4500);
+}
+
 $("#btnRecap").onclick = async () => { lireForm(); clearTimeout(minuteur); courant.modifie = Date.now(); await DB.put("fiches", courant); ouvrirRecap(courant); };
 
 /* ----------------------------- Serveur en ligne ----------------------------- */
