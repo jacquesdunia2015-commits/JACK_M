@@ -18,6 +18,7 @@
   --r:12px;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--txt);background:var(--fond)}
 header{background:var(--bleu);color:#fff;padding:10px 16px calc(10px);position:sticky;top:0;z-index:20;box-shadow:0 2px 6px rgba(0,0,0,.15)}
@@ -116,6 +117,12 @@ dialog::backdrop{background:rgba(10,25,40,.55)}
   .hd h1{font-size:14px}
 }
 .imprimable{display:none}
+.cadre-photo{position:relative;width:min(100%,340px);aspect-ratio:7/9;margin:0 auto;background:#000;border-radius:10px;overflow:hidden}
+.cadre-photo video,.cadre-photo canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cadre-photo video.miroir{transform:scaleX(-1)}
+.cadre-photo .guide{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.cadre-photo .ovale{width:62%;height:62%;margin-top:-6%;border:3px dashed rgba(255,255,255,.85);border-radius:50%;box-shadow:0 0 0 999px rgba(0,0,0,.28)}
+.cadre-photo.fige .guide{display:none}
 .docs-attendus{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
 .docs-attendus span{font-size:12.5px;padding:4px 10px;border-radius:99px;background:#eef2f6;color:var(--txt2)}
 .docs-attendus span.ok{background:var(--ok-c);color:var(--ok)}
@@ -345,10 +352,12 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
         <b>Photo passeport</b> <span class="info">(recommandée)</span>
         <div class="apercu-photo" id="apPhoto">Aucune photo</div>
         <div class="actions" style="margin-top:0">
-          <label class="btn sec petit">📷 Prendre / choisir une photo<input type="file" id="inPhoto" accept="image/*" hidden></label>
+          <button type="button" class="btn petit" id="btnPhotoCam" data-camera>📸 Prendre la photo maintenant</button>
+          <label class="btn sec petit">📁 Choisir une photo<input type="file" id="inPhoto" accept="image/*" hidden></label>
           <button type="button" class="btn dang petit" id="supPhoto" hidden>Retirer</button>
         </div>
-        <p class="info">Visage de face, fond clair. La photo est recadrée au format passeport automatiquement.</p>
+        <p class="info">Visage de face, fond clair, bonne lumière. Prenez la photo directement avec la caméra de l'appareil, ou choisissez une photo déjà enregistrée : elle est recadrée au format passeport automatiquement.</p>
+        <p class="info sans-camera" hidden>📷 Aucune caméra n'a été détectée sur cet appareil : choisissez une photo enregistrée.</p>
       </div>
       <div>
         <b>Vidéo de présentation</b> <span class="info">(facultative, 2 minutes maximum)</span>
@@ -356,7 +365,7 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
         <div id="infoVideo" class="info"></div>
         <div id="progVideo" hidden><div class="progress"><div></div></div><div class="info" id="progTxt"></div></div>
         <div class="actions" style="margin-top:0">
-          <button type="button" class="btn sec petit" id="btnRec">🎥 Enregistrer maintenant</button>
+          <button type="button" class="btn petit" id="btnRec" data-camera>🎥 Filmer maintenant</button>
           <label class="btn sec petit">📁 Choisir une vidéo<input type="file" id="inVideo" accept="video/*" hidden></label>
           <button type="button" class="btn dang petit" id="supVideo" hidden>Retirer</button>
         </div>
@@ -521,6 +530,21 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
 
 <!-- Dialogues -->
 <dialog id="dlEnvoi"><div class="dl-h"><h3 id="dlEnvoiT">📤 Envoyer aux responsables</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="dlEnvoiC"></div></dialog>
+<dialog id="dlPhoto"><div class="dl-h"><h3>📸 Photo passeport</h3><button class="x" data-ferme>×</button></div><div class="dl-c">
+  <div class="cadre-photo">
+    <video id="phVid" playsinline muted autoplay></video>
+    <canvas id="phRes" hidden></canvas>
+    <div class="guide" aria-hidden="true"><div class="ovale"></div></div>
+  </div>
+  <p class="info" id="phAide">Placez votre visage dans l'ovale, de face, regard vers l'objectif, sans lunettes de soleil ni couvre-chef. Fond clair et bonne lumière.</p>
+  <div id="phMsg"></div>
+  <div class="actions">
+    <button type="button" class="btn ok" id="phCapt">📸 Prendre la photo</button>
+    <button type="button" class="btn sec" id="phCam">🔄 Changer de caméra</button>
+    <button type="button" class="btn sec" id="phRefaire" hidden>↩️ Reprendre</button>
+    <button type="button" class="btn ok" id="phOk" hidden>✅ Utiliser cette photo</button>
+  </div>
+</div></dialog>
 <dialog id="dlRec"><div class="dl-h"><h3>🎥 Vidéo de présentation</h3><button class="x" data-ferme>×</button></div><div class="dl-c">
   <div class="rec"><video id="recVid" playsinline muted autoplay></video><span class="chrono" id="recChrono">0:00 / 2:00</span></div>
   <p class="info">Tenez le téléphone à hauteur du visage, dans un endroit calme et éclairé. L'enregistrement s'arrête seul à 2 minutes.</p>
@@ -862,6 +886,63 @@ $("#inPhoto").onchange = async e => {
   try { courant.photo = await photoPasseport(f); afficherPhoto(); sauverAuto(); }
   catch { toast("Cette image n'a pas pu être lue. Essayez une photo JPEG ou PNG."); }
 };
+/* Photo prise directement avec la caméra de l'appareil */
+const PH = { flux: null, face: "user" };
+async function cameraPhoto() {
+  PH.flux && PH.flux.getTracks().forEach(t => t.stop());
+  PH.flux = await navigator.mediaDevices.getUserMedia({ video: { facingMode: PH.face, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
+  const v = $("#phVid"); v.srcObject = PH.flux; v.classList.toggle("miroir", PH.face === "user");
+}
+function fermerPhoto() { PH.flux && PH.flux.getTracks().forEach(t => t.stop()); PH.flux = null; $("#phVid").srcObject = null; }
+function etatPhoto(fige) {
+  $(".cadre-photo").classList.toggle("fige", fige);
+  $("#phVid").hidden = fige; $("#phRes").hidden = !fige;
+  $("#phCapt").hidden = fige; $("#phCam").hidden = fige; $("#phRefaire").hidden = !fige; $("#phOk").hidden = !fige;
+  $("#phAide").textContent = fige ? "La photo vous convient ? Sinon, reprenez-la." : "Placez votre visage dans l'ovale, de face, regard vers l'objectif, sans lunettes de soleil ni couvre-chef. Fond clair et bonne lumière.";
+}
+$("#btnPhotoCam").onclick = async () => {
+  if (!navigator.mediaDevices?.getUserMedia) return toast("La prise de photo directe n'est pas possible dans ce navigateur : utilisez « Choisir une photo ».", 5000);
+  msg($("#phMsg")); etatPhoto(false); $("#dlPhoto").showModal();
+  try { await cameraPhoto(); }
+  catch (e) {
+    msg($("#phMsg"), "err", e.name === "NotFoundError" || e.name === "OverconstrainedError" ? "Aucune caméra disponible sur cet appareil. Fermez cette fenêtre et utilisez « 📁 Choisir une photo »."
+      : "Impossible d'accéder à la caméra. Autorisez l'accès à la caméra dans le navigateur" + (location.protocol === "file:" ? " (ou ouvrez l'application depuis son adresse Internet)." : ", ou utilisez « 📁 Choisir une photo »."));
+    $("#phCapt").disabled = true;
+    return;
+  }
+  $("#phCapt").disabled = false;
+};
+$("#phCam").onclick = async () => { PH.face = PH.face === "user" ? "environment" : "user"; try { await cameraPhoto(); } catch {} };
+$("#phCapt").onclick = () => {
+  const v = $("#phVid"), vw = v.videoWidth, vh = v.videoHeight;
+  if (!vw) return toast("La caméra n'est pas encore prête, réessayez.");
+  // Même cadrage que l'aperçu (object-fit: cover au format 7:9), sans effet miroir.
+  const W = 420, H = 540, r = W / H;
+  let sw = vw, sh = vw / r; if (sh > vh) { sh = vh; sw = vh * r; }
+  const sx = (vw - sw) / 2, sy = (vh - sh) / 2;
+  const c = $("#phRes"); c.width = W; c.height = H;
+  c.getContext("2d").drawImage(v, sx, sy, sw, sh, 0, 0, W, H);
+  etatPhoto(true);
+};
+$("#phRefaire").onclick = () => etatPhoto(false);
+$("#phOk").onclick = () => $("#phRes").toBlob(b => {
+  if (!b) return;
+  courant.photo = b; afficherPhoto(); sauverAuto();
+  $("#dlPhoto").close(); toast("Photo passeport enregistrée");
+}, "image/jpeg", 0.9);
+$("#dlPhoto").addEventListener("close", fermerPhoto);
+// Appareil sans caméra : seules les options « Choisir… » restent proposées.
+async function detecterCamera() {
+  let ok = !!navigator.mediaDevices?.getUserMedia;
+  if (ok && navigator.mediaDevices.enumerateDevices) {
+    try { const d = await navigator.mediaDevices.enumerateDevices(); if (d.length && !d.some(x => x.kind === "videoinput")) ok = false; } catch {}
+  }
+  $$("[data-camera]").forEach(b => b.hidden = !ok);
+  $$(".sans-camera").forEach(p => p.hidden = ok);
+}
+detecterCamera();
+navigator.mediaDevices?.addEventListener?.("devicechange", detecterCamera);
+
 $("#supPhoto").onclick = () => { courant.photo = null; afficherPhoto(); sauverAuto(); };
 
 /* ----------------------------- Pièces justificatives ----------------------------- */
@@ -1037,11 +1118,12 @@ $("#btnRec").onclick = async () => {
   msg($("#recMsg"));
   $("#recStart").hidden = false; $("#recStop").hidden = true; $("#recChrono").className = "chrono"; $("#recChrono").textContent = "0:00 / 2:00";
   if (!navigator.mediaDevices?.getUserMedia || !typeEnregistrement()) {
-    toast("L'enregistrement direct n'est pas possible dans ce navigateur. Utilisez « Choisir une vidéo » (l'appareil photo du téléphone s'ouvrira)."); return;
+    toast("L'enregistrement direct n'est pas possible dans ce navigateur. Utilisez « 📁 Choisir une vidéo »."); return;
   }
   dl.showModal();
   try { await camera(); }
-  catch (e) { msg($("#recMsg"), "err", "Impossible d'accéder à la caméra/au micro. Autorisez l'accès dans le navigateur" + (location.protocol === "file:" ? " (ou ouvrez l'application depuis son adresse Internet : certains navigateurs bloquent la caméra pour un fichier local)." : ".")); }
+  catch (e) { if (e.name === "NotFoundError") return msg($("#recMsg"), "err", "Aucune caméra ou aucun micro disponible sur cet appareil. Fermez cette fenêtre et utilisez « 📁 Choisir une vidéo ».");
+    msg($("#recMsg"), "err", "Impossible d'accéder à la caméra/au micro. Autorisez l'accès dans le navigateur" + (location.protocol === "file:" ? " (ou ouvrez l'application depuis son adresse Internet : certains navigateurs bloquent la caméra pour un fichier local)." : ".")); }
 };
 $("#recCam").onclick = async () => { if (REC.rec && REC.rec.state === "recording") return; REC.face = REC.face === "user" ? "environment" : "user"; try { await camera(); } catch {} };
 $("#recStart").onclick = () => {
