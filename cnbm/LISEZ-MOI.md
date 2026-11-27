@@ -5,7 +5,7 @@
 [administrateur de conseil](manuel/CNBM_Guide_administrateur.pdf) · [créateur](manuel/CNBM_Guide_createur.pdf).
 Les PDF se régénèrent depuis `manuel/index.html` (paramètre `?partie=membre|admin|createur`), imprimé au format A4.
 
-Application du **Conseil national des biotechnologistes médicaux de la RDC** pour recenser les
+Application du **CNBM-RDC — Conseil National des Biologistes Médicaux et Techniciens de laboratoire en République Démocratique du Congo** pour recenser les
 techniciens de laboratoire et les biologistes médicaux. Elle fonctionne sur **téléphone (Android, iPhone)
 et ordinateur (Windows, Mac, Linux)**, **avec ou sans Internet**.
 
@@ -62,6 +62,14 @@ leur date sans la clé privée du créateur. La clé publique correspondante est
 Un candidat qui n'est pas encore membre répond « Non » à « Êtes-vous membre du CNBM ? » puis « Oui, je demande mon adhésion ».
 Le conseil retrouve ces fiches avec le filtre **Demandes d'adhésion** et les accepte (bouton **✅ Accepter l'adhésion**, avec le n° de carte attribué).
 
+## Réception automatique gratuite (Google Drive) — recommandée aujourd'hui
+
+Sans serveur payant, les fiches arrivent **automatiquement** dans l'Espace responsables, **sans e-mail ni WhatsApp**,
+dès que le membre est connecté. Un petit script gratuit ([`drive/Code.gs`](drive/Code.gs)) est installé sur un compte Gmail du conseil :
+il range les fiches, photos, vidéos et documents dans son Google Drive (un dossier par membre) et tient un tableau Google Sheets « Registre ».
+Mise en place en 15 minutes : [`drive/GUIDE.html`](drive/GUIDE.html) (aussi en PDF : `manuel/CNBM_Guide_Google_Drive.pdf`).
+Accès en lecture protégé par une clé d'administrateur (une clé nationale, et si besoin une clé par province).
+
 ## Version avec serveur en ligne
 
 Le dossier [`serveur/`](serveur/LISEZ-MOI.md) contient le serveur de la plateforme (Node.js, sans dépendance) :
@@ -83,3 +91,7 @@ reste utilisable : comptes sur l'appareil, envoi des fiches par e-mail et import
 Aucune donnée n'est envoyée à un serveur par l'application. Les fiches restent sur l'appareil jusqu'à ce que
 le membre les envoie lui-même par e-mail. Le registre des responsables vit dans leur navigateur : faire
 régulièrement une **💾 Sauvegarde complète** et la garder en lieu sûr.
+
+## Crédits
+
+Limites des 26 provinces de la carte (`carte-rdc.svg`) : [geoBoundaries](https://www.geoboundaries.org) (gbOpen, COD ADM1), licence CC BY 4.0.

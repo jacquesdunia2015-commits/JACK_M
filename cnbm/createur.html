@@ -179,7 +179,7 @@ async function signer(payload) {
 /* ---------------- Formulaire ---------------- */
 const sel = $("#province");
 sel.innerHTML = `<option value="">— Choisir —</option><option>${NATIONAL}</option>` + PROVINCES.map(p => `<option>${p}</option>`).join("");
-sel.onchange = () => { const p = sel.value; $("#nomConseil").value = !p ? "" : p === NATIONAL ? "Conseil national des biotechnologistes médicaux de la RDC" : `Conseil provincial des biotechnologistes médicaux — ${p}`; };
+sel.onchange = () => { const p = sel.value; $("#nomConseil").value = !p ? "" : p === NATIONAL ? "Conseil National des Biologistes Médicaux et Techniciens de laboratoire en République Démocratique du Congo" : `Conseil provincial des Biologistes Médicaux et Techniciens de laboratoire — ${p}`; };
 function calculerFin() {
   const d = $("#debut").value; if (!d) return;
   const m = +$("#formule").value, x = new Date(d + "T12:00:00");

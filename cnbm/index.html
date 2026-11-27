@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CNBM-RDC — Recensement des membres</title>
-<meta name="description" content="Fiche de recensement des membres du Conseil national des biotechnologistes médicaux de la RDC. Fonctionne sans Internet.">
+<meta name="description" content="Fiche de recensement des membres du CNBM-RDC (Conseil National des Biologistes Médicaux et Techniciens de laboratoire en République Démocratique du Congo). Fonctionne sans Internet.">
 <meta name="theme-color" content="#0b5fa5">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -24,7 +24,28 @@ body{margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,san
 header{background:var(--bleu);color:#fff;padding:10px 16px calc(10px);position:sticky;top:0;z-index:20;box-shadow:0 2px 6px rgba(0,0,0,.15)}
 header::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:4px;background:linear-gradient(90deg,var(--jaune) 0 33%,var(--rouge) 33% 66%,var(--jaune) 66%)}
 .hd{display:flex;align-items:center;gap:10px;max-width:960px;margin:0 auto}
-.hd img{width:40px;height:40px;border-radius:9px;flex:none}
+/* Logo 3D brillant qui tourne sur lui-même (pièce avec épaisseur et reflet) */
+.logo3d{--t:40px;--e:4px;--duree:9s;display:inline-block;width:var(--t);height:var(--t);perspective:calc(var(--t) * 6);flex:none;vertical-align:middle}
+.logo3d.grand{--t:132px;--e:12px;--duree:7s}
+.logo3d .rot{position:relative;display:block;width:100%;height:100%;transform-style:preserve-3d;animation:tourne3d var(--duree) linear infinite}
+.logo3d .face{position:absolute;inset:0;border-radius:20%;overflow:hidden;backface-visibility:hidden;transform:translateZ(calc(var(--e) / 2))}
+.logo3d .face.dos{transform:rotateY(180deg) translateZ(calc(var(--e) / 2))}
+.logo3d .face img{width:100%;height:100%;display:block}
+.logo3d .face::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.75) 47%,transparent 62%);background-size:300% 100%;animation:reflet3d var(--duree) linear infinite;mix-blend-mode:screen}
+.logo3d .tranche i{position:absolute;inset:0;border-radius:20%;background:linear-gradient(90deg,#052f54,#0b5fa5 45%,#f7d618 50%,#0b5fa5 55%,#052f54);transform:translateZ(calc(var(--e) / 2 - var(--e) * var(--k) / 8))}
+.logo3d.grand{filter:drop-shadow(0 14px 14px rgba(4,30,55,.35))}
+.duo3d{display:flex;justify-content:center;align-items:center;gap:26px;flex-wrap:wrap}
+button.logo3d{border:none;background:none;padding:0;cursor:zoom-in;font:inherit}
+.logo3d.carte .face{border-radius:0;overflow:visible}
+.logo3d.carte .face::after{-webkit-mask:url(carte-rdc-mini.svg) center/contain no-repeat;mask:url(carte-rdc-mini.svg) center/contain no-repeat}
+.logo3d.carte .tranche img{position:absolute;inset:0;width:100%;height:100%;filter:brightness(.32) saturate(1.4);transform:translateZ(calc(var(--e) / 2 - var(--e) * var(--k) / 8))}
+.logo3d.carte .rot{animation-delay:calc(var(--duree) / -3)}
+.logo3d.carte.entete{display:none}
+@media (min-width:700px){.logo3d.carte.entete{display:inline-block}}
+@keyframes tourne3d{from{transform:rotateY(0deg)}to{transform:rotateY(360deg)}}
+@keyframes reflet3d{0%{background-position:150% 0}50%{background-position:-50% 0}100%{background-position:150% 0}}
+@media (prefers-reduced-motion:reduce){.logo3d .rot,.logo3d .face::after{animation:none}}
+@media print{.logo3d .rot{animation:none}}
 .hd h1{font-size:16px;margin:0;line-height:1.2}
 .hd small{display:block;font-weight:400;opacity:.85;font-size:12px}
 .reseau{margin-left:auto;font-size:12px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.18);white-space:nowrap}
@@ -114,7 +135,8 @@ dialog::backdrop{background:rgba(10,25,40,.55)}
   .filtres{grid-template-columns:1fr 1fr}.filtres input{grid-column:1/-1}
   .item{flex-wrap:wrap}.item .bt{width:100%;justify-content:flex-start}
   .det{grid-template-columns:1fr}.det dt{margin-top:6px}
-  .hd h1{font-size:14px}
+  .hd h1{font-size:13.5px}
+  .hd small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px}
 }
 .imprimable{display:none}
 .cadre-photo{position:relative;width:min(100%,340px);aspect-ratio:7/9;margin:0 auto;background:#000;border-radius:10px;overflow:hidden}
@@ -157,9 +179,10 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
 <body>
 <header>
   <div class="hd">
-    <img src="icon.svg" alt="">
+    <span class="logo3d petit" aria-hidden="true"><span class="rot"><span class="face"><img src="icon.svg" alt=""></span><span class="face dos"><img src="icon.svg" alt=""></span><span class="tranche"><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><i style="--k:4"></i><i style="--k:5"></i><i style="--k:6"></i><i style="--k:7"></i></span></span></span>
+    <button type="button" class="logo3d carte petit entete" data-carte title="Carte administrative de la RDC : 26 provinces et chefs-lieux (toucher pour agrandir)" aria-label="Voir la carte des 26 provinces de la RDC"><span class="rot"><span class="face"><img src="carte-rdc-mini.svg" alt=""></span><span class="face dos"><img src="carte-rdc-mini.svg" alt=""></span><span class="tranche"><img src="carte-rdc-mini.svg" alt="" style="--k:1"><img src="carte-rdc-mini.svg" alt="" style="--k:2"><img src="carte-rdc-mini.svg" alt="" style="--k:3"><img src="carte-rdc-mini.svg" alt="" style="--k:4"><img src="carte-rdc-mini.svg" alt="" style="--k:5"><img src="carte-rdc-mini.svg" alt="" style="--k:6"><img src="carte-rdc-mini.svg" alt="" style="--k:7"></span></span></button>
     <h1>CNBM-RDC · Recensement des membres
-      <small id="sousTitre">Conseil national des biotechnologistes médicaux — République démocratique du Congo</small></h1>
+      <small id="sousTitre">Conseil National des Biologistes Médicaux et Techniciens de laboratoire — RDC</small></h1>
     <span id="reseau" class="reseau">…</span>
     <span class="compte"><button id="btnCompte" title="Mon compte">👤</button></span>
   </div>
@@ -179,6 +202,9 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
 <section id="v-auth" class="vue">
  <div class="auth">
   <div class="carte">
+    <div style="text-align:center;margin:6px 0 10px"><div class="duo3d"><span class="logo3d grand" aria-hidden="true"><span class="rot"><span class="face"><img src="icon.svg" alt=""></span><span class="face dos"><img src="icon.svg" alt=""></span><span class="tranche"><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><i style="--k:4"></i><i style="--k:5"></i><i style="--k:6"></i><i style="--k:7"></i></span></span></span><button type="button" class="logo3d carte grand" data-carte title="Carte administrative de la RDC : 26 provinces et chefs-lieux (toucher pour agrandir)" aria-label="Voir la carte des 26 provinces de la RDC"><span class="rot"><span class="face"><img src="carte-rdc-mini.svg" alt=""></span><span class="face dos"><img src="carte-rdc-mini.svg" alt=""></span><span class="tranche"><img src="carte-rdc-mini.svg" alt="" style="--k:1"><img src="carte-rdc-mini.svg" alt="" style="--k:2"><img src="carte-rdc-mini.svg" alt="" style="--k:3"><img src="carte-rdc-mini.svg" alt="" style="--k:4"><img src="carte-rdc-mini.svg" alt="" style="--k:5"><img src="carte-rdc-mini.svg" alt="" style="--k:6"><img src="carte-rdc-mini.svg" alt="" style="--k:7"></span></span></button></div>
+      <div style="font-weight:800;color:var(--bleu-f);margin-top:10px">CNBM-RDC</div>
+      <div class="info" style="margin:0">Conseil National des Biologistes Médicaux et Techniciens de laboratoire en République Démocratique du Congo</div></div>
     <h2>Bienvenue</h2>
     <div id="authConseil"></div>
     <p class="aide">Pour remplir votre fiche de recensement, ouvrez d'abord un compte avec votre <b>numéro de téléphone</b> ou votre <b>adresse e-mail</b> et un mot de passe. Fonctionne aussi sans Internet.</p>
@@ -325,7 +351,7 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
 
   <div class="carte">
     <h2><span class="n">7</span> Adhésion au CNBM</h2>
-    <p class="aide">Conseil national des biotechnologistes médicaux de la RDC.</p>
+    <p class="aide">Conseil National des Biologistes Médicaux et Techniciens de laboratoire en République Démocratique du Congo (CNBM-RDC).</p>
     <div class="grille">
       <label class="ch">Êtes-vous membre du CNBM ? <span class="req">*</span>
         <select data-f="adhMembre" required><option value="">— Choisir —</option><option>Oui</option><option>Non</option><option>Demande en cours</option></select></label>
@@ -393,7 +419,7 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
   <div class="carte">
     <h2><span class="n">10</span> Consentement</h2>
     <label class="consent"><input type="checkbox" data-f="consentement" required>
-      <span>J'atteste que ces informations sont exactes et j'accepte qu'elles soient transmises au Conseil national des biotechnologistes médicaux de la RDC, qui les utilise uniquement pour la gestion de ses membres et ne les communique pas à des tiers. <span class="req">*</span></span></label>
+      <span>J'atteste que ces informations sont exactes et j'accepte qu'elles soient transmises au Conseil National des Biologistes Médicaux et Techniciens de laboratoire en République Démocratique du Congo (CNBM-RDC), qui les utilise uniquement pour la gestion de ses membres et ne les communique pas à des tiers. <span class="req">*</span></span></label>
   </div>
 
   <div id="msgForm"></div>
@@ -461,6 +487,18 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
     <div id="listeComptes" class="liste"></div>
   </div>
 
+  <div class="carte no-print" id="carteDrive">
+    <h2>☁️ Réception automatique des fiches (Google Drive, gratuit)</h2>
+    <p class="aide">Sans serveur payant, les fiches peuvent arriver <b>automatiquement</b> ici, à l'intérieur de la plateforme (ni e-mail, ni WhatsApp), grâce à un petit script gratuit installé sur un compte Gmail du conseil : les fiches, photos, vidéos et documents sont rangés dans son Google Drive.
+      Mise en place en 15 minutes : <a href="drive/GUIDE.html" target="_blank" rel="noopener">guide pas à pas</a> · <a href="drive/Code.gs" download="Code.gs">télécharger le script</a>.</p>
+    <div class="grille">
+      <label class="ch">Adresse du script (se termine par /exec)<input id="dvUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
+      <label class="ch">Clé d'accès administrateur<input id="dvCle" autocomplete="off" spellcheck="false" placeholder="XXXXX-XXXXX-XXXXX-XXXXX"></label>
+    </div>
+    <div class="actions"><button class="btn" id="dvOk">🔌 Tester et enregistrer</button><button class="btn dang" id="dvRetirer" hidden>Retirer</button></div>
+    <div id="msgDrive"></div>
+  </div>
+
   <div class="carte no-print" id="carteEmail">
     <h2>⚙️ Paramètres d'envoi</h2>
     <p class="aide">Adresse(s) e-mail des responsables qui reçoivent les fiches. Séparez plusieurs adresses par une virgule. Pour que les membres l'aient automatiquement, partagez le lien de l'application avec <code>?email=votre@adresse</code> à la fin (voir Aide).</p>
@@ -478,6 +516,7 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
       PDF : <a href="manuel/CNBM_Guide_adherent.pdf" download>guide de l'adhérent</a> ·
       <a href="manuel/CNBM_Guide_administrateur.pdf" download>guide de l'administrateur</a> ·
       <a href="manuel/CNBM_Manuel_complet.pdf" download>manuel complet</a></div>
+    <p><button type="button" class="btn sec" data-carte>🗺️ Carte des 26 provinces et chefs-lieux</button></p>
     <h3>1. Installer l'application (une seule fois, avec Internet)</h3>
     <ul>
       <li><b>Téléphone Android (Chrome)</b> : ouvrez le lien, touchez le menu <b>⋮</b> puis <b>« Installer l'application »</b> ou <b>« Ajouter à l'écran d'accueil »</b>.</li>
@@ -558,6 +597,11 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
   <div class="actions"><button class="btn sec" id="cpCode">Copier le code</button><button class="btn ok" id="okCode">J'ai noté mon code, continuer</button></div>
 </div></dialog>
 <dialog id="dlRecap"><div class="dl-h"><h3>📄 Mon récapitulatif</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="dlRecapC"></div></dialog>
+<dialog id="dlCarte" style="width:min(860px,calc(100vw - 24px))"><div class="dl-h"><h3>🗺️ RDC — 26 provinces et chefs-lieux</h3><button class="x" data-ferme>×</button></div><div class="dl-c">
+  <img src="carte-rdc.svg" alt="Carte administrative de la République Démocratique du Congo : 26 provinces et leurs chefs-lieux" style="width:100%;max-width:760px;display:block;margin:0 auto">
+  <div class="table-w" style="margin-top:12px"><table><thead><tr><th>N°</th><th>Province</th><th>Chef-lieu</th></tr></thead><tbody><tr><td>1</td><td>Bas-Uele</td><td>Buta</td></tr><tr><td>2</td><td>Équateur</td><td>Mbandaka</td></tr><tr><td>3</td><td>Haut-Katanga</td><td>Lubumbashi</td></tr><tr><td>4</td><td>Haut-Lomami</td><td>Kamina</td></tr><tr><td>5</td><td>Haut-Uele</td><td>Isiro</td></tr><tr><td>6</td><td>Ituri</td><td>Bunia</td></tr><tr><td>7</td><td>Kasaï</td><td>Tshikapa</td></tr><tr><td>8</td><td>Kasaï-Central</td><td>Kananga</td></tr><tr><td>9</td><td>Kasaï-Oriental</td><td>Mbuji-Mayi</td></tr><tr><td>10</td><td>Kinshasa</td><td>⭐ Kinshasa</td></tr><tr><td>11</td><td>Kongo-Central</td><td>Matadi</td></tr><tr><td>12</td><td>Kwango</td><td>Kenge</td></tr><tr><td>13</td><td>Kwilu</td><td>Bandundu</td></tr><tr><td>14</td><td>Lomami</td><td>Kabinda</td></tr><tr><td>15</td><td>Lualaba</td><td>Kolwezi</td></tr><tr><td>16</td><td>Mai-Ndombe</td><td>Inongo</td></tr><tr><td>17</td><td>Maniema</td><td>Kindu</td></tr><tr><td>18</td><td>Mongala</td><td>Lisala</td></tr><tr><td>19</td><td>Nord-Kivu</td><td>Goma</td></tr><tr><td>20</td><td>Nord-Ubangi</td><td>Gbadolite</td></tr><tr><td>21</td><td>Sankuru</td><td>Lusambo</td></tr><tr><td>22</td><td>Sud-Kivu</td><td>Bukavu</td></tr><tr><td>23</td><td>Sud-Ubangi</td><td>Gemena</td></tr><tr><td>24</td><td>Tanganyika</td><td>Kalemie</td></tr><tr><td>25</td><td>Tshopo</td><td>Kisangani</td></tr><tr><td>26</td><td>Tshuapa</td><td>Boende</td></tr></tbody></table></div>
+  <p class="info">⭐ Kinshasa, capitale du pays. Limites des provinces : geoBoundaries (CC BY 4.0).</p>
+</div></dialog>
 <dialog id="dlDet"><div class="dl-h"><h3 id="detT">Fiche</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="detC"></div></dialog>
 
 <datalist id="dl-pays"><option>RDC</option><option>Congo-Brazzaville</option><option>Angola</option><option>Zambie</option><option>Tanzanie</option><option>Burundi</option><option>Rwanda</option><option>Ouganda</option><option>Soudan du Sud</option><option>Centrafrique</option><option>Cameroun</option><option>Afrique du Sud</option><option>Belgique</option><option>France</option><option>Canada</option></datalist>
@@ -833,7 +877,7 @@ form.addEventListener("submit", async e => {
   courant.modifie = Date.now();
   await DB.put("fiches", courant);
   majEtat(); majCompteur();
-  msg($("#msgForm"), "ok", SRV.actif() ? "✅ Fiche validée. Elle part <b>automatiquement</b> au serveur de votre conseil (dès que vous avez Internet)."
+  msg($("#msgForm"), "ok", DIST.actif() ? "✅ Fiche validée. Elle part <b>automatiquement</b> dans l'espace de votre conseil (dès que vous avez Internet)."
     : "✅ Fiche validée et enregistrée sur cet appareil. Touchez <b>📤 Envoyer aux responsables</b> dès que vous avez Internet.");
   synchroAuto();
   toast("Fiche enregistrée");
@@ -1155,7 +1199,8 @@ $("#dlRec").addEventListener("close", fermerRec);
 /* ----------------------------- Export d'une fiche ----------------------------- */
 function lignesFiche(f) {
   const d = f.data, L = [];
-  L.push("CONSEIL NATIONAL DES BIOTECHNOLOGISTES MÉDICAUX — RDC (CNBM)");
+  L.push("CNBM-RDC — CONSEIL NATIONAL DES BIOLOGISTES MÉDICAUX ET TECHNICIENS DE LABORATOIRE");
+  L.push("EN RÉPUBLIQUE DÉMOCRATIQUE DU CONGO");
   L.push("FICHE DE RECENSEMENT DES MEMBRES");
   L.push("Identifiant : " + f.id);
   if (f.conseil) L.push("Conseil : " + f.conseil.nom);
@@ -1246,7 +1291,7 @@ function ouvrirEnvoi(fiches) {
     + `\n\nPièces jointes : ${fichiers.length} fichier(s) — à importer dans l'application CNBM (Espace responsables).`;
   const peutPartager = !!(navigator.canShare && navigator.canShare({ files: fichiers }));
   const hors = !navigator.onLine;
-  if (SRV.actif() && session) {
+  if (DIST.actif() && session) {
     c.innerHTML = `<p>${fiches.length === 1 ? "Fiche de <b>" + esc(nomComplet(fiches[0].data)) + "</b>" : "<b>" + fiches.length + " fiches</b>"} · ${fichiers.length - fiches.length} pièce(s) jointe(s) · ${taille(total)}</p>
       ${hors ? `<div class="msg att">📴 Vous êtes hors connexion. La fiche partira <b>automatiquement</b> vers votre conseil dès que l'appareil retrouvera Internet.</div>`
              : `<div class="msg inf">☁️ La fiche, la photo, la vidéo et les documents sont transmis <b>directement dans l'espace de votre conseil</b>, à l'intérieur de la plateforme (ni e-mail, ni WhatsApp).</div>`}
@@ -1472,7 +1517,7 @@ function dessinerTable() {
     [l.filter(r => r.data.adhSerment === "Oui").length, "ont prêté serment"], [l.filter(r => /^Oui/.test(r.data.adhCotisation || "")).length, "en ordre de cotisations"],
     [l.filter(aPhoto).length, "avec photo"], [l.filter(aVideo).length, "avec vidéo"]]
     .map(([n, t]) => `<div class="stat"><b>${n}</b><span>${t}</span></div>`).join("");
-  if (!l.length) { tb.innerHTML = `<tr><td colspan="7" class="vide">${registre.length ? "Aucun résultat." : SRV.actif() ? "Aucune fiche reçue pour l'instant. Partagez le lien d'inscription à vos membres." : "Registre vide. Importez les fiches reçues par e-mail."}</td></tr>`; return; }
+  if (!l.length) { tb.innerHTML = `<tr><td colspan="7" class="vide">${registre.length ? "Aucun résultat." : DIST.actif() ? "Aucune fiche reçue pour l'instant. Partagez le lien d'inscription à vos membres." : "Registre vide. Importez les fiches reçues par e-mail."}</td></tr>`; return; }
   tb.innerHTML = l.map(r => { const p = lieuPrincipal(r); return `<tr class="cl" data-id="${esc(r.id)}">
     <td><b>${esc(nomComplet(r.data))}</b>${aPhoto(r) ? " 📷" : ""}${aVideo(r) ? " 🎥" : ""}${r.serveur ? " ☁️" : ""}${estDemande(r) ? ' <span class="pastille p-prete">Demande d\'adhésion</span>' : ""}</td><td>${esc(r.data.categorie)}</td><td>${esc(r.data.telephone)}</td>
     <td>${esc(p.etablissement)}${r.lieux.length > 1 ? ` <span class="info">(+${r.lieux.length - 1})</span>` : ""}</td><td>${esc(p.fonction)}</td><td>${esc(p.province)}</td><td>${dateFr(r.recu).slice(0, 10)}</td></tr>`; }).join("");
@@ -1506,7 +1551,7 @@ function htmlDetail(r, urls) {
 }
 let urlsDet = [];
 async function ouvrirDetail(r) {
-  if (r.serveur && SRV.actif() && navigator.onLine && manqueFichiers(r)) {
+  if (r.serveur && DIST.actif() && navigator.onLine && manqueFichiers(r)) {
     toast("Téléchargement des pièces depuis le serveur…", 2500);
     try { await completerFichiers(r); } catch (e) { toast("⚠️ " + e.message, 5000); }
   }
@@ -1533,8 +1578,8 @@ async function ouvrirDetail(r) {
     if (num === null) return;
     r.data.adhMembre = "Oui"; r.data.adhAnnee = r.data.adhAnnee || String(new Date().getFullYear());
     if (num.trim()) r.data.numeroOrdre = num.trim();
-    if (r.serveur && SRV.actif()) {
-      try { await SRV.appel("POST", `/api/fiches/${r.id}/adhesion`, { numero: num.trim() }); }
+    if (r.serveur && DIST.actif()) {
+      try { await DIST.adhesion(r.id, num.trim()); }
       catch (e) { return toast("⚠️ " + e.message + " (réessayez avec Internet)", 6000); }
     }
     r.adhesionValidee = Date.now();
@@ -1543,8 +1588,8 @@ async function ouvrirDetail(r) {
   });
   $("#detVid") && ($("#detVid").onclick = () => telecharger(r.video, nomFichier(r, "video." + extVideo(r.video.type))));
   $("#detSup").onclick = async () => {
-    if (!confirm(r.serveur ? "Supprimer DÉFINITIVEMENT cette fiche du serveur du conseil (avec ses fichiers) ?" : "Retirer cette fiche du registre ?")) return;
-    if (r.serveur && SRV.actif()) { try { await SRV.appel("DELETE", "/api/fiches/" + r.id); } catch (e) { return toast("⚠️ " + e.message, 6000); } }
+    if (!confirm(r.serveur ? "Supprimer DÉFINITIVEMENT cette fiche de la réception du conseil (avec ses fichiers) ?" : "Retirer cette fiche du registre ?")) return;
+    if (r.serveur && DIST.actif()) { try { await DIST.supprimer(r.id); } catch (e) { return toast("⚠️ " + e.message, 6000); } }
     await DB.del("registre", r.id); $("#dlDet").close(); afficherRegistre();
   };
   $("#dlDet").showModal();
@@ -1724,7 +1769,7 @@ async function chargerConseil() {
   if (conseil.admin && conseil.admin.type !== "admin") conseil.admin = null;
   conseil.payload = conseil.admin || await verifierJeton(LS.get("cnbm-conseil"));
   const p = conseil.payload;
-  $("#sousTitre").textContent = p ? p.conseil : "Conseil national des biotechnologistes médicaux — République démocratique du Congo";
+  $("#sousTitre").textContent = p ? p.conseil : "Conseil National des Biologistes Médicaux et Techniciens de laboratoire — RDC";
   $("#authConseil").innerHTML = p ? `<div class="msg inf">🏛️ Inscription auprès du <b>${esc(p.conseil)}</b></div>`
     : `<div class="msg att">Pour être rattaché à votre conseil provincial, ouvrez de préférence le <b>lien d'inscription</b> envoyé par votre conseil.</div>`;
 }
@@ -1740,7 +1785,7 @@ async function enregistrerCleAbonnement(jeton) {
 }
 function afficherAbonnement() {
   const c = $("#carteAbo"), p = conseil.admin, j = joursRestants(p);
-  const lien = p && p.membres && /^https?:$/.test(location.protocol) ? location.origin + location.pathname + "?inscription=" + encodeURIComponent(p.membres) : "";
+  const lien = p && p.membres && /^https?:$/.test(location.protocol) ? location.origin + location.pathname + "?inscription=" + encodeURIComponent(p.membres) + (DRIVE.actif() ? "&drive=" + encodeURIComponent(DRIVE.url) : "") : "";
   c.innerHTML = `<h2>📜 Abonnement</h2>
     ${!p ? `<div class="msg err">Aucun abonnement actif sur cet appareil.</div>`
       : `<dl class="det"><dt>Conseil</dt><dd><b>${esc(p.conseil)}</b></dd><dt>Province</dt><dd>${esc(p.province)}</dd>
@@ -1801,7 +1846,7 @@ function htmlControle(c, d, tiers = false) {
 const enDataUrl = b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
 async function documentRecap(f, pourConseil = false) {
   const c = controleDossier(f), d = f.data, photo = f.photo ? await enDataUrl(f.photo) : "";
-  const nomConseil = f.conseil?.nom || conseil.payload?.conseil || "Conseil national des biotechnologistes médicaux — RDC";
+  const nomConseil = f.conseil?.nom || conseil.payload?.conseil || "Conseil National des Biologistes Médicaux et Techniciens de laboratoire en République Démocratique du Congo";
   const lignes = lignesFiche(f).slice(4).map(esc).join("\n");
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Récapitulatif ${esc(nomComplet(d))} — ${esc(f.id)}</title>
@@ -1844,8 +1889,8 @@ async function ouvrirRecap(f, pourConseil = false) {
 // Plusieurs récapitulatifs dans un seul document (une page par membre), pour le conseil.
 async function photoServeur(r) {
   const x = (r.fichiersServeur || []).find(x => /_photo\.jpg$/.test(x.nom));
-  if (!x || r.photo || !SRV.actif() || !navigator.onLine) return;
-  try { r.photo = new Blob([await SRV.appel("GET", `/api/fiches/${r.id}/fichiers/${encodeURIComponent(x.nom)}`, undefined, { blob: true })], { type: x.mime }); await DB.put("registre", r); } catch {}
+  if (!x || r.photo || !DIST.actif() || !navigator.onLine) return;
+  try { r.photo = await DIST.lireFichier(r.id, x.nom, x.mime); await DB.put("registre", r); } catch {}
 }
 async function recapsGroupes(liste, ouvrir) {
   if (!liste.length) return toast("Aucune fiche dans la sélection.");
@@ -1910,6 +1955,50 @@ const SRV = {
     return j;
   }
 };
+/* Réception gratuite par Google Drive (script Google Apps Script du conseil) */
+const DRIVE = {
+  url: "", cle: "",
+  actif() { return !!this.url && !SRV.actif(); },
+  init() {
+    const param = new URLSearchParams(location.search).get("drive");
+    if (param && /^https:\/\/script\.google(usercontent)?\.com\//.test(param)) LS.set("cnbm-drive", param.trim());
+    this.url = LS.get("cnbm-drive") || conseil.payload?.drive || "";
+    this.cle = LS.get("cnbm-drive-cle");
+  },
+  async lire(rep) {
+    const j = await rep.json().catch(() => { throw new Error("Réponse illisible de Google Drive : vérifiez l'adresse du script et son déploiement (« Tout le monde »)."); });
+    if (j.erreur) throw new Error(j.erreur);
+    return j;
+  },
+  async get(params) {
+    try { return await this.lire(await fetch(this.url + "?" + new URLSearchParams(params), { cache: "no-store", redirect: "follow" })); }
+    catch (e) { throw e.message === "Failed to fetch" || e.name === "TypeError" ? new Error("Google Drive injoignable (vérifiez votre connexion Internet).") : e; }
+  },
+  async post(obj) {
+    // Corps en text/plain : requête « simple », acceptée par Google Apps Script sans pré-vérification.
+    try { return await this.lire(await fetch(this.url, { method: "POST", body: JSON.stringify(obj), redirect: "follow" })); }
+    catch (e) { throw e.message === "Failed to fetch" || e.name === "TypeError" ? new Error("Google Drive injoignable (vérifiez votre connexion Internet).") : e; }
+  }
+};
+const enBase64 = b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1] || ""); r.readAsDataURL(b); });
+// Réception « interne » : serveur en ligne OU Google Drive — même usage pour l'application.
+const DIST = {
+  actif() { return SRV.actif() || DRIVE.actif(); },
+  adminPret() { return SRV.actif() ? !!SRV.jeton() : !!(DRIVE.url && DRIVE.cle); },
+  async fiche(meta) { return SRV.actif() ? SRV.appel("PUT", "/api/fiches/" + meta.id, meta) : DRIVE.post({ action: "fiche", meta }); },
+  async fichier(id, nom, blob) {
+    if (SRV.actif()) return SRV.appel("PUT", `/api/fiches/${id}/fichiers/${encodeURIComponent(nom)}`, blob);
+    return DRIVE.post({ action: "fichier", id, nom, mime: blob.type || "application/octet-stream", data: await enBase64(blob) });
+  },
+  async registre(depuis) { return SRV.actif() ? SRV.appel("GET", "/api/registre?depuis=" + depuis) : DRIVE.get({ action: "liste", cle: DRIVE.cle, depuis }); },
+  async lireFichier(id, nom, mime) {
+    if (SRV.actif()) return new Blob([await SRV.appel("GET", `/api/fiches/${id}/fichiers/${encodeURIComponent(nom)}`, undefined, { blob: true })], { type: mime });
+    const j = await DRIVE.get({ action: "fichier", cle: DRIVE.cle, id, nom });
+    return b64Blob(`data:${j.mime || mime};base64,${j.data}`);
+  },
+  async adhesion(id, numero) { return SRV.actif() ? SRV.appel("POST", `/api/fiches/${id}/adhesion`, { numero }) : DRIVE.post({ action: "adhesion", cle: DRIVE.cle, id, numero }); },
+  async supprimer(id) { return SRV.actif() ? SRV.appel("DELETE", "/api/fiches/" + id) : DRIVE.post({ action: "supprimer", cle: DRIVE.cle, id }); }
+};
 const empreinteBlob = async b => [...new Uint8Array(await crypto.subtle.digest("SHA-256", await b.arrayBuffer()))].map(x => x.toString(16).padStart(2, "0")).join("");
 
 // Envoi d'une fiche et de ses fichiers (seuls les fichiers nouveaux ou modifiés partent).
@@ -1917,13 +2006,13 @@ async function envoyerAuServeur(f, progres = () => {}) {
   const meta = metaFiche(f), fichiers = fichiersFiche(f).slice(1); // sans le .txt
   meta.fichiers = fichiers.map(x => x.name);
   progres(0, "Envoi de la fiche…");
-  const rep = await SRV.appel("PUT", "/api/fiches/" + f.id, meta);
+  const rep = await DIST.fiche(meta);
   const surServeur = Object.fromEntries((rep.fichiers || []).map(x => [x.nom, x]));
   for (const [i, x] of fichiers.entries()) {
     const s = surServeur[x.name];
     if (!(s && s.taille === x.size && s.empreinte === await empreinteBlob(x))) {
       progres((i + 0.5) / (fichiers.length + 1), `Envoi de ${x.name.split("_").slice(2).join("_")} (${taille(x.size)})…`);
-      await SRV.appel("PUT", `/api/fiches/${f.id}/fichiers/${encodeURIComponent(x.name)}`, new Blob([x], { type: x.type }));
+      await DIST.fichier(f.id, x.name, new Blob([x], { type: x.type }));
     }
   }
   const ex = await DB.get("fiches", f.id) || f;
@@ -1932,7 +2021,7 @@ async function envoyerAuServeur(f, progres = () => {}) {
 }
 let synchroEnCours = false;
 async function synchroAuto() {
-  if (!SRV.actif() || !session || !navigator.onLine || !SRV.jeton() || synchroEnCours) return;
+  if (!DIST.actif() || !session || !navigator.onLine || (SRV.actif() && !SRV.jeton()) || synchroEnCours) return;
   synchroEnCours = true;
   try {
     const pretes = (await mesFiches()).filter(f => f.statut === "prete");
@@ -1951,8 +2040,7 @@ async function telechargerFichiers(id, fichiersServeur, cible) {
     const a = (cible.documents || []).find(d => d.fichier === x.nom);
     const deja = /_photo\.jpg$/.test(x.nom) ? cible.photo : /_video\./.test(x.nom) ? cible.video : a?.blob;
     if (deja) continue;
-    const b = await SRV.appel("GET", `/api/fiches/${id}/fichiers/${encodeURIComponent(x.nom)}`, undefined, { blob: true });
-    const blob = new Blob([b], { type: x.mime });
+    const blob = await DIST.lireFichier(id, x.nom, x.mime);
     if (/_photo\.jpg$/.test(x.nom)) cible.photo = blob;
     else if (/_video\./.test(x.nom)) cible.video = blob;
     else if (a) { a.blob = blob; a.mime = x.mime; a.taille = x.taille; }
@@ -1983,13 +2071,14 @@ async function recupererMesFiches() {
 }
 // Registre du conseil : copie locale (consultable hors ligne) du registre du serveur.
 async function synchroRegistre(manuel = false) {
-  if (!SRV.actif() || !session || session.role !== "admin") return;
+  if (!DIST.actif() || !session || session.role !== "admin") return;
   const zone = $("#msgSynchro");
+  if (!DIST.adminPret()) { msg(zone, "att", "☁️ Renseignez l'adresse du script Google Drive et la clé d'accès (carte « Réception automatique » ci-dessous) pour recevoir les fiches."); return; }
   if (!navigator.onLine) { msg(zone, "att", "📴 Hors ligne : registre affiché tel qu'à la dernière synchronisation (" + (dateFr(+LS.get("cnbm-synchro-" + session.id)) || "jamais") + ")."); return; }
-  msg(zone, "inf", "🔄 Synchronisation avec le serveur…");
+  msg(zone, "inf", SRV.actif() ? "🔄 Synchronisation avec le serveur…" : "🔄 Récupération des fiches depuis Google Drive…");
   try {
     const depuis = manuel ? 0 : +LS.get("cnbm-synchro-" + session.id) || 0;
-    const r = await SRV.appel("GET", "/api/registre?depuis=" + depuis);
+    const r = await DIST.registre(depuis);
     for (const s of r.fiches) {
       const ex = await DB.get("registre", s.id);
       const rec = Object.assign(ex || { photo: null, video: null }, {
@@ -2008,6 +2097,26 @@ async function synchroRegistre(manuel = false) {
   } catch (e) { msg(zone, "err", "⚠️ " + esc(e.message)); }
 }
 $("#btnSynchro").onclick = () => synchroRegistre(true);
+// Réglage de la réception Google Drive par l'administrateur.
+$("#dvOk").onclick = async () => {
+  const url = $("#dvUrl").value.trim(), cle = $("#dvCle").value.trim().toUpperCase(), zone = $("#msgDrive");
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url)) return msg(zone, "err", "⚠️ L'adresse doit ressembler à https://script.google.com/macros/s/…/exec (copiez-la depuis « Déployer » dans Google Apps Script).");
+  if (!cle) return msg(zone, "err", "⚠️ Collez la clé d'accès administrateur affichée par la fonction « initialiser ».");
+  msg(zone, "inf", "Test de la connexion avec Google Drive…");
+  const ancien = { url: DRIVE.url, cle: DRIVE.cle };
+  DRIVE.url = url; DRIVE.cle = cle;
+  try {
+    const r = await DRIVE.get({ action: "acces", cle });
+    LS.set("cnbm-drive", url); LS.set("cnbm-drive-cle", cle);
+    msg(zone, "ok", `✅ Connexion réussie (accès : ${r.portee === "*" ? "toutes les provinces" : esc(r.portee)}). Les fiches des membres arriveront ici automatiquement. Partagez à vos membres le <b>lien d'inscription</b> de la carte « Abonnement » : il contient maintenant l'adresse de réception.`);
+    majModeEnvoi(); afficherAbonnement(); synchroRegistre(true);
+  } catch (e) { DRIVE.url = ancien.url; DRIVE.cle = ancien.cle; msg(zone, "err", "⚠️ " + esc(e.message)); }
+};
+$("#dvRetirer").onclick = () => {
+  if (!confirm("Ne plus recevoir les fiches par Google Drive sur cet appareil ? (Les fiches déjà reçues restent dans le Drive.)")) return;
+  try { localStorage.removeItem("cnbm-drive"); localStorage.removeItem("cnbm-drive-cle"); } catch {}
+  DRIVE.url = ""; DRIVE.cle = ""; msg($("#msgDrive")); majModeEnvoi(); afficherAbonnement();
+};
 addEventListener("online", () => { synchroAuto(); recupererMesFiches(); if ($("#v-admin").classList.contains("active")) synchroRegistre(); });
 
 /* ----------------------------- Comptes ----------------------------- */
@@ -2077,13 +2186,24 @@ async function ouvrirSession(c, accueil = true) {
   chargerDansForm(f && f.compte === c.id ? f : miennes.sort((a, b) => b.modifie - a.modifie)[0] || ficheVide());
   montrer(accueil && c.role === "admin" ? "admin" : "fiche");
   majCompteur();
-  $("#btnSynchro").hidden = !SRV.actif();
-  $("#carteEmail").hidden = SRV.actif();
-  $("#btnEnvoyerCourant").textContent = SRV.actif() ? "☁️ Envoyer à mon conseil" : "📤 Envoyer aux responsables";
-  $("#dlEnvoiT").textContent = SRV.actif() ? "☁️ Envoyer à mon conseil" : "📤 Envoyer aux responsables";
-  $("#lblImport").firstChild.textContent = SRV.actif() ? "📥 Importer une sauvegarde " : "📥 Importer des fiches reçues ";
-  $("#aideImport").textContent = SRV.actif() ? "Les fiches des membres arrivent directement ici, à l'intérieur de la plateforme : aucun e-mail ni WhatsApp. « Synchroniser » affiche les dernières fiches reçues ; « Importer une sauvegarde » sert seulement à restaurer un fichier de sauvegarde."
+  majModeEnvoi();
+  suiteSession(c);
+}
+function majModeEnvoi() {
+  const interne = DIST.actif();
+  $("#btnSynchro").hidden = !interne;
+  $("#carteEmail").hidden = interne;
+  $("#carteDrive").hidden = SRV.actif();
+  $("#dvUrl").value = DRIVE.url; $("#dvCle").value = DRIVE.cle; $("#dvRetirer").hidden = !DRIVE.url;
+  $("#btnEnvoyerCourant").textContent = interne ? "☁️ Envoyer à mon conseil" : "📤 Envoyer aux responsables";
+  $("#dlEnvoiT").textContent = interne ? "☁️ Envoyer à mon conseil" : "📤 Envoyer aux responsables";
+  $("#lblImport").firstChild.textContent = interne ? "📥 Importer une sauvegarde " : "📥 Importer des fiches reçues ";
+  $("#aideImport").textContent = interne ? "Les fiches des membres arrivent directement ici, à l'intérieur de la plateforme : aucun e-mail ni WhatsApp. « Synchroniser » affiche les dernières fiches reçues ; « Importer une sauvegarde » sert seulement à restaurer un fichier de sauvegarde."
     : "Ouvrez les e-mails reçus, téléchargez les pièces jointes (fiche .txt, photo, vidéo, documents), puis importez-les ici. Vous pouvez sélectionner des dizaines de fichiers à la fois.";
+  majReseau();
+}
+function suiteSession(c) {
+  if (DRIVE.actif()) synchroAuto();
   if (SRV.actif() && SRV.jeton()) {
     const lien = LS.get("cnbm-conseil");
     if (lien && c.role !== "admin") SRV.appel("POST", "/api/rattachement", { jetonConseil: lien }).catch(() => {});
@@ -2308,11 +2428,12 @@ function montrer(v) {
 }
 $$("nav button").forEach(b => b.onclick = () => montrer(b.dataset.vue));
 $$("[data-ferme]").forEach(b => b.onclick = () => b.closest("dialog").close());
+$$("[data-carte]").forEach(b => b.onclick = () => $("#dlCarte").showModal());
 $("#dlDet").addEventListener("close", () => $$("video", $("#dlDet")).forEach(v => v.pause()));
 
 function majReseau() {
-  const r = $("#reseau"); r.textContent = (navigator.onLine ? "🌐 En ligne" : "📴 Hors ligne") + (SRV.actif() ? " · ☁️" : ""); r.classList.toggle("hors", !navigator.onLine);
-  r.title = SRV.actif() ? "Serveur : " + SRV.url : "Mode local (sans serveur)";
+  const r = $("#reseau"); r.textContent = (navigator.onLine ? "🌐 En ligne" : "📴 Hors ligne") + (DIST.actif() ? " · ☁️" : ""); r.classList.toggle("hors", !navigator.onLine);
+  r.title = SRV.actif() ? "Serveur : " + SRV.url : DRIVE.actif() ? "Réception par Google Drive" : "Mode local (sans réception automatique)";
   majCompteur();
 }
 addEventListener("online", majReseau); addEventListener("offline", majReseau);
@@ -2330,6 +2451,7 @@ $("#btnInstaller").onclick = async () => { if (!invite) return; invite.prompt();
   }
   try { await chargerConseil(); } catch {}
   try { await SRV.detecter(); } catch {}
+  DRIVE.init();
   $("#pEmail").value = emailDest();
   const p = new URLSearchParams(location.search).get("email");
   if (p && /@/.test(p)) { LS.set("cnbm-email", p.trim()); $("#pEmail").value = p.trim(); }
