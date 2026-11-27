@@ -94,4 +94,4 @@ régulièrement une **💾 Sauvegarde complète** et la garder en lieu sûr.
 
 ## Crédits
 
-Limites des 26 provinces de la carte (`carte-rdc.svg`) : [geoBoundaries](https://www.geoboundaries.org) (gbOpen, COD ADM1), licence CC BY 4.0.
+Limites des 26 provinces et des 145 territoires (`carte-rdc*.svg`) : [geoBoundaries](https://www.geoboundaries.org) (gbOpen, COD ADM1 et ADM2), licence CC BY 4.0.
