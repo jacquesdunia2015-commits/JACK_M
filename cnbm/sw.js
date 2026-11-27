@@ -2,7 +2,7 @@
 // Met l'application en cache pour qu'elle s'ouvre SANS INTERNET après une
 // première visite. Les fiches ne passent jamais par ici : elles restent dans
 // la mémoire du navigateur (IndexedDB) de l'appareil.
-const CACHE = "cnbm-recensement-v1";
+const CACHE = "cnbm-recensement-v2";
 const FICHIERS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {

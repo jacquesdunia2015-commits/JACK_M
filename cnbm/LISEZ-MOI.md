@@ -19,22 +19,47 @@ et ordinateur (Windows, Mac, Linux)**, **avec ou sans Internet**.
 - **Photo passeport** (recadrée automatiquement) et **vidéo de présentation** (2 minutes maximum,
   compressée automatiquement pour pouvoir partir par e-mail)
 
+## Les trois espaces
+
+| Espace | Qui | Accès |
+|---|---|---|
+| **Espace membre** (`index.html`) | Techniciens de laboratoire, biologistes médicaux, nouveaux candidats | Compte créé avec **téléphone ou e-mail + mot de passe** |
+| **Espace responsables** (`index.html`, onglet 🏛️) | Administrateurs d'un conseil provincial ou du bureau national | Compte administrateur créé avec la **clé d'abonnement** du conseil |
+| **Espace créateur** (`createur.html`) | Le créateur de la plateforme | Fichier de **clé privée de créateur** |
+
+## Abonnements des conseils provinciaux
+
+1. Le conseil (ex. Nord-Kivu) paie son abonnement (mensuel, trimestriel, semestriel, annuel ou essai de 30 jours).
+2. Le créateur ouvre `createur.html`, charge sa clé privée, remplit le formulaire et obtient :
+   - une **clé d'abonnement** pour les administrateurs du conseil ;
+   - un **lien d'inscription** pour les membres du conseil (le lien rattache chaque membre au conseil et règle l'adresse de réception des fiches).
+3. À l'expiration, l'import et l'export du registre du conseil sont bloqués jusqu'au renouvellement (nouvelle clé).
+
+Les clés sont **signées** (ECDSA P-256) et vérifiées par l'application sans Internet : on ne peut ni les fabriquer ni modifier
+leur date sans la clé privée du créateur. La clé publique correspondante est dans `index.html` (`CLES_PUBLIQUES_CREATEUR`).
+**La clé privée ne doit jamais être déposée dans ce dépôt** (le fichier est exclu par `.gitignore`).
+
 ## Comment ça marche
 
-1. Le membre remplit sa fiche (pas besoin d'Internet ; tout est enregistré sur son appareil).
-2. Avec Internet, il appuie sur **📤 Envoyer aux responsables** : la fiche (`.txt`), la photo et la vidéo
+1. Le membre ouvre le lien d'inscription de son conseil, crée son compte (téléphone ou e-mail + mot de passe) et note son code de récupération.
+2. Il remplit sa fiche (pas besoin d'Internet ; tout est enregistré sur son appareil).
+3. Le bouton **📄 Mon récapitulatif** lui donne un document téléchargeable (et imprimable en PDF) indiquant si son dossier est complet et s'il est membre en règle (carte, serment, cotisations).
+4. Avec Internet, il appuie sur **📤 Envoyer aux responsables** : la fiche (`.txt`), la photo et la vidéo
    sont jointes à un e-mail (Gmail, Outlook…) adressé au secrétariat.
-3. Le secrétariat importe les pièces jointes reçues dans **🏛️ Espace responsables**, puis clique sur
+5. Le conseil importe les pièces jointes reçues dans **🏛️ Espace responsables**, puis clique sur
    **📊 Liste complète en Excel** : un fichier `.xlsx` contenant toutes les personnes inscrites et toutes
    leurs données (feuilles *Membres*, *Lieux de travail*, *Formations*).
 
-## À faire par le secrétariat avant de diffuser
+## Nouveaux membres
 
-Indiquer l'adresse e-mail qui recevra les fiches, de l'une de ces façons :
+Un candidat qui n'est pas encore membre répond « Non » à « Êtes-vous membre du CNBM ? » puis « Oui, je demande mon adhésion ».
+Le conseil retrouve ces fiches avec le filtre **Demandes d'adhésion** et les accepte (bouton **✅ Accepter l'adhésion**, avec le n° de carte attribué).
 
-- dans l'application : **Espace responsables → Paramètres d'envoi**, puis **🔗 Copier le lien à partager
-  aux membres** (le lien se termine par `?email=…` et configure l'adresse chez chaque membre) ;
-- ou dans le fichier `index.html`, ligne `const EMAIL_PAR_DEFAUT = "";`.
+## Limites actuelles (sans serveur)
+
+- Un compte n'existe que **sur l'appareil où il a été créé**. Pour se connecter depuis n'importe quel appareil, il faut un serveur en ligne.
+- Les fiches partent par **e-mail**, envoyé par le membre lui-même.
+- Mot de passe oublié : code de récupération donné à l'inscription, ou réinitialisation par un administrateur sur le même appareil.
 
 ## Distribution
 
