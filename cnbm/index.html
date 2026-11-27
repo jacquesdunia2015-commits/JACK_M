@@ -7,6 +7,7 @@
 <meta name="description" content="Fiche de recensement des membres du CNBM-RDC (Conseil National des Biologistes Médicaux et Techniciens de laboratoire en République Démocratique du Congo). Fonctionne sans Internet.">
 <meta name="theme-color" content="#0b5fa5">
 <link rel="manifest" href="manifest.webmanifest">
+<script src="geo-rdc.js" defer></script>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -34,6 +35,21 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:4px
 .logo3d .face::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.75) 47%,transparent 62%);background-size:300% 100%;animation:reflet3d var(--duree) linear infinite;mix-blend-mode:screen}
 .logo3d .tranche i{position:absolute;inset:0;border-radius:20%;background:linear-gradient(90deg,#052f54,#0b5fa5 45%,#f7d618 50%,#0b5fa5 55%,#052f54);transform:translateZ(calc(var(--e) / 2 - var(--e) * var(--k) / 8))}
 .logo3d.grand{filter:drop-shadow(0 14px 14px rgba(4,30,55,.35))}
+.ci-barre{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;min-height:36px}
+.ci-titre{font-weight:800;color:var(--bleu-f)}
+.ci-svg{width:100%;max-height:68vh;display:block;background:#eef4fa;border-radius:10px;touch-action:manipulation;user-select:none}
+.ci-svg path.ci-p,.ci-svg path.ci-u{cursor:pointer;transition:filter .15s}
+.ci-svg path.ci-p:hover,.ci-svg path.ci-u:hover{filter:brightness(1.08) drop-shadow(0 0 2px #fff)}
+.ci-svg .ci-gt,.ci-svg .ci-gpts{pointer-events:none}
+.ci-svg text{font-family:system-ui,Arial,sans-serif;font-weight:700;pointer-events:none;paint-order:stroke;text-anchor:middle}
+.ci-svg .tp{fill:#fff;stroke:#08365f}
+.ci-svg .tu{fill:#062b4d;stroke:#fff}
+.ci-svg .nb{fill:#fff;stroke:none;font-weight:800}
+.ci-legende{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;margin-top:6px;color:var(--txt2)}
+.ci-legende span{display:inline-flex;align-items:center;gap:4px}
+.ci-legende i{width:14px;height:14px;border-radius:3px;border:1px solid #b8c6d4;display:inline-block}
+.ci-info{font-size:14px;margin-top:6px;min-height:20px}
+.lieu-carte{display:flex;flex-wrap:wrap;gap:8px;align-items:center;grid-column:1/-1}
 .onglets-carte{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .cadre-carte{overflow:auto;max-height:70vh;border-radius:10px;background:#f4f7fa;-webkit-overflow-scrolling:touch}
 .cadre-carte img{display:block;width:100%;max-width:820px;margin:0 auto}
@@ -302,6 +318,8 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
       <label class="ch">Pays <span class="req">*</span><input data-f="adrPays" required value="RDC" list="dl-pays" data-pays-pour="adrProvince"></label>
       <label class="ch">Province <span class="req">*</span><select data-f="adrProvince" required data-province></select></label>
     </div>
+    <div class="lieu-carte" style="margin-top:10px"><button type="button" class="btn sec petit" id="btnGpsDomicile">📍 Localiser mon domicile</button><span class="info" id="posDomicile"></span></div>
+    <input type="hidden" data-f="domLat"><input type="hidden" data-f="domLon">
   </div>
 
   <div class="carte">
@@ -488,6 +506,14 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
     </div>
   </div>
 
+  <div class="carte" id="carteAdh">
+    <h2>🗺️ Carte des adhérents</h2>
+    <p class="aide">Chaque province, puis chaque territoire, est coloré selon le nombre d'adhérents qui y travaillent ; les points rouges sont les lieux de travail localisés par GPS. Touchez une province pour voir ses territoires, puis un territoire pour la liste de ses adhérents. Les filtres du registre ci-dessus s'appliquent.</p>
+    <label class="consent" style="margin-bottom:8px"><input type="checkbox" id="caTous"><span>Compter aussi les autres lieux de travail (pas seulement le principal)</span></label>
+    <div id="caCarte"></div>
+    <div id="caListe" class="liste" style="margin-top:10px"></div>
+  </div>
+
   <div class="carte no-print">
     <h2>👥 Comptes ouverts sur cet appareil</h2>
     <p class="aide">Membres et administrateurs qui se sont inscrits sur cet appareil. Vous pouvez réinitialiser le mot de passe d'un membre qui l'a oublié, ou nommer un autre administrateur.</p>
@@ -605,9 +631,10 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
 </div></dialog>
 <dialog id="dlRecap"><div class="dl-h"><h3>📄 Mon récapitulatif</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="dlRecapC"></div></dialog>
 <dialog id="dlCarte" style="width:min(900px,calc(100vw - 24px))"><div class="dl-h"><h3>🗺️ Carte administrative de la RDC</h3><button class="x" data-ferme>×</button></div><div class="dl-c">
-  <div class="onglets-carte" role="tablist"><button type="button" class="btn petit" data-vue-carte="p" aria-selected="true">26 provinces et chefs-lieux</button><button type="button" class="btn sec petit" data-vue-carte="t" aria-selected="false">145 territoires</button>
-    <button type="button" class="btn sec petit" id="zoomCarte">🔍 Agrandir</button></div>
-  <div class="vue-carte" data-vue="p"><div class="cadre-carte"><img src="carte-rdc.svg" alt="Carte administrative de la République Démocratique du Congo : 26 provinces et leurs chefs-lieux"></div>
+  <div class="onglets-carte" role="tablist"><button type="button" class="btn petit" data-vue-carte="i" aria-selected="true">🧭 Explorer (toucher une province)</button><button type="button" class="btn sec petit" data-vue-carte="p" aria-selected="false">26 provinces et chefs-lieux</button><button type="button" class="btn sec petit" data-vue-carte="t" aria-selected="false">145 territoires</button>
+    <button type="button" class="btn sec petit" id="zoomCarte" hidden>🔍 Agrandir</button></div>
+  <div class="vue-carte" data-vue="i"><div id="ciExplorer"></div></div>
+  <div class="vue-carte" data-vue="p" hidden><div class="cadre-carte"><img src="carte-rdc.svg" alt="Carte administrative de la République Démocratique du Congo : 26 provinces et leurs chefs-lieux"></div>
     <div class="table-w" style="margin-top:12px"><table><thead><tr><th>N°</th><th>Province</th><th>Chef-lieu</th></tr></thead><tbody><tr><td>1</td><td>Bas-Uele</td><td>Buta</td></tr><tr><td>2</td><td>Équateur</td><td>Mbandaka</td></tr><tr><td>3</td><td>Haut-Katanga</td><td>Lubumbashi</td></tr><tr><td>4</td><td>Haut-Lomami</td><td>Kamina</td></tr><tr><td>5</td><td>Haut-Uele</td><td>Isiro</td></tr><tr><td>6</td><td>Ituri</td><td>Bunia</td></tr><tr><td>7</td><td>Kasaï</td><td>Tshikapa</td></tr><tr><td>8</td><td>Kasaï-Central</td><td>Kananga</td></tr><tr><td>9</td><td>Kasaï-Oriental</td><td>Mbuji-Mayi</td></tr><tr><td>10</td><td>Kinshasa</td><td>⭐ Kinshasa</td></tr><tr><td>11</td><td>Kongo-Central</td><td>Matadi</td></tr><tr><td>12</td><td>Kwango</td><td>Kenge</td></tr><tr><td>13</td><td>Kwilu</td><td>Bandundu</td></tr><tr><td>14</td><td>Lomami</td><td>Kabinda</td></tr><tr><td>15</td><td>Lualaba</td><td>Kolwezi</td></tr><tr><td>16</td><td>Mai-Ndombe</td><td>Inongo</td></tr><tr><td>17</td><td>Maniema</td><td>Kindu</td></tr><tr><td>18</td><td>Mongala</td><td>Lisala</td></tr><tr><td>19</td><td>Nord-Kivu</td><td>Goma</td></tr><tr><td>20</td><td>Nord-Ubangi</td><td>Gbadolite</td></tr><tr><td>21</td><td>Sankuru</td><td>Lusambo</td></tr><tr><td>22</td><td>Sud-Kivu</td><td>Bukavu</td></tr><tr><td>23</td><td>Sud-Ubangi</td><td>Gemena</td></tr><tr><td>24</td><td>Tanganyika</td><td>Kalemie</td></tr><tr><td>25</td><td>Tshopo</td><td>Kisangani</td></tr><tr><td>26</td><td>Tshuapa</td><td>Boende</td></tr></tbody></table></div>
     <p class="info">⭐ Kinshasa, capitale du pays.</p></div>
   <div class="vue-carte" data-vue="t" hidden><div class="cadre-carte"><img src="carte-rdc-territoires.svg" alt="Carte des 145 territoires de la République Démocratique du Congo" loading="lazy"></div>
@@ -615,6 +642,7 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
     <div class="table-w" style="margin-top:12px"><table><thead><tr><th>Province</th><th>Territoires</th></tr></thead><tbody><tr><td><b>Bas-Uele</b><br><span class="info">6 territoires</span></td><td>Aketi, Ango, Bambesa, Bondo, Buta, Poko</td></tr><tr><td><b>Haut-Katanga</b><br><span class="info">6 territoires</span></td><td>Kambove, Kasenga, Kipushi, Mitwaba, Pweto, Sakania</td></tr><tr><td><b>Haut-Lomami</b><br><span class="info">5 territoires</span></td><td>Bukama, Kabongo, Kamina, Kaniama, Malemba-Nkulu</td></tr><tr><td><b>Haut-Uele</b><br><span class="info">6 territoires</span></td><td>Dungu, Faradje, Niangara, Rungu, Wamba, Watsa</td></tr><tr><td><b>Ituri</b><br><span class="info">5 territoires</span></td><td>Aru, Djugu, Irumu, Mahagi, Mambasa</td></tr><tr><td><b>Kasaï</b><br><span class="info">5 territoires</span></td><td>Dekese, Ilebo, Kamonia, Luebo, Mweka</td></tr><tr><td><b>Kasaï-Central</b><br><span class="info">5 territoires</span></td><td>Demba, Dibaya, Dimbelenge, Kazumba, Luiza</td></tr><tr><td><b>Kasaï-Oriental</b><br><span class="info">5 territoires</span></td><td>Kabeya-Kamwanga, Katanda, Lupatapata, Miabi, Tshilenge</td></tr><tr><td><b>Kongo-Central</b><br><span class="info">10 territoires</span></td><td>Lukula, Seke-Banza, Tshela, Luozi, Mbanza-Ngungu, Songololo, Kasangulu, Kimvula, Madimba, Moanda</td></tr><tr><td><b>Kwango</b><br><span class="info">5 territoires</span></td><td>Feshi, Kahemba, Kasongo-Lunda, Kenge, Popokabaka</td></tr><tr><td><b>Kwilu</b><br><span class="info">5 territoires</span></td><td>Bagata, Bulungu, Gungu, Idiofa, Masi-Manimba</td></tr><tr><td><b>Lomami</b><br><span class="info">5 territoires</span></td><td>Kabinda, Kamiji, Luilu, Lubao, Ngandajika</td></tr><tr><td><b>Lualaba</b><br><span class="info">5 territoires</span></td><td>Dilolo, Kapanga, Lubudi, Mutshatsha, Sandoa</td></tr><tr><td><b>Mai-Ndombe</b><br><span class="info">8 territoires</span></td><td>Bolobo, Inongo, Kiri, Kutu, Kwamouth, Mushie, Oshwe, Yumbi</td></tr><tr><td><b>Maniema</b><br><span class="info">7 territoires</span></td><td>Kabambare, Kailo, Kasongo, Kibombo, Lubutu, Pangi, Punia</td></tr><tr><td><b>Mongala</b><br><span class="info">3 territoires</span></td><td>Bongandanga, Bumba, Lisala</td></tr><tr><td><b>Nord-Kivu</b><br><span class="info">6 territoires</span></td><td>Beni, Lubero, Masisi, Nyiragongo, Rutshuru, Walikale</td></tr><tr><td><b>Nord-Ubangi</b><br><span class="info">4 territoires</span></td><td>Bosobolo, Businga, Mobayi-Mbongo, Yakoma</td></tr><tr><td><b>Sankuru</b><br><span class="info">6 territoires</span></td><td>Katako-Kombe, Kole, Lodja, Lomela, Lubefu, Lusambo</td></tr><tr><td><b>Sud-Kivu</b><br><span class="info">8 territoires</span></td><td>Fizi, Idjwi, Kabare, Kalehe, Mwenga, Shabunda, Uvira, Walungu</td></tr><tr><td><b>Sud-Ubangi</b><br><span class="info">4 territoires</span></td><td>Budjala, Gemena, Kungu, Libenge</td></tr><tr><td><b>Tanganyika</b><br><span class="info">6 territoires</span></td><td>Kabalo, Kalemie, Kongolo, Manono, Moba, Nyunzu</td></tr><tr><td><b>Tshopo</b><br><span class="info">7 territoires</span></td><td>Bafwasende, Banalia, Basoko, Isangi, Opala, Ubundu, Yahuma</td></tr><tr><td><b>Tshuapa</b><br><span class="info">6 territoires</span></td><td>Befale, Boende, Bokungu, Djolu, Ikela, Monkoto</td></tr><tr><td><b>Équateur</b><br><span class="info">7 territoires</span></td><td>Basankusu, Bikoro, Bolomba, Bomongo, Ingende, Lukolela, Makanza</td></tr></tbody></table></div></div>
   <p class="info">Limites des provinces et des territoires : geoBoundaries (CC BY 4.0).</p>
 </div></dialog>
+<dialog id="dlCarteI" style="width:min(880px,calc(100vw - 24px))"><div class="dl-h"><h3 id="ciTitreDlg">🗺️ Choisir sur la carte</h3><button class="x" data-ferme>×</button></div><div class="dl-c"><div id="ciChoix"></div></div></dialog>
 <dialog id="dlDet"><div class="dl-h"><h3 id="detT">Fiche</h3><button class="x" data-ferme>×</button></div><div class="dl-c" id="detC"></div></dialog>
 
 <datalist id="dl-pays"><option>RDC</option><option>Congo-Brazzaville</option><option>Angola</option><option>Zambie</option><option>Tanzanie</option><option>Burundi</option><option>Rwanda</option><option>Ouganda</option><option>Soudan du Sud</option><option>Centrafrique</option><option>Cameroun</option><option>Afrique du Sud</option><option>Belgique</option><option>France</option><option>Canada</option></datalist>
@@ -633,9 +661,13 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
       <label class="ch">Service / département<input data-l="service" placeholder="ex. Laboratoire, banque de sang"></label>
       <label class="ch">Depuis (année)<input data-l="depuis" type="number" inputmode="numeric" min="1950" max="2027"></label>
       <label class="ch">Zone de santé<input data-l="zoneSante"></label>
-      <label class="ch">Ville ou territoire <span class="req">*</span><input data-l="ville" required list="dl-villes"></label>
+      <label class="ch">Ville / localité <span class="req">*</span><input data-l="ville" required list="dl-villes"></label>
       <label class="ch">Pays <span class="req">*</span><input data-l="pays" required value="RDC" list="dl-pays" data-pays-pour="province"></label>
       <label class="ch">Province <span class="req">*</span><select data-l="province" required data-province></select></label>
+      <label class="ch">Territoire (ou ville administrative)<select data-l="territoire"><option value="">— Choisir —</option></select></label>
+      <div class="lieu-carte"><button type="button" class="btn sec petit" data-carte-lieu="carte">🗺️ Choisir sur la carte</button>
+        <button type="button" class="btn sec petit" data-carte-lieu="gps">📍 Me localiser ici</button><span class="info lieu-pos"></span></div>
+      <input type="hidden" data-l="lat"><input type="hidden" data-l="lon">
     </div>
   </div>
 </template>
@@ -676,7 +708,7 @@ const VIDEO_MAX_OCTETS = 18 * 1024 * 1024; // au-delà : compression (limite Gma
 
 const PROVINCES = ["Bas-Uele","Équateur","Haut-Katanga","Haut-Lomami","Haut-Uele","Ituri","Kasaï","Kasaï-Central","Kasaï-Oriental","Kinshasa","Kongo-Central","Kwango","Kwilu","Lomami","Lualaba","Mai-Ndombe","Maniema","Mongala","Nord-Kivu","Nord-Ubangi","Sankuru","Sud-Kivu","Sud-Ubangi","Tanganyika","Tshopo","Tshuapa"];
 const HORS_RDC = "Hors RDC (étranger)";
-const CHAMPS_LIEU = ["etablissement","type","fonction","service","depuis","zoneSante","ville","pays","province"];
+const CHAMPS_LIEU = ["etablissement","type","fonction","service","depuis","zoneSante","ville","pays","province","territoire","lat","lon"];
 const CHAMPS_FORM = ["intitule","organisme","annee","duree","lieu","certificat"];
 const TYPES_DOCS = ["Diplôme", "Carte d'identité / carte d'électeur", "Passeport", "Carte de membre CNBM", "Attestation de prestation de serment",
   "Carte de service", "Certificat / attestation de formation", "Relevé de notes", "Reçu de cotisation", "Acte de naissance", "Autre document"];
@@ -778,6 +810,7 @@ function afficherLieux() {
     box.append(n);
     brancherPays(n);
     remplirProvinces($('[data-l="province"]', n), $('[data-l="pays"]', n).value, l.province);
+    brancherCarteLieu(n, l);
   });
 }
 
@@ -1257,7 +1290,7 @@ function lignesFiche(f) {
   (f.lieux || []).forEach((l, i) => {
     L.push(`  ${i + 1}. ${l.etablissement || ""}${l.type ? " (" + l.type + ")" : ""}`);
     L.push(`     Fonction : ${l.fonction || ""}${l.service ? " — Service : " + l.service : ""}${l.depuis ? " — depuis " + l.depuis : ""}`);
-    L.push(`     ${[l.zoneSante && "Zone de santé " + l.zoneSante, l.ville, l.province !== HORS_RDC && l.province, l.pays].filter(Boolean).join(", ")}`);
+    L.push(`     ${[l.zoneSante && "Zone de santé " + l.zoneSante, l.ville, l.territoire && l.territoire !== l.ville && "territoire de " + l.territoire, l.province !== HORS_RDC && l.province, l.pays].filter(Boolean).join(", ")}${l.lat ? ` (GPS ${(+l.lat).toFixed(4)}, ${(+l.lon).toFixed(4)})` : ""}`);
   });
   L.push("PIÈCES JOINTES");
   L.push("  Photo passeport : " + (f.photo ? "oui" : "non"));
@@ -1520,6 +1553,7 @@ async function afficherRegistre() {
   dessinerTable();
 }
 function dessinerTable() {
+  setTimeout(afficherCarteAdherents, 0);
   const l = filtrer(), tb = $("#tab tbody");
   const nb = c => l.filter(r => r.data.categorie === c).length;
   const provs = new Set(l.flatMap(r => (r.lieux || []).map(x => x.province).filter(Boolean)));
@@ -1555,7 +1589,7 @@ function htmlDetail(r, urls) {
     <h4 style="margin:14px 0 6px">Lieux de travail</h4>
     ${(r.lieux || []).map((l, i) => `<div class="lieu" style="margin-bottom:8px"><b>${i + 1}. ${esc(l.etablissement)}</b>${l.type ? ` <span class="info">(${esc(l.type)})</span>` : ""}<br>
       ${esc(l.fonction)}${l.service ? " — " + esc(l.service) : ""}${l.depuis ? " — depuis " + esc(l.depuis) : ""}<br>
-      <span class="info">${esc([l.zoneSante && "ZS " + l.zoneSante, l.ville, l.province !== HORS_RDC && l.province, l.pays].filter(Boolean).join(", "))}</span></div>`).join("")}
+      <span class="info">${esc([l.zoneSante && "ZS " + l.zoneSante, l.ville, l.territoire && l.territoire !== l.ville && "territoire de " + l.territoire, l.province !== HORS_RDC && l.province, l.pays].filter(Boolean).join(", "))}${l.lat ? " · 📍 GPS" : ""}</span></div>`).join("")}
     ${(r.documents || []).length ? `<h4 style="margin:14px 0 6px">Pièces justificatives (${r.documents.length})</h4>
       <div class="det-docs">${r.documents.map((d, i) => `<a href="${urls.docs?.[i] || "#"}" target="_blank" rel="noopener" ${urls.docs?.[i] ? `download="${esc(d.fichier || d.nom || "document")}"` : ""}>
         ${!urls.docs?.[i] ? `<div class="pdf">⏳</div>` : /^image\//.test(d.mime) ? `<img src="${urls.docs[i]}" alt="">` : `<div class="pdf">📄</div>`}
@@ -1625,7 +1659,7 @@ const COLS_MEMBRE = [
   ["Années d'expérience", r => r.data.experience],
   ["Établissement principal", r => lieuPrincipal(r).etablissement], ["Type", r => lieuPrincipal(r).type], ["Fonction principale", r => lieuPrincipal(r).fonction],
   ["Service", r => lieuPrincipal(r).service], ["Zone de santé", r => lieuPrincipal(r).zoneSante], ["Ville / territoire (travail)", r => lieuPrincipal(r).ville],
-  ["Province (travail)", r => lieuPrincipal(r).province], ["Pays (travail)", r => lieuPrincipal(r).pays],
+  ["Province (travail)", r => lieuPrincipal(r).province], ["Territoire (travail)", r => lieuPrincipal(r).territoire || ""], ["Pays (travail)", r => lieuPrincipal(r).pays],
   ["Autres lieux de travail", r => (r.lieux || []).slice(1).map(l => [l.etablissement, l.fonction, l.ville, l.province !== HORS_RDC && l.province, l.pays !== "RDC" && l.pays].filter(Boolean).join(", ")).join(" | ")],
   ["Nombre de formations", r => (r.formations || []).length],
   ["Formations suivies", r => (r.formations || []).map(o => [o.intitule, o.organisme, o.annee].filter(Boolean).join(", ")).join(" | ")],
@@ -1647,8 +1681,8 @@ function tableMembres(l) {
   return [ent, ...l.map((r, i) => COLS_MEMBRE.map(([h, f]) => { const v = f(r, i); return NUMERIQUES.test(h) && v !== "" && v != null && !isNaN(+v) ? +v : (v ?? ""); }))];
 }
 function tableLieux(l) {
-  const t = [["Identifiant", "Nom complet", "Catégorie", "N° du lieu", "Établissement", "Type", "Fonction", "Service", "Depuis", "Zone de santé", "Ville / territoire", "Pays", "Province"]];
-  l.forEach(r => (r.lieux || []).forEach((q, i) => t.push([r.id, nomComplet(r.data), r.data.categorie || "", i + 1, ...CHAMPS_LIEU.map(k => k === "depuis" && q[k] ? +q[k] : q[k] || "")])));
+  const t = [["Identifiant", "Nom complet", "Catégorie", "N° du lieu", "Établissement", "Type", "Fonction", "Service", "Depuis", "Zone de santé", "Ville / localité", "Pays", "Province", "Territoire", "Latitude", "Longitude"]];
+  l.forEach(r => (r.lieux || []).forEach((q, i) => t.push([r.id, nomComplet(r.data), r.data.categorie || "", i + 1, ...CHAMPS_LIEU.map(k => ["depuis", "lat", "lon"].includes(k) && q[k] ? +q[k] : q[k] || "")])));
   return t;
 }
 function tableFormations(l) {
@@ -1929,6 +1963,221 @@ async function recapsGroupes(liste, ouvrir) {
 }
 
 $("#btnRecap").onclick = async () => { lireForm(); clearTimeout(minuteur); courant.modifie = Date.now(); await DB.put("fiches", courant); ouvrirRecap(courant); };
+
+/* ----------------------------- Carte interactive (provinces → territoires) ----------------------------- */
+const NS_SVG = "http://www.w3.org/2000/svg";
+const GEO = () => window.GEO_RDC || null;
+const COUL_T = ["#f7d618", "#0b5fa5", "#ffffff", "#4f9fe3", "#ffe873", "#9cc9f0"];
+const COUL_P = ["#1d6fb8", "#2f8bd6", "#14599a", "#3f9ae0", "#0f4f8a", "#2678c2"];
+const ECHELLE = [[0, "#eef3f8", "0"], [1, "#fff3b0", "1"], [2, "#f7d618", "2 à 4"], [5, "#7fb8ea", "5 à 9"], [10, "#2f86d1", "10 à 19"], [20, "#0b4f8f", "20 et +"]];
+const couleurNb = n => ECHELLE.reduce((c, [s, col]) => n >= s ? col : c, ECHELLE[0][1]);
+const normNom = t => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]/g, "");
+function geoVersXY(lat, lon) { const p = GEO().proj; return [(lon * p.k - p.minx) * p.S + p.ox, (-lat - p.miny) * p.S + p.oy]; }
+// Territoire (ou ville) d'un lieu de travail : champ « territoire », sinon ville reconnue.
+function uniteDeLieu(l) {
+  const g = GEO(); if (!g || !l) return null;
+  for (const cle of [l.territoire, l.ville]) {
+    const n = normNom(cle); if (!n) continue;
+    const c = g.unites.filter(u => normNom(u.n) === n);
+    const u = c.find(u => u.p === l.province) || (c.length === 1 ? c[0] : null);
+    if (u) return u;
+  }
+  return null;
+}
+let SVG_TEST = null;
+function uniteEn(x, y) {
+  const g = GEO(); if (!g) return null;
+  if (!SVG_TEST) {
+    SVG_TEST = document.createElementNS(NS_SVG, "svg"); SVG_TEST.setAttribute("viewBox", "0 0 512 512");
+    SVG_TEST.style.cssText = "position:absolute;left:-9999px;width:512px;height:512px;visibility:hidden";
+    for (const u of g.unites) { const p = document.createElementNS(NS_SVG, "path"); p.setAttribute("d", u.d); p.unite = u; SVG_TEST.append(p); }
+    document.body.append(SVG_TEST);
+  }
+  const pt = typeof DOMPoint === "function" ? new DOMPoint(x, y) : Object.assign(SVG_TEST.createSVGPoint(), { x, y });
+  for (const p of SVG_TEST.children) if (p.isPointInFill(pt)) return p.unite;
+  return null;
+}
+function creerCarte(boite, opts = {}) {
+  const g = GEO();
+  if (!g) { boite.innerHTML = `<div class="msg att">La carte n'est pas disponible (fichier geo-rdc.js absent). Ouvrez l'application depuis son adresse Internet.</div>`; return null; }
+  boite.innerHTML = `<div class="ci-barre"><button type="button" class="btn sec petit ci-retour" hidden>← Toute la RDC</button><span class="ci-titre"></span></div>
+    <svg class="ci-svg" viewBox="0 0 512 512" role="img" aria-label="Carte de la RDC"><g class="ci-gp"></g><g class="ci-gu"></g><g class="ci-gpts"></g><g class="ci-gt"></g></svg>
+    <div class="ci-legende"></div><div class="ci-info"></div>`;
+  const svg = $(".ci-svg", boite), gp = $(".ci-gp", boite), gu = $(".ci-gu", boite), gpts = $(".ci-gpts", boite), gt = $(".ci-gt", boite);
+  const el = (tag, at, parent) => { const e = document.createElementNS(NS_SVG, tag); for (const k in at) e.setAttribute(k, at[k]); parent && parent.append(e); return e; };
+  const C = { vue: null, vb: [0, 0, 512, 512], anim: null };
+  const pathsP = g.provinces.map((pr, i) => { const e = el("path", { d: pr.d, class: "ci-p", "vector-effect": "non-scaling-stroke", stroke: "#fff", "stroke-width": "1.4", "stroke-linejoin": "round" }, gp); e.dataset.i = i;
+    const t = el("title", {}, e); t.textContent = pr.n; e.onclick = () => C.vue === pr.n ? null : afficher(pr.n); return e; });
+  const pathsU = g.unites.map(u => { const e = el("path", { d: u.d, class: "ci-u", "vector-effect": "non-scaling-stroke", stroke: "#0b5fa5", "stroke-width": "1", "stroke-linejoin": "round" }, gu);
+    const t = el("title", {}, e); t.textContent = `${u.n} — ${u.y === "t" ? "territoire" : "ville"} (${u.p})`;
+    e.onclick = ev => { ev.stopPropagation(); choisir(u); }; e.unite = u; return e; });
+  function choisir(u) {
+    if (opts.onUnite) opts.onUnite(u);
+    else $(".ci-info", boite).innerHTML = `<b>${esc(u.n)}</b> — ${u.y === "t" ? "territoire" : "ville"} de la province ${esc(u.p)}`;
+  }
+  const nb = (type, nom) => (opts.comptes?.[type]?.[nom]) || 0;
+  function colorer() {
+    pathsP.forEach((e, i) => {
+      const pr = g.provinces[i], autre = C.vue && pr.n !== C.vue;
+      e.setAttribute("fill", autre ? "#dde6ef" : C.vue ? "none" : opts.comptes ? couleurNb(nb("provinces", pr.n)) : COUL_P[i % COUL_P.length]);
+      e.style.pointerEvents = C.vue && !autre ? "none" : "";
+    });
+    pathsU.forEach(e => {
+      const u = e.unite, vis = C.vue === u.p;
+      e.style.display = vis ? "" : "none";
+      if (vis) e.setAttribute("fill", opts.comptes ? couleurNb(nb("unites", u.n)) : u.y === "v" ? "#dfe9f3" : COUL_T[u.k % COUL_T.length]);
+      e.classList.toggle("choisi", opts.choisi === u.n);
+      e.setAttribute("stroke-width", opts.choisi === u.n ? "3.2" : "1"); e.setAttribute("stroke", opts.choisi === u.n ? "#ce1021" : "#0b5fa5");
+    });
+  }
+  function etiquettes() {
+    gt.innerHTML = ""; gpts.innerHTML = "";
+    const [, , w] = C.vb, fs = w / (C.vue ? 34 : 62), r = w / (C.vue ? 30 : 48);
+    const badge = (x, y, n) => { if (!n) return; el("circle", { cx: x, cy: y + fs * 1.15, r, fill: "#ce1021", stroke: "#fff", "stroke-width": w / 500 }, gt);
+      const t = el("text", { x, y: y + fs * 1.15 + r * .38, class: "nb", "font-size": r * 1.05 }, gt); t.textContent = n; };
+    if (!C.vue) for (const pr of g.provinces) {
+      const t = el("text", { x: pr.c[0], y: pr.c[1], class: "tp", "font-size": fs, "stroke-width": fs / 3.5 }, gt); t.textContent = pr.n;
+      if (opts.comptes) badge(pr.c[0], pr.c[1], nb("provinces", pr.n));
+    }
+    else for (const u of g.unites.filter(u => u.p === C.vue)) {
+      const t = el("text", { x: u.c[0], y: u.c[1], class: "tu", "font-size": fs * (u.y === "v" ? .8 : 1), "stroke-width": fs / 3.2 }, gt);
+      t.textContent = u.n; if (u.y === "v") t.setAttribute("font-style", "italic");
+      if (opts.comptes) badge(u.c[0], u.c[1], nb("unites", u.n));
+    }
+    for (const pt of opts.points || []) el("circle", { cx: pt.x, cy: pt.y, r: w / (C.vue ? 110 : 170), fill: "#ce1021", stroke: "#fff", "stroke-width": w / 900, opacity: .9 }, gpts)
+      .append(Object.assign(document.createElementNS(NS_SVG, "title"), { textContent: pt.t || "" }));
+  }
+  function animerVers(cible) {
+    cancelAnimationFrame(C.anim); const de = C.vb.slice(), t0 = performance.now(), D = 450;
+    const pas = t => { const k = Math.min(1, (t - t0) / D), e = 1 - Math.pow(1 - k, 3);
+      C.vb = de.map((v, i) => v + (cible[i] - v) * e); svg.setAttribute("viewBox", C.vb.join(" "));
+      if (k < 1) C.anim = requestAnimationFrame(pas); else etiquettes(); };
+    C.anim = requestAnimationFrame(pas);
+  }
+  function afficher(province) {
+    C.vue = province || null;
+    $(".ci-retour", boite).hidden = !C.vue;
+    let cible = [0, 0, 512, 512];
+    if (C.vue) {
+      const pr = g.provinces.find(p => p.n === C.vue), [x1, y1, x2, y2] = pr.b, cote = Math.max(x2 - x1, y2 - y1) * 1.12;
+      cible = [(x1 + x2) / 2 - cote / 2, (y1 + y2) / 2 - cote / 2, cote, cote];
+    }
+    const total = C.vue ? nb("provinces", C.vue) : Object.values(opts.comptes?.provinces || {}).reduce((a, b) => a + b, 0);
+    $(".ci-titre", boite).textContent = C.vue ? `${C.vue} — ${g.unites.filter(u => u.p === C.vue && u.y === "t").length} territoires` + (opts.comptes ? ` · ${total} adhérent(s)` : "")
+      : "RDC — 26 provinces" + (opts.comptes ? ` · ${total} adhérent(s) localisé(s)` : "");
+    $(".ci-info", boite).innerHTML = opts.aide ? opts.aide(C.vue) : (C.vue ? "Touchez un territoire." : "Touchez une province pour l'ouvrir.");
+    colorer(); gt.innerHTML = ""; animerVers(cible);
+    opts.onProvince && opts.onProvince(C.vue);
+  }
+  $(".ci-retour", boite).onclick = () => afficher(null);
+  $(".ci-legende", boite).innerHTML = opts.comptes ? ECHELLE.map(([, c, t]) => `<span><i style="background:${c}"></i>${t}</span>`).join("") + `<span><i style="background:#ce1021;border-radius:50%"></i>position GPS</span>`
+    : `<span><i style="background:#f7d618"></i><i style="background:#0b5fa5"></i><i style="background:#fff"></i>territoires</span><span><i style="background:#dfe9f3"></i>villes</span>`;
+  afficher(opts.province || null);
+  return { afficher, maj(o) { Object.assign(opts, o); colorer(); etiquettes(); afficher(C.vue); }, get vue() { return C.vue; } };
+}
+let explorateur = null;
+function ouvrirExplorateur() { if (!explorateur) explorateur = creerCarte($("#ciExplorer")); }
+// Choix d'un territoire sur la carte (fiche) : renvoie l'unité choisie, ou null.
+function choisirSurCarte(province, choisi) {
+  return new Promise(ok => {
+    const dl = $("#dlCarteI"); let fini = false;
+    $("#ciTitreDlg").textContent = "🗺️ Où travaillez-vous ? Touchez votre province, puis votre territoire";
+    creerCarte($("#ciChoix"), { province: province && province !== HORS_RDC ? province : null, choisi,
+      aide: v => v ? "Touchez le territoire (ou la ville) où se trouve votre lieu de travail." : "Touchez la province de votre lieu de travail.",
+      onUnite: u => { fini = true; dl.close(); ok(u); } });
+    dl.addEventListener("close", () => { if (!fini) ok(null); }, { once: true });
+    dl.showModal();
+  });
+}
+// Position GPS de l'appareil → territoire.
+function localiser() {
+  return new Promise((ok, ko) => {
+    if (!navigator.geolocation) return ko(new Error("La localisation n'est pas disponible sur cet appareil."));
+    if (location.protocol === "file:") return ko(new Error("La localisation exige d'ouvrir l'application depuis son adresse Internet (https)."));
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude: lat, longitude: lon, accuracy } = pos.coords;
+      if (!GEO()) return ko(new Error("Carte indisponible."));
+      const [x, y] = geoVersXY(lat, lon), u = uniteEn(x, y);
+      ok({ lat, lon, precision: Math.round(accuracy), unite: u });
+    }, e => ko(new Error(e.code === 1 ? "Localisation refusée : autorisez l'accès à la position dans le navigateur." : "Position introuvable. Activez le GPS (localisation) et réessayez, de préférence à l'extérieur.")),
+    { enableHighAccuracy: true, timeout: 25000, maximumAge: 60000 });
+  });
+}
+function remplirTerritoires(sel, province, val) {
+  const g = GEO(), l = g && province && province !== HORS_RDC ? g.unites.filter(u => u.p === province) : [];
+  sel.innerHTML = `<option value="">${l.length ? "— Choisir —" : province === HORS_RDC ? "— (hors RDC) —" : "— Choisir d'abord la province —"}</option>`
+    + l.map(u => `<option value="${esc(u.n)}">${esc(u.n)}${u.y === "v" ? " (ville)" : ""}</option>`).join("")
+    + (val && !l.some(u => u.n === val) ? `<option>${esc(val)}</option>` : "");
+  sel.value = val || "";
+  sel.disabled = province === HORS_RDC;
+}
+function brancherCarteLieu(n, l) {
+  const selP = $('[data-l="province"]', n), selT = $('[data-l="territoire"]', n), info = $(".lieu-pos", n);
+  const majInfo = () => { const la = $('[data-l="lat"]', n).value, lo = $('[data-l="lon"]', n).value; info.textContent = la ? `📍 Position GPS enregistrée (${(+la).toFixed(4)}, ${(+lo).toFixed(4)})` : ""; };
+  const remplir = () => remplirTerritoires(selT, selP.value, selT.value);
+  if (GEO()) remplirTerritoires(selT, l.province, l.territoire); else addEventListener("load", () => remplirTerritoires(selT, selP.value, l.territoire), { once: true });
+  selP.addEventListener("change", () => remplirTerritoires(selT, selP.value, ""));
+  $('[data-l="pays"]', n).addEventListener("input", remplir);
+  majInfo();
+  const appliquer = (u, pos) => {
+    const pays = $('[data-l="pays"]', n); pays.value = "RDC"; remplirProvinces(selP, "RDC", u.p); selP.value = u.p;
+    remplirTerritoires(selT, u.p, u.n);
+    const ville = $('[data-l="ville"]', n); if (!ville.value.trim()) ville.value = u.n;
+    if (pos) { $('[data-l="lat"]', n).value = pos.lat.toFixed(6); $('[data-l="lon"]', n).value = pos.lon.toFixed(6); }
+    majInfo(); sauverAuto();
+  };
+  $('[data-carte-lieu="carte"]', n).onclick = async () => { const u = await choisirSurCarte(selP.value, selT.value); if (u) { appliquer(u); toast(`Lieu de travail : ${u.n} (${u.p})`); } };
+  $('[data-carte-lieu="gps"]', n).onclick = async () => {
+    info.textContent = "📡 Recherche de votre position…";
+    try {
+      const r = await localiser();
+      if (!r.unite) { info.textContent = "Position hors de la RDC : choisissez sur la carte."; return; }
+      appliquer(r.unite, r); info.textContent += ` — ${r.unite.n}, ${r.unite.p} (précision ±${r.precision} m)`;
+    } catch (e) { info.textContent = "⚠️ " + e.message; }
+  };
+}
+$("#btnGpsDomicile").onclick = async () => {
+  const info = $("#posDomicile"); info.textContent = "📡 Recherche de votre position…";
+  try {
+    const r = await localiser();
+    $('[data-f="domLat"]').value = r.lat.toFixed(6); $('[data-f="domLon"]').value = r.lon.toFixed(6);
+    if (r.unite) {
+      $('[data-f="adrPays"]').value = "RDC"; remplirProvinces($('[data-f="adrProvince"]'), "RDC", r.unite.p); $('[data-f="adrProvince"]').value = r.unite.p;
+      if (!$('[data-f="adrVille"]').value.trim()) $('[data-f="adrVille"]').value = r.unite.n;
+    }
+    info.textContent = `📍 Domicile localisé${r.unite ? " : " + r.unite.n + ", " + r.unite.p : ""} (précision ±${r.precision} m)`;
+    sauverAuto();
+  } catch (e) { info.textContent = "⚠️ " + e.message; }
+};
+// Carte des adhérents (espace responsables)
+let carteAdh = null;
+function afficherCarteAdherents() {
+  if (!$("#v-admin").classList.contains("active")) return;
+  if (!GEO()) { $("#caCarte").innerHTML = `<div class="msg att">Carte indisponible : ouvrez l'application depuis son adresse Internet.</div>`; return; }
+  const tous = $("#caTous").checked, l = filtrer(), comptes = { unites: {}, provinces: {} }, membres = {}, points = [];
+  let sans = 0;
+  for (const r of l) {
+    const lieux = tous ? (r.lieux || []) : [lieuPrincipal(r)], vus = new Set(), vusP = new Set();
+    for (const q of lieux) {
+      const u = uniteDeLieu(q);
+      if (q.lat && q.lon) { const [x, y] = geoVersXY(+q.lat, +q.lon); points.push({ x, y, t: `${nomComplet(r.data)} — ${q.etablissement || ""}` }); }
+      if (!u) continue;
+      if (!vus.has(u.n)) { vus.add(u.n); comptes.unites[u.n] = (comptes.unites[u.n] || 0) + 1; (membres[u.n] = membres[u.n] || []).push(r); }
+      if (!vusP.has(u.p)) { vusP.add(u.p); comptes.provinces[u.p] = (comptes.provinces[u.p] || 0) + 1; }
+    }
+    if (!vus.size) sans++;
+  }
+  const liste = u => {
+    const m = membres[u.n] || [];
+    $("#caListe").innerHTML = `<div class="msg inf"><b>${esc(u.n)}</b> (${u.y === "t" ? "territoire" : "ville"}, ${esc(u.p)}) : ${m.length} adhérent(s)</div>` +
+      m.map(r => `<div class="item" data-id="${esc(r.id)}" style="cursor:pointer"><div class="ph">👤</div><div class="c"><b>${esc(nomComplet(r.data))}</b><div>${esc(r.data.categorie || "")} · ${esc(lieuPrincipal(r).etablissement || "")}</div></div></div>`).join("");
+    $("#caListe").onclick = e => { const it = e.target.closest("[data-id]"); if (it) ouvrirDetail(registre.find(x => x.id === it.dataset.id)); };
+  };
+  const aide = v => `${sans ? `⚠️ ${sans} fiche(s) sans territoire reconnu (lieu de travail à préciser). ` : ""}${v ? "Touchez un territoire pour la liste de ses adhérents." : "Touchez une province pour voir ses territoires."}`;
+  if (!carteAdh) carteAdh = creerCarte($("#caCarte"), { comptes, points, onUnite: liste, aide, onProvince: () => { $("#caListe").innerHTML = ""; } });
+  else carteAdh.maj({ comptes, points, onUnite: liste, aide });
+}
+$("#caTous").onchange = afficherCarteAdherents;
 
 /* ----------------------------- Serveur en ligne ----------------------------- */
 const SRV = {
@@ -2441,10 +2690,11 @@ function montrer(v) {
 }
 $$("nav button").forEach(b => b.onclick = () => montrer(b.dataset.vue));
 $$("[data-ferme]").forEach(b => b.onclick = () => b.closest("dialog").close());
-$$("[data-carte]").forEach(b => b.onclick = () => $("#dlCarte").showModal());
+$$("[data-carte]").forEach(b => b.onclick = () => { $("#dlCarte").showModal(); ouvrirExplorateur(); });
 $$("[data-vue-carte]").forEach(b => b.onclick = () => {
   $$("[data-vue-carte]").forEach(x => { const on = x === b; x.setAttribute("aria-selected", on); x.classList.toggle("sec", !on); });
   $$(".vue-carte").forEach(v => v.hidden = v.dataset.vue !== b.dataset.vueCarte);
+  $("#zoomCarte").hidden = b.dataset.vueCarte === "i";
 });
 $("#zoomCarte").onclick = () => { const z = !$(".cadre-carte").classList.contains("zoom"); $$(".cadre-carte").forEach(c => c.classList.toggle("zoom", z)); $("#zoomCarte").textContent = z ? "🔍 Réduire" : "🔍 Agrandir"; };
 $("#dlDet").addEventListener("close", () => $$("video", $("#dlDet")).forEach(v => v.pause()));
