@@ -1,0 +1,56 @@
+{
+  "id": "/JACK_M/qualicode",
+  "name": "QualiCode — Analyse qualitative",
+  "short_name": "QualiCode",
+  "description": "Analyse qualitative de données (entretiens, focus groups) — hors ligne, sur téléphone comme sur ordinateur.",
+  "lang": "fr",
+  "dir": "auto",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#17334f",
+  "theme_color": "#17334f",
+  "categories": ["productivity", "education", "utilities"],
+  "launch_handler": { "client_mode": "focus-existing" },
+  "icons": [
+    { "src": "assets/logo/qualicode-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/logo/qualicode-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/logo/qualicode-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mes projets",
+      "short_name": "Projets",
+      "description": "Ouvrir la liste des projets enregistrés sur cet appareil",
+      "url": "./index.html?action=projects",
+      "icons": [{ "src": "assets/logo/qualicode-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Nouveau projet",
+      "short_name": "Nouveau",
+      "description": "Créer un projet d'analyse vide",
+      "url": "./index.html?action=new",
+      "icons": [{ "src": "assets/logo/qualicode-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Manuel du débutant",
+      "short_name": "Manuel",
+      "description": "Télécharger le manuel PDF de A à Z",
+      "url": "./index.html?action=manual",
+      "icons": [{ "src": "assets/logo/qualicode-icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "./index.html",
+      "name": "Projet QualiCode",
+      "accept": {
+        "application/x-qualicode-project": [".projx"],
+        "application/x-qdpx": [".qdpx"]
+      },
+      "icons": [{ "src": "assets/logo/qualicode-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

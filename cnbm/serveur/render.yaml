@@ -1,0 +1,25 @@
+# Déploiement « Blueprint » sur Render (https://render.com) du serveur CNBM-RDC.
+# Render → New → Blueprint → choisir ce dépôt, puis dans « Blueprint Path »
+# indiquer : cnbm/serveur/render.yaml
+# (le render.yaml à la racine du dépôt est celui d'un autre projet, LocaGest).
+# Le disque garde la base et les fichiers des membres entre les redémarrages
+# (un disque exige une offre payante).
+services:
+  - type: web
+    name: cnbm-rdc
+    runtime: docker
+    dockerfilePath: ./cnbm/serveur/Dockerfile
+    dockerContext: .
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /api/sante
+    autoDeploy: true
+    disk:
+      name: donnees-cnbm
+      mountPath: /donnees
+      sizeGB: 5
+    envVars:
+      - key: DONNEES
+        value: /donnees
+      - key: ORIGINES
+        value: https://jacquesdunia2015-commits.github.io

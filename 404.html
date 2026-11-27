@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page introuvable — QualiCode</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         max-width: 560px; margin: 0 auto; padding: 56px 20px; line-height: 1.6; }
+  h1 { font-size: 21px; margin: 0 0 6px; }
+  p { margin: 12px 0; }
+  a.bouton { display: inline-block; margin-top: 10px; padding: 11px 20px; border-radius: 8px;
+             background: #26567d; color: #fff; text-decoration: none; font-weight: 600; }
+  code { background: rgba(127,127,127,.18); padding: 1px 5px; border-radius: 3px; }
+  .discret { color: #6b7280; font-size: 13.5px; }
+</style>
+</head>
+<body>
+<h1>Cette adresse n'existe pas sur le site de QualiCode</h1>
+<p>L'application elle-même, en revanche, est bien là. C'est probablement une
+faute de frappe dans l'adresse, ou un lien vers un fichier qui a changé de nom.</p>
+<p><a class="bouton" id="lien" href="/">Ouvrir QualiCode</a></p>
+<p class="discret">Vos projets ne sont pas concernés : ils sont enregistrés dans
+votre navigateur, sur votre appareil, et non sur ce site. Une adresse fausse ne
+peut pas les atteindre.</p>
+<p class="discret">Le fichier autonome, qui fonctionne sans internet, reste
+téléchargeable : <code>dist/QualiCode.html</code>.</p>
+<script>
+  // Un site de projet GitHub Pages vit dans un sous-dossier (/JACK_M/) : un
+  // lien vers « / » enverrait à la racine du domaine, hors de l'application.
+  // On reconstruit donc la base depuis l'adresse courante.
+  var base = location.pathname.split("/").filter(Boolean)[0];
+  var racine = base ? "/" + base + "/" : "/";
+  document.getElementById("lien").setAttribute("href", racine);
+  document.querySelector("code").textContent = racine + "dist/QualiCode.html";
+</script>
+</body>
+</html>

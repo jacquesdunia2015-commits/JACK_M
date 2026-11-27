@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>CNBM-RDC — Espace créateur</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{--bleu:#0b5fa5;--bleu-f:#084a82;--bleu-c:#e8f1fa;--jaune:#f7d618;--rouge:#ce1021;--txt:#1b2733;--txt2:#5a6b7b;--bord:#d5dde6;--fond:#f4f7fa;
+  --ok:#1a7f37;--ok-c:#e6f4ea;--att:#9a6700;--att-c:#fff8dc;--err:#b42318;--err-c:#fdecea}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--txt);background:var(--fond)}
+header{background:#1b2733;color:#fff;padding:12px 16px;position:relative}
+header::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:4px;background:linear-gradient(90deg,var(--jaune) 0 33%,var(--rouge) 33% 66%,var(--jaune) 66%)}
+.hd{display:flex;gap:10px;align-items:center;max-width:1000px;margin:0 auto}.hd img{width:38px;height:38px}
+.hd h1{font-size:16px;margin:0}.hd small{display:block;opacity:.8;font-weight:400;font-size:12px}
+main{max-width:1000px;margin:0 auto;padding:16px 16px 60px}
+.carte{background:#fff;border:1px solid var(--bord);border-radius:12px;padding:16px;margin-bottom:14px}
+.carte h2{font-size:17px;margin:0 0 6px;color:var(--bleu-f)}
+.aide{color:var(--txt2);font-size:14px;margin:0 0 12px}
+.grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:600}
+input,select,textarea{font:inherit;font-weight:400;padding:9px 10px;border:1px solid var(--bord);border-radius:8px;min-height:42px;width:100%;background:#fff}
+textarea{font:12px/1.4 ui-monospace,Consolas,monospace;word-break:break-all}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bleu);background:var(--bleu);color:#fff;font:inherit;font-weight:600;padding:9px 14px;border-radius:9px;cursor:pointer;min-height:42px}
+.btn.sec{background:#fff;color:var(--bleu)}.btn.ok{background:var(--ok);border-color:var(--ok)}.btn.dang{background:#fff;color:var(--err);border-color:var(--err)}
+.btn.petit{font-size:13px;padding:5px 9px;min-height:34px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.msg{padding:9px 11px;border-radius:8px;margin:8px 0;font-size:14px}
+.msg.ok{background:var(--ok-c);color:var(--ok)}.msg.att{background:var(--att-c);color:var(--att)}.msg.err{background:var(--err-c);color:var(--err)}.msg.inf{background:var(--bleu-c);color:var(--bleu-f)}
+.table-w{overflow-x:auto;border:1px solid var(--bord);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:7px 9px;border-bottom:1px solid #edf1f5;text-align:left;vertical-align:top}th{background:#f7f9fb;white-space:nowrap}
+.pastille{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+.p-ok{background:var(--ok-c);color:var(--ok)}.p-att{background:var(--att-c);color:var(--att)}.p-err{background:var(--err-c);color:var(--err)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px}
+.stat{background:var(--bleu-c);border-radius:10px;padding:10px}.stat b{display:block;font-size:22px;color:var(--bleu-f)}.stat span{font-size:12px;color:var(--txt2)}
+#verrou[hidden],#outils[hidden]{display:none}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#1b2733;color:#fff;padding:10px 16px;border-radius:10px;z-index:9}
+</style>
+</head>
+<body>
+<header><div class="hd"><img src="icon.svg" alt=""><h1>Espace créateur — Abonnements des conseils provinciaux<small>Plateforme de recensement CNBM-RDC · page réservée au créateur de la plateforme</small></h1></div></header>
+<main>
+
+<section id="verrou" class="carte">
+  <h2>🔐 Ouvrir l'espace créateur</h2>
+  <p class="aide">📘 <a href="manuel/index.html?partie=createur" target="_blank" rel="noopener">Guide du créateur</a> · <a href="manuel/CNBM_Guide_createur.pdf" download>PDF</a></p>
+  <p class="aide">Chargez votre <b>fichier de clé privée de créateur</b> (<code>CLE-PRIVEE-CREATEUR-CNBM.json</code>). Cette clé signe les abonnements ; sans elle, personne ne peut en fabriquer. Ne la donnez jamais à personne et gardez-en une copie de sauvegarde (clé USB, e-mail personnel).</p>
+  <div class="actions"><label class="btn">📂 Charger ma clé (fichier)<input type="file" id="inCle" hidden></label></div>
+  <p class="aide" style="margin:8px 0 4px">Le fichier est grisé ou introuvable sur le téléphone ? Ouvrez-le avec une application de notes ou de fichiers,
+    copiez <b>tout</b> son contenu (il commence par <code>{</code>) et collez-le ici :</p>
+  <textarea id="txtCle" rows="4" spellcheck="false" autocomplete="off" placeholder='{"format":"cnbm-cle-createur", …}'></textarea>
+  <div class="actions" style="margin-top:6px"><button class="btn sec" id="okTxtCle">🔓 Ouvrir avec la clé collée</button></div>
+  <label style="flex-direction:row;align-items:center;gap:8px;font-weight:400;margin-top:10px"><input type="checkbox" id="memoCle" style="width:20px;min-height:0"> Se souvenir de la clé sur cet ordinateur (uniquement sur un ordinateur personnel)</label>
+  <div id="msgCle"></div>
+  <details style="margin-top:14px"><summary style="cursor:pointer">Je n'ai pas de clé / j'ai perdu ma clé</summary>
+    <p class="aide" style="margin-top:8px">Vous pouvez créer une nouvelle clé. <b>Attention</b> : les abonnements déjà délivrés resteront valables seulement si l'ancienne clé publique reste inscrite dans l'application. Il faudra copier la nouvelle <b>clé publique</b> dans <code>index.html</code> (liste <code>CLES_PUBLIQUES_CREATEUR</code>) et republier l'application.</p>
+    <button class="btn sec" id="nvCle">🔑 Créer une nouvelle clé de créateur</button>
+    <div id="nvCleRes"></div>
+  </details>
+</section>
+
+<div id="outils" hidden>
+<section class="carte">
+  <h2>➕ Nouvel abonnement / renouvellement</h2>
+  <p class="aide">Après réception du paiement du conseil provincial, remplissez ce formulaire. Vous obtenez une <b>clé d'abonnement</b> (pour les administrateurs du conseil) et le <b>lien d'inscription</b> (pour leurs membres). Pour un renouvellement, choisissez le même conseil : la nouvelle clé remplace l'ancienne.</p>
+  <form id="fAbo" class="grille">
+    <label>Province / niveau<select name="province" id="province" required></select></label>
+    <label>Nom du conseil<input name="conseil" id="nomConseil" required></label>
+    <label>E-mail du conseil <span style="font-weight:400;color:var(--txt2)">(contact ; réception des fiches seulement sans serveur)</span><input name="email" type="email" placeholder="cpbm.nordkivu@exemple.cd"></label>
+    <label>Formule<select name="formule" id="formule">
+      <option value="1">Mensuel (1 mois)</option><option value="3">Trimestriel (3 mois)</option><option value="6">Semestriel (6 mois)</option>
+      <option value="12" selected>Annuel (12 mois)</option><option value="0">Essai gratuit (30 jours)</option><option value="4">Découverte offerte (4 mois)</option></select></label>
+    <label>Début<input name="debut" id="debut" type="date" required></label>
+    <label>Fin (calculée)<input name="expire" id="expire" type="date" required></label>
+    <label>Responsable (nom)<input name="responsable" placeholder="ex. Président du conseil provincial"></label>
+    <label>Téléphone du responsable<input name="tel" type="tel"></label>
+    <label>Montant payé<input name="montant" placeholder="ex. 100 USD"></label>
+    <label>Mode de paiement<select name="paiement"><option></option><option>M-Pesa</option><option>Orange Money</option><option>Airtel Money</option><option>Afrimoney</option><option>Virement bancaire</option><option>Espèces</option><option>Gratuit</option></select></label>
+    <label>Référence du paiement<input name="reference"></label>
+    <label>Adresse du serveur <span style="font-weight:400;color:var(--txt2)">(vide = mode sans serveur)</span><input name="serveur" id="urlSrv" type="url" placeholder="https://cnbm-rdc.onrender.com"></label>
+    <label>Adresse de l'application<input name="url" id="urlApp" required></label>
+    <div style="grid-column:1/-1"><button class="btn ok" type="submit">✍️ Générer et signer l'abonnement</button></div>
+  </form>
+  <div id="resultat"></div>
+</section>
+
+<section class="carte">
+  <h2>🖥️ Tableau de bord du serveur</h2>
+  <p class="aide">Activité réelle de la plateforme en ligne : conseils, comptes ouverts et fiches reçues. La demande est signée avec votre clé : seul le créateur peut la consulter.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="tbSrv" type="url" placeholder="https://cnbm-rdc.onrender.com" style="flex:1;min-width:220px"><button class="btn" id="tbOk">🔄 Actualiser</button></div>
+  <div id="tbRes" style="margin-top:12px"></div>
+</section>
+
+<section class="carte">
+  <h2>📋 Registre des abonnements</h2>
+  <div class="stats" id="stats"></div>
+  <div class="table-w"><table><thead><tr><th>Conseil</th><th>Formule</th><th>Valable jusqu'au</th><th>Statut</th><th>Paiement</th><th>E-mail</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+  <div class="actions"><button class="btn sec" id="csv">📊 Exporter (Excel / CSV)</button><button class="btn sec" id="sauv">💾 Sauvegarder le registre</button>
+    <label class="btn sec">📥 Restaurer un registre<input type="file" id="inReg" accept=".json" hidden></label>
+    <button class="btn sec" id="lienAcces">🔗 Mon lien d'accès personnel</button>
+    <button class="btn dang" id="fermer">🔒 Fermer l'espace créateur</button></div>
+</section>
+</div>
+</main>
+<script>
+"use strict";
+const PROVINCES = ["Bas-Uele","Équateur","Haut-Katanga","Haut-Lomami","Haut-Uele","Ituri","Kasaï","Kasaï-Central","Kasaï-Oriental","Kinshasa","Kongo-Central","Kwango","Kwilu","Lomami","Lualaba","Mai-Ndombe","Maniema","Mongala","Nord-Kivu","Nord-Ubangi","Sankuru","Sud-Kivu","Sud-Ubangi","Tanganyika","Tshopo","Tshuapa"];
+const NATIONAL = "National (toutes les provinces)";
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LS = { get(k, d = "") { try { return localStorage.getItem(k) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} }, del(k) { try { localStorage.removeItem(k); } catch {} } };
+const toast = t => { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.append(d); setTimeout(() => d.remove(), 3500); };
+const msg = (el, t, h) => el.innerHTML = h ? `<div class="msg ${t}">${h}</div>` : "";
+const dFr = d => d ? new Date(d + "T12:00:00").toLocaleDateString("fr-FR") : "";
+const iso = d => d.toISOString().slice(0, 10);
+const b64u = u => btoa(String.fromCharCode(...new Uint8Array(u))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const b64uTxt = t => b64u(new TextEncoder().encode(t));
+function telecharger(blob, nom) { const a = document.createElement("a"), u = URL.createObjectURL(blob); a.href = u; a.download = nom; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 30000); }
+function copier(t) { (navigator.clipboard?.writeText(t) || Promise.reject()).then(() => toast("Copié")).catch(() => { const a = document.createElement("textarea"); a.value = t; document.body.append(a); a.select(); document.execCommand("copy"); a.remove(); toast("Copié"); }); }
+
+/* ---------------- Clé du créateur ---------------- */
+let clePrivee = null, clePub = null;
+class ErreurCle extends Error {}
+function lireCle(texte) {
+  let obj;
+  try { obj = JSON.parse(String(texte).replace(/^\uFEFF/, "").trim()); }
+  catch { throw new ErreurCle("Le contenu n'est pas lisible : le fichier a peut-être été coupé ou modifié. Utilisez le fichier d'origine CLE-PRIVEE-CREATEUR-CNBM.json."); }
+  if (obj && obj.kty === "EC" && obj.d) obj = { format: "cnbm-cle-createur", privee: obj };           // clé JWK seule
+  if (!obj || obj.format !== "cnbm-cle-createur" || !obj.privee || !obj.privee.d)
+    throw new ErreurCle(obj && obj.format === "cnbm-fiche" ? "Ce fichier est une fiche de membre, pas la clé du créateur." : "Ce fichier n'est pas la clé du créateur (il doit contenir « cnbm-cle-createur »).");
+  return obj;
+}
+async function chargerCle(obj) {
+  objCle = obj;
+  if (obj.format !== "cnbm-cle-createur" || !obj.privee) throw new ErreurCle("Ce fichier n'est pas la clé du créateur.");
+  if (!window.crypto?.subtle) throw new ErreurCle("Ce navigateur ne permet pas la signature : ouvrez la page dans Chrome, Edge, Firefox ou Safari à jour, depuis son adresse https://.");
+  const priv = { ...obj.privee }; delete priv.key_ops; delete priv.ext;
+  try { clePrivee = await crypto.subtle.importKey("jwk", priv, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]); }
+  catch { throw new ErreurCle("La clé est endommagée et ne peut pas être utilisée. Reprenez une copie de sauvegarde du fichier."); }
+  clePub = obj.publique;
+  $("#verrou").hidden = true; $("#outils").hidden = false;
+  afficherRegistre();
+}
+async function ouvrirAvec(texte) {
+  try {
+    const obj = lireCle(texte);
+    await chargerCle(obj);
+    if ($("#memoCle").checked) LS.set("cnbm-createur-cle", JSON.stringify(obj));
+    $("#txtCle").value = "";
+    toast("Espace créateur ouvert");
+  } catch (e) { msg($("#msgCle"), "err", "⚠️ " + (e instanceof ErreurCle ? e.message : "Ouverture impossible : " + e.message)); }
+}
+$("#inCle").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  if (f.size > 20000) return msg($("#msgCle"), "err", `⚠️ « ${f.name} » n'est pas la clé du créateur (fichier trop gros). Choisissez CLE-PRIVEE-CREATEUR-CNBM.json.`);
+  ouvrirAvec(await f.text());
+};
+$("#okTxtCle").onclick = () => { const t = $("#txtCle").value.trim(); if (!t) return msg($("#msgCle"), "err", "⚠️ Collez d'abord le contenu de la clé."); ouvrirAvec(t); };
+$("#nvCle").onclick = async () => {
+  if (!confirm("Créer une NOUVELLE clé de créateur ? Les applications déjà diffusées ne la reconnaîtront qu'après mise à jour de index.html.")) return;
+  const k = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
+  const priv = await crypto.subtle.exportKey("jwk", k.privateKey), pub = await crypto.subtle.exportKey("jwk", k.publicKey);
+  const obj = { format: "cnbm-cle-createur", creee: new Date().toISOString(), privee: priv, publique: pub };
+  telecharger(new Blob([JSON.stringify(obj, null, 1)], { type: "application/json" }), "CLE-PRIVEE-CREATEUR-CNBM.json");
+  const ligne = JSON.stringify({ kty: pub.kty, crv: pub.crv, x: pub.x, y: pub.y });
+  $("#nvCleRes").innerHTML = `<div class="msg ok">Clé privée téléchargée : gardez-la précieusement.</div>
+    <p>Clé publique à ajouter dans <code>index.html</code>, liste <code>CLES_PUBLIQUES_CREATEUR</code> :</p><textarea rows="3" readonly>${esc(ligne)}</textarea>`;
+  await chargerCle(obj);
+};
+$("#fermer").onclick = () => { LS.del("cnbm-createur-cle"); clePrivee = null; location.reload(); };
+
+async function signer(payload) {
+  const corps = b64uTxt(JSON.stringify(payload));
+  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, clePrivee, new TextEncoder().encode(corps));
+  return "CNBM1." + corps + "." + b64u(sig);
+}
+
+/* ---------------- Formulaire ---------------- */
+const sel = $("#province");
+sel.innerHTML = `<option value="">— Choisir —</option><option>${NATIONAL}</option>` + PROVINCES.map(p => `<option>${p}</option>`).join("");
+sel.onchange = () => { const p = sel.value; $("#nomConseil").value = !p ? "" : p === NATIONAL ? "Conseil National des Biologistes Médicaux et Techniciens de laboratoire en République Démocratique du Congo" : `Conseil provincial des Biologistes Médicaux et Techniciens de laboratoire — ${p}`; };
+function calculerFin() {
+  const d = $("#debut").value; if (!d) return;
+  const m = +$("#formule").value, x = new Date(d + "T12:00:00");
+  if (m === 0) x.setDate(x.getDate() + 30); else { x.setMonth(x.getMonth() + m); x.setDate(x.getDate() - 1); }
+  $("#expire").value = iso(x);
+}
+$("#formule").onchange = calculerFin; $("#debut").onchange = calculerFin;
+$("#debut").value = iso(new Date()); calculerFin();
+$("#urlSrv").value = LS.get("cnbm-createur-serveur", "");
+// Page servie par le serveur CNBM lui-même : son adresse est proposée d'office.
+(async () => {
+  if (LS.get("cnbm-createur-serveur") || !/^https?:$/.test(location.protocol)) return;
+  try {
+    const r = await fetch(location.origin + "/api/sante", { cache: "no-store" });
+    if (r.ok && (await r.json()).service === "cnbm-recensement") {
+      $("#urlSrv").value = location.origin; $("#tbSrv").value = location.origin;
+      $("#urlApp").value = location.origin + "/index.html";
+    }
+  } catch {}
+})();
+$("#urlSrv").addEventListener("change", () => { const u = $("#urlSrv").value.trim().replace(/\/$/, ""); if (u) $("#urlApp").value = u + "/index.html"; });
+$("#urlApp").value = LS.get("cnbm-createur-url", location.protocol.startsWith("http") ? new URL("index.html", location.href).href : "https://jacquesdunia2015-commits.github.io/JACK_M/cnbm/index.html");
+
+const registre = () => { try { return JSON.parse(LS.get("cnbm-createur-registre", "[]")); } catch { return []; } };
+const sauverRegistre = r => LS.set("cnbm-createur-registre", JSON.stringify(r));
+function idAbo(province) {
+  const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", v = crypto.getRandomValues(new Uint8Array(5));
+  return "ABO-" + province.normalize("NFD").replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase() + "-" + [...v].map(x => a[x % a.length]).join("");
+}
+
+$("#fAbo").onsubmit = async e => {
+  e.preventDefault();
+  const v = Object.fromEntries(new FormData(e.target).entries());
+  if (!v.province) return toast("Choisissez la province.");
+  if (v.expire < v.debut) return toast("La date de fin est avant la date de début.");
+  LS.set("cnbm-createur-url", v.url.trim());
+  const serveur = (v.serveur || "").trim().replace(/\/$/, ""); LS.set("cnbm-createur-serveur", serveur);
+  const id = idAbo(v.province), formule = $("#formule").selectedOptions[0].textContent;
+  const base = { v: 1, id, province: v.province, conseil: v.conseil.trim(), email: v.email.trim(), debut: v.debut, expire: v.expire, emis: new Date().toISOString(), ...(serveur ? { serveur } : {}) };
+  const jMembres = await signer({ ...base, type: "membre" });
+  const jAdmin = await signer({ ...base, type: "admin", formule, membres: jMembres });
+  const lien = v.url.trim().split("?")[0] + "?inscription=" + encodeURIComponent(jMembres);
+  const r = registre();
+  r.push({ id, ...v, formule, cle: jAdmin, lien, cree: new Date().toISOString() });
+  sauverRegistre(r);
+  afficherResultat(r[r.length - 1]);
+  afficherRegistre();
+};
+const lienAdmin = a => a.url.split("?")[0].split("#")[0] + "#admin=" + encodeURIComponent(a.cle);
+function message(a) {
+  return `Bonjour,
+
+Votre abonnement à la plateforme de recensement CNBM-RDC est activé.
+Conseil : ${a.conseil}
+N° d'abonnement : ${a.id}
+Formule : ${a.formule} — valable du ${dFr(a.debut)} au ${dFr(a.expire)}
+
+1) ADMINISTRATEURS du conseil : ouvrez ce LIEN D'ACTIVATION (la clé est déjà remplie), puis créez votre compte :
+${lienAdmin(a)}
+
+   (ou ouvrez ${a.url.split("?")[0]} → « Je suis responsable d'un conseil provincial » et collez cette CLÉ D'ABONNEMENT :
+${a.cle} )
+
+2) MEMBRES : partagez-leur ce LIEN D'INSCRIPTION (WhatsApp, e-mail) :
+${a.lien}
+
+${a.serveur ? "Les fiches des membres arriveront directement dans votre Espace responsables, à l'intérieur de la plateforme (ni e-mail, ni WhatsApp)." : "Les fiches des membres seront envoyées à : " + a.email}
+
+Ne communiquez la clé d'abonnement qu'aux administrateurs du conseil.`;
+}
+function afficherResultat(a) {
+  $("#resultat").innerHTML = `<div class="msg ok">✅ Abonnement <b>${esc(a.id)}</b> créé pour <b>${esc(a.conseil)}</b>, valable jusqu'au ${dFr(a.expire)}.</div>
+    <label>Clé d'abonnement (pour les administrateurs du conseil)<textarea rows="4" readonly>${esc(a.cle)}</textarea></label>
+    <div class="actions"><button class="btn sec petit" data-c="cle">Copier la clé</button><button class="btn sec petit" data-c="admin">Copier le lien d'activation (administrateur)</button></div>
+    <label style="margin-top:10px">Lien d'inscription (pour les membres)<textarea rows="3" readonly>${esc(a.lien)}</textarea></label>
+    <div class="actions"><button class="btn sec petit" data-c="lien">Copier le lien</button>
+      <button class="btn" data-c="msg">📋 Copier le message complet à envoyer au conseil</button>
+      ${a.tel ? `<a class="btn ok" target="_blank" rel="noopener" href="https://wa.me/${esc(a.tel.replace(/[^\d]/g, ""))}?text=${encodeURIComponent(message(a))}">WhatsApp</a>` : ""}
+      ${a.email ? `<a class="btn sec" href="mailto:${esc(a.email)}?subject=${encodeURIComponent("Abonnement plateforme CNBM-RDC — " + a.conseil)}&body=${encodeURIComponent(message(a))}">✉️ E-mail</a>` : ""}</div>`;
+  $("#resultat").onclick = e => { const c = e.target.dataset.c; if (c) copier(c === "cle" ? a.cle : c === "admin" ? lienAdmin(a) : c === "lien" ? a.lien : message(a)); };
+  $("#resultat").scrollIntoView({ behavior: "smooth" });
+}
+
+/* ---------------- Registre ---------------- */
+const jours = a => Math.ceil((new Date(a.expire + "T23:59:59") - Date.now()) / 86400000);
+function afficherRegistre() {
+  const r = registre();
+  // dernier abonnement par conseil = état actuel
+  const parConseil = {}; r.forEach(a => { if (!parConseil[a.province] || a.expire > parConseil[a.province].expire) parConseil[a.province] = a; });
+  const actifs = Object.values(parConseil).filter(a => jours(a) >= 0);
+  $("#stats").innerHTML = [[actifs.length, "conseils abonnés (actifs)"], [Object.values(parConseil).filter(a => jours(a) >= 0 && jours(a) <= 30).length, "à renouveler (≤ 30 j)"],
+    [Object.values(parConseil).filter(a => jours(a) < 0).length, "abonnements expirés"], [27 - actifs.length, "provinces/national sans abonnement actif"], [r.length, "clés délivrées au total"]]
+    .map(([n, t]) => `<div class="stat"><b>${n}</b><span>${t}</span></div>`).join("");
+  $("#tb").innerHTML = r.slice().reverse().map(a => { const j = jours(a);
+    return `<tr data-id="${esc(a.id)}"><td><b>${esc(a.conseil)}</b><br><span style="color:var(--txt2)">${esc(a.id)}${a.responsable ? " · " + esc(a.responsable) : ""}${a.tel ? " · " + esc(a.tel) : ""}</span></td>
+      <td>${esc(a.formule)}</td><td>${dFr(a.expire)}</td>
+      <td><span class="pastille ${j < 0 ? "p-err" : j <= 30 ? "p-att" : "p-ok"}">${j < 0 ? "Expiré" : j <= 30 ? j + " j restants" : "Actif"}</span>${parConseil[a.province] !== a ? '<br><span style="font-size:11px;color:var(--txt2)">remplacé</span>' : ""}</td>
+      <td>${esc([a.montant, a.paiement, a.reference].filter(Boolean).join(" · "))}</td><td>${esc(a.email)}</td>
+      <td style="white-space:nowrap"><button class="btn sec petit" data-a="voir">Voir</button> <button class="btn sec petit" data-a="renouv">Renouveler</button></td></tr>`; }).join("")
+    || `<tr><td colspan="7" style="text-align:center;color:var(--txt2);padding:20px">Aucun abonnement délivré.</td></tr>`;
+}
+$("#tb").onclick = e => {
+  const a = e.target.dataset.a, id = e.target.closest("tr")?.dataset.id; if (!a || !id) return;
+  const x = registre().find(z => z.id === id);
+  if (a === "voir") afficherResultat(x);
+  if (a === "renouv") {
+    const f = $("#fAbo");
+    ["province", "conseil", "email", "responsable", "tel"].forEach(k => f.elements[k].value = x[k] || "");
+    const d = new Date(Math.max(Date.now(), new Date(x.expire + "T12:00:00").getTime() + 86400000));
+    $("#debut").value = iso(d); calculerFin(); ["montant", "reference"].forEach(k => f.elements[k].value = "");
+    f.scrollIntoView({ behavior: "smooth" }); toast("Formulaire prérempli : vérifiez la formule et le paiement, puis générez.");
+  }
+};
+$("#csv").onclick = () => {
+  const c = v => /[;"\n]/.test(String(v ?? "")) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v ?? "");
+  const cols = ["id", "conseil", "province", "email", "formule", "debut", "expire", "responsable", "tel", "montant", "paiement", "reference", "cree"];
+  const t = [["N° abonnement", "Conseil", "Province", "E-mail", "Formule", "Début", "Fin", "Responsable", "Téléphone", "Montant", "Paiement", "Référence", "Créé le"], ...registre().map(a => cols.map(k => a[k]))];
+  telecharger(new Blob(["﻿" + t.map(l => l.map(c).join(";")).join("\r\n")], { type: "text/csv" }), `CNBM_abonnements_${iso(new Date())}.csv`);
+};
+$("#sauv").onclick = () => telecharger(new Blob([JSON.stringify({ format: "cnbm-registre-abonnements", date: new Date().toISOString(), abonnements: registre() }, null, 1)], { type: "application/json" }), `CNBM_registre_abonnements_${iso(new Date())}.json`);
+$("#inReg").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try { const o = JSON.parse(await f.text()); if (o.format !== "cnbm-registre-abonnements") throw 0;
+    const r = registre(), ids = new Set(r.map(a => a.id)); o.abonnements.forEach(a => !ids.has(a.id) && r.push(a)); sauverRegistre(r); afficherRegistre(); toast("Registre restauré");
+  } catch { toast("Fichier de registre non reconnu."); }
+};
+
+/* ---------------- Tableau de bord du serveur ---------------- */
+$("#tbSrv").value = LS.get("cnbm-createur-serveur", "");
+$("#tbOk").onclick = async () => {
+  const u = $("#tbSrv").value.trim().replace(/\/$/, ""), z = $("#tbRes");
+  if (!u) return msg(z, "att", "Indiquez l'adresse du serveur.");
+  msg(z, "inf", "Interrogation du serveur…");
+  try {
+    const ts = String(Date.now());
+    const sig = b64u(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, clePrivee, new TextEncoder().encode("createur:" + ts)));
+    const r = await fetch(u + "/api/createur/tableau", { headers: { "x-createur": ts + "." + sig }, cache: "no-store" });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.erreur || "Erreur " + r.status);
+    LS.set("cnbm-createur-serveur", u);
+    const mo = o => o > 1073741824 ? (o / 1073741824).toFixed(2) + " Go" : (o / 1048576).toFixed(1) + " Mo";
+    z.innerHTML = `<div class="stats">${[[j.conseils.length, "conseils connus du serveur"], [j.conseils.filter(c => jours(c) >= 0).length, "abonnements actifs"], [j.totaux.comptes, "comptes ouverts"], [j.totaux.fiches, "fiches reçues"], [mo(j.totaux.fichiers.t), "de fichiers (" + j.totaux.fichiers.n + ")"]]
+        .map(([n, t]) => `<div class="stat"><b>${n}</b><span>${t}</span></div>`).join("")}</div>
+      <div class="table-w"><table><thead><tr><th>Conseil</th><th>Valable jusqu'au</th><th>Administrateurs</th><th>Membres inscrits</th><th>Fiches reçues</th></tr></thead><tbody>
+      ${j.conseils.map(c => { const jr = jours(c); return `<tr><td><b>${esc(c.nom)}</b><br><span style="color:var(--txt2)">${esc(c.province)} · ${esc(c.id)}</span></td>
+        <td>${dFr(c.expire)} <span class="pastille ${jr < 0 ? "p-err" : jr <= 30 ? "p-att" : "p-ok"}">${jr < 0 ? "Expiré" : jr <= 30 ? jr + " j" : "Actif"}</span></td>
+        <td>${c.admins}</td><td>${c.membres}</td><td>${c.fiches}</td></tr>`; }).join("") || `<tr><td colspan="5" style="text-align:center;color:var(--txt2)">Aucun conseil n'utilise encore le serveur.</td></tr>`}
+      </tbody></table></div><p class="aide" style="margin-top:6px">Mis à jour le ${new Date(j.heure).toLocaleString("fr-FR")}.</p>`;
+  } catch (e) { msg(z, "err", "⚠️ " + esc(e.message === "Failed to fetch" ? "Serveur injoignable : vérifiez l'adresse et votre connexion." : e.message)); }
+};
+
+const b64uTexte = t => new TextDecoder().decode(Uint8Array.from(atob(t.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((t.length + 3) % 4)), c => c.charCodeAt(0)));
+let objCle = null;
+function lienPersonnel() {
+  const o = { format: "cnbm-cle-createur", privee: objCle.privee, publique: objCle.publique };
+  return location.href.split("#")[0].split("?")[0] + "#cle=" + b64uTxt(JSON.stringify(o));
+}
+$("#lienAcces").onclick = () => {
+  if (!objCle) return;
+  if (!confirm("Ce lien OUVRE VOTRE ESPACE CRÉATEUR sans fichier : il contient votre clé privée.\nGardez-le pour vous seul (favori de votre navigateur, note personnelle), ne le partagez jamais.\n\nCopier le lien ?")) return;
+  copier(lienPersonnel());
+};
+(async () => {
+  // Lien d'accès personnel : https://…/createur.html#cle=…
+  const h = location.hash.match(/^#cle=([A-Za-z0-9_-]+)$/);
+  if (h) {
+    history.replaceState(null, "", location.pathname + location.search); // la clé ne reste pas affichée dans la barre d'adresse
+    try { await ouvrirAvec(b64uTexte(h[1])); return; } catch { msg($("#msgCle"), "err", "⚠️ Lien d'accès incomplet : recopiez-le en entier."); }
+  }
+  const m = LS.get("cnbm-createur-cle");
+  if (m) try { await chargerCle(JSON.parse(m)); } catch { LS.del("cnbm-createur-cle"); }
+})();
+</script>
+</body>
+</html>
