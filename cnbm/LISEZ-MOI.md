@@ -1,5 +1,10 @@
 # CNBM-RDC — Application de recensement des membres
 
+📘 **Manuel d'utilisation** (avec captures d'écran) : [`manuel/index.html`](manuel/index.html) — PDF :
+[complet](manuel/CNBM_Manuel_complet.pdf) · [adhérent](manuel/CNBM_Guide_adherent.pdf) ·
+[administrateur de conseil](manuel/CNBM_Guide_administrateur.pdf) · [créateur](manuel/CNBM_Guide_createur.pdf).
+Les PDF se régénèrent depuis `manuel/index.html` (paramètre `?partie=membre|admin|createur`), imprimé au format A4.
+
 Application du **Conseil national des biotechnologistes médicaux de la RDC** pour recenser les
 techniciens de laboratoire et les biologistes médicaux. Elle fonctionne sur **téléphone (Android, iPhone)
 et ordinateur (Windows, Mac, Linux)**, **avec ou sans Internet**.
@@ -16,6 +21,8 @@ et ordinateur (Windows, Mac, Linux)**, **avec ou sans Internet**.
 - **Formations suivies** durant la carrière (plusieurs possibles)
 - **Adhésion au CNBM** : membre ou non, année d'adhésion, carte de membre, n° de carte, serment prêté (et année),
   cotisations à jour, nombre de mois payés, dernier mois payé
+- **Pièces justificatives** (photos ou PDF) : diplômes, carte d'identité, passeport, carte de membre, attestation de serment,
+  carte de service, certificats de formation… — diplôme et pièce d'identité exigés pour un dossier complet
 - **Photo passeport** (recadrée automatiquement) et **vidéo de présentation** (2 minutes maximum,
   compressée automatiquement pour pouvoir partir par e-mail)
 

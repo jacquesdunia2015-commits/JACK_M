@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manuel d'utilisation — Plateforme de recensement CNBM-RDC</title>
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<style>
+:root{--bleu:#0b5fa5;--bleu-f:#084a82;--bleu-c:#e8f1fa;--jaune:#f7d618;--rouge:#ce1021;--txt:#1b2733;--txt2:#5a6b7b;--bord:#d5dde6;--ok-c:#e6f4ea;--ok:#1a7f37;--att-c:#fff8dc;--att:#7a5200;--err-c:#fdecea;--err:#b42318}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--txt);background:#fff}
+.wrap{max-width:860px;margin:0 auto;padding:0 18px 60px}
+.couv{background:var(--bleu);color:#fff;padding:36px 18px 30px;position:relative;margin-bottom:28px}
+.couv::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:6px;background:linear-gradient(90deg,var(--jaune) 0 33%,var(--rouge) 33% 66%,var(--jaune) 66%)}
+.couv .in{max-width:860px;margin:0 auto;display:flex;gap:20px;align-items:center}
+.couv img{width:96px;height:96px;border-radius:20px;flex:none}
+.couv h1{margin:0;font-size:28px;line-height:1.2}
+.couv p{margin:6px 0 0;opacity:.9}
+h2{font-size:24px;color:var(--bleu-f);border-bottom:3px solid var(--bleu);padding-bottom:6px;margin:44px 0 14px}
+h3{font-size:19px;color:var(--bleu-f);margin:30px 0 8px}
+h4{font-size:16px;margin:20px 0 6px}
+.partie{background:var(--bleu-c);border-radius:14px;padding:16px 20px;margin:48px 0 10px}
+.partie b{display:block;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--bleu)}
+.partie span{font-size:26px;font-weight:800;color:var(--bleu-f)}
+.partie p{margin:4px 0 0;color:var(--txt2)}
+figure{margin:16px 0 20px;text-align:center;break-inside:avoid}
+figure img{max-width:100%;border:1px solid var(--bord);border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+figure.tel img{max-width:330px}
+figcaption{font-size:13px;color:var(--txt2);margin-top:6px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.duo figure{margin:8px 0}
+.note,.attention,.astuce{border-radius:10px;padding:12px 14px;margin:14px 0;break-inside:avoid}
+.note{background:var(--bleu-c)}.attention{background:var(--err-c);color:#6b140d}.astuce{background:var(--ok-c);color:#0f4d22}
+.note::before{content:"ℹ️ ";}.attention::before{content:"⚠️ ";font-weight:700}.astuce::before{content:"💡 "}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:12px 0;break-inside:avoid}
+th,td{border:1px solid var(--bord);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#f3f6f9}
+code,.k{background:#f1f4f7;border-radius:5px;padding:1px 6px;font-size:.92em}
+.k{border:1px solid var(--bord);font-weight:600;white-space:nowrap}
+ol li,ul li{margin:5px 0}
+.sommaire{columns:2;column-gap:30px;background:#f7f9fb;border-radius:12px;padding:14px 18px 14px 34px}
+.sommaire li{break-inside:avoid}
+.sommaire a{color:var(--bleu-f);text-decoration:none}
+.lien-partie{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.lien-partie a{background:var(--bleu);color:#fff;text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:600}
+.pied{margin-top:50px;font-size:13px;color:var(--txt2);border-top:1px solid var(--bord);padding-top:10px}
+@media (max-width:640px){.duo{grid-template-columns:1fr}.sommaire{columns:1}.couv .in{flex-direction:column;text-align:center}}
+@media print{
+  @page{size:A4;margin:16mm 14mm}
+  body{font-size:11.5pt}
+  .couv{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .partie{break-before:page;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .lien-partie{display:none}
+  h2,h3,h4{break-after:avoid}
+  figure img{box-shadow:none;max-height:105mm;width:auto}
+  .duo figure img{max-height:95mm}
+  figure{margin:8px 0 12px}
+  a{color:inherit;text-decoration:none}
+}
+body.seul-membre [data-p]:not([data-p~=membre]),
+body.seul-admin [data-p]:not([data-p~=admin]),
+body.seul-createur [data-p]:not([data-p~=createur]){display:none}
+</style>
+</head>
+<body>
+<div class="couv"><div class="in">
+  <img src="../icon-512.png" alt="">
+  <div><h1 id="titre">Manuel d'utilisation<br>Plateforme de recensement CNBM-RDC</h1>
+  <p>Conseil national des biotechnologistes médicaux de la République démocratique du Congo</p>
+  <p id="sousTitre">Pour les adhérents · les administrateurs des conseils provinciaux et national · le créateur de la plateforme</p></div>
+</div></div>
+
+<div class="wrap">
+
+<div class="lien-partie" data-p="membre admin createur">
+  <a href="#membre">👤 Je suis adhérent</a><a href="#admin">🏛️ Je suis administrateur d'un conseil</a><a href="#createur">✍️ Je suis le créateur</a>
+</div>
+
+<section data-p="membre admin createur">
+<h2>Présentation</h2>
+<p>La plateforme permet au CNBM de <b>recenser tous les techniciens de laboratoire et biologistes médicaux</b> de la RDC, province par province : identité, contacts, adresse, diplômes, carrière, lieux de travail, formations, situation d'adhésion (carte, serment, cotisations), photo passeport et vidéo de présentation.</p>
+<p>Elle fonctionne sur <b>téléphone</b> (Android, iPhone) et sur <b>ordinateur</b>, <b>avec ou sans Internet</b>. Internet n'est nécessaire que pour l'installer la première fois et pour envoyer les fiches.</p>
+
+<h3>Les trois espaces</h3>
+<table>
+<tr><th>Espace</th><th>Pour qui</th><th>Comment y entrer</th></tr>
+<tr><td>👤 <b>Espace membre</b></td><td>Techniciens de laboratoire, biologistes médicaux, candidats à l'adhésion</td><td>Un compte créé avec son <b>numéro de téléphone ou son e-mail</b> et un mot de passe</td></tr>
+<tr><td>🏛️ <b>Espace responsables</b></td><td>Administrateurs d'un conseil provincial (ex. Nord-Kivu) ou du bureau national</td><td>Un compte administrateur activé avec la <b>clé d'abonnement</b> du conseil</td></tr>
+<tr><td>✍️ <b>Espace créateur</b></td><td>Le créateur de la plateforme, qui délivre les abonnements</td><td>Le <b>fichier de clé privée</b> du créateur</td></tr>
+</table>
+
+<h3>Les adresses</h3>
+<ul>
+<li>Application (membres et responsables) : <b>https://jacquesdunia2015-commits.github.io/JACK_M/cnbm/</b></li>
+<li>Espace créateur : <b>https://jacquesdunia2015-commits.github.io/JACK_M/cnbm/createur.html</b></li>
+</ul>
+<p>Les membres n'utilisent pas l'adresse ci-dessus directement : ils ouvrent le <b>lien d'inscription</b> de leur conseil provincial, qui les rattache automatiquement à ce conseil.</p>
+
+<h3>Le circuit en un coup d'œil</h3>
+<ol>
+<li><b>Le créateur</b> délivre un abonnement au conseil provincial → le conseil reçoit une <b>clé d'abonnement</b> et un <b>lien d'inscription</b>.</li>
+<li><b>L'administrateur du conseil</b> crée son compte avec la clé, puis partage le lien d'inscription aux membres (WhatsApp, e-mail).</li>
+<li><b>Chaque membre</b> ouvre le lien, crée son compte, remplit sa fiche, vérifie son dossier (récapitulatif) et l'envoie par e-mail au conseil.</li>
+<li><b>L'administrateur</b> importe les fiches reçues, accepte les adhésions, et obtient la <b>liste complète en Excel</b>.</li>
+</ol>
+
+<div class="note">Les comptes et les données sont enregistrés <b>dans l'appareil</b> (téléphone ou ordinateur) où ils ont été créés. Un membre doit donc toujours utiliser le même appareil pour se connecter. Les fiches arrivent au conseil <b>par e-mail</b>.</div>
+</section>
+
+<section data-p="membre admin createur">
+<h3>Sommaire</h3>
+<ol class="sommaire">
+<li data-p="membre"><a href="#membre">Partie A — Adhérent</a></li>
+<li data-p="membre"><a href="#m-install">A1. Installer l'application</a></li>
+<li data-p="membre"><a href="#m-compte">A2. Créer son compte</a></li>
+<li data-p="membre"><a href="#m-connexion">A3. Se connecter, mot de passe oublié</a></li>
+<li data-p="membre"><a href="#m-fiche">A4. Remplir sa fiche</a></li>
+<li data-p="membre"><a href="#m-media">A5. Photo passeport et vidéo</a></li>
+<li data-p="membre"><a href="#m-docs">A6. Ajouter ses pièces justificatives</a></li>
+<li data-p="membre"><a href="#m-valider">A7. Valider et vérifier son dossier</a></li>
+<li data-p="membre"><a href="#m-envoyer">A8. Envoyer sa fiche au conseil</a></li>
+<li data-p="membre"><a href="#m-adhesion">A9. Demander son adhésion</a></li>
+<li data-p="membre"><a href="#m-faq">A10. Questions fréquentes</a></li>
+<li data-p="admin"><a href="#admin">Partie B — Administrateur de conseil</a></li>
+<li data-p="admin"><a href="#a-abonnement">B1. Obtenir l'abonnement</a></li>
+<li data-p="admin"><a href="#a-compte">B2. Créer le compte administrateur</a></li>
+<li data-p="admin"><a href="#a-lien">B3. Inviter les membres</a></li>
+<li data-p="admin"><a href="#a-import">B4. Recevoir et importer les fiches</a></li>
+<li data-p="admin"><a href="#a-registre">B5. Consulter le registre</a></li>
+<li data-p="admin"><a href="#a-adhesion">B6. Traiter les demandes d'adhésion</a></li>
+<li data-p="admin"><a href="#a-excel">B7. Liste Excel, impression, sauvegarde</a></li>
+<li data-p="admin"><a href="#a-comptes">B8. Gérer les comptes</a></li>
+<li data-p="admin"><a href="#a-renouv">B9. Renouveler l'abonnement</a></li>
+<li data-p="admin"><a href="#a-national">B10. Conseil national</a></li>
+<li data-p="createur"><a href="#createur">Partie C — Créateur</a></li>
+<li data-p="createur"><a href="#c-cle">C1. Votre clé privée</a></li>
+<li data-p="createur"><a href="#c-acces">C2. Accéder à l'espace créateur</a></li>
+<li data-p="createur"><a href="#c-abo">C3. Délivrer un abonnement</a></li>
+<li data-p="createur"><a href="#c-envoi">C4. Transmettre au conseil</a></li>
+<li data-p="createur"><a href="#c-registre">C5. Suivre et renouveler</a></li>
+<li data-p="createur"><a href="#c-securite">C6. Sécurité et perte de clé</a></li>
+<li data-p="membre admin createur"><a href="#depannage">Dépannage</a></li>
+</ol>
+</section>
+
+<!-- ============================================================ PARTIE A ============================================================ -->
+<div class="partie" id="membre" data-p="membre"><b>Partie A</b><span>👤 Adhérent du CNBM</span><p>Technicien de laboratoire, biologiste médical ou candidat à l'adhésion</p></div>
+
+<section data-p="membre">
+<h3 id="m-install">A1. Installer l'application</h3>
+<p>Ouvrez le <b>lien d'inscription</b> envoyé par votre conseil provincial (WhatsApp, SMS ou e-mail). Pour retrouver l'application facilement, installez-la sur votre écran d'accueil :</p>
+<ul>
+<li><b>Android (Chrome)</b> : menu <span class="k">⋮</span> en haut à droite → <b>« Installer l'application »</b> ou <b>« Ajouter à l'écran d'accueil »</b>.</li>
+<li><b>iPhone (Safari)</b> : bouton <b>Partager</b> <span class="k">⬆️</span> → <b>« Sur l'écran d'accueil »</b>.</li>
+<li><b>Ordinateur (Chrome, Edge)</b> : icône d'installation dans la barre d'adresse, ou menu → <b>« Installer »</b>.</li>
+</ul>
+<div class="astuce">Une fois installée, l'application s'ouvre même sans Internet. L'indicateur en haut à droite affiche <b>🌐 En ligne</b> ou <b>📴 Hors ligne</b>.</div>
+
+<h3 id="m-compte">A2. Créer son compte</h3>
+<div class="duo">
+<figure class="tel"><img src="img/m1-connexion.jpg" alt="Écran d'accueil"><figcaption>L'écran d'accueil indique le conseil auquel vous vous inscrivez.</figcaption></figure>
+<figure class="tel"><img src="img/m2-inscription.jpg" alt="Création du compte"><figcaption>Onglet « Créer un compte ».</figcaption></figure>
+</div>
+<ol>
+<li>Vérifiez en haut que le nom de <b>votre conseil provincial</b> est affiché (« Inscription auprès du … »).</li>
+<li>Touchez <b>« Créer un compte »</b>.</li>
+<li>Saisissez votre <b>nom complet</b>.</li>
+<li>Saisissez votre <b>numéro de téléphone</b> (ex. <code>0991234567</code> ou <code>+243 991 234 567</code>) <b>ou</b> votre <b>adresse e-mail</b>. C'est votre identifiant de connexion.</li>
+<li>Choisissez un <b>mot de passe</b> d'au moins 6 caractères et confirmez-le. L'icône 👁️ permet de voir ce que vous tapez.</li>
+<li>Touchez <b>« Créer mon compte »</b>.</li>
+</ol>
+<figure class="tel"><img src="img/m3-code.jpg" alt="Code de récupération"><figcaption>Le code de récupération s'affiche une seule fois.</figcaption></figure>
+<div class="attention">Un <b>code de récupération</b> s'affiche (ex. <code>R3VU-D4QU-DQL5</code>). <b>Notez-le sur papier ou faites une capture d'écran.</b> C'est le seul moyen de changer votre mot de passe si vous l'oubliez. Touchez ensuite « J'ai noté mon code, continuer ».</div>
+
+<h3 id="m-connexion">A3. Se connecter, mot de passe oublié</h3>
+<ul>
+<li><b>Se connecter</b> : onglet « Se connecter », votre téléphone ou e-mail, votre mot de passe. Vous restez connecté jusqu'à ce que vous vous déconnectiez.</li>
+<li><b>Mot de passe oublié</b> : « Mot de passe oublié ? » → votre téléphone/e-mail → votre <b>code de récupération</b> → un nouveau mot de passe.</li>
+<li><b>Code perdu aussi</b> : demandez à un administrateur de votre conseil de réinitialiser votre mot de passe (il doit le faire sur l'appareil où vous avez créé votre compte).</li>
+<li><b>Mon compte</b> : touchez votre nom en haut à droite pour changer de mot de passe, obtenir un nouveau code de récupération ou <b>vous déconnecter</b>.</li>
+</ul>
+<div class="note">Après 5 mots de passe incorrects, le compte est bloqué 5 minutes.</div>
+
+<h3 id="m-fiche">A4. Remplir sa fiche</h3>
+<p>Après la connexion, l'onglet <b>📝 Ma fiche</b> s'ouvre. Les champs marqués d'une étoile rouge <b style="color:var(--rouge)">*</b> sont obligatoires. <b>Tout est enregistré automatiquement</b> à chaque saisie : vous pouvez vous arrêter et reprendre plus tard.</p>
+<figure class="tel"><img src="img/m4-fiche.jpg" alt="Fiche"><figcaption>Début de la fiche : section 1, Identité.</figcaption></figure>
+<table>
+<tr><th>Section</th><th>Ce qu'on vous demande</th></tr>
+<tr><td>1. Identité</td><td>Nom, postnom, prénom (comme sur votre pièce d'identité ou diplôme), sexe, année de naissance, nationalité</td></tr>
+<tr><td>2. Contacts</td><td>Téléphone principal, WhatsApp ou 2ᵉ numéro, e-mail</td></tr>
+<tr><td>3. Adresse physique</td><td>N° de parcelle, avenue, quartier, commune (ou secteur/chefferie), ville ou territoire, pays, province</td></tr>
+<tr><td>4. Profil professionnel</td><td>Catégorie, diplôme le plus élevé, spécialité, école, <b>année d'obtention du diplôme</b>, année du premier diplôme. <b>Carrière</b> : année de début du travail, établissement et lieu du <b>premier emploi</b>, <b>années d'expérience</b> (calculées automatiquement, modifiables en cas d'interruption)</td></tr>
+<tr><td>5. Lieux de travail</td><td>Pour <b>chaque</b> hôpital, centre de santé ou laboratoire où vous exercez : nom, type, <b>fonction occupée</b>, service, année de début, zone de santé, ville/territoire, pays, province. Bouton <b>« ➕ Ajouter un autre lieu de travail »</b></td></tr>
+<tr><td>6. Formations suivies</td><td>Formations continues, séminaires, certifications : intitulé, organisateur, année, durée, lieu, certificat obtenu. Bouton <b>« ➕ Ajouter une formation »</b></td></tr>
+<tr><td>7. Adhésion au CNBM</td><td>Êtes-vous membre ? Année d'adhésion, carte de membre (oui/non) et n°, serment prêté (oui/non) et année, cotisations à jour, nombre de mois payés, dernier mois payé</td></tr>
+<tr><td>8. Photo et vidéo</td><td>Photo passeport (recommandée), vidéo de présentation (facultative)</td></tr>
+<tr><td>9. Pièces justificatives</td><td>Vos documents : diplômes, carte d'identité ou passeport, carte de membre, attestation de serment, carte de service, certificats de formation…</td></tr>
+<tr><td>10. Consentement</td><td>Case à cocher : vous attestez l'exactitude des informations et acceptez leur transmission au CNBM</td></tr>
+</table>
+<div class="duo">
+<figure><img src="img/m5-lieux.jpg" alt="Lieux de travail"><figcaption>Section 5 : un bloc par lieu de travail.</figcaption></figure>
+<figure><img src="img/m6-adhesion.jpg" alt="Adhésion"><figcaption>Section 7 : situation d'adhésion au CNBM.</figcaption></figure>
+</div>
+<div class="astuce">Si vous travaillez hors de la RDC, écrivez le pays (ex. « Angola ») : la province devient automatiquement « Hors RDC ».</div>
+
+<h3 id="m-media">A5. Photo passeport et vidéo</h3>
+<ul>
+<li><b>Photo</b> : « 📷 Prendre / choisir une photo ». Visage de face, fond clair. La photo est recadrée automatiquement au format passeport.</li>
+<li><b>Vidéo</b> (facultative, <b>2 minutes maximum</b>) : présentez-vous (nom, fonction, lieu de travail).
+  <ul><li>« 🎥 Enregistrer maintenant » : la caméra s'ouvre ; touchez <b>⏺️ Commencer</b>, puis <b>⏹️ Arrêter</b>. L'enregistrement s'arrête seul à 2 minutes. « 🔄 Changer de caméra » passe à la caméra arrière.</li>
+  <li>« 📁 Choisir une vidéo » : une vidéo déjà filmée. Si elle est trop lourde pour un e-mail, l'application la <b>compresse automatiquement</b> (gardez la page ouverte pendant la compression).</li></ul></li>
+</ul>
+<div class="duo">
+<figure class="tel"><img src="img/m7-video.jpg" alt="Enregistrement vidéo"><figcaption>Enregistrement de la vidéo, avec le chronomètre.</figcaption></figure>
+<figure class="tel"><img src="img/m8-media.jpg" alt="Photo et vidéo"><figcaption>Photo recadrée et vidéo prête.</figcaption></figure>
+</div>
+
+<h3 id="m-docs">A6. Ajouter ses pièces justificatives (documents)</h3>
+<p>La section <b>9 · Pièces justificatives</b> permet de téléverser les documents dont le CNBM a besoin pour vous identifier.</p>
+<figure class="tel"><img src="img/m8b-documents.jpg" alt="Pièces justificatives"><figcaption>Section 9 : documents attendus, ajout et liste des documents.</figcaption></figure>
+<ol>
+<li>Choisissez le <b>type de document</b> : diplôme, carte d'identité / carte d'électeur, passeport, carte de membre CNBM, attestation de prestation de serment, carte de service, certificat / attestation de formation, relevé de notes, reçu de cotisation, acte de naissance, autre document.</li>
+<li>Ajoutez si vous voulez une <b>précision</b> (ex. « Diplôme de gradué, ISTM Goma, 2014 »).</li>
+<li>Touchez <b>« 📷 Photographier / choisir le document »</b> : prenez le document en photo, ou choisissez une photo ou un <b>PDF</b> déjà enregistré. Vous pouvez en sélectionner plusieurs d'un coup (par exemple le recto et le verso).</li>
+<li>Recommencez pour chaque document. « 👁️ Voir » affiche le document, « 🗑️ » le retire.</li>
+</ol>
+<p>En haut de la section, des pastilles indiquent les documents attendus :</p>
+<ul>
+<li><b>Obligatoires</b> : le <b>diplôme</b> et une <b>pièce d'identité</b> (carte d'identité/d'électeur ou passeport). Tant qu'ils manquent, la pastille est rouge ❌ et le dossier n'est pas complet.</li>
+<li><b>Selon votre situation</b> (◻️ si concerné) : carte de membre CNBM (si vous avez déclaré avoir votre carte), attestation de serment (si vous avez prêté serment), certificat de formation (si vous avez déclaré des formations).</li>
+</ul>
+<div class="astuce">Photographiez chaque document <b>bien à plat, en pleine lumière, sans reflet</b>, en cadrant tout le document. Les photos sont allégées automatiquement pour l'envoi par e-mail. Un PDF ne doit pas dépasser 10 Mo.</div>
+<div class="note">Les documents partent avec votre fiche quand vous l'envoyez au conseil : ils sont ajoutés comme pièces jointes à l'e-mail.</div>
+
+<h3 id="m-valider">A7. Valider et vérifier son dossier</h3>
+<ol>
+<li>Cochez la case de <b>consentement</b> (section 10).</li>
+<li>Touchez <b>« ✅ Valider et enregistrer »</b>. S'il manque une information, un message indique laquelle et la page s'y place.</li>
+<li>Touchez <b>« 📄 Mon récapitulatif (vérifier mon dossier) »</b>.</li>
+</ol>
+<div class="duo">
+<figure class="tel"><img src="img/m10-recap.jpg" alt="Récapitulatif"><figcaption>La liste de contrôle du dossier.</figcaption></figure>
+<figure><img src="img/m13-recap-doc.jpg" alt="Document récapitulatif"><figcaption>Le document téléchargé.</figcaption></figure>
+</div>
+<p>Le récapitulatif vous dit :</p>
+<ul>
+<li>si votre <b>dossier est complet</b> : ✅ ce qui est fourni, ❌ ce qui manque, avec le pourcentage ;</li>
+<li>si vous êtes <b>membre en règle</b> : carte de membre, serment prêté, cotisations à jour ;</li>
+<li>les éléments <b>facultatifs mais recommandés</b> (formations, vidéo, e-mail).</li>
+</ul>
+<p><b>« ⬇️ Télécharger mon récapitulatif »</b> enregistre un document avec toutes vos données et la liste de contrôle : gardez-le comme <b>fichier de référence</b>. <b>« 🖨️ Ouvrir pour imprimer / enregistrer en PDF »</b> permet de l'imprimer ou d'en faire un PDF (choisir « Enregistrer au format PDF » comme imprimante).</p>
+
+<h3 id="m-envoyer">A8. Envoyer sa fiche au conseil</h3>
+<p>Quand vous avez Internet, touchez <b>« 📤 Envoyer aux responsables »</b>. L'adresse e-mail de votre conseil s'affiche (bouton « Copier »).</p>
+<figure class="tel"><img src="img/m11-envoi.jpg" alt="Envoi"><figcaption>La fenêtre d'envoi.</figcaption></figure>
+<h4>Sur téléphone</h4>
+<ol>
+<li>Touchez <b>« 📤 Envoyer avec Gmail / WhatsApp / autre »</b>.</li>
+<li>Choisissez <b>Gmail</b> (ou votre application e-mail). La fiche, la photo, la vidéo et vos documents sont <b>déjà joints</b>.</li>
+<li>Dans le champ <b>« À »</b>, collez l'adresse du conseil (elle a été copiée automatiquement), puis envoyez.</li>
+</ol>
+<h4>Sur ordinateur</h4>
+<ol>
+<li>Touchez <b>« ⬇️ Télécharger les fichiers puis ouvrir ma messagerie »</b>. Les fichiers arrivent dans « Téléchargements » : <code>…_fiche.txt</code>, <code>…_photo.jpg</code>, <code>…_video…</code> et un fichier <code>…_doc1_…</code>, <code>…_doc2_…</code> par document.</li>
+<li>Votre messagerie s'ouvre avec l'adresse et l'objet remplis : <b>joignez tous ces fichiers</b> et envoyez.</li>
+</ol>
+<p>Une fois l'e-mail parti, touchez <b>« ✔️ C'est fait : marquer comme envoyée »</b>.</p>
+<figure class="tel"><img src="img/m12-mesfiches.jpg" alt="Fiches enregistrées"><figcaption>Onglet « Fiches enregistrées » : brouillon, à envoyer, envoyée.</figcaption></figure>
+<div class="note">Hors connexion, vous pouvez préparer l'envoi : l'e-mail reste dans la boîte d'envoi de Gmail et part au retour d'Internet. Quand vous êtes connecté, un bandeau vous rappelle les fiches qui restent à envoyer.</div>
+<div class="astuce">Si vous modifiez votre fiche après l'envoi, elle repasse « à envoyer » : renvoyez-la pour que le conseil ait la dernière version.</div>
+
+<h3 id="m-adhesion">A9. Demander son adhésion au CNBM</h3>
+<p>Vous n'êtes pas encore membre ? Dans la section 7, répondez <b>« Non »</b> à « Êtes-vous membre du CNBM ? », puis <b>« Oui, je demande mon adhésion »</b>. Envoyez votre fiche normalement : le conseil la reçoit comme <b>demande d'adhésion</b> et vous contactera pour la carte, le serment et les cotisations.</p>
+
+<h3 id="m-faq">A10. Questions fréquentes</h3>
+<table>
+<tr><th>Question</th><th>Réponse</th></tr>
+<tr><td>Je peux remplir la fiche de collègues qui n'ont pas de smartphone ?</td><td>Oui : « 🆕 Nouvelle fiche (autre personne) ». Toutes les fiches sont dans « 📂 Fiches enregistrées » ; « 📤 Envoyer toutes les fiches prêtes » les envoie en une fois, et « 📊 Liste Excel de ces fiches » en donne la liste.</td></tr>
+<tr><td>Je change de téléphone.</td><td>Votre compte reste sur l'ancien appareil. Sur le nouveau, créez un nouveau compte et renvoyez votre fiche ; gardez votre récapitulatif comme référence.</td></tr>
+<tr><td>Le bouton « Enregistrer maintenant » ne marche pas.</td><td>Autorisez la caméra et le micro quand le navigateur le demande, ou utilisez « 📁 Choisir une vidéo » (l'appareil photo du téléphone s'ouvrira).</td></tr>
+<tr><td>Mes données sont-elles envoyées à quelqu'un d'autre ?</td><td>Non. Elles restent sur votre appareil jusqu'à ce que vous les envoyiez vous-même au conseil par e-mail.</td></tr>
+</table>
+</section>
+
+<!-- ============================================================ PARTIE B ============================================================ -->
+<div class="partie" id="admin" data-p="admin"><b>Partie B</b><span>🏛️ Administrateur d'un conseil</span><p>Conseil provincial (ex. Nord-Kivu, Sud-Kivu…) ou bureau national</p></div>
+
+<section data-p="admin">
+<h3 id="a-abonnement">B1. Obtenir l'abonnement du conseil</h3>
+<p>Chaque conseil utilise la plateforme grâce à un <b>abonnement</b> (mensuel, trimestriel, semestriel, annuel ou essai gratuit de 30 jours). Après paiement auprès du créateur de la plateforme, le conseil reçoit un message contenant :</p>
+<ul>
+<li>une <b>clé d'abonnement</b> : un long texte qui commence par <code>CNBM1.</code>. Elle est réservée aux administrateurs du conseil ;</li>
+<li>un <b>lien d'inscription</b> : à partager aux membres.</li>
+</ul>
+<p>Les fiches des membres seront envoyées à l'<b>adresse e-mail du conseil</b> indiquée lors de la souscription.</p>
+<div class="attention">Ne communiquez <b>jamais</b> la clé d'abonnement aux membres : elle permet de créer des comptes administrateurs. Aux membres, donnez uniquement le <b>lien d'inscription</b>.</div>
+
+<h3 id="a-compte">B2. Créer le compte administrateur</h3>
+<p>Utilisez de préférence un <b>ordinateur</b> du conseil (le registre y sera conservé).</p>
+<ol>
+<li>Ouvrez l'application, puis, en bas de l'écran d'accueil, <b>« 🏛️ Je suis responsable d'un conseil provincial : créer un compte administrateur »</b>.</li>
+<li>Saisissez votre nom, votre téléphone ou e-mail, un mot de passe d'<b>au moins 8 caractères</b>.</li>
+<li>Collez la <b>clé d'abonnement</b> en entier.</li>
+<li>Touchez « Créer le compte administrateur », puis notez votre <b>code de récupération</b>.</li>
+</ol>
+<figure><img src="img/a1-creation.jpg" alt="Création du compte administrateur" style="max-width:480px"><figcaption>Création du compte administrateur avec la clé d'abonnement.</figcaption></figure>
+<div class="note">L'application vérifie la clé sans Internet. Une clé incomplète, modifiée ou expirée est refusée.</div>
+
+<h3 id="a-lien">B3. Inviter les membres</h3>
+<p>Dans l'onglet <b>🏛️ Espace responsables</b>, la carte <b>📜 Abonnement</b> affiche le conseil, la date de fin, l'adresse de réception et le <b>lien d'inscription des membres</b>.</p>
+<figure><img src="img/a2-abonnement.jpg" alt="Abonnement"><figcaption>La carte Abonnement et le lien d'inscription à partager.</figcaption></figure>
+<ol>
+<li>Touchez <b>« Copier »</b> à côté du lien.</li>
+<li>Partagez-le dans les groupes WhatsApp du conseil, par SMS ou par e-mail, avec un court message, par exemple : <i>« Chers collègues, ouvrez ce lien, créez votre compte et remplissez votre fiche de recensement avant le … »</i>.</li>
+<li>Joignez si possible la <b>partie A</b> de ce manuel.</li>
+</ol>
+
+<h3 id="a-import">B4. Recevoir et importer les fiches</h3>
+<p>Chaque membre envoie un e-mail avec ses pièces jointes : <code>…_fiche.txt</code>, <code>…_photo.jpg</code>, éventuellement la vidéo, et un fichier <code>…_docN_…</code> (photo ou PDF) par pièce justificative.</p>
+<ol>
+<li>Ouvrez les e-mails reçus et <b>téléchargez toutes les pièces jointes</b> (dans Gmail : « Tout télécharger »).</li>
+<li>Dans l'Espace responsables, touchez <b>« 📥 Importer des fiches reçues »</b>.</li>
+<li>Sélectionnez <b>tous les fichiers d'un coup</b> (fiches, photos, vidéos et documents de plusieurs membres) : l'application rattache chaque photo, vidéo et document à la bonne fiche.</li>
+</ol>
+<figure><img src="img/a3-import.jpg" alt="Import"><figcaption>Le compte rendu de l'import.</figcaption></figure>
+<ul>
+<li>Une fiche importée une deuxième fois (membre qui a corrigé sa fiche) est <b>mise à jour</b>, pas dupliquée.</li>
+<li>Si une photo, une vidéo ou un document est signalé « sans fiche correspondante », importez aussi le fichier <code>_fiche.txt</code> du même membre.</li>
+<li>Si un administrateur saisit lui-même des fiches sur son appareil, <b>« ➕ Ajouter les fiches de cet appareil »</b> les verse au registre.</li>
+</ul>
+
+<h3 id="a-registre">B5. Consulter le registre</h3>
+<figure><img src="img/a4-registre.jpg" alt="Registre"><figcaption>Statistiques, filtres et liste des membres.</figcaption></figure>
+<ul>
+<li><b>Statistiques</b> : membres recensés, demandes d'adhésion, membres en règle, techniciens, biologistes, provinces, cartes, serments, cotisations à jour, photos, vidéos.</li>
+<li><b>Recherche</b> : nom, téléphone, hôpital, ville… (plusieurs mots possibles).</li>
+<li><b>Filtres</b> : province, catégorie, et statut (<i>demandes d'adhésion, membres en règle, sans carte de membre, sans serment, cotisations en retard</i>). Les statistiques et les exports suivent les filtres.</li>
+<li><b>Fiche détaillée</b> : touchez une ligne pour voir toutes les données, la photo, la vidéo et les <b>pièces justificatives</b>, imprimer la fiche, télécharger la vidéo ou retirer la fiche du registre.</li>
+</ul>
+<h4>Vérifier les pièces justificatives</h4>
+<p>Dans la fiche détaillée, la rubrique <b>« Pièces justificatives »</b> montre chaque document (aperçu des photos, icône 📄 pour les PDF). Touchez un document pour l'<b>ouvrir ou le télécharger</b>. « fichier non importé » signifie que le fichier joint à l'e-mail n'a pas encore été importé.</p>
+<figure><img src="img/a5b-documents.jpg" alt="Pièces justificatives d'un membre"><figcaption>Les pièces justificatives d'un membre, dans sa fiche détaillée.</figcaption></figure>
+<div class="astuce">Avant d'accepter une adhésion ou de délivrer une carte, comparez le nom du diplôme et de la pièce d'identité avec la fiche.</div>
+
+<h3 id="a-adhesion">B6. Traiter les demandes d'adhésion</h3>
+<ol>
+<li>Filtre de statut → <b>« Demandes d'adhésion »</b>.</li>
+<li>Ouvrez la fiche du candidat, puis touchez <b>« ✅ Accepter l'adhésion »</b>.</li>
+<li>Saisissez le <b>numéro de carte</b> attribué (facultatif). La fiche passe « Membre : Oui » avec l'année en cours.</li>
+<li>Prévenez le candidat (son téléphone est affiché) pour la remise de la carte, le serment et les cotisations.</li>
+</ol>
+<figure><img src="img/a5-detail.jpg" alt="Accepter l'adhésion"><figcaption>La fiche d'un candidat et le bouton « Accepter l'adhésion ».</figcaption></figure>
+
+<h3 id="a-excel">B7. Liste Excel, impression, sauvegarde</h3>
+<ul>
+<li><b>📊 Liste complète en Excel (.xlsx)</b> : un fichier Excel avec <b>toutes les personnes inscrites et toutes leurs données</b>, en trois feuilles :
+  <ul><li><b>Membres</b> : une ligne par personne (identité, contacts, adresse, diplômes, carrière, lieu principal, formations, adhésion, carte, serment, cotisations, documents fournis, « diplôme fourni », « pièce d'identité fournie », « membre en règle », « dossier complet ») ;</li>
+  <li><b>Lieux de travail</b> : une ligne par lieu de travail ;</li>
+  <li><b>Formations</b> : une ligne par formation.</li></ul>
+  Relancez l'export après chaque import pour avoir la liste à jour.</li>
+<li><b>Exporter en CSV</b> : même liste au format texte.</li>
+<li><b>🖨️ Imprimer la liste</b>.</li>
+<li><b>💾 Sauvegarde complète</b> : un fichier contenant tout le registre avec photos, vidéos et pièces justificatives. Il se réimporte avec « 📥 Importer » (sur le même ordinateur ou un autre).</li>
+</ul>
+<div class="attention">Le registre est conservé <b>dans le navigateur de l'ordinateur</b>. Si on efface les données du navigateur, il disparaît. Faites une <b>sauvegarde complète chaque semaine</b> et gardez-la sur une clé USB ou un disque.</div>
+<div class="note">Si l'abonnement expire, l'import et l'export du registre sont bloqués jusqu'au renouvellement. Les données ne sont pas effacées.</div>
+
+<h3 id="a-comptes">B8. Gérer les comptes</h3>
+<figure><img src="img/a6-comptes.jpg" alt="Comptes"><figcaption>Les comptes ouverts sur cet appareil.</figcaption></figure>
+<ul>
+<li><b>🔑 Réinitialiser le mot de passe</b> d'un membre qui a tout oublié : un mot de passe provisoire s'affiche, à lui communiquer (il le changera dans « Mon compte »).</li>
+<li><b>Nommer admin / Retirer admin</b> : donner ou retirer les droits d'administrateur à un compte de cet appareil (ex. le secrétaire du conseil).</li>
+<li><b>Mon compte</b> (votre nom en haut à droite) : changer de mot de passe, nouveau code de récupération, se déconnecter.</li>
+</ul>
+<figure><img src="img/a7-moncompte.jpg" alt="Mon compte" style="max-width:520px"><figcaption>La fenêtre « Mon compte ».</figcaption></figure>
+<p><b>⚙️ Paramètres d'envoi</b> : adresse e-mail de réception de secours, utilisée seulement si aucun abonnement n'est actif.</p>
+
+<h3 id="a-renouv">B9. Renouveler l'abonnement</h3>
+<ol>
+<li>La carte Abonnement vous prévient <b>30 jours avant</b> la fin.</li>
+<li>Payez le renouvellement auprès du créateur : vous recevez une <b>nouvelle clé d'abonnement</b>.</li>
+<li>Carte Abonnement → <b>« Renouveler / changer la clé d'abonnement »</b> → collez la nouvelle clé → <b>« Activer la clé »</b>.</li>
+</ol>
+<p>Le registre et les comptes sont conservés. Le <b>lien d'inscription change</b> avec la nouvelle clé : partagez le nouveau lien. Les membres déjà inscrits n'ont rien à faire.</p>
+
+<h3 id="a-national">B10. Conseil national</h3>
+<p>Le bureau national reçoit un abonnement « National (toutes les provinces) ». Il peut importer les fiches de toutes les provinces, ou les <b>sauvegardes complètes</b> envoyées par les conseils provinciaux, et utiliser le filtre « province » pour comparer les provinces. La liste Excel nationale regroupe alors tous les membres du pays.</p>
+</section>
+
+<!-- ============================================================ PARTIE C ============================================================ -->
+<div class="partie" id="createur" data-p="createur"><b>Partie C</b><span>✍️ Créateur de la plateforme</span><p>Délivrer, suivre et renouveler les abonnements des conseils</p></div>
+
+<section data-p="createur">
+<h3 id="c-cle">C1. Votre clé privée de créateur</h3>
+<p>Votre accès repose sur un fichier : <b><code>CLE-PRIVEE-CREATEUR-CNBM.json</code></b>. C'est lui qui <b>signe</b> les clés d'abonnement. L'application de chaque conseil vérifie cette signature : sans votre fichier, <b>personne ne peut fabriquer ni prolonger un abonnement</b>, même en possédant l'application.</p>
+<div class="attention">
+<ul style="margin:4px 0 0">
+<li>Gardez <b>au moins deux copies</b> du fichier : par exemple une clé USB rangée en lieu sûr, et votre propre e-mail ou stockage personnel.</li>
+<li>Ne l'envoyez à <b>personne</b>, ne le déposez pas dans le dépôt GitHub, ne le partagez pas sur WhatsApp.</li>
+<li>Si vous le perdez, voir <a href="#c-securite">C6</a>.</li>
+</ul></div>
+
+<h3 id="c-acces">C2. Accéder à l'espace créateur</h3>
+<ol>
+<li>Sur votre ordinateur, ouvrez <b>https://jacquesdunia2015-commits.github.io/JACK_M/cnbm/createur.html</b> (ou le fichier <code>createur.html</code> en double-cliquant dessus).</li>
+<li>Touchez <b>« 📂 Charger ma clé »</b> et choisissez votre fichier <code>CLE-PRIVEE-CREATEUR-CNBM.json</code>.</li>
+<li>Option <b>« Se souvenir de la clé sur cet ordinateur »</b> : cochez-la <b>uniquement</b> sur votre ordinateur personnel. Sinon, rechargez la clé à chaque visite.</li>
+</ol>
+<figure><img src="img/c1-verrou.jpg" alt="Ouverture de l'espace créateur"><figcaption>L'espace créateur s'ouvre avec votre fichier de clé.</figcaption></figure>
+<p>Pour refermer l'espace (ordinateur partagé), touchez <b>« 🔒 Fermer l'espace créateur »</b> en bas de page : la clé mémorisée est effacée.</p>
+
+<h3 id="c-abo">C3. Délivrer un abonnement à un conseil</h3>
+<p>Après avoir reçu le paiement du conseil (M-Pesa, Orange Money, Airtel Money, virement…), remplissez le formulaire <b>« ➕ Nouvel abonnement / renouvellement »</b> :</p>
+<figure><img src="img/c2-formulaire.jpg" alt="Formulaire d'abonnement"><figcaption>Le formulaire de création d'abonnement.</figcaption></figure>
+<table>
+<tr><th>Champ</th><th>À saisir</th></tr>
+<tr><td>Province / niveau</td><td>L'une des 26 provinces, ou « National (toutes les provinces) »</td></tr>
+<tr><td>Nom du conseil</td><td>Rempli automatiquement, modifiable (ex. « Conseil provincial des biotechnologistes médicaux — Nord-Kivu »)</td></tr>
+<tr><td>E-mail de réception</td><td>L'adresse où <b>les membres enverront leurs fiches</b> (celle du conseil)</td></tr>
+<tr><td>Formule</td><td>Mensuel, trimestriel, semestriel, annuel ou essai gratuit de 30 jours. La <b>date de fin</b> se calcule seule (modifiable)</td></tr>
+<tr><td>Début</td><td>Date de départ de l'abonnement</td></tr>
+<tr><td>Responsable, téléphone</td><td>Pour vos contacts et l'envoi par WhatsApp</td></tr>
+<tr><td>Montant, mode et référence du paiement</td><td>Pour votre suivi (ils ne sont pas inscrits dans la clé)</td></tr>
+<tr><td>Adresse de l'application</td><td>Préremplie ; elle sert à construire le lien d'inscription des membres</td></tr>
+</table>
+<p>Touchez <b>« ✍️ Générer et signer l'abonnement »</b>. Vous obtenez :</p>
+<figure><img src="img/c3-resultat.jpg" alt="Résultat"><figcaption>La clé d'abonnement, le lien d'inscription et les boutons d'envoi.</figcaption></figure>
+<ul>
+<li>la <b>clé d'abonnement</b>, pour les administrateurs du conseil ;</li>
+<li>le <b>lien d'inscription</b>, pour les membres du conseil ;</li>
+<li>un <b>numéro d'abonnement</b> (ex. <code>ABO-NOR-E8JAF</code>).</li>
+</ul>
+
+<h3 id="c-envoi">C4. Transmettre l'abonnement au conseil</h3>
+<ul>
+<li><b>« 📋 Copier le message complet à envoyer au conseil »</b> : un message prêt, avec la clé, le lien, les dates et les instructions.</li>
+<li><b>WhatsApp</b> : ouvre une conversation avec le responsable, message prérempli (si son téléphone est saisi).</li>
+<li><b>✉️ E-mail</b> : ouvre votre messagerie vers l'adresse du conseil, message prérempli.</li>
+</ul>
+<div class="astuce">Envoyez aussi au conseil la <b>partie B</b> de ce manuel pour ses administrateurs et la <b>partie A</b> pour ses membres.</div>
+
+<h3 id="c-registre">C5. Suivre et renouveler les abonnements</h3>
+<figure><img src="img/c4-registre.jpg" alt="Registre des abonnements"><figcaption>Le registre des abonnements.</figcaption></figure>
+<ul>
+<li><b>Tableau de bord</b> : conseils abonnés actifs, à renouveler (30 jours ou moins), expirés, provinces sans abonnement, nombre total de clés délivrées.</li>
+<li><b>Liste</b> : pour chaque clé, le conseil, la formule, la date de fin, le statut (<span style="color:var(--ok)">Actif</span>, <span style="color:var(--att)">X j restants</span>, <span style="color:var(--err)">Expiré</span>, « remplacé » quand une clé plus récente existe), le paiement et l'e-mail.</li>
+<li><b>Voir</b> : réafficher la clé, le lien et les boutons d'envoi.</li>
+<li><b>Renouveler</b> : préremplit le formulaire avec le même conseil, et un début au lendemain de la fin actuelle. Vérifiez la formule et le paiement, générez, puis envoyez la nouvelle clé au conseil (il la colle dans « Renouveler / changer la clé d'abonnement »).</li>
+<li><b>📊 Exporter</b> : la liste des abonnements au format Excel/CSV (comptabilité).</li>
+<li><b>💾 Sauvegarder le registre</b> / <b>📥 Restaurer un registre</b> : ce registre est conservé dans le navigateur de votre ordinateur. Sauvegardez-le après chaque nouvel abonnement, et restaurez-le sur un nouvel ordinateur.</li>
+</ul>
+<div class="note">Pour <b>suspendre</b> un conseil qui ne paie plus, il suffit de ne pas renouveler : à la date de fin, l'import et l'export de son registre se bloquent automatiquement. Une clé déjà délivrée ne peut pas être annulée avant sa date de fin. Préférez donc des formules courtes pour un nouveau conseil.</div>
+
+<h3 id="c-securite">C6. Sécurité et perte de la clé</h3>
+<ul>
+<li><b>Clé perdue</b> (aucune copie) : dans l'espace créateur, « Je n'ai pas de clé / j'ai perdu ma clé » → <b>« 🔑 Créer une nouvelle clé de créateur »</b>. Un nouveau fichier est téléchargé et une <b>clé publique</b> s'affiche. Elle doit être ajoutée dans <code>cnbm/index.html</code> (liste <code>CLES_PUBLIQUES_CREATEUR</code>), puis l'application doit être republiée. Les abonnements déjà délivrés restent valables tant que l'ancienne clé publique reste dans la liste.</li>
+<li><b>Clé volée</b> (quelqu'un d'autre l'a eue) : créez une nouvelle clé, <b>remplacez</b> l'ancienne clé publique par la nouvelle dans <code>index.html</code>, republiez, puis délivrez de nouvelles clés à tous les conseils.</li>
+<li>La page <code>createur.html</code> est publique, mais elle ne sert à rien sans votre fichier de clé.</li>
+</ul>
+</section>
+
+<!-- ============================================================ DÉPANNAGE ============================================================ -->
+<section data-p="membre admin createur">
+<h2 id="depannage">Dépannage</h2>
+<table>
+<tr><th>Problème</th><th>Solution</th></tr>
+<tr data-p="membre admin"><td>« Aucun compte avec ce téléphone/e-mail sur cet appareil »</td><td>Le compte a été créé sur un autre appareil ou dans un autre navigateur. Utilisez le même appareil et le même navigateur, ou créez un compte ici.</td></tr>
+<tr data-p="membre admin"><td>L'application dit « Hors ligne »</td><td>Vous pouvez continuer à remplir la fiche ; seul l'envoi demande Internet.</td></tr>
+<tr data-p="membre admin"><td>Message « Ce navigateur bloque l'enregistrement local »</td><td>Vous êtes en navigation privée : ouvrez l'application dans une fenêtre normale.</td></tr>
+<tr data-p="membre"><td>Gmail refuse l'envoi (fichier trop lourd, plus de 25 Mo)</td><td>Remplacez les gros PDF par des photos des pages, retirez la vidéo et enregistrez-la avec « 🎥 Enregistrer maintenant » (format léger), ou envoyez les fiches une par une.</td></tr>
+<tr data-p="membre"><td>Un document photographié est illisible</td><td>Retirez-le (🗑️) et reprenez la photo à la lumière du jour, le document bien à plat.</td></tr>
+<tr data-p="membre"><td>Le lien d'inscription est déclaré invalide</td><td>Il a été coupé en le copiant : demandez au conseil de le renvoyer en entier.</td></tr>
+<tr data-p="admin"><td>« Clé d'abonnement invalide »</td><td>La clé a été coupée ou modifiée : copiez-la en entier, sans ajouter d'espace ni de retour à la ligne au milieu.</td></tr>
+<tr data-p="admin"><td>« Cette clé a expiré »</td><td>Demandez un renouvellement au créateur de la plateforme.</td></tr>
+<tr data-p="admin"><td>Une photo n'apparaît pas après l'import</td><td>Importez la photo en même temps que le fichier <code>_fiche.txt</code> du même membre (même identifiant au début du nom).</td></tr>
+<tr data-p="admin createur"><td>Changement d'ordinateur</td><td>Administrateur : sauvegarde complète, puis import sur le nouvel ordinateur et création d'un compte avec la clé d'abonnement. Créateur : sauvegarde du registre, puis restauration et chargement de la clé.</td></tr>
+<tr data-p="membre admin createur"><td>La nouvelle version n'apparaît pas</td><td>Fermez complètement l'application, puis rouvrez-la avec Internet.</td></tr>
+</table>
+
+<h3>Glossaire</h3>
+<table>
+<tr><td><b>Fiche</b></td><td>L'ensemble des informations d'une personne recensée.</td></tr>
+<tr><td><b>Récapitulatif</b></td><td>Document téléchargeable qui reprend la fiche et indique si le dossier est complet et si le membre est en règle.</td></tr>
+<tr><td><b>Membre en règle</b></td><td>Membre du CNBM qui a sa carte, a prêté serment et est à jour de ses cotisations.</td></tr>
+<tr><td><b>Registre</b></td><td>La liste des fiches reçues par un conseil, dans l'Espace responsables.</td></tr>
+<tr><td><b>Clé d'abonnement</b></td><td>Texte signé (commençant par <code>CNBM1.</code>) qui active l'Espace responsables d'un conseil jusqu'à une date donnée.</td></tr>
+<tr><td><b>Lien d'inscription</b></td><td>Adresse à partager aux membres, qui les rattache à leur conseil.</td></tr>
+<tr><td><b>Code de récupération</b></td><td>Code donné à la création d'un compte, pour changer un mot de passe oublié.</td></tr>
+</table>
+</section>
+
+<p class="pied">Manuel d'utilisation — Plateforme de recensement CNBM-RDC · version de novembre 2026 · Les captures d'écran montrent des données fictives.</p>
+</div>
+<script>
+// ?partie=membre | admin | createur : n'affiche que la partie utile (et sert à produire les PDF par rôle).
+const p = new URLSearchParams(location.search).get("partie");
+const titres = { membre: "Guide de l'adhérent", admin: "Guide de l'administrateur de conseil", createur: "Guide du créateur" };
+if (titres[p]) {
+  document.body.classList.add("seul-" + p);
+  document.getElementById("titre").innerHTML = titres[p] + "<br>Plateforme de recensement CNBM-RDC";
+  document.getElementById("sousTitre").textContent = { membre: "Pour les techniciens de laboratoire, biologistes médicaux et candidats à l'adhésion", admin: "Pour les administrateurs des conseils provinciaux et du conseil national", createur: "Pour le créateur de la plateforme : abonnements des conseils" }[p];
+  document.title = titres[p] + " — CNBM-RDC";
+}
+</script>
+</body>
+</html>
