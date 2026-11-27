@@ -2717,9 +2717,23 @@ $("#btnInstaller").onclick = async () => { if (!invite) return; invite.prompt();
     const pj = await verifierJeton(ins);
     if (pj && pj.type === "membre") LS.set("cnbm-conseil", ins.trim()); else toast("Lien d'inscription invalide : demandez un nouveau lien à votre conseil.", 6000);
   }
+  // Lien d'activation administrateur : …/index.html#admin=<clé d'abonnement>
+  const ha = location.hash.match(/^#admin=(.+)$/);
+  let cleActivation = null;
+  if (ha) { cleActivation = decodeURIComponent(ha[1]); history.replaceState(null, "", location.pathname + location.search); }
   try { await chargerConseil(); } catch {}
   try { await SRV.detecter(); } catch {}
   DRIVE.init();
+  const activer = async () => {
+    if (!cleActivation || session) return;
+    const pj = await verifierJeton(cleActivation);
+    panneauAuth("admin");
+    $("#fAdmin [name=code]").value = cleActivation;
+    msgAuth($("#fAdmin"), pj && pj.type === "admin" ? "ok" : "err", pj && pj.type === "admin"
+      ? `🔑 Clé d'abonnement du <b>${esc(pj.conseil)}</b> déjà remplie (valable jusqu'au ${new Date(pj.expire).toLocaleDateString("fr-FR")}). Indiquez votre nom, votre téléphone ou e-mail et un mot de passe, puis créez le compte.`
+      : "Lien d'activation invalide : demandez un nouveau lien au créateur de la plateforme.");
+    $("#fAdmin [name=nom]").focus();
+  };
   $("#pEmail").value = emailDest();
   const p = new URLSearchParams(location.search).get("email");
   if (p && /@/.test(p)) { LS.set("cnbm-email", p.trim()); $("#pEmail").value = p.trim(); }
@@ -2733,6 +2747,7 @@ $("#btnInstaller").onclick = async () => { if (!invite) return; invite.prompt();
     msg($("#fConnexion [data-msg]"), "err", "⚠️ Ce navigateur bloque l'enregistrement local (mode privé ?). Ouvrez l'application dans un navigateur normal.");
   }
   majReseau();
+  await activer();
   if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
 })();
