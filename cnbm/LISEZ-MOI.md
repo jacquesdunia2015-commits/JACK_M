@@ -21,6 +21,8 @@ et ordinateur (Windows, Mac, Linux)**, **avec ou sans Internet**.
 - **Formations suivies** durant la carrière (plusieurs possibles)
 - **Adhésion au CNBM** : membre ou non, année d'adhésion, carte de membre, n° de carte, serment prêté (et année),
   cotisations à jour, nombre de mois payés, dernier mois payé
+- **Pièces justificatives** (photos ou PDF) : diplômes, carte d'identité, passeport, carte de membre, attestation de serment,
+  carte de service, certificats de formation… — diplôme et pièce d'identité exigés pour un dossier complet
 - **Photo passeport** (recadrée automatiquement) et **vidéo de présentation** (2 minutes maximum,
   compressée automatiquement pour pouvoir partir par e-mail)
 

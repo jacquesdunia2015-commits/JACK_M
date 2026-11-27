@@ -116,6 +116,15 @@ dialog::backdrop{background:rgba(10,25,40,.55)}
   .hd h1{font-size:14px}
 }
 .imprimable{display:none}
+.docs-attendus{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.docs-attendus span{font-size:12.5px;padding:4px 10px;border-radius:99px;background:#eef2f6;color:var(--txt2)}
+.docs-attendus span.ok{background:var(--ok-c);color:var(--ok)}
+.docs-attendus span.manque{background:var(--err-c);color:var(--err)}
+.doc-miniature{width:48px;height:62px;border-radius:6px;object-fit:cover;background:#eef2f6;flex:none;display:grid;place-items:center;font-size:22px;border:1px solid var(--bord)}
+.det-docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.det-docs a{display:block;border:1px solid var(--bord);border-radius:8px;padding:6px;text-decoration:none;color:var(--txt);font-size:12.5px;background:#fff}
+.det-docs a img{width:100%;height:110px;object-fit:cover;border-radius:5px;display:block;margin-bottom:4px}
+.det-docs a .pdf{height:110px;display:grid;place-items:center;font-size:40px;background:#f3f6f9;border-radius:5px;margin-bottom:4px}
 .compte{display:flex;align-items:center;gap:6px;margin-left:8px}
 .compte button{border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.12);color:#fff;font:inherit;font-size:12px;padding:4px 10px;border-radius:99px;cursor:pointer;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis}
 body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{display:none!important}
@@ -356,7 +365,23 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
   </div>
 
   <div class="carte">
-    <h2><span class="n">9</span> Consentement</h2>
+    <h2><span class="n">9</span> Pièces justificatives (documents)</h2>
+    <p class="aide">Ajoutez les documents dont le CNBM a besoin pour vous identifier : diplômes, carte d'identité ou passeport, carte de membre, attestation de prestation de serment, carte de service, certificats de formation… Photographiez chaque document bien à plat et lisible, ou choisissez un fichier PDF.</p>
+    <div id="docsAttendus" class="docs-attendus"></div>
+    <div class="grille">
+      <label class="ch">Type de document<select id="docType"></select></label>
+      <label class="ch">Précision <span class="opt">(facultatif)</span><input id="docLib" placeholder="ex. Diplôme de gradué, ISTM Kinshasa, 2014"></label>
+    </div>
+    <div class="actions">
+      <label class="btn sec">📷 Photographier / choisir le document<input type="file" id="inDoc" accept="image/*,application/pdf,.pdf" multiple hidden></label>
+    </div>
+    <div id="msgDoc"></div>
+    <div id="docsListe" class="liste" style="margin-top:10px"></div>
+    <p class="info">Formats acceptés : photo (JPG, PNG…) ou PDF. Les photos sont allégées automatiquement pour l'envoi par e-mail. Un document de plusieurs pages : ajoutez une photo par page, ou un seul PDF.</p>
+  </div>
+
+  <div class="carte">
+    <h2><span class="n">10</span> Consentement</h2>
     <label class="consent"><input type="checkbox" data-f="consentement" required>
       <span>J'atteste que ces informations sont exactes et j'accepte qu'elles soient transmises au Conseil national des biotechnologistes médicaux de la RDC, qui les utilise uniquement pour la gestion de ses membres et ne les communique pas à des tiers. <span class="req">*</span></span></label>
   </div>
@@ -390,9 +415,9 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
 
   <div class="carte">
     <h2>Registre des membres (responsables)</h2>
-    <p class="aide">Ouvrez les e-mails reçus, téléchargez les pièces jointes (fiche <code>.txt</code>, photo, vidéo), puis importez-les ici. Vous pouvez sélectionner des dizaines de fichiers à la fois.</p>
+    <p class="aide">Ouvrez les e-mails reçus, téléchargez les pièces jointes (fiche <code>.txt</code>, photo, vidéo, documents), puis importez-les ici. Vous pouvez sélectionner des dizaines de fichiers à la fois.</p>
     <div class="actions" style="margin-top:0">
-      <label class="btn">📥 Importer des fiches reçues<input type="file" id="inImport" multiple accept=".txt,.json,image/*,video/*,text/plain,application/json" hidden></label>
+      <label class="btn">📥 Importer des fiches reçues<input type="file" id="inImport" multiple accept=".txt,.json,.pdf,image/*,video/*,text/plain,application/json,application/pdf" hidden></label>
       <button class="btn sec" id="btnLocales">➕ Ajouter les fiches de cet appareil</button>
     </div>
     <div id="msgImport"></div>
@@ -459,6 +484,7 @@ body.non-connecte nav,body.non-connecte #banniere,body.non-connecte .compte{disp
     <ol>
       <li>Onglet <b>📝 Ma fiche</b> : remplissez les champs marqués d'une étoile <span style="color:var(--rouge)">*</span>.</li>
       <li>Ajoutez tous vos lieux de travail, votre photo passeport et, si vous le souhaitez, une vidéo de 2 minutes maximum.</li>
+      <li>Section <b>9 · Pièces justificatives</b> : photographiez ou choisissez vos documents (diplôme, carte d'identité ou passeport, carte de membre, attestation de serment, carte de service, certificats de formation…).</li>
       <li>Touchez <b>✅ Valider et enregistrer</b>. La fiche reste sur votre appareil.</li>
     </ol>
     <h3>Vérifier son dossier</h3>
@@ -563,6 +589,9 @@ const PROVINCES = ["Bas-Uele","Équateur","Haut-Katanga","Haut-Lomami","Haut-Uel
 const HORS_RDC = "Hors RDC (étranger)";
 const CHAMPS_LIEU = ["etablissement","type","fonction","service","depuis","zoneSante","ville","pays","province"];
 const CHAMPS_FORM = ["intitule","organisme","annee","duree","lieu","certificat"];
+const TYPES_DOCS = ["Diplôme", "Carte d'identité / carte d'électeur", "Passeport", "Carte de membre CNBM", "Attestation de prestation de serment",
+  "Carte de service", "Certificat / attestation de formation", "Relevé de notes", "Reçu de cotisation", "Acte de naissance", "Autre document"];
+const DOC_MAX_PDF = 10 * 1024 * 1024;
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -620,7 +649,7 @@ function nouvelId() {
 function ficheVide() {
   const c = session || {};
   return { id: nouvelId(), compte: c.id || null, conseil: conseil.payload ? { id: conseil.payload.id, nom: conseil.payload.conseil, province: conseil.payload.province } : null, cree: Date.now(), modifie: Date.now(), statut: "brouillon", envoyee: null,
-           data: { nationalite: "Congolaise (RDC)", adrPays: "RDC", telephone: c.type === "tel" ? c.id : "", email: c.type === "email" ? c.id : "" }, lieux: [{ pays: "RDC" }], formations: [],
+           data: { nationalite: "Congolaise (RDC)", adrPays: "RDC", telephone: c.type === "tel" ? c.id : "", email: c.type === "email" ? c.id : "" }, lieux: [{ pays: "RDC" }], formations: [], documents: [],
            photo: null, video: null, videoDuree: null };
 }
 const nomComplet = d => [d.nom, d.postnom].filter(Boolean).join(" ").toUpperCase() + (d.prenom ? " " + d.prenom : "");
@@ -697,6 +726,7 @@ form.addEventListener("change", e => { if (e.target.dataset.f === "adhMembre") m
 function chargerDansForm(f) {
   courant = f;
   f.formations = f.formations || [];
+  f.documents = f.documents || [];
   $$("[data-f]", form).forEach(e => {
     const v = f.data[e.dataset.f];
     if (e.type === "checkbox") e.checked = !!v;
@@ -706,7 +736,7 @@ function chargerDansForm(f) {
   remplirProvinces($('[data-f="adrProvince"]'), $('[data-f="adrPays"]').value, f.data.adrProvince);
   afficherLieux(); afficherFormations(); majMembre();
   $('[data-f="experience"]').dataset.auto = "0";
-  afficherPhoto(); afficherVideo();
+  afficherPhoto(); afficherVideo(); afficherDocs();
   majEtat();
   msg($("#msgForm"));
 }
@@ -820,6 +850,68 @@ $("#inPhoto").onchange = async e => {
   catch { toast("Cette image n'a pas pu être lue. Essayez une photo JPEG ou PNG."); }
 };
 $("#supPhoto").onclick = () => { courant.photo = null; afficherPhoto(); sauverAuto(); };
+
+/* ----------------------------- Pièces justificatives ----------------------------- */
+const slug = t => t.normalize("NFD").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "").toLowerCase().slice(0, 30);
+const extDoc = d => /pdf/.test(d.mime) ? "pdf" : /png/.test(d.mime) ? "png" : "jpg";
+const nomDoc = (f, d, i) => nomFichier(f, `doc${i + 1}_${slug(d.type)}.${extDoc(d)}`);
+function docsAttendus(f) {
+  const d = f.data || {}, types = (f.documents || []).map(x => x.type);
+  const a = [["Diplôme", types.includes("Diplôme"), true],
+             ["Carte d'identité ou passeport", types.some(t => /identité|Passeport/.test(t)), true]];
+  if (d.adhCarte === "Oui") a.push(["Carte de membre CNBM", types.includes("Carte de membre CNBM"), false]);
+  if (d.adhSerment === "Oui") a.push(["Attestation de serment", types.includes("Attestation de prestation de serment"), false]);
+  if ((f.formations || []).length) a.push(["Certificat de formation", types.includes("Certificat / attestation de formation"), false]);
+  return a.map(([t, ok, oblig]) => ({ t, ok, oblig }));
+}
+async function allegerImage(fichier) {
+  if (!/^image\//.test(fichier.type) || /gif|svg/.test(fichier.type)) return fichier;
+  try {
+    const img = await lireImage(fichier), max = 1800, r = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    if (r === 1 && fichier.size < 700 * 1024) return fichier;
+    const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * r); c.height = Math.round(img.naturalHeight * r);
+    const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+    const b = await new Promise(ok => c.toBlob(ok, "image/jpeg", 0.85));
+    return b && b.size < fichier.size ? b : fichier;
+  } catch { return fichier; } // format non lisible ici (ex. HEIC) : gardé tel quel
+}
+let urlsDocs = [];
+function afficherDocs() {
+  urlsDocs.forEach(u => URL.revokeObjectURL(u)); urlsDocs = [];
+  const docs = courant.documents || [];
+  $("#docsAttendus").innerHTML = docsAttendus(courant).map(x => `<span class="${x.ok ? "ok" : x.oblig ? "manque" : ""}">${x.ok ? "✅" : x.oblig ? "❌" : "◻️"} ${esc(x.t)}${x.oblig ? "" : " (si concerné)"}</span>`).join("");
+  $("#docsListe").innerHTML = docs.length ? docs.map((d, i) => {
+    let mini = `<div class="doc-miniature">📄</div>`;
+    if (d.blob && /^image\//.test(d.mime)) { const u = URL.createObjectURL(d.blob); urlsDocs.push(u); mini = `<img class="doc-miniature" src="${u}" alt="">`; }
+    return `<div class="item" data-i="${i}">${mini}<div class="c"><b>${esc(d.type)}</b><div>${esc(d.libelle || d.nom || "")}</div><div>${/pdf/.test(d.mime) ? "PDF" : "Image"} · ${taille(d.taille || d.blob?.size || 0)}</div></div>
+      <div class="bt"><button type="button" class="btn sec petit" data-a="voir">👁️ Voir</button><button type="button" class="btn dang petit" data-a="sup">🗑️</button></div></div>`;
+  }).join("") : `<p class="info" style="margin:0">Aucun document ajouté.</p>`;
+}
+$("#docType").innerHTML = TYPES_DOCS.map(t => `<option>${esc(t)}</option>`).join("");
+$("#inDoc").onchange = async e => {
+  const fichiers = [...e.target.files]; e.target.value = "";
+  if (!fichiers.length) return;
+  const type = $("#docType").value, lib = $("#docLib").value.trim(), refus = [];
+  msg($("#msgDoc"), "inf", "Préparation du document…");
+  for (const f of fichiers) {
+    const pdf = /pdf/.test(f.type) || /\.pdf$/i.test(f.name);
+    if (!pdf && !/^image\//.test(f.type)) { refus.push(`${f.name} (format non accepté)`); continue; }
+    if (pdf && f.size > DOC_MAX_PDF) { refus.push(`${f.name} (PDF de plus de 10 Mo)`); continue; }
+    const blob = pdf ? f : await allegerImage(f);
+    courant.documents.push({ type, libelle: lib, nom: f.name, mime: pdf ? "application/pdf" : (blob.type || f.type || "image/jpeg"), taille: blob.size, blob, ajoute: Date.now() });
+  }
+  $("#docLib").value = "";
+  msg($("#msgDoc"), refus.length ? "err" : "ok", refus.length ? "⚠️ Non ajouté : " + refus.map(esc).join(", ") : `✅ ${fichiers.length} document(s) ajouté(s) : ${esc(type)}.`);
+  afficherDocs(); sauverAuto();
+};
+$("#docsListe").onclick = e => {
+  const a = e.target.closest("[data-a]")?.dataset.a, i = +e.target.closest("[data-i]")?.dataset.i;
+  if (!a || isNaN(i)) return;
+  const d = courant.documents[i];
+  if (a === "voir" && d.blob) { const u = URL.createObjectURL(d.blob); window.open(u, "_blank") || telecharger(d.blob, d.nom || "document." + extDoc(d)); setTimeout(() => URL.revokeObjectURL(u), 60000); }
+  if (a === "sup" && confirm(`Retirer « ${d.type} » de votre fiche ?`)) { courant.documents.splice(i, 1); afficherDocs(); sauverAuto(); }
+};
+form.addEventListener("change", e => { if (["adhCarte", "adhSerment"].includes(e.target.dataset.f)) afficherDocs(); });
 
 /* ----------------------------- Vidéo ----------------------------- */
 function afficherVideo() {
@@ -1017,12 +1109,16 @@ function lignesFiche(f) {
   L.push("PIÈCES JOINTES");
   L.push("  Photo passeport : " + (f.photo ? "oui" : "non"));
   L.push("  Vidéo : " + (f.video ? `oui (${duree(f.videoDuree)})` : "non"));
+  L.push("PIÈCES JUSTIFICATIVES");
+  if (!(f.documents || []).length) L.push("  (aucune)");
+  (f.documents || []).forEach((d, i) => L.push(`  ${i + 1}. ${d.type}${d.libelle ? " — " + d.libelle : ""} (${/pdf/.test(d.mime) ? "PDF" : "image"})`));
   L.push("Consentement donné : " + (d.consentement ? "oui" : "non"));
   return L;
 }
 const adresse = d => [d.adrNumero && "N° " + d.adrNumero, d.adrAvenue && "Av. " + d.adrAvenue, d.adrQuartier && "Q. " + d.adrQuartier, d.adrCommune && "C. " + d.adrCommune, d.adrVille, d.adrProvince, d.adrPays].filter(Boolean).join(", ");
 function texteFiche(f) {
   const meta = { format: "cnbm-fiche", version: 1, id: f.id, compte: f.compte || null, conseil: f.conseil || null, adhesionValidee: f.adhesionValidee || null, cree: f.cree, modifie: f.modifie, data: f.data, lieux: f.lieux, formations: f.formations || [], videoDuree: f.videoDuree,
+                 documents: (f.documents || []).map((d, i) => ({ type: d.type, libelle: d.libelle || "", nom: d.nom || "", mime: d.mime, taille: d.taille, fichier: nomDoc(f, d, i) })),
                  photo: f.photo ? nomFichier(f, "photo.jpg") : null, video: f.video ? nomFichier(f, "video." + extVideo(f.video.type)) : null };
   return lignesFiche(f).join("\r\n") + "\r\n\r\n--- Ne pas modifier ce qui suit (lecture automatique par l'application) ---\r\n-----DEBUT DONNEES CNBM-----\r\n"
     + JSON.stringify(meta) + "\r\n-----FIN DONNEES CNBM-----\r\n";
@@ -1031,6 +1127,7 @@ function fichiersFiche(f) {
   const out = [new File([texteFiche(f)], nomFichier(f, "fiche.txt"), { type: "text/plain" })];
   if (f.photo) out.push(new File([f.photo], nomFichier(f, "photo.jpg"), { type: "image/jpeg" }));
   if (f.video) out.push(new File([f.video], nomFichier(f, "video." + extVideo(f.video.type)), { type: f.video.type || "video/webm" }));
+  (f.documents || []).forEach((d, i) => d.blob && out.push(new File([d.blob], nomDoc(f, d, i), { type: d.mime })));
   return out;
 }
 function telecharger(blob, nom) {
@@ -1159,7 +1256,7 @@ async function importer(fichiers) {
   const zone = $("#msgImport");
   if (!aboAdminValide()) return msg(zone, "err", "⛔ L'abonnement de votre conseil n'est pas actif. Renouvelez-le dans la carte « Abonnement » ci-dessus.");
   msg(zone, "inf", `Import de ${fichiers.length} fichier(s)…`);
-  let nouv = 0, maj = 0, medias = 0; const erreurs = [], orphelins = [];
+  let nouv = 0, maj = 0, medias = 0, docsImp = 0; const erreurs = [], orphelins = [];
   const textes = fichiers.filter(f => /\.(txt|json)$/i.test(f.name) || /^text\/|json/.test(f.type));
   const autres = fichiers.filter(f => !textes.includes(f));
   for (const f of textes) {
@@ -1169,6 +1266,9 @@ async function importer(fichiers) {
         const rec = Object.assign(ex || { recu: Date.now() }, { id: o.id, compte: o.compte || null, conseil: o.conseil || null, cree: o.cree, modifie: o.modifie, data: o.data, lieux: o.lieux || [], formations: o.formations || [], videoDuree: o.videoDuree ?? null, recuMaj: Date.now() });
         if (typeof o.photo === "string" && o.photo.startsWith("data:")) rec.photo = b64Blob(o.photo);
         if (typeof o.video === "string" && o.video.startsWith("data:")) rec.video = b64Blob(o.video);
+        const anciens = (ex && ex.documents) || [];
+        rec.documents = (o.documents || []).map((d, i) => ({ type: d.type, libelle: d.libelle, nom: d.nom, mime: d.mime, taille: d.taille, fichier: d.fichier,
+          blob: typeof d.data === "string" && d.data.startsWith("data:") ? b64Blob(d.data) : (anciens.find(a => a.fichier && a.fichier === d.fichier)?.blob || null) }));
         if (o.recu) rec.recu = o.recu;
         if (o.adhesionValidee) rec.adhesionValidee = o.adhesionValidee;
         rec.photo = rec.photo instanceof Blob ? rec.photo : null; rec.video = rec.video instanceof Blob ? rec.video : null;
@@ -1180,14 +1280,21 @@ async function importer(fichiers) {
     const id = (f.name.match(RE_ID) || [])[0];
     const rec = id && await DB.get("registre", id);
     if (!rec) { orphelins.push(f.name); continue; }
+    const nd = f.name.match(/_doc(\d+)_/);
+    if (nd) {
+      rec.documents = rec.documents || [];
+      const i = +nd[1] - 1, mime = f.type || (/\.pdf$/i.test(f.name) ? "application/pdf" : "image/jpeg");
+      rec.documents[i] = Object.assign(rec.documents[i] || { type: "Autre document", libelle: "", nom: f.name, fichier: f.name }, { blob: new Blob([f], { type: mime }), mime, taille: f.size });
+      await DB.put("registre", rec); docsImp++; continue;
+    }
     if (/^image\//.test(f.type) || /\.(jpe?g|png|webp)$/i.test(f.name)) rec.photo = new Blob([f], { type: f.type || "image/jpeg" });
     else rec.video = new Blob([f], { type: f.type || "video/" + (f.name.split(".").pop() || "webm") });
     await DB.put("registre", rec); medias++;
   }
   msg(zone, erreurs.length || orphelins.length ? "att" : "ok",
-    `✅ ${nouv} nouvelle(s) fiche(s), ${maj} mise(s) à jour, ${medias} photo(s)/vidéo(s) rattachée(s).`
+    `✅ ${nouv} nouvelle(s) fiche(s), ${maj} mise(s) à jour, ${medias} photo(s)/vidéo(s) et ${docsImp} document(s) rattaché(s).`
     + (erreurs.length ? `<br>⚠️ Fichiers non reconnus : ${erreurs.map(esc).join(", ")}` : "")
-    + (orphelins.length ? `<br>⚠️ Photos/vidéos sans fiche correspondante (importez aussi le fichier <code>_fiche.txt</code>) : ${orphelins.map(esc).join(", ")}` : ""));
+    + (orphelins.length ? `<br>⚠️ Photos, vidéos ou documents sans fiche correspondante (importez aussi le fichier <code>_fiche.txt</code> du même membre) : ${orphelins.map(esc).join(", ")}` : ""));
   afficherRegistre();
 }
 $("#inImport").onchange = e => { const f = [...e.target.files]; e.target.value = ""; if (f.length) importer(f); };
@@ -1260,6 +1367,10 @@ function htmlDetail(r, urls) {
     ${(r.lieux || []).map((l, i) => `<div class="lieu" style="margin-bottom:8px"><b>${i + 1}. ${esc(l.etablissement)}</b>${l.type ? ` <span class="info">(${esc(l.type)})</span>` : ""}<br>
       ${esc(l.fonction)}${l.service ? " — " + esc(l.service) : ""}${l.depuis ? " — depuis " + esc(l.depuis) : ""}<br>
       <span class="info">${esc([l.zoneSante && "ZS " + l.zoneSante, l.ville, l.province !== HORS_RDC && l.province, l.pays].filter(Boolean).join(", "))}</span></div>`).join("")}
+    ${(r.documents || []).length ? `<h4 style="margin:14px 0 6px">Pièces justificatives (${r.documents.length})</h4>
+      <div class="det-docs">${r.documents.map((d, i) => `<a href="${urls.docs?.[i] || "#"}" target="_blank" rel="noopener" ${urls.docs?.[i] ? `download="${esc(d.fichier || d.nom || "document")}"` : ""}>
+        ${!urls.docs?.[i] ? `<div class="pdf">⏳</div>` : /^image\//.test(d.mime) ? `<img src="${urls.docs[i]}" alt="">` : `<div class="pdf">📄</div>`}
+        <b>${esc(d.type)}</b>${d.libelle ? `<br><span class="info">${esc(d.libelle)}</span>` : ""}${!urls.docs?.[i] ? `<br><span class="info">fichier non importé</span>` : ""}</a>`).join("")}</div>` : ""}
     ${urls.video ? `<h4 style="margin:14px 0 6px" class="no-print">Vidéo (${duree(r.videoDuree)})</h4><video class="apercu no-print" src="${urls.video}" controls playsinline></video>` : ""}`;
 }
 let urlsDet = [];
@@ -1268,6 +1379,7 @@ function ouvrirDetail(r) {
   const urls = {};
   if (r.photo) urlsDet.push(urls.photo = URL.createObjectURL(r.photo));
   if (r.video) urlsDet.push(urls.video = URL.createObjectURL(r.video));
+  urls.docs = (r.documents || []).map(d => { if (!d.blob) return null; const u = URL.createObjectURL(d.blob); urlsDet.push(u); return u; });
   $("#detT").textContent = "Fiche de " + nomComplet(r.data);
   $("#detC").innerHTML = htmlDetail(r, urls) + `<div class="actions no-print">
     ${estDemande(r) ? `<button class="btn ok" id="detAdh">✅ Accepter l'adhésion</button>` : ""}
@@ -1319,7 +1431,10 @@ const COLS_MEMBRE = [
   ["Mois de cotisation payés", r => r.data.adhMoisPayes], ["Dernier mois payé", r => r.data.adhDernierMois],
   ["Demande d'adhésion", r => estDemande(r) ? "oui" : (r.adhesionValidee ? "acceptée le " + dateFr(r.adhesionValidee).slice(0, 10) : "")],
   ["Membre en règle", r => enRegle(r.data) ? "oui" : "non"], ["Dossier complet", r => controleDossier(r).complet ? "oui" : "non"],
-  ["Photo", r => r.photo ? "oui" : "non"], ["Vidéo", r => r.video ? "oui" : "non"], ["Fiche du", r => dateFr(r.modifie)], ["Reçue le", r => dateFr(r.recu)]
+  ["Photo", r => r.photo ? "oui" : "non"], ["Vidéo", r => r.video ? "oui" : "non"],
+  ["Nombre de documents", r => (r.documents || []).length], ["Documents fournis", r => (r.documents || []).map(d => d.type).join(" | ")],
+  ["Diplôme fourni", r => (r.documents || []).some(d => d.type === "Diplôme") ? "oui" : "non"],
+  ["Pièce d'identité fournie", r => (r.documents || []).some(d => /identité|Passeport/.test(d.type)) ? "oui" : "non"], ["Fiche du", r => dateFr(r.modifie)], ["Reçue le", r => dateFr(r.recu)]
 ];
 const NUMERIQUES = /^(N°|Année|Années|Nombre|Mois)/;
 function tableMembres(l) {
@@ -1411,7 +1526,8 @@ $("#btnSauv").onclick = async () => {
   for (let i = 0; i < registre.length; i++) {
     const r = registre[i];
     const o = { format: "cnbm-fiche", id: r.id, compte: r.compte || null, conseil: r.conseil || null, adhesionValidee: r.adhesionValidee || null, cree: r.cree, modifie: r.modifie, recu: r.recu, data: r.data, lieux: r.lieux, formations: r.formations || [], videoDuree: r.videoDuree,
-                photo: r.photo ? await enB64(r.photo) : null, video: r.video ? await enB64(r.video) : null };
+                photo: r.photo ? await enB64(r.photo) : null, video: r.video ? await enB64(r.video) : null,
+                documents: await Promise.all((r.documents || []).map(async d => ({ type: d.type, libelle: d.libelle, nom: d.nom, mime: d.mime, taille: d.taille, fichier: d.fichier, data: d.blob ? await enB64(d.blob) : null }))) };
     parts.push((i ? "," : "") + JSON.stringify(o));
   }
   parts.push("]}");
@@ -1501,9 +1617,11 @@ function controleDossier(f) {
     ["Lieu(x) de travail avec fonction et province", l.length && l.every(x => x.etablissement && x.fonction && x.province)],
     ["Situation d'adhésion au CNBM", d.adhMembre],
     ["Photo passeport", f.photo],
+    ...docsAttendus(f).filter(x => x.oblig).map(x => ["Document : " + x.t, x.ok]),
     ["Consentement", d.consentement]
   ].map(([t, ok]) => ({ t, ok: !!ok }));
-  const facult = [["Formations suivies (au moins une)", (f.formations || []).length], ["Vidéo de présentation", f.video], ["Adresse e-mail", d.email]].map(([t, ok]) => ({ t, ok: !!ok }));
+  const facult = [["Formations suivies (au moins une)", (f.formations || []).length], ["Vidéo de présentation", f.video], ["Adresse e-mail", d.email],
+    ...docsAttendus(f).filter(x => !x.oblig).map(x => ["Document : " + x.t, x.ok])].map(([t, ok]) => ({ t, ok: !!ok }));
   const membre = d.adhMembre === "Oui" ? [
     ["Carte de membre", d.adhCarte === "Oui"], ["Serment prêté", d.adhSerment === "Oui"], ["Cotisations à jour", /^Oui/.test(d.adhCotisation || "")]
   ].map(([t, ok]) => ({ t, ok: !!ok })) : [];

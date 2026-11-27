@@ -116,10 +116,11 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li data-p="membre"><a href="#m-connexion">A3. Se connecter, mot de passe oublié</a></li>
 <li data-p="membre"><a href="#m-fiche">A4. Remplir sa fiche</a></li>
 <li data-p="membre"><a href="#m-media">A5. Photo passeport et vidéo</a></li>
-<li data-p="membre"><a href="#m-valider">A6. Valider et vérifier son dossier</a></li>
-<li data-p="membre"><a href="#m-envoyer">A7. Envoyer sa fiche au conseil</a></li>
-<li data-p="membre"><a href="#m-adhesion">A8. Demander son adhésion</a></li>
-<li data-p="membre"><a href="#m-faq">A9. Questions fréquentes</a></li>
+<li data-p="membre"><a href="#m-docs">A6. Ajouter ses pièces justificatives</a></li>
+<li data-p="membre"><a href="#m-valider">A7. Valider et vérifier son dossier</a></li>
+<li data-p="membre"><a href="#m-envoyer">A8. Envoyer sa fiche au conseil</a></li>
+<li data-p="membre"><a href="#m-adhesion">A9. Demander son adhésion</a></li>
+<li data-p="membre"><a href="#m-faq">A10. Questions fréquentes</a></li>
 <li data-p="admin"><a href="#admin">Partie B — Administrateur de conseil</a></li>
 <li data-p="admin"><a href="#a-abonnement">B1. Obtenir l'abonnement</a></li>
 <li data-p="admin"><a href="#a-compte">B2. Créer le compte administrateur</a></li>
@@ -193,7 +194,8 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <tr><td>6. Formations suivies</td><td>Formations continues, séminaires, certifications : intitulé, organisateur, année, durée, lieu, certificat obtenu. Bouton <b>« ➕ Ajouter une formation »</b></td></tr>
 <tr><td>7. Adhésion au CNBM</td><td>Êtes-vous membre ? Année d'adhésion, carte de membre (oui/non) et n°, serment prêté (oui/non) et année, cotisations à jour, nombre de mois payés, dernier mois payé</td></tr>
 <tr><td>8. Photo et vidéo</td><td>Photo passeport (recommandée), vidéo de présentation (facultative)</td></tr>
-<tr><td>9. Consentement</td><td>Case à cocher : vous attestez l'exactitude des informations et acceptez leur transmission au CNBM</td></tr>
+<tr><td>9. Pièces justificatives</td><td>Vos documents : diplômes, carte d'identité ou passeport, carte de membre, attestation de serment, carte de service, certificats de formation…</td></tr>
+<tr><td>10. Consentement</td><td>Case à cocher : vous attestez l'exactitude des informations et acceptez leur transmission au CNBM</td></tr>
 </table>
 <div class="duo">
 <figure><img src="img/m5-lieux.jpg" alt="Lieux de travail"><figcaption>Section 5 : un bloc par lieu de travail.</figcaption></figure>
@@ -213,9 +215,26 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <figure class="tel"><img src="img/m8-media.jpg" alt="Photo et vidéo"><figcaption>Photo recadrée et vidéo prête.</figcaption></figure>
 </div>
 
-<h3 id="m-valider">A6. Valider et vérifier son dossier</h3>
+<h3 id="m-docs">A6. Ajouter ses pièces justificatives (documents)</h3>
+<p>La section <b>9 · Pièces justificatives</b> permet de téléverser les documents dont le CNBM a besoin pour vous identifier.</p>
+<figure class="tel"><img src="img/m8b-documents.jpg" alt="Pièces justificatives"><figcaption>Section 9 : documents attendus, ajout et liste des documents.</figcaption></figure>
 <ol>
-<li>Cochez la case de <b>consentement</b> (section 9).</li>
+<li>Choisissez le <b>type de document</b> : diplôme, carte d'identité / carte d'électeur, passeport, carte de membre CNBM, attestation de prestation de serment, carte de service, certificat / attestation de formation, relevé de notes, reçu de cotisation, acte de naissance, autre document.</li>
+<li>Ajoutez si vous voulez une <b>précision</b> (ex. « Diplôme de gradué, ISTM Goma, 2014 »).</li>
+<li>Touchez <b>« 📷 Photographier / choisir le document »</b> : prenez le document en photo, ou choisissez une photo ou un <b>PDF</b> déjà enregistré. Vous pouvez en sélectionner plusieurs d'un coup (par exemple le recto et le verso).</li>
+<li>Recommencez pour chaque document. « 👁️ Voir » affiche le document, « 🗑️ » le retire.</li>
+</ol>
+<p>En haut de la section, des pastilles indiquent les documents attendus :</p>
+<ul>
+<li><b>Obligatoires</b> : le <b>diplôme</b> et une <b>pièce d'identité</b> (carte d'identité/d'électeur ou passeport). Tant qu'ils manquent, la pastille est rouge ❌ et le dossier n'est pas complet.</li>
+<li><b>Selon votre situation</b> (◻️ si concerné) : carte de membre CNBM (si vous avez déclaré avoir votre carte), attestation de serment (si vous avez prêté serment), certificat de formation (si vous avez déclaré des formations).</li>
+</ul>
+<div class="astuce">Photographiez chaque document <b>bien à plat, en pleine lumière, sans reflet</b>, en cadrant tout le document. Les photos sont allégées automatiquement pour l'envoi par e-mail. Un PDF ne doit pas dépasser 10 Mo.</div>
+<div class="note">Les documents partent avec votre fiche quand vous l'envoyez au conseil : ils sont ajoutés comme pièces jointes à l'e-mail.</div>
+
+<h3 id="m-valider">A7. Valider et vérifier son dossier</h3>
+<ol>
+<li>Cochez la case de <b>consentement</b> (section 10).</li>
 <li>Touchez <b>« ✅ Valider et enregistrer »</b>. S'il manque une information, un message indique laquelle et la page s'y place.</li>
 <li>Touchez <b>« 📄 Mon récapitulatif (vérifier mon dossier) »</b>.</li>
 </ol>
@@ -231,29 +250,29 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 </ul>
 <p><b>« ⬇️ Télécharger mon récapitulatif »</b> enregistre un document avec toutes vos données et la liste de contrôle : gardez-le comme <b>fichier de référence</b>. <b>« 🖨️ Ouvrir pour imprimer / enregistrer en PDF »</b> permet de l'imprimer ou d'en faire un PDF (choisir « Enregistrer au format PDF » comme imprimante).</p>
 
-<h3 id="m-envoyer">A7. Envoyer sa fiche au conseil</h3>
+<h3 id="m-envoyer">A8. Envoyer sa fiche au conseil</h3>
 <p>Quand vous avez Internet, touchez <b>« 📤 Envoyer aux responsables »</b>. L'adresse e-mail de votre conseil s'affiche (bouton « Copier »).</p>
 <figure class="tel"><img src="img/m11-envoi.jpg" alt="Envoi"><figcaption>La fenêtre d'envoi.</figcaption></figure>
 <h4>Sur téléphone</h4>
 <ol>
 <li>Touchez <b>« 📤 Envoyer avec Gmail / WhatsApp / autre »</b>.</li>
-<li>Choisissez <b>Gmail</b> (ou votre application e-mail). La fiche, la photo et la vidéo sont <b>déjà jointes</b>.</li>
+<li>Choisissez <b>Gmail</b> (ou votre application e-mail). La fiche, la photo, la vidéo et vos documents sont <b>déjà joints</b>.</li>
 <li>Dans le champ <b>« À »</b>, collez l'adresse du conseil (elle a été copiée automatiquement), puis envoyez.</li>
 </ol>
 <h4>Sur ordinateur</h4>
 <ol>
-<li>Touchez <b>« ⬇️ Télécharger les fichiers puis ouvrir ma messagerie »</b>. Trois fichiers arrivent dans « Téléchargements » : <code>…_fiche.txt</code>, <code>…_photo.jpg</code>, <code>…_video…</code>.</li>
-<li>Votre messagerie s'ouvre avec l'adresse et l'objet remplis : <b>joignez les trois fichiers</b> et envoyez.</li>
+<li>Touchez <b>« ⬇️ Télécharger les fichiers puis ouvrir ma messagerie »</b>. Les fichiers arrivent dans « Téléchargements » : <code>…_fiche.txt</code>, <code>…_photo.jpg</code>, <code>…_video…</code> et un fichier <code>…_doc1_…</code>, <code>…_doc2_…</code> par document.</li>
+<li>Votre messagerie s'ouvre avec l'adresse et l'objet remplis : <b>joignez tous ces fichiers</b> et envoyez.</li>
 </ol>
 <p>Une fois l'e-mail parti, touchez <b>« ✔️ C'est fait : marquer comme envoyée »</b>.</p>
 <figure class="tel"><img src="img/m12-mesfiches.jpg" alt="Fiches enregistrées"><figcaption>Onglet « Fiches enregistrées » : brouillon, à envoyer, envoyée.</figcaption></figure>
 <div class="note">Hors connexion, vous pouvez préparer l'envoi : l'e-mail reste dans la boîte d'envoi de Gmail et part au retour d'Internet. Quand vous êtes connecté, un bandeau vous rappelle les fiches qui restent à envoyer.</div>
 <div class="astuce">Si vous modifiez votre fiche après l'envoi, elle repasse « à envoyer » : renvoyez-la pour que le conseil ait la dernière version.</div>
 
-<h3 id="m-adhesion">A8. Demander son adhésion au CNBM</h3>
+<h3 id="m-adhesion">A9. Demander son adhésion au CNBM</h3>
 <p>Vous n'êtes pas encore membre ? Dans la section 7, répondez <b>« Non »</b> à « Êtes-vous membre du CNBM ? », puis <b>« Oui, je demande mon adhésion »</b>. Envoyez votre fiche normalement : le conseil la reçoit comme <b>demande d'adhésion</b> et vous contactera pour la carte, le serment et les cotisations.</p>
 
-<h3 id="m-faq">A9. Questions fréquentes</h3>
+<h3 id="m-faq">A10. Questions fréquentes</h3>
 <table>
 <tr><th>Question</th><th>Réponse</th></tr>
 <tr><td>Je peux remplir la fiche de collègues qui n'ont pas de smartphone ?</td><td>Oui : « 🆕 Nouvelle fiche (autre personne) ». Toutes les fiches sont dans « 📂 Fiches enregistrées » ; « 📤 Envoyer toutes les fiches prêtes » les envoie en une fois, et « 📊 Liste Excel de ces fiches » en donne la liste.</td></tr>
@@ -297,16 +316,16 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 </ol>
 
 <h3 id="a-import">B4. Recevoir et importer les fiches</h3>
-<p>Chaque membre envoie un e-mail avec trois pièces jointes : <code>…_fiche.txt</code>, <code>…_photo.jpg</code> et éventuellement la vidéo.</p>
+<p>Chaque membre envoie un e-mail avec ses pièces jointes : <code>…_fiche.txt</code>, <code>…_photo.jpg</code>, éventuellement la vidéo, et un fichier <code>…_docN_…</code> (photo ou PDF) par pièce justificative.</p>
 <ol>
 <li>Ouvrez les e-mails reçus et <b>téléchargez toutes les pièces jointes</b> (dans Gmail : « Tout télécharger »).</li>
 <li>Dans l'Espace responsables, touchez <b>« 📥 Importer des fiches reçues »</b>.</li>
-<li>Sélectionnez <b>tous les fichiers d'un coup</b> (fiches, photos, vidéos de plusieurs membres) : l'application rattache chaque photo et vidéo à la bonne fiche.</li>
+<li>Sélectionnez <b>tous les fichiers d'un coup</b> (fiches, photos, vidéos et documents de plusieurs membres) : l'application rattache chaque photo, vidéo et document à la bonne fiche.</li>
 </ol>
 <figure><img src="img/a3-import.jpg" alt="Import"><figcaption>Le compte rendu de l'import.</figcaption></figure>
 <ul>
 <li>Une fiche importée une deuxième fois (membre qui a corrigé sa fiche) est <b>mise à jour</b>, pas dupliquée.</li>
-<li>Si une photo ou une vidéo est signalée « sans fiche correspondante », importez aussi le fichier <code>_fiche.txt</code> du même membre.</li>
+<li>Si une photo, une vidéo ou un document est signalé « sans fiche correspondante », importez aussi le fichier <code>_fiche.txt</code> du même membre.</li>
 <li>Si un administrateur saisit lui-même des fiches sur son appareil, <b>« ➕ Ajouter les fiches de cet appareil »</b> les verse au registre.</li>
 </ul>
 
@@ -316,8 +335,12 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <li><b>Statistiques</b> : membres recensés, demandes d'adhésion, membres en règle, techniciens, biologistes, provinces, cartes, serments, cotisations à jour, photos, vidéos.</li>
 <li><b>Recherche</b> : nom, téléphone, hôpital, ville… (plusieurs mots possibles).</li>
 <li><b>Filtres</b> : province, catégorie, et statut (<i>demandes d'adhésion, membres en règle, sans carte de membre, sans serment, cotisations en retard</i>). Les statistiques et les exports suivent les filtres.</li>
-<li><b>Fiche détaillée</b> : touchez une ligne pour voir toutes les données, la photo et la vidéo, imprimer la fiche, télécharger la vidéo ou retirer la fiche du registre.</li>
+<li><b>Fiche détaillée</b> : touchez une ligne pour voir toutes les données, la photo, la vidéo et les <b>pièces justificatives</b>, imprimer la fiche, télécharger la vidéo ou retirer la fiche du registre.</li>
 </ul>
+<h4>Vérifier les pièces justificatives</h4>
+<p>Dans la fiche détaillée, la rubrique <b>« Pièces justificatives »</b> montre chaque document (aperçu des photos, icône 📄 pour les PDF). Touchez un document pour l'<b>ouvrir ou le télécharger</b>. « fichier non importé » signifie que le fichier joint à l'e-mail n'a pas encore été importé.</p>
+<figure><img src="img/a5b-documents.jpg" alt="Pièces justificatives d'un membre"><figcaption>Les pièces justificatives d'un membre, dans sa fiche détaillée.</figcaption></figure>
+<div class="astuce">Avant d'accepter une adhésion ou de délivrer une carte, comparez le nom du diplôme et de la pièce d'identité avec la fiche.</div>
 
 <h3 id="a-adhesion">B6. Traiter les demandes d'adhésion</h3>
 <ol>
@@ -331,13 +354,13 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <h3 id="a-excel">B7. Liste Excel, impression, sauvegarde</h3>
 <ul>
 <li><b>📊 Liste complète en Excel (.xlsx)</b> : un fichier Excel avec <b>toutes les personnes inscrites et toutes leurs données</b>, en trois feuilles :
-  <ul><li><b>Membres</b> : une ligne par personne (identité, contacts, adresse, diplômes, carrière, lieu principal, formations, adhésion, carte, serment, cotisations, « membre en règle », « dossier complet ») ;</li>
+  <ul><li><b>Membres</b> : une ligne par personne (identité, contacts, adresse, diplômes, carrière, lieu principal, formations, adhésion, carte, serment, cotisations, documents fournis, « diplôme fourni », « pièce d'identité fournie », « membre en règle », « dossier complet ») ;</li>
   <li><b>Lieux de travail</b> : une ligne par lieu de travail ;</li>
   <li><b>Formations</b> : une ligne par formation.</li></ul>
   Relancez l'export après chaque import pour avoir la liste à jour.</li>
 <li><b>Exporter en CSV</b> : même liste au format texte.</li>
 <li><b>🖨️ Imprimer la liste</b>.</li>
-<li><b>💾 Sauvegarde complète</b> : un fichier contenant tout le registre avec photos et vidéos. Il se réimporte avec « 📥 Importer » (sur le même ordinateur ou un autre).</li>
+<li><b>💾 Sauvegarde complète</b> : un fichier contenant tout le registre avec photos, vidéos et pièces justificatives. Il se réimporte avec « 📥 Importer » (sur le même ordinateur ou un autre).</li>
 </ul>
 <div class="attention">Le registre est conservé <b>dans le navigateur de l'ordinateur</b>. Si on efface les données du navigateur, il disparaît. Faites une <b>sauvegarde complète chaque semaine</b> et gardez-la sur une clé USB ou un disque.</div>
 <div class="note">Si l'abonnement expire, l'import et l'export du registre sont bloqués jusqu'au renouvellement. Les données ne sont pas effacées.</div>
@@ -444,7 +467,8 @@ body.seul-createur [data-p]:not([data-p~=createur]){display:none}
 <tr data-p="membre admin"><td>« Aucun compte avec ce téléphone/e-mail sur cet appareil »</td><td>Le compte a été créé sur un autre appareil ou dans un autre navigateur. Utilisez le même appareil et le même navigateur, ou créez un compte ici.</td></tr>
 <tr data-p="membre admin"><td>L'application dit « Hors ligne »</td><td>Vous pouvez continuer à remplir la fiche ; seul l'envoi demande Internet.</td></tr>
 <tr data-p="membre admin"><td>Message « Ce navigateur bloque l'enregistrement local »</td><td>Vous êtes en navigation privée : ouvrez l'application dans une fenêtre normale.</td></tr>
-<tr data-p="membre"><td>Gmail refuse l'envoi (fichier trop lourd)</td><td>Retirez la vidéo et enregistrez-la avec « 🎥 Enregistrer maintenant » (format léger), ou envoyez les fiches une par une.</td></tr>
+<tr data-p="membre"><td>Gmail refuse l'envoi (fichier trop lourd, plus de 25 Mo)</td><td>Remplacez les gros PDF par des photos des pages, retirez la vidéo et enregistrez-la avec « 🎥 Enregistrer maintenant » (format léger), ou envoyez les fiches une par une.</td></tr>
+<tr data-p="membre"><td>Un document photographié est illisible</td><td>Retirez-le (🗑️) et reprenez la photo à la lumière du jour, le document bien à plat.</td></tr>
 <tr data-p="membre"><td>Le lien d'inscription est déclaré invalide</td><td>Il a été coupé en le copiant : demandez au conseil de le renvoyer en entier.</td></tr>
 <tr data-p="admin"><td>« Clé d'abonnement invalide »</td><td>La clé a été coupée ou modifiée : copiez-la en entier, sans ajouter d'espace ni de retour à la ligne au milieu.</td></tr>
 <tr data-p="admin"><td>« Cette clé a expiré »</td><td>Demandez un renouvellement au créateur de la plateforme.</td></tr>
